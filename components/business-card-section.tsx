@@ -116,11 +116,11 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
 
   const handleEdit = (card: BusinessCard) => {
     setFormData({
-      name: card.name,
-      company: card.company,
-      position: card.position,
-      phone: card.phone,
-      email: card.email,
+      name: card.name || "",
+      company: card.company || "",
+      position: card.position || "",
+      phone: card.phone || "",
+      email: card.email || "",
       address: card.address || "",
       notes: card.notes || "",
     })
