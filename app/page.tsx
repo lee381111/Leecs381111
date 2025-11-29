@@ -640,12 +640,23 @@ const ForestNotePage = () => {
           fetchWithFallback(() => loadVehicleMaintenanceRecords(user.id), "maintenance"),
         ])
 
+        console.log(
+          "[v0] Data loaded - Notes:",
+          notes.length,
+          "Schedules:",
+          schedules.length,
+          "Diaries:",
+          diaries.length,
+        )
+
         setAllNotes(notes)
         setAllDiaries(diaries)
         setAllSchedules(schedules)
         setAllTravels(travels)
         setAllVehicles(vehicles)
         setAllHealthRecords(health)
+
+        console.log("[v0] setState called - This should trigger re-render")
 
         const jsonData = JSON.stringify({
           notes: Array.isArray(notes) ? notes : [],
