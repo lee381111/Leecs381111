@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js"
+import { getSupabaseClient } from "./supabase-client"
 import type {
   Note,
   HealthRecord,
@@ -10,13 +10,9 @@ import type {
   BusinessCard,
 } from "./types"
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
-
 // Notes
 export async function saveNotes(notes: Note[], userId: string) {
+  const supabase = getSupabaseClient()
   const { error } = await supabase.from("notes").upsert(notes.map((note) => ({ ...note, user_id: userId })))
 
   if (error) throw error
@@ -24,6 +20,7 @@ export async function saveNotes(notes: Note[], userId: string) {
 }
 
 export async function loadNotes(userId: string): Promise<Note[]> {
+  const supabase = getSupabaseClient()
   console.log("[v0] Loading notes for userId:", userId)
   const { data, error } = await supabase
     .from("notes")
@@ -41,6 +38,7 @@ export async function loadNotes(userId: string): Promise<Note[]> {
 
 // Health Records
 export async function saveHealthRecords(records: HealthRecord[], userId: string) {
+  const supabase = getSupabaseClient()
   const { error } = await supabase
     .from("health_records")
     .upsert(records.map((record) => ({ ...record, user_id: userId })))
@@ -50,6 +48,7 @@ export async function saveHealthRecords(records: HealthRecord[], userId: string)
 }
 
 export async function loadHealthRecords(userId: string): Promise<HealthRecord[]> {
+  const supabase = getSupabaseClient()
   const { data, error } = await supabase
     .from("health_records")
     .select("*")
@@ -62,6 +61,7 @@ export async function loadHealthRecords(userId: string): Promise<HealthRecord[]>
 
 // Diary Entries
 export async function saveDiaryEntries(entries: DiaryEntry[], userId: string) {
+  const supabase = getSupabaseClient()
   const { error } = await supabase.from("diary_entries").upsert(entries.map((entry) => ({ ...entry, user_id: userId })))
 
   if (error) throw error
@@ -69,6 +69,7 @@ export async function saveDiaryEntries(entries: DiaryEntry[], userId: string) {
 }
 
 export async function loadDiaryEntries(userId: string): Promise<DiaryEntry[]> {
+  const supabase = getSupabaseClient()
   const { data, error } = await supabase
     .from("diary_entries")
     .select("*")
@@ -91,6 +92,7 @@ export async function loadDiaries(userId: string): Promise<DiaryEntry[]> {
 
 // Schedules
 export async function saveSchedules(schedules: Schedule[], userId: string) {
+  const supabase = getSupabaseClient()
   const dbSchedules = schedules.map((schedule) => {
     let startTime = schedule.startTime
     if (!startTime && schedule.date && schedule.time) {
@@ -116,7 +118,6 @@ export async function saveSchedules(schedules: Schedule[], userId: string) {
       attachments: schedule.attachments,
     }
 
-    // Remove undefined values
     Object.keys(dbSchedule).forEach((key) => {
       if (dbSchedule[key] === undefined) {
         delete dbSchedule[key]
@@ -133,6 +134,7 @@ export async function saveSchedules(schedules: Schedule[], userId: string) {
 }
 
 export async function loadSchedules(userId: string): Promise<Schedule[]> {
+  const supabase = getSupabaseClient()
   console.log("[v0] Loading schedules for userId:", userId)
   const { data, error } = await supabase
     .from("schedules")
@@ -172,6 +174,7 @@ export async function loadSchedules(userId: string): Promise<Schedule[]> {
 
 // Travel Destinations
 export async function saveTravelDestinations(destinations: TravelDestination[], userId: string) {
+  const supabase = getSupabaseClient()
   const { error } = await supabase
     .from("travel_records")
     .upsert(destinations.map((dest) => ({ ...dest, user_id: userId })))
@@ -181,6 +184,7 @@ export async function saveTravelDestinations(destinations: TravelDestination[], 
 }
 
 export async function loadTravelDestinations(userId: string): Promise<TravelDestination[]> {
+  const supabase = getSupabaseClient()
   const { data, error } = await supabase
     .from("travel_records")
     .select("*")
@@ -202,6 +206,7 @@ export async function saveTravelRecords(destinations: TravelDestination[], userI
 
 // Vehicles
 export async function saveVehicles(vehicles: Vehicle[], userId: string) {
+  const supabase = getSupabaseClient()
   const { error } = await supabase.from("vehicles").upsert(vehicles.map((vehicle) => ({ ...vehicle, user_id: userId })))
 
   if (error) throw error
@@ -209,6 +214,7 @@ export async function saveVehicles(vehicles: Vehicle[], userId: string) {
 }
 
 export async function loadVehicles(userId: string): Promise<Vehicle[]> {
+  const supabase = getSupabaseClient()
   const { data, error } = await supabase
     .from("vehicles")
     .select("*")
@@ -226,6 +232,7 @@ export async function loadVehicleRecords(userId: string) {
 
 // Vehicle Maintenance Records
 export async function loadVehicleMaintenanceRecords(userId: string) {
+  const supabase = getSupabaseClient()
   const { data, error } = await supabase
     .from("vehicle_maintenance")
     .select("*")
@@ -237,6 +244,7 @@ export async function loadVehicleMaintenanceRecords(userId: string) {
 }
 
 export async function saveVehicleMaintenanceRecords(records: any[], userId: string) {
+  const supabase = getSupabaseClient()
   const { error } = await supabase
     .from("vehicle_maintenance")
     .upsert(records.map((record) => ({ ...record, user_id: userId })))
@@ -247,6 +255,7 @@ export async function saveVehicleMaintenanceRecords(records: any[], userId: stri
 
 // Budget Entries
 export async function saveBudgetEntries(entries: BudgetEntry[], userId: string) {
+  const supabase = getSupabaseClient()
   const { error } = await supabase
     .from("budget_transactions")
     .upsert(entries.map((entry) => ({ ...entry, user_id: userId })))
@@ -256,6 +265,7 @@ export async function saveBudgetEntries(entries: BudgetEntry[], userId: string) 
 }
 
 export async function loadBudgetEntries(userId: string): Promise<BudgetEntry[]> {
+  const supabase = getSupabaseClient()
   const { data, error } = await supabase
     .from("budget_transactions")
     .select("*")
@@ -277,6 +287,7 @@ export async function loadBudgetTransactions(userId: string): Promise<BudgetEntr
 
 // Business Cards
 export async function saveBusinessCards(cards: BusinessCard[], userId: string) {
+  const supabase = getSupabaseClient()
   const { error } = await supabase.from("business_cards").upsert(cards.map((card) => ({ ...card, user_id: userId })))
 
   if (error) throw error
@@ -284,6 +295,7 @@ export async function saveBusinessCards(cards: BusinessCard[], userId: string) {
 }
 
 export async function loadBusinessCards(userId: string): Promise<BusinessCard[]> {
+  const supabase = getSupabaseClient()
   const { data, error } = await supabase
     .from("business_cards")
     .select("*")
@@ -296,6 +308,7 @@ export async function loadBusinessCards(userId: string): Promise<BusinessCard[]>
 
 // Medications
 export async function loadMedications(userId: string) {
+  const supabase = getSupabaseClient()
   const { data, error } = await supabase
     .from("medications")
     .select("*")
@@ -307,6 +320,7 @@ export async function loadMedications(userId: string) {
 }
 
 export async function saveMedications(medications: any[], userId: string) {
+  const supabase = getSupabaseClient()
   const { error } = await supabase.from("medications").upsert(medications.map((med) => ({ ...med, user_id: userId })))
 
   if (error) throw error
@@ -315,6 +329,7 @@ export async function saveMedications(medications: any[], userId: string) {
 
 // Radio Stations
 export async function loadRadioStations(userId: string) {
+  const supabase = getSupabaseClient()
   const { data, error } = await supabase
     .from("radio_stations")
     .select("*")
@@ -326,6 +341,7 @@ export async function loadRadioStations(userId: string) {
 }
 
 export async function saveRadioStations(stations: any[], userId: string) {
+  const supabase = getSupabaseClient()
   const { error } = await supabase
     .from("radio_stations")
     .upsert(stations.map((station) => ({ ...station, user_id: userId })))
