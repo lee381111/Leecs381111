@@ -40,12 +40,19 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
   }, [user])
 
   const loadData = async () => {
-    if (!user?.id) return
+    if (!user?.id) {
+      console.log("[v0] NotesSection: No user ID, skipping load")
+      return
+    }
 
     try {
+      console.log("[v0] NotesSection: Loading notes for user:", user.id)
       setLoading(true)
       const data = await loadNotes(user.id)
+      console.log("[v0] NotesSection: Loaded notes from storage:", data.length, "items")
+      console.log("[v0] NotesSection: First note:", data[0])
       setNotes(data)
+      console.log("[v0] NotesSection: State updated, notes array length:", data.length)
     } catch (err) {
       console.error("[v0] Error loading notes:", err)
     } finally {
