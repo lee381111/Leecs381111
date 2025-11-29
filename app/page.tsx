@@ -379,6 +379,12 @@ const ForestNotePage = () => {
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([])
   const [storageUsed, setStorageUsed] = useState(0)
   const isCalculatingRef = useRef(false)
+  const [allNotes, setAllNotes] = useState<any[]>([])
+  const [allDiaries, setAllDiaries] = useState<any[]>([])
+  const [allSchedules, setAllSchedules] = useState<any[]>([])
+  const [allTravels, setAllTravels] = useState<any[]>([])
+  const [allVehicles, setAllVehicles] = useState<any[]>([])
+  const [allHealthRecords, setAllHealthRecords] = useState<any[]>([])
 
   const ADMIN_EMAILS = ["chanse1984@hanmail.net", "lee381111@gmail.com"] // 관리자 이메일 목록
   const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email) : false
@@ -430,6 +436,13 @@ const ForestNotePage = () => {
           fetchWithFallback(() => loadVehicles(user.id), "vehicles"),
           fetchWithFallback(() => loadVehicleMaintenanceRecords(user.id), "maintenance"),
         ])
+
+        setAllNotes(notes)
+        setAllDiaries(diaries)
+        setAllSchedules(schedules)
+        setAllTravels(travels)
+        setAllVehicles(vehicles)
+        setAllHealthRecords(health)
 
         const jsonData = JSON.stringify({
           notes: Array.isArray(notes) ? notes : [],
@@ -546,32 +559,57 @@ const ForestNotePage = () => {
   }
 
   const menuItems = [
-    { id: "schedule", label: getTranslation(language, "schedule"), icon: CalendarIcon, color: "teal" },
-    { id: "notes", label: getTranslation(language, "notes"), icon: FileText, color: "emerald" },
-    { id: "diary", label: getTranslation(language, "diary"), icon: BookOpen, color: "green" },
-    { id: "travel", label: getTranslation(language, "travel"), icon: Plane, color: "blue" },
-    { id: "vehicle", label: getTranslation(language, "vehicle"), icon: Car, color: "indigo" },
-    { id: "health", label: getTranslation(language, "health"), icon: Heart, color: "rose" },
+    {
+      id: "schedule",
+      label: getTranslation(language, "schedule"),
+      icon: CalendarIcon,
+      color: "teal",
+      count: allSchedules.length,
+    },
+    { id: "notes", label: getTranslation(language, "notes"), icon: FileText, color: "emerald", count: allNotes.length },
+    { id: "diary", label: getTranslation(language, "diary"), icon: BookOpen, color: "green", count: allDiaries.length },
+    { id: "travel", label: getTranslation(language, "travel"), icon: Plane, color: "blue", count: allTravels.length },
+    {
+      id: "vehicle",
+      label: getTranslation(language, "vehicle"),
+      icon: Car,
+      color: "indigo",
+      count: allVehicles.length,
+    },
+    {
+      id: "health",
+      label: getTranslation(language, "health"),
+      icon: Heart,
+      color: "rose",
+      count: allHealthRecords.length,
+    },
     {
       id: "budget",
       label: language === "ko" ? "가계부" : language === "en" ? "Budget" : language === "zh" ? "家庭账本" : "家計簿",
       icon: Wallet,
       color: "yellow",
+      count: 0, // Budget doesn't have allBudgetItems loaded
     },
     {
       id: "businessCard",
       label: language === "ko" ? "명함" : language === "en" ? "Business Card" : language === "zh" ? "名片" : "名刺",
       icon: User,
       color: "violet",
+      count: 0, // Business cards not loaded in main
     },
-    { id: "weather", label: getTranslation(language, "weather"), icon: Cloud, color: "cyan" },
-    { id: "radio", label: getTranslation(language, "radio"), icon: Radio, color: "purple" },
-    { id: "statistics", label: getTranslation(language, "statistics"), icon: BarChart3, color: "amber" },
+    { id: "weather", label: getTranslation(language, "weather"), icon: Cloud, color: "cyan", count: 0 },
+    { id: "radio", label: getTranslation(language, "radio"), icon: Radio, color: "purple", count: 0 },
+    { id: "statistics", label: getTranslation(language, "statistics"), icon: BarChart3, color: "amber", count: 0 },
   ]
 
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return "0 MB"
-    const mb = bytes / (1024 * 1024)
+    const mb = bytes / 1024 / 1024
+    if (mb < 1) {
+      // Show KB instead of 0.00 MB for small sizes
+      const kb = bytes / 1024
+      return `${kb.toFixed(0)} KB`
+    }
     return `${mb.toFixed(2)} MB`
   }
 
@@ -651,7 +689,15 @@ const ForestNotePage = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={signOut}
+                onClick={async () => {
+                  try {
+                    console.log("[v0] Logout button clicked")
+                    await signOut()
+                    console.log("[v0] Logout successful")
+                  } catch (error) {
+                    console.error("[v0] Logout error:", error)
+                  }
+                }}
                 className="text-black flex items-center gap-1 bg-transparent"
               >
                 <LogOut className="h-4 w-4" />
@@ -770,6 +816,7 @@ const ForestNotePage = () => {
               >
                 <item.icon className={`h-8 w-8 mb-4 ${iconColor}`} />
                 <h3 className={`font-semibold text-lg text-center ${textColor}`}>{item.label}</h3>
+                {item.count > 0 && <p className={`text-sm mt-2 ${iconColor}`}>{item.count}개</p>}
               </Card>
             )
           })}
