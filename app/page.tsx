@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { Suspense } from "react"
+import { useMemo } from "react"
 
 import { useState, useEffect, useRef } from "react"
 import dynamic from "next/dynamic"
@@ -721,80 +722,70 @@ const ForestNotePage = () => {
     setCurrentSection(section)
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-          <p className="text-emerald-800">로딩 중...</p>
-        </div>
-      </div>
+  const menuItems = useMemo(() => {
+    const items = [
+      {
+        id: "schedule",
+        label: getTranslation(language, "schedule"),
+        icon: CalendarIcon,
+        color: "teal",
+        count: allSchedules.length,
+      },
+      {
+        id: "notes",
+        label: getTranslation(language, "notes"),
+        icon: FileText,
+        color: "emerald",
+        count: allNotes.length,
+      },
+      {
+        id: "diary",
+        label: getTranslation(language, "diary"),
+        icon: BookOpen,
+        color: "green",
+        count: allDiaries.length,
+      },
+      { id: "travel", label: getTranslation(language, "travel"), icon: Plane, color: "blue", count: allTravels.length },
+      {
+        id: "vehicle",
+        label: getTranslation(language, "vehicle"),
+        icon: Car,
+        color: "indigo",
+        count: allVehicles.length,
+      },
+      {
+        id: "health",
+        label: getTranslation(language, "health"),
+        icon: Heart,
+        color: "rose",
+        count: allHealthRecords.length,
+      },
+      {
+        id: "budget",
+        label: language === "ko" ? "가계부" : language === "en" ? "Budget" : language === "zh" ? "家庭账本" : "家計簿",
+        icon: Wallet,
+        color: "yellow",
+        count: 0,
+      },
+      {
+        id: "businessCard",
+        label: language === "ko" ? "명함" : language === "en" ? "Business Card" : language === "zh" ? "名片" : "名刺",
+        icon: User,
+        color: "violet",
+        count: 0,
+      },
+      { id: "weather", label: getTranslation(language, "weather"), icon: Cloud, color: "cyan", count: 0 },
+      { id: "radio", label: getTranslation(language, "radio"), icon: Radio, color: "purple", count: 0 },
+      { id: "statistics", label: getTranslation(language, "statistics"), icon: BarChart3, color: "amber", count: 0 },
+    ]
+
+    console.log(
+      "[v0] Menu items recalculated with counts:",
+      items.map((item) => `${item.label}: ${item.count}`).join(", "),
     )
-  }
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 flex items-center justify-center p-6">
-        {showConnectionStatus && (
-          <ConnectionStatus
-            user={null}
-            dataCounts={{ notes: 0, schedules: 0, diaries: 0, travels: 0, vehicles: 0, health: 0 }}
-          />
-        )}
-        {/* </CHANGE> */}
-        <LoginForm language={language} onLanguageChange={setLanguage} />
-      </div>
-    )
-  }
-
-  const menuItems = [
-    {
-      id: "schedule",
-      label: getTranslation(language, "schedule"),
-      icon: CalendarIcon,
-      color: "teal",
-      count: allSchedules.length,
-    },
-    { id: "notes", label: getTranslation(language, "notes"), icon: FileText, color: "emerald", count: allNotes.length },
-    { id: "diary", label: getTranslation(language, "diary"), icon: BookOpen, color: "green", count: allDiaries.length },
-    { id: "travel", label: getTranslation(language, "travel"), icon: Plane, color: "blue", count: allTravels.length },
-    {
-      id: "vehicle",
-      label: getTranslation(language, "vehicle"),
-      icon: Car,
-      color: "indigo",
-      count: allVehicles.length,
-    },
-    {
-      id: "health",
-      label: getTranslation(language, "health"),
-      icon: Heart,
-      color: "rose",
-      count: allHealthRecords.length,
-    },
-    {
-      id: "budget",
-      label: language === "ko" ? "가계부" : language === "en" ? "Budget" : language === "zh" ? "家庭账本" : "家計簿",
-      icon: Wallet,
-      color: "yellow",
-      count: 0, // Budget doesn't have allBudgetItems loaded
-    },
-    {
-      id: "businessCard",
-      label: language === "ko" ? "명함" : language === "en" ? "Business Card" : language === "zh" ? "名片" : "名刺",
-      icon: User,
-      color: "violet",
-      count: 0, // Business cards not loaded in main
-    },
-    { id: "weather", label: getTranslation(language, "weather"), icon: Cloud, color: "cyan", count: 0 },
-    { id: "radio", label: getTranslation(language, "radio"), icon: Radio, color: "purple", count: 0 },
-    { id: "statistics", label: getTranslation(language, "statistics"), icon: BarChart3, color: "amber", count: 0 },
-  ]
-
-  console.log(
-    "[v0] Rendering menu items with counts:",
-    menuItems.map((item) => `${item.label}: ${item.count}`).join(", "),
-  )
+    return items
+  }, [allSchedules, allNotes, allDiaries, allTravels, allVehicles, allHealthRecords, language])
 
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return "0 MB"
