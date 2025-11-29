@@ -172,10 +172,10 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
     }))
     console.log("[v0] Loaded attachments for editing:", loadedAttachments.length)
     setFormData({
-      date: diary.date,
-      content: diary.content,
-      mood: diary.mood,
-      weather: diary.weather,
+      date: diary.date || new Date().toISOString().split("T")[0],
+      content: diary.content || "",
+      mood: diary.mood || moods[0],
+      weather: diary.weather || weathers[0],
       attachments: loadedAttachments,
     })
     setIsAdding(true)
