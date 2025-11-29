@@ -405,10 +405,18 @@ const ConnectionStatus = ({
 
         {isExpanded && (
           <>
-            <div className="flex items-center gap-2 mb-2 pb-2 border-b border-emerald-200">
-              <User className="h-3 w-3 text-emerald-600" />
-              <span className="font-semibold text-emerald-800">로그인:</span>
-              <span className="text-emerald-900 font-medium">{user?.email || "로그인 안됨"}</span>
+            <div className="flex flex-col gap-2 mb-2 pb-2 border-b border-emerald-200">
+              <div className="flex items-center gap-2">
+                <User className="h-3 w-3 text-emerald-600" />
+                <span className="font-semibold text-emerald-800">이메일:</span>
+                <span className="text-emerald-900 font-medium">{user?.email || "로그인 안됨"}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-emerald-800">User ID:</span>
+                <span className="text-emerald-900 font-mono text-[10px] bg-emerald-100 px-2 py-1 rounded">
+                  {user?.id || "없음"}
+                </span>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -457,7 +465,6 @@ const ConnectionStatus = ({
             )}
           </>
         )}
-        {/* </CHANGE> */}
       </div>
     </div>
   )

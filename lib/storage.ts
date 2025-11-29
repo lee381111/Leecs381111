@@ -24,13 +24,18 @@ export async function saveNotes(notes: Note[], userId: string) {
 }
 
 export async function loadNotes(userId: string): Promise<Note[]> {
+  console.log("[v0] Loading notes for userId:", userId)
   const { data, error } = await supabase
     .from("notes")
     .select("*")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
 
-  if (error) throw error
+  if (error) {
+    console.error("[v0] Error loading notes:", error)
+    throw error
+  }
+  console.log("[v0] Loaded notes:", data?.length || 0, "items")
   return data || []
 }
 
@@ -80,6 +85,7 @@ export async function saveDiaries(entries: DiaryEntry[], userId: string) {
 }
 
 export async function loadDiaries(userId: string): Promise<DiaryEntry[]> {
+  console.log("[v0] Loading diaries for userId:", userId)
   return loadDiaryEntries(userId)
 }
 
@@ -127,13 +133,19 @@ export async function saveSchedules(schedules: Schedule[], userId: string) {
 }
 
 export async function loadSchedules(userId: string): Promise<Schedule[]> {
+  console.log("[v0] Loading schedules for userId:", userId)
   const { data, error } = await supabase
     .from("schedules")
     .select("*")
     .eq("user_id", userId)
     .order("start_time", { ascending: false })
 
-  if (error) throw error
+  if (error) {
+    console.error("[v0] Error loading schedules:", error)
+    throw error
+  }
+
+  console.log("[v0] Loaded schedules:", data?.length || 0, "items")
 
   return (data || []).map((schedule) => {
     let date = ""
