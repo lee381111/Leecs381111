@@ -382,6 +382,47 @@ const ConnectionStatus = ({
   const hasSupabaseUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL
   const hasSupabaseKey = !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   const [isExpanded, setIsExpanded] = useState(true)
+  const [authUid, setAuthUid] = useState<string | null>(null)
+  const [isCheckingAuth, setIsCheckingAuth] = useState(false)
+
+  useEffect(() => {
+    const checkAuthUid = async () => {
+      if (!hasSupabaseUrl || !hasSupabaseKey || !user) {
+        setAuthUid(null)
+        return
+      }
+
+      setIsCheckingAuth(true)
+      try {
+        const { getSupabaseBrowserClient } = await import("@/lib/supabase-client")
+        const supabase = getSupabaseBrowserClient()
+
+        const { data, error } = await supabase.rpc("get_current_user_id", {})
+
+        if (error) {
+          const { data: testData, error: testError } = await supabase.from("notes").select("user_id").limit(1)
+
+          if (testError) {
+            console.error("[v0] Error checking auth.uid():", testError)
+            setAuthUid("❌ 에러")
+          } else if (testData && testData.length > 0) {
+            setAuthUid("✓ 인증됨")
+          } else {
+            setAuthUid("⚠️ 데이터 없음")
+          }
+        } else {
+          setAuthUid(data || "✓ 인증됨")
+        }
+      } catch (error) {
+        console.error("[v0] Error checking auth:", error)
+        setAuthUid("❌ 체크 실패")
+      } finally {
+        setIsCheckingAuth(false)
+      }
+    }
+
+    checkAuthUid()
+  }, [user, hasSupabaseUrl, hasSupabaseKey])
 
   return (
     <div className="fixed top-0 left-0 right-0 bg-emerald-50 border-b border-emerald-200 p-3 text-xs z-50 shadow-sm">
@@ -394,6 +435,11 @@ const ConnectionStatus = ({
             >
               {hasSupabaseUrl && hasSupabaseKey ? "✓ Supabase 연결됨" : "❌ Supabase 연결 안됨"}
             </span>
+            {user && (
+              <span className={authUid?.includes("✓") ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
+                | {isCheckingAuth ? "확인중..." : authUid || "인증 체크 중"}
+              </span>
+            )}
           </div>
           <button
             onClick={() => setIsExpanded(!isExpanded)}
@@ -417,6 +463,25 @@ const ConnectionStatus = ({
                   {user?.id || "없음"}
                 </span>
               </div>
+              {user && (
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-emerald-800">Supabase 인증:</span>
+                  <span
+                    className={`font-mono text-[10px] px-2 py-1 rounded ${
+                      authUid?.includes("✓")
+                        ? "bg-green-100 text-green-700"
+                        : authUid?.includes("❌")
+                          ? "bg-red-100 text-red-700"
+                          : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
+                    {isCheckingAuth ? "체크 중..." : authUid || "알 수 없음"}
+                  </span>
+                  {authUid?.includes("❌") && (
+                    <span className="text-red-600 text-[10px]">⚠️ RLS 인증 실패 - 데이터 조회 불가</span>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
