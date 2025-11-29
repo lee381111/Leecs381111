@@ -53,7 +53,7 @@ export function RadioSection({ onBack, language, user }: { onBack: () => void; l
             console.log("[v0] No saved stations, using defaults")
             setRadioStations(defaultRadioStations)
             setCurrentStation(defaultRadioStations[0])
-            saveRadioStations(user.id, defaultRadioStations).catch(console.error)
+            saveRadioStations(defaultRadioStations, user.id).catch(console.error)
           }
           setIsLoading(false)
         })
@@ -140,7 +140,7 @@ export function RadioSection({ onBack, language, user }: { onBack: () => void; l
 
     if (user?.id) {
       try {
-        await saveRadioStations(user.id, updatedStations)
+        await saveRadioStations(updatedStations, user.id)
         console.log("[v0] Radio station added and saved:", newStation.name)
       } catch (error) {
         console.error("[v0] Failed to save radio station:", error)
@@ -195,7 +195,7 @@ export function RadioSection({ onBack, language, user }: { onBack: () => void; l
 
     if (user?.id) {
       try {
-        await saveRadioStations(user.id, updatedStations)
+        await saveRadioStations(updatedStations, user.id)
         console.log("[v0] Radio station deleted from database, remaining:", updatedStations.length)
       } catch (error) {
         console.error("[v0] Failed to delete radio station:", error)
