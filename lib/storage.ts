@@ -86,21 +86,27 @@ export async function loadDiaries(userId: string): Promise<DiaryEntry[]> {
 // Schedules
 export async function saveSchedules(schedules: Schedule[], userId: string) {
   const dbSchedules = schedules.map((schedule) => {
+    let startTime = schedule.startTime
+    if (!startTime && schedule.date && schedule.time) {
+      startTime = `${schedule.date}T${schedule.time}`
+    } else if (!startTime && schedule.date) {
+      startTime = `${schedule.date}T00:00:00`
+    }
+
     const dbSchedule: any = {
       id: schedule.id,
       user_id: userId,
       title: schedule.title,
       description: schedule.description,
-      date: schedule.date,
-      time: schedule.time,
-      location: schedule.location,
+      category: schedule.category,
       alarm_enabled: schedule.alarmEnabled ?? false,
       alarm_time: schedule.alarmTime,
-      start_time: schedule.startTime || schedule.date + "T" + (schedule.time || "00:00"),
+      start_time: startTime,
       end_time: schedule.endTime,
       is_special_event: schedule.isSpecialEvent ?? false,
       completed: schedule.completed ?? false,
       created_at: schedule.created_at,
+      updated_at: schedule.updated_at,
       attachments: schedule.attachments,
     }
 
@@ -128,14 +134,28 @@ export async function loadSchedules(userId: string): Promise<Schedule[]> {
     .order("start_time", { ascending: false })
 
   if (error) throw error
-  return (data || []).map((schedule) => ({
-    ...schedule,
-    alarmEnabled: schedule.alarm_enabled ?? false,
-    alarmTime: schedule.alarm_time,
-    startTime: schedule.start_time,
-    endTime: schedule.end_time,
-    isSpecialEvent: schedule.is_special_event ?? false,
-  }))
+
+  return (data || []).map((schedule) => {
+    let date = ""
+    let time = ""
+
+    if (schedule.start_time) {
+      const startDate = new Date(schedule.start_time)
+      date = startDate.toISOString().split("T")[0]
+      time = startDate.toTimeString().slice(0, 5)
+    }
+
+    return {
+      ...schedule,
+      date,
+      time,
+      alarmEnabled: schedule.alarm_enabled ?? false,
+      alarmTime: schedule.alarm_time,
+      startTime: schedule.start_time,
+      endTime: schedule.endTime,
+      isSpecialEvent: schedule.is_special_event ?? false,
+    }
+  })
 }
 
 // Travel Destinations
