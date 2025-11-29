@@ -166,7 +166,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
   }
 
   const handleShare = async (note: Note) => {
-    const shareText = `${note.title}\n\n${note.content}\n\n${note.tags.length > 0 ? `#${note.tags.join(" #")}` : ""}`
+    const shareText = `${note.title}\n\n${note.content}\n\n${note.tags && note.tags.length > 0 ? `#${note.tags.join(" #")}` : ""}`
     const shareData = {
       title: note.title,
       text: shareText,
@@ -450,7 +450,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
               </div>
               <div className="w-full">
                 <p className="text-sm text-muted-foreground">{note.content}</p>
-                {note.tags.length > 0 && (
+                {note.tags && note.tags.length > 0 && (
                   <div className="flex gap-2 mt-2">
                     {note.tags.map((tag) => (
                       <span key={tag} className="text-xs bg-primary/10 px-2 py-1 rounded">
