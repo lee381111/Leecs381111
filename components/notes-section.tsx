@@ -200,13 +200,13 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
       })
   }
 
-  const allTags = Array.from(new Set(notes.flatMap((note) => note.tags))).sort()
+  const allTags = Array.from(new Set(notes.flatMap((note) => note.tags || []))).sort()
 
   const filteredNotes = notes.filter((note) => {
     const matchesSearch =
-      note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      note.content.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesTag = !selectedTag || note.tags.includes(selectedTag)
+      (note.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (note.content || "").toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesTag = !selectedTag || (note.tags || []).includes(selectedTag)
     return matchesSearch && matchesTag
   })
 
@@ -393,7 +393,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center">
-              <h3 className="font-semibold">이미지 옵션</h3>
+              <h3 className="font-semibold flex-1">이미지 옵션</h3>
               <Button variant="ghost" size="icon" onClick={() => setSelectedImage(null)}>
                 <Tag className="h-4 w-4 rotate-45" />
               </Button>
