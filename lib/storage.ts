@@ -28,7 +28,7 @@ export async function loadNotes(userId: string): Promise<Note[]> {
     .from("notes")
     .select("*")
     .eq("user_id", userId)
-    .order("createdAt", { ascending: false })
+    .order("created_at", { ascending: false })
 
   if (error) throw error
   return data || []
@@ -49,7 +49,7 @@ export async function loadHealthRecords(userId: string): Promise<HealthRecord[]>
     .from("health_records")
     .select("*")
     .eq("user_id", userId)
-    .order("date", { ascending: false })
+    .order("recorded_at", { ascending: false })
 
   if (error) throw error
   return data || []
@@ -68,7 +68,7 @@ export async function loadDiaryEntries(userId: string): Promise<DiaryEntry[]> {
     .from("diary_entries")
     .select("*")
     .eq("user_id", userId)
-    .order("date", { ascending: false })
+    .order("created_at", { ascending: false })
 
   if (error) throw error
   return data || []
@@ -98,7 +98,7 @@ export async function loadSchedules(userId: string): Promise<Schedule[]> {
     .from("schedules")
     .select("*")
     .eq("user_id", userId)
-    .order("date", { ascending: false })
+    .order("start_time", { ascending: false })
 
   if (error) throw error
   return data || []
@@ -107,7 +107,7 @@ export async function loadSchedules(userId: string): Promise<Schedule[]> {
 // Travel Destinations
 export async function saveTravelDestinations(destinations: TravelDestination[], userId: string) {
   const { error } = await supabase
-    .from("travel_destinations")
+    .from("travel_records")
     .upsert(destinations.map((dest) => ({ ...dest, user_id: userId })))
 
   if (error) throw error
@@ -116,10 +116,10 @@ export async function saveTravelDestinations(destinations: TravelDestination[], 
 
 export async function loadTravelDestinations(userId: string): Promise<TravelDestination[]> {
   const { data, error } = await supabase
-    .from("travel_destinations")
+    .from("travel_records")
     .select("*")
     .eq("user_id", userId)
-    .order("createdAt", { ascending: false })
+    .order("created_at", { ascending: false })
 
   if (error) throw error
   return data || []
@@ -147,7 +147,7 @@ export async function loadVehicles(userId: string): Promise<Vehicle[]> {
     .from("vehicles")
     .select("*")
     .eq("user_id", userId)
-    .order("createdAt", { ascending: false })
+    .order("created_at", { ascending: false })
 
   if (error) throw error
   return data || []
@@ -161,7 +161,7 @@ export async function loadVehicleRecords(userId: string) {
 // Vehicle Maintenance Records
 export async function loadVehicleMaintenanceRecords(userId: string) {
   const { data, error } = await supabase
-    .from("vehicle_maintenance_records")
+    .from("vehicle_maintenance")
     .select("*")
     .eq("user_id", userId)
     .order("date", { ascending: false })
@@ -172,7 +172,7 @@ export async function loadVehicleMaintenanceRecords(userId: string) {
 
 export async function saveVehicleMaintenanceRecords(records: any[], userId: string) {
   const { error } = await supabase
-    .from("vehicle_maintenance_records")
+    .from("vehicle_maintenance")
     .upsert(records.map((record) => ({ ...record, user_id: userId })))
 
   if (error) throw error
@@ -182,7 +182,7 @@ export async function saveVehicleMaintenanceRecords(records: any[], userId: stri
 // Budget Entries
 export async function saveBudgetEntries(entries: BudgetEntry[], userId: string) {
   const { error } = await supabase
-    .from("budget_entries")
+    .from("budget_transactions")
     .upsert(entries.map((entry) => ({ ...entry, user_id: userId })))
 
   if (error) throw error
@@ -191,7 +191,7 @@ export async function saveBudgetEntries(entries: BudgetEntry[], userId: string) 
 
 export async function loadBudgetEntries(userId: string): Promise<BudgetEntry[]> {
   const { data, error } = await supabase
-    .from("budget_entries")
+    .from("budget_transactions")
     .select("*")
     .eq("user_id", userId)
     .order("date", { ascending: false })
@@ -222,7 +222,7 @@ export async function loadBusinessCards(userId: string): Promise<BusinessCard[]>
     .from("business_cards")
     .select("*")
     .eq("user_id", userId)
-    .order("createdAt", { ascending: false })
+    .order("created_at", { ascending: false })
 
   if (error) throw error
   return data || []
@@ -234,7 +234,7 @@ export async function loadMedications(userId: string) {
     .from("medications")
     .select("*")
     .eq("user_id", userId)
-    .order("createdAt", { ascending: false })
+    .order("created_at", { ascending: false })
 
   if (error) throw error
   return data || []
@@ -249,11 +249,7 @@ export async function saveMedications(medications: any[], userId: string) {
 
 // Radio Stations
 export async function loadRadioStations(userId: string) {
-  const { data, error } = await supabase
-    .from("radio_stations")
-    .select("*")
-    .eq("user_id", userId)
-    .order("createdAt", { ascending: false })
+  const { data, error } = await supabase.from("radio_stations").select("*").eq("user_id", userId)
 
   if (error) throw error
   return data || []
