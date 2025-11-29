@@ -249,7 +249,11 @@ export async function saveMedications(medications: any[], userId: string) {
 
 // Radio Stations
 export async function loadRadioStations(userId: string) {
-  const { data, error } = await supabase.from("radio_stations").select("*").eq("user_id", userId)
+  const { data, error } = await supabase
+    .from("radio_stations")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
 
   if (error) throw error
   return data || []
@@ -301,6 +305,7 @@ export async function importAllData(data: any, userId: string) {
   if (data.vehicles) promises.push(saveVehicles(data.vehicles, userId))
   if (data.budget) promises.push(saveBudgetEntries(data.budget, userId))
   if (data.cards) promises.push(saveBusinessCards(data.cards, userId))
+  if (data.radioStations) promises.push(saveRadioStations(data.radioStations, userId))
 
   await Promise.all(promises)
 }
