@@ -24,6 +24,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
   const t = (key: string) => getTranslation(language as any, key)
   const [schedules, setSchedules] = useState<ScheduleEvent[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
   const [isBatchAdding, setIsBatchAdding] = useState(false)
@@ -63,12 +64,19 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
   }, [user])
 
   const loadData = async () => {
-    if (!user?.id) return
+    if (!user?.id) {
+      setLoading(false)
+      return
+    }
 
     try {
       setLoading(true)
+      setError(null)
       const data = await loadSchedules(user.id)
       setSchedules(data)
+    } catch (err: any) {
+      console.error("[v0] Error loading schedules:", err)
+      setError(`일정 로드 실패: ${err?.message || "알 수 없는 오류"}`)
     } finally {
       setLoading(false)
     }
@@ -122,7 +130,6 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
 
     try {
       setSaving(true)
-      console.log("[v0] Saving schedule with", attachments.length, "attachments")
 
       let updated: ScheduleEvent[]
       const scheduleId = editingId || window.crypto.randomUUID()
@@ -166,7 +173,6 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
         notificationManager.cancelAlarm(`schedule_${scheduleId}`)
       }
 
-      console.log("[v0] Schedule saved successfully")
       window.dispatchEvent(new Event("storage"))
       alert(t("schedule_saved"))
 
@@ -255,8 +261,6 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
   }
 
   const exportToCalendar = (schedule: ScheduleEvent) => {
-    console.log("[v0] Export button clicked for:", schedule.title)
-
     try {
       const startDate = new Date(`${schedule.date}T${schedule.time || "00:00"}`)
       const endDate = new Date(startDate.getTime() + 60 * 60 * 1000)
@@ -316,8 +320,42 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Spinner className="h-12 w-12" />
-        <p className="text-muted-foreground mt-4">{t("loading")}</p>
+        <div className="text-center space-y-4">
+          <Spinner className="h-12 w-12 mx-auto" />
+          <p className="text-muted-foreground">{t("loading")}</p>
+          <p className="text-xs text-muted-foreground">사용자: {user?.email}</p>
+          <p className="text-xs text-muted-foreground">User ID: {user?.id?.slice(0, 12)}...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950 dark:to-red-900 p-6">
+        <Button variant="ghost" onClick={onBack} className="mb-4">
+          <ArrowLeft className="mr-2 h-4 w-4" /> 돌아가기
+        </Button>
+        <Card className="p-6 bg-red-500 text-white border-0">
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold">오류 발생</h2>
+            <p className="text-lg">{error}</p>
+            <div className="text-sm space-y-1 bg-white/20 p-4 rounded">
+              <p>사용자: {user?.email}</p>
+              <p>User ID: {user?.id}</p>
+              <p>Supabase URL: {process.env.NEXT_PUBLIC_SUPABASE_URL ? "설정됨" : "누락"}</p>
+            </div>
+            <Button
+              onClick={() => {
+                setError(null)
+                loadData()
+              }}
+              className="w-full bg-white text-red-600 hover:bg-gray-100"
+            >
+              다시 시도
+            </Button>
+          </div>
+        </Card>
       </div>
     )
   }
