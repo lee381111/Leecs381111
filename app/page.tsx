@@ -386,6 +386,20 @@ const ForestNotePage = () => {
   const [allVehicles, setAllVehicles] = useState<any[]>([])
   const [allHealthRecords, setAllHealthRecords] = useState<any[]>([])
 
+  useEffect(() => {
+    console.log(
+      "[v0] State updated - Notes:",
+      allNotes.length,
+      "Schedules:",
+      allSchedules.length,
+      "Diaries:",
+      allDiaries.length,
+      "Storage:",
+      storageUsed,
+      "bytes",
+    )
+  }, [allNotes, allSchedules, allDiaries, allTravels, allVehicles, allHealthRecords, storageUsed])
+
   const ADMIN_EMAILS = ["chanse1984@hanmail.net", "lee381111@gmail.com"] // 관리자 이메일 목록
   const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email) : false
   const STORAGE_LIMIT = isAdmin ? 1000 * 1024 * 1024 : 500 * 1024 * 1024 // Admin: 1000MB, Others: 500MB
@@ -601,6 +615,11 @@ const ForestNotePage = () => {
     { id: "radio", label: getTranslation(language, "radio"), icon: Radio, color: "purple", count: 0 },
     { id: "statistics", label: getTranslation(language, "statistics"), icon: BarChart3, color: "amber", count: 0 },
   ]
+
+  console.log(
+    "[v0] Rendering menu items with counts:",
+    menuItems.map((item) => `${item.label}: ${item.count}`).join(", "),
+  )
 
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return "0 MB"
