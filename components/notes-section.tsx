@@ -347,6 +347,18 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
+      <Card className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
+        <div className="text-xs space-y-1">
+          <p className="font-semibold">디버그 정보:</p>
+          <p>총 노트 개수: {notes.length}</p>
+          <p>필터된 노트 개수: {filteredNotes.length}</p>
+          <p>검색어: {searchQuery || "(없음)"}</p>
+          <p>선택된 태그: {selectedTag || "(전체)"}</p>
+          <p>사용자 ID: {user?.id?.slice(0, 8)}...</p>
+          <p>로딩 상태: {loading ? "로딩 중" : "완료"}</p>
+        </div>
+      </Card>
+
       <div className="flex items-center justify-between">
         <Button variant="ghost" onClick={onBack}>
           <ArrowLeft className="mr-2 h-4 w-4" /> {t("title")}
