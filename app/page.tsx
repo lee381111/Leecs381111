@@ -808,7 +808,7 @@ const LoginForm = ({
   language: Language
   onLanguageChange: (lang: Language) => void
 }) => {
-  const { login, register } = useAuth()
+  const { signIn, signUp } = useAuth()
   const [isRegister, setIsRegister] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -822,7 +822,7 @@ const LoginForm = ({
 
     try {
       if (isRegister) {
-        await register(email, password)
+        await signUp(email, password)
         alert(
           language === "ko"
             ? "회원가입이 완료되었습니다. 이메일을 확인해주세요."
@@ -837,7 +837,7 @@ const LoginForm = ({
         setPassword("")
       } else {
         console.log("[v0] Attempting login...")
-        await login(email, password)
+        await signIn(email, password)
         console.log("[v0] Login successful")
       }
     } catch (error: any) {
