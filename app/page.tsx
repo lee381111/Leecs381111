@@ -372,24 +372,92 @@ const GlobalSearch = ({
   )
 }
 
-const ConnectionStatus = () => {
+const ConnectionStatus = ({
+  user,
+  dataCounts,
+}: {
+  user: any
+  dataCounts: { notes: number; schedules: number; diaries: number; travels: number; vehicles: number; health: number }
+}) => {
   const hasSupabaseUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL
   const hasSupabaseKey = !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const [isExpanded, setIsExpanded] = useState(true)
 
   return (
-    <div className="fixed top-0 left-0 right-0 bg-amber-50 border-b border-amber-200 p-2 text-xs z-50">
-      <div className="max-w-4xl mx-auto flex flex-col gap-1">
-        <div className="flex items-center gap-2">
-          <span className="font-semibold">Supabase 연결:</span>
-          <span className={hasSupabaseUrl && hasSupabaseKey ? "text-green-600" : "text-red-600"}>
-            {hasSupabaseUrl && hasSupabaseKey ? "✓ 연결됨" : "❌ 연결 안됨"}
-          </span>
-        </div>
-        {(!hasSupabaseUrl || !hasSupabaseKey) && (
-          <div className="text-red-600">
-            환경 변수 누락: URL {hasSupabaseUrl ? "✓" : "❌"}, Key {hasSupabaseKey ? "✓" : "❌"}
+    <div className="fixed top-0 left-0 right-0 bg-emerald-50 border-b border-emerald-200 p-3 text-xs z-50 shadow-sm">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-emerald-800">상태:</span>
+            <span
+              className={hasSupabaseUrl && hasSupabaseKey ? "text-green-600 font-medium" : "text-red-600 font-medium"}
+            >
+              {hasSupabaseUrl && hasSupabaseKey ? "✓ Supabase 연결됨" : "❌ Supabase 연결 안됨"}
+            </span>
           </div>
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="text-emerald-600 hover:text-emerald-800 px-2 py-1 rounded hover:bg-emerald-100"
+          >
+            {isExpanded ? "▼ 숨기기" : "▶ 자세히"}
+          </button>
+        </div>
+
+        {isExpanded && (
+          <>
+            <div className="flex items-center gap-2 mb-2 pb-2 border-b border-emerald-200">
+              <User className="h-3 w-3 text-emerald-600" />
+              <span className="font-semibold text-emerald-800">로그인:</span>
+              <span className="text-emerald-900 font-medium">{user?.email || "로그인 안됨"}</span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <div className="flex items-center gap-1">
+                <FileText className="h-3 w-3 text-blue-500" />
+                <span>
+                  노트: <strong>{dataCounts.notes}</strong>개
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <CalendarIcon className="h-3 w-3 text-purple-500" />
+                <span>
+                  일정: <strong>{dataCounts.schedules}</strong>개
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <BookOpen className="h-3 w-3 text-pink-500" />
+                <span>
+                  일기: <strong>{dataCounts.diaries}</strong>개
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Plane className="h-3 w-3 text-cyan-500" />
+                <span>
+                  여행: <strong>{dataCounts.travels}</strong>개
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Car className="h-3 w-3 text-orange-500" />
+                <span>
+                  차량: <strong>{dataCounts.vehicles}</strong>개
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Heart className="h-3 w-3 text-red-500" />
+                <span>
+                  건강: <strong>{dataCounts.health}</strong>개
+                </span>
+              </div>
+            </div>
+
+            {(!hasSupabaseUrl || !hasSupabaseKey) && (
+              <div className="mt-2 pt-2 border-t border-red-200 text-red-600 font-medium">
+                ⚠️ 환경 변수 누락: URL {hasSupabaseUrl ? "✓" : "❌"}, Key {hasSupabaseKey ? "✓" : "❌"}
+              </div>
+            )}
+          </>
         )}
+        {/* </CHANGE> */}
       </div>
     </div>
   )
@@ -595,7 +663,13 @@ const ForestNotePage = () => {
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 flex items-center justify-center p-6">
-        {showConnectionStatus && <ConnectionStatus />}
+        {showConnectionStatus && (
+          <ConnectionStatus
+            user={null}
+            dataCounts={{ notes: 0, schedules: 0, diaries: 0, travels: 0, vehicles: 0, health: 0 }}
+          />
+        )}
+        {/* </CHANGE> */}
         <LoginForm language={language} onLanguageChange={setLanguage} />
       </div>
     )
@@ -712,8 +786,22 @@ const ForestNotePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[rgb(220,252,231)] relative overflow-hidden">
-      {showConnectionStatus && <ConnectionStatus />}
+    <div className="relative min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50">
+      {showConnectionStatus && currentSection === "home" && (
+        <ConnectionStatus
+          user={user}
+          dataCounts={{
+            notes: allNotes.length,
+            schedules: allSchedules.length,
+            diaries: allDiaries.length,
+            travels: allTravels.length,
+            vehicles: allVehicles.length,
+            health: allHealthRecords.length,
+          }}
+        />
+      )}
+      {/* </CHANGE> */}
+
       <div className="absolute inset-0 opacity-30">
         <ForestCanvas />
       </div>
