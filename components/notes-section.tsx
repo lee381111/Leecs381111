@@ -42,21 +42,28 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
 
   const loadData = async () => {
     if (!user?.id) {
+      console.log("[v0] No user ID, skipping load")
       setLoading(false)
       return
     }
 
     try {
+      console.log("[v0] Starting loadData for user:", user.id)
       setLoading(true)
       setError(null)
 
       const data = await loadNotes(user.id)
+      console.log("[v0] loadNotes returned", data.length, "notes")
+      console.log("[v0] First note:", data[0])
+
       setNotes(data)
+      console.log("[v0] State updated with", data.length, "notes")
     } catch (err: any) {
       console.error("[v0] Error loading notes:", err)
       setError(`데이터 로드 실패: ${err?.message || "알 수 없는 오류"}`)
     } finally {
       setLoading(false)
+      console.log("[v0] Loading complete")
     }
   }
 
@@ -211,9 +218,11 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
 
   const filteredNotes = notes.filter((note) => {
     const matchesSearch =
+      searchQuery === "" ||
       (note.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
       (note.content || "").toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesTag = !selectedTag || (note.tags || []).includes(selectedTag)
+    const matchesTag =
+      selectedTag === "" || !selectedTag || (Array.isArray(note.tags) && note.tags.includes(selectedTag))
     return matchesSearch && matchesTag
   })
 
@@ -379,23 +388,16 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
-      <Card className="p-6 bg-red-500 text-white border-0">
-        <div className="text-center">
-          <p className="text-2xl font-bold">코드 버전: v3.0</p>
-          <p className="text-lg mt-2">이 빨간 배너가 보이면 최신 코드입니다</p>
-        </div>
-      </Card>
-
-      <Card className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
-        <div className="text-xs space-y-1">
-          <p className="font-semibold">디버그 정보:</p>
-          <p>총 노트 개수: {notes.length}</p>
-          <p>필터된 노트 개수: {filteredNotes.length}</p>
-          <p>검색어: {searchQuery || "(없음)"}</p>
-          <p>선택된 태그: {selectedTag || "(전체)"}</p>
-          <p>사용자 ID: {user?.id?.slice(0, 8)}...</p>
-          <p>로딩 상태: {loading ? "로딩 중" : "완료"}</p>
-        </div>
+      {/* Debug Info Banner */}
+      <Card className="bg-yellow-100 p-4 mb-4">
+        <h3 className="font-bold mb-2">디버그 정보</h3>
+        <p>총 노트 개수: {notes.length}</p>
+        <p>필터된 노트 개수: {filteredNotes.length}</p>
+        <p>검색어: "{searchQuery}"</p>
+        <p>선택된 태그: "{selectedTag}"</p>
+        <p>로딩 중: {loading ? "true" : "false"}</p>
+        <p>사용자 ID: {user?.id}</p>
+        {error && <p className="text-red-600 font-bold mt-2">에러: {error}</p>}
       </Card>
 
       <div className="flex items-center justify-between">
