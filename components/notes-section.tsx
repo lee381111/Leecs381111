@@ -347,6 +347,13 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
+      <Card className="p-6 bg-red-500 text-white border-0">
+        <div className="text-center">
+          <p className="text-2xl font-bold">코드 버전: v3.0</p>
+          <p className="text-lg mt-2">이 빨간 배너가 보이면 최신 코드입니다</p>
+        </div>
+      </Card>
+
       <Card className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
         <div className="text-xs space-y-1">
           <p className="font-semibold">디버그 정보:</p>
