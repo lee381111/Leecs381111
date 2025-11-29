@@ -85,20 +85,34 @@ export async function loadDiaries(userId: string): Promise<DiaryEntry[]> {
 
 // Schedules
 export async function saveSchedules(schedules: Schedule[], userId: string) {
-  const dbSchedules = schedules.map((schedule) => ({
-    ...schedule,
-    user_id: userId,
-    alarm_enabled: schedule.alarmEnabled,
-    alarm_time: schedule.alarmTime,
-    start_time: schedule.startTime || schedule.date + "T" + (schedule.time || "00:00"),
-    end_time: schedule.endTime,
-    is_special_event: schedule.isSpecialEvent,
-    alarmEnabled: undefined,
-    alarmTime: undefined,
-    startTime: undefined,
-    endTime: undefined,
-    isSpecialEvent: undefined,
-  }))
+  const dbSchedules = schedules.map((schedule) => {
+    const dbSchedule: any = {
+      id: schedule.id,
+      user_id: userId,
+      title: schedule.title,
+      description: schedule.description,
+      date: schedule.date,
+      time: schedule.time,
+      location: schedule.location,
+      alarm_enabled: schedule.alarmEnabled ?? false,
+      alarm_time: schedule.alarmTime,
+      start_time: schedule.startTime || schedule.date + "T" + (schedule.time || "00:00"),
+      end_time: schedule.endTime,
+      is_special_event: schedule.isSpecialEvent ?? false,
+      completed: schedule.completed ?? false,
+      created_at: schedule.created_at,
+      attachments: schedule.attachments,
+    }
+
+    // Remove undefined values
+    Object.keys(dbSchedule).forEach((key) => {
+      if (dbSchedule[key] === undefined) {
+        delete dbSchedule[key]
+      }
+    })
+
+    return dbSchedule
+  })
 
   const { error } = await supabase.from("schedules").upsert(dbSchedules)
 
