@@ -386,6 +386,8 @@ const ConnectionStatus = ({
   const [authUid, setAuthUid] = useState<string | null>(null)
   const [isCheckingAuth, setIsCheckingAuth] = useState(false)
 
+  const CODE_VERSION = "v2.1" // Increment this when making changes
+
   useEffect(() => {
     const checkAuthUid = async () => {
       if (!hasSupabaseUrl || !hasSupabaseKey || !user) {
@@ -425,11 +427,24 @@ const ConnectionStatus = ({
     checkAuthUid()
   }, [user, hasSupabaseUrl, hasSupabaseKey])
 
+  const handleForceRefresh = () => {
+    // Clear cache and reload
+    if ("caches" in window) {
+      caches.keys().then((names) => {
+        names.forEach((name) => {
+          caches.delete(name)
+        })
+      })
+    }
+    window.location.reload()
+  }
+
   return (
     <div className="fixed top-0 left-0 right-0 bg-emerald-50 border-b border-emerald-200 p-3 text-xs z-50 shadow-sm">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
+            <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded font-mono text-[10px]">{CODE_VERSION}</span>
             <span className="font-semibold text-emerald-800">상태:</span>
             <span
               className={hasSupabaseUrl && hasSupabaseKey ? "text-green-600 font-medium" : "text-red-600 font-medium"}
@@ -442,12 +457,21 @@ const ConnectionStatus = ({
               </span>
             )}
           </div>
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="text-emerald-600 hover:text-emerald-800 px-2 py-1 rounded hover:bg-emerald-100"
-          >
-            {isExpanded ? "▼ 숨기기" : "▶ 자세히"}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleForceRefresh}
+              className="text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-100 text-[10px] font-medium"
+              title="캐시를 지우고 새로고침"
+            >
+              🔄 새로고침
+            </button>
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="text-emerald-600 hover:text-emerald-800 px-2 py-1 rounded hover:bg-emerald-100"
+            >
+              {isExpanded ? "▼ 숨기기" : "▶ 자세히"}
+            </button>
+          </div>
         </div>
 
         {isExpanded && (
