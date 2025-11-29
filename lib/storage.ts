@@ -85,9 +85,22 @@ export async function loadDiaries(userId: string): Promise<DiaryEntry[]> {
 
 // Schedules
 export async function saveSchedules(schedules: Schedule[], userId: string) {
-  const { error } = await supabase
-    .from("schedules")
-    .upsert(schedules.map((schedule) => ({ ...schedule, user_id: userId })))
+  const dbSchedules = schedules.map((schedule) => ({
+    ...schedule,
+    user_id: userId,
+    alarm_enabled: schedule.alarmEnabled,
+    alarm_time: schedule.alarmTime,
+    start_time: schedule.startTime || schedule.date + "T" + (schedule.time || "00:00"),
+    end_time: schedule.endTime,
+    is_special_event: schedule.isSpecialEvent,
+    alarmEnabled: undefined,
+    alarmTime: undefined,
+    startTime: undefined,
+    endTime: undefined,
+    isSpecialEvent: undefined,
+  }))
+
+  const { error } = await supabase.from("schedules").upsert(dbSchedules)
 
   if (error) throw error
   return schedules
@@ -101,7 +114,14 @@ export async function loadSchedules(userId: string): Promise<Schedule[]> {
     .order("start_time", { ascending: false })
 
   if (error) throw error
-  return data || []
+  return (data || []).map((schedule) => ({
+    ...schedule,
+    alarmEnabled: schedule.alarm_enabled ?? false,
+    alarmTime: schedule.alarm_time,
+    startTime: schedule.start_time,
+    endTime: schedule.end_time,
+    isSpecialEvent: schedule.is_special_event ?? false,
+  }))
 }
 
 // Travel Destinations
