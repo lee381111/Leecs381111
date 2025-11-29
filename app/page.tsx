@@ -373,7 +373,7 @@ const GlobalSearch = ({
 }
 
 const ForestNotePage = () => {
-  const { user, logout, loading } = useAuth()
+  const { user, signOut, loading } = useAuth()
   const [currentSection, setCurrentSection] = useState<Section>("home")
   const [language, setLanguage] = useState<Language>("ko")
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([])
@@ -651,7 +651,7 @@ const ForestNotePage = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={logout}
+                onClick={signOut}
                 className="text-black flex items-center gap-1 bg-transparent"
               >
                 <LogOut className="h-4 w-4" />
