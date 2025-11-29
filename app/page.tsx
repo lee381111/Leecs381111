@@ -372,6 +372,29 @@ const GlobalSearch = ({
   )
 }
 
+const ConnectionStatus = () => {
+  const hasSupabaseUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL
+  const hasSupabaseKey = !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  return (
+    <div className="fixed top-0 left-0 right-0 bg-amber-50 border-b border-amber-200 p-2 text-xs z-50">
+      <div className="max-w-4xl mx-auto flex flex-col gap-1">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold">Supabase 연결:</span>
+          <span className={hasSupabaseUrl && hasSupabaseKey ? "text-green-600" : "text-red-600"}>
+            {hasSupabaseUrl && hasSupabaseKey ? "✓ 연결됨" : "❌ 연결 안됨"}
+          </span>
+        </div>
+        {(!hasSupabaseUrl || !hasSupabaseKey) && (
+          <div className="text-red-600">
+            환경 변수 누락: URL {hasSupabaseUrl ? "✓" : "❌"}, Key {hasSupabaseKey ? "✓" : "❌"}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 const ForestNotePage = () => {
   const { user, signOut, loading } = useAuth()
   const [currentSection, setCurrentSection] = useState<Section>("home")
@@ -385,6 +408,7 @@ const ForestNotePage = () => {
   const [allTravels, setAllTravels] = useState<any[]>([])
   const [allVehicles, setAllVehicles] = useState<any[]>([])
   const [allHealthRecords, setAllHealthRecords] = useState<any[]>([])
+  const [showConnectionStatus, setShowConnectionStatus] = useState(true)
 
   useEffect(() => {
     console.log(
@@ -553,6 +577,10 @@ const ForestNotePage = () => {
     console.log("[v0] Auth state:", { user: user?.email, loading })
   }, [user, loading])
 
+  const handleSearchResultClick = (section: Section, item: any) => {
+    setCurrentSection(section)
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 flex items-center justify-center">
@@ -567,6 +595,7 @@ const ForestNotePage = () => {
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 flex items-center justify-center p-6">
+        {showConnectionStatus && <ConnectionStatus />}
         <LoginForm language={language} onLanguageChange={setLanguage} />
       </div>
     )
@@ -684,6 +713,7 @@ const ForestNotePage = () => {
 
   return (
     <div className="min-h-screen bg-[rgb(220,252,231)] relative overflow-hidden">
+      {showConnectionStatus && <ConnectionStatus />}
       <div className="absolute inset-0 opacity-30">
         <ForestCanvas />
       </div>
@@ -699,12 +729,7 @@ const ForestNotePage = () => {
               <LanguageSelector language={language} onChange={setLanguage} />
             </div>
             <div className="flex items-center gap-2">
-              <GlobalSearch
-                language={language}
-                onResultClick={(section, item) => {
-                  setCurrentSection(section)
-                }}
-              />
+              <GlobalSearch language={language} onResultClick={handleSearchResultClick} />
               <Button
                 variant="outline"
                 size="sm"
