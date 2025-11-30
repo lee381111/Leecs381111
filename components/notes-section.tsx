@@ -212,8 +212,6 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
         <div className="text-center space-y-4">
           <Spinner className="h-12 w-12 mx-auto" />
           <p className="text-muted-foreground">{t("loading")}</p>
-          <p className="text-xs text-muted-foreground">사용자: {user?.email}</p>
-          <p className="text-xs text-muted-foreground">User ID: {user?.id?.slice(0, 12)}...</p>
         </div>
       </div>
     )
@@ -338,16 +336,6 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
-      <Card className="bg-yellow-100 p-4 mb-4">
-        <h3 className="font-bold mb-2">디버그 정보</h3>
-        <p>총 노트 개수: {notes.length}</p>
-        <p>필터된 노트 개수: {filteredNotes.length}</p>
-        <p>검색어: "{searchQuery}"</p>
-        <p>선택된 태그: "{selectedTag}"</p>
-        <p>로딩 중: {loading ? "true" : "false"}</p>
-        <p>사용자 ID: {user?.id}</p>
-      </Card>
-
       <div className="flex items-center justify-between">
         <Button variant="ghost" onClick={onBack}>
           <ArrowLeft className="mr-2 h-4 w-4" /> {t("title")}

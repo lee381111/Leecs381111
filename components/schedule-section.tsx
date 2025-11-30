@@ -38,6 +38,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
     attachments: Attachment[]
     alarmEnabled: boolean
     alarmMinutesBefore: number
+    id: string
   }>({
     title: "",
     date: "",
@@ -47,6 +48,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
     attachments: [],
     alarmEnabled: false,
     alarmMinutesBefore: 30,
+    id: "",
   })
   const [batchEvents, setBatchEvents] = useState<
     Array<{
@@ -93,6 +95,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
       attachments: schedule.attachments || [],
       alarmEnabled: schedule.alarmEnabled || false,
       alarmMinutesBefore: schedule.alarmMinutesBefore || 30,
+      id: schedule.id,
     })
     setIsAdding(true)
   }
@@ -185,6 +188,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
         attachments: [],
         alarmEnabled: false,
         alarmMinutesBefore: 30,
+        id: "",
       })
       setEditingId(null)
       setIsAdding(false)
@@ -322,8 +326,6 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
         <div className="text-center space-y-4">
           <Spinner className="h-12 w-12 mx-auto" />
           <p className="text-muted-foreground">{t("loading")}</p>
-          <p className="text-xs text-muted-foreground">사용자: {user?.email}</p>
-          <p className="text-xs text-muted-foreground">User ID: {user?.id?.slice(0, 12)}...</p>
         </div>
       </div>
     )
@@ -333,25 +335,20 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950 dark:to-red-900 p-6">
         <Button variant="ghost" onClick={onBack} className="mb-4">
-          <ArrowLeft className="mr-2 h-4 w-4" /> 돌아가기
+          <ArrowLeft className="mr-2 h-4 w-4" /> {t("back")}
         </Button>
-        <Card className="p-6 bg-red-500 text-white border-0">
+        <Card className="p-6 border-red-200">
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold">오류 발생</h2>
-            <p className="text-lg">{error}</p>
-            <div className="text-sm space-y-1 bg-white/20 p-4 rounded">
-              <p>사용자: {user?.email}</p>
-              <p>User ID: {user?.id}</p>
-              <p>Supabase URL: {process.env.NEXT_PUBLIC_SUPABASE_URL ? "설정됨" : "누락"}</p>
-            </div>
+            <h2 className="text-2xl font-bold text-red-600">{t("error")}</h2>
+            <p className="text-muted-foreground">{error}</p>
             <Button
               onClick={() => {
                 setError(null)
                 loadData()
               }}
-              className="w-full bg-white text-red-600 hover:bg-gray-100"
+              className="w-full"
             >
-              다시 시도
+              {t("retry")}
             </Button>
           </div>
         </Card>
