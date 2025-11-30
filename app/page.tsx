@@ -581,11 +581,6 @@ const ForestNotePage = () => {
   const STORAGE_LIMIT = isAdmin ? 1000 * 1024 * 1024 : 500 * 1024 * 1024 // Admin: 1000MB, Others: 500MB
 
   useEffect(() => {
-    // State updated
-  }, [allNotes, allSchedules, allDiaries, allTravels, allVehicles, allHealthRecords, storageUsed])
-  // </CHANGE>
-
-  useEffect(() => {
     const calculateStorage = async () => {
       if (!user) {
         setStorageUsed(0)
@@ -593,7 +588,6 @@ const ForestNotePage = () => {
       }
 
       if (isCalculatingRef.current) {
-        // console.log("[v0] Storage calculation already in progress, skipping") // REMOVED
         return
       }
 
@@ -603,10 +597,9 @@ const ForestNotePage = () => {
         const fetchWithFallback = async (fn: () => Promise<any[]>, name: string): Promise<any[]> => {
           try {
             const result = await fn()
-            // console.log(`[v0] Loaded ${name}:`, result.length, "items") // REMOVED
             return Array.isArray(result) ? result : []
           } catch (error) {
-            console.error(`[v0] Failed to load ${name}, using empty array:`, error) // MODIFIED
+            console.error(`Failed to load ${name}:`, error)
             return []
           }
         }
@@ -622,23 +615,12 @@ const ForestNotePage = () => {
           fetchWithFallback(() => loadVehicleMaintenanceRecords(user.id), "maintenance"),
         ])
 
-        // console.log( // REMOVED
-        //   "[v0] Data loaded - Notes:",
-        //   notes.length,
-        //   "Schedules:",
-        //   schedules.length,
-        //   "Diaries:",
-        //   diaries.length,
-        // )
-
         setAllNotes(notes)
         setAllDiaries(diaries)
         setAllSchedules(schedules)
         setAllTravels(travels)
         setAllVehicles(vehicles)
         setAllHealthRecords(health)
-
-        // console.log("[v0] setState called - This should trigger re-render") // REMOVED
 
         const jsonData = JSON.stringify({
           notes: Array.isArray(notes) ? notes : [],
@@ -651,8 +633,6 @@ const ForestNotePage = () => {
           maintenance: Array.isArray(maintenance) ? maintenance : [],
         })
         const totalSize = new Blob([jsonData]).size
-
-        // console.log("[v0] JSON data size:", totalSize, "bytes") // REMOVED
 
         let mediaCount = 0
 
@@ -680,17 +660,13 @@ const ForestNotePage = () => {
           })
         }
 
-        const estimatedMediaSize = mediaCount * 500 * 1024 // 500KB per media
-
-        // console.log("[v0] Media count:", mediaCount, "files") // REMOVED
-        // console.log("[v0] Estimated media size:", estimatedMediaSize, "bytes") // REMOVED
+        const estimatedMediaSize = mediaCount * 500 * 1024
 
         const finalSize = totalSize + estimatedMediaSize
-        // console.log("[v0] Total storage used:", finalSize, "bytes", "(" + (finalSize / 1024 / 1024).toFixed(2) + " MB)") // REMOVED
 
         setStorageUsed(finalSize)
       } catch (error) {
-        console.error("[v0] Storage calculation error:", error) // MODIFIED
+        console.error("Storage calculation error:", error)
         setStorageUsed(0)
       } finally {
         isCalculatingRef.current = false
@@ -703,7 +679,7 @@ const ForestNotePage = () => {
       calculateStorage()
     }
 
-    const interval = setInterval(calculateStorage, 60000) // Every 60 seconds
+    const interval = setInterval(calculateStorage, 60000)
 
     return () => clearInterval(interval)
   }, [user, currentSection])
@@ -730,10 +706,6 @@ const ForestNotePage = () => {
       window.removeEventListener("scheduleUpdate", handleScheduleUpdate)
     }
   }, [user])
-
-  useEffect(() => {
-    // console.log("[v0] Auth state:", { user: user?.email, loading }) // REMOVED
-  }, [user, loading])
 
   const handleSearchResultClick = (section: Section, item: any) => {
     setCurrentSection(section)
@@ -805,7 +777,6 @@ const ForestNotePage = () => {
   }
 
   const storagePercentage = (storageUsed / STORAGE_LIMIT) * 100
-  // </CHANGE>
 
   if (loading) {
     return (
@@ -838,7 +809,6 @@ const ForestNotePage = () => {
       </div>
     )
   }
-  // </CHANGE>
 
   if (currentSection === "notes") {
     return <NotesSection onBack={() => setCurrentSection("home")} language={language} />
@@ -903,7 +873,6 @@ const ForestNotePage = () => {
           }}
         />
       )}
-      {/* </CHANGE> */}
 
       <div className="absolute inset-0 opacity-30">
         <ForestCanvas />
@@ -926,9 +895,7 @@ const ForestNotePage = () => {
                 size="sm"
                 onClick={async () => {
                   try {
-                    // console.log("[v0] Logout button clicked") // REMOVED
                     await signOut()
-                    // console.log("[v0] Logout successful") // REMOVED
                   } catch (error) {
                     console.error("[v0] Logout error:", error)
                   }
@@ -1118,9 +1085,7 @@ const LoginForm = ({
         setEmail("")
         setPassword("")
       } else {
-        // console.log("[v0] Attempting login...") // REMOVED
         await signIn(email, password)
-        // console.log("[v0] Login successful") // REMOVED
       }
     } catch (error: any) {
       console.error("[v0] Login error:", error)
