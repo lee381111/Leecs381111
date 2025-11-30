@@ -361,7 +361,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
               </div>
 
               <Input
-                placeholder="이름 (예: 엄마 생일, 결혼기념일)"
+                placeholder={t("special_day_name_placeholder")}
                 value={event.name}
                 onChange={(e) => {
                   const updated = [...batchEvents]
@@ -372,7 +372,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-sm text-muted-foreground mb-1 block">날짜</label>
+                  <label className="text-sm text-muted-foreground mb-1 block">{t("date")}</label>
                   <input
                     type="date"
                     value={event.date}
@@ -386,7 +386,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                 </div>
 
                 <div>
-                  <label className="text-sm text-muted-foreground mb-1 block">분류</label>
+                  <label className="text-sm text-muted-foreground mb-1 block">{t("category")}</label>
                   <select
                     value={event.category}
                     onChange={(e) => {
@@ -396,17 +396,17 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                     }}
                     className="w-full p-2 border rounded bg-white/50 dark:bg-slate-800/50"
                   >
-                    <option value="생일">생일</option>
-                    <option value="기념일">기념일</option>
-                    <option value="명절">명절</option>
-                    <option value="휴일">휴일</option>
-                    <option value="기타">기타</option>
+                    <option value="생일">{t("birthday")}</option>
+                    <option value="기념일">{t("anniversary")}</option>
+                    <option value="명절">{t("holiday")}</option>
+                    <option value="휴일">{t("day_off")}</option>
+                    <option value="기타">{t("other")}</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="text-sm text-muted-foreground mb-1 block">알람</label>
+                <label className="text-sm text-muted-foreground mb-1 block">{t("alarm")}</label>
                 <select
                   value={event.alarmMinutesBefore}
                   onChange={(e) => {
@@ -416,13 +416,13 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                   }}
                   className="w-full p-2 border rounded bg-white/50 dark:bg-slate-800/50"
                 >
-                  <option value={30}>30분 전</option>
-                  <option value={60}>1시간 전</option>
-                  <option value={120}>2시간 전</option>
-                  <option value={720}>12시간 전</option>
-                  <option value={1440}>하루 전</option>
-                  <option value={2880}>2일 전</option>
-                  <option value={10080}>일주일 전</option>
+                  <option value={30}>{t("30_min_before")}</option>
+                  <option value={60}>{t("1_hour_before")}</option>
+                  <option value={120}>{t("2_hours_before")}</option>
+                  <option value={720}>{t("12_hours_before")}</option>
+                  <option value={1440}>{t("1_day_before")}</option>
+                  <option value={2880}>{t("2_days_before")}</option>
+                  <option value={10080}>{t("1_week_before")}</option>
                 </select>
               </div>
             </Card>
@@ -436,7 +436,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
           }}
           className="w-full"
         >
-          <Plus className="mr-2 h-4 w-4" /> 일정 추가
+          <Plus className="mr-2 h-4 w-4" /> {t("add_schedule")}
         </Button>
 
         <Button onClick={handleBatchSave} disabled={saving} className="w-full bg-emerald-600 hover:bg-emerald-700">
@@ -547,7 +547,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
         </Button>
         <div className="flex gap-2">
           <Button onClick={() => setIsBatchAdding(true)} className="bg-green-500 hover:bg-green-600 text-white">
-            <Calendar className="mr-2 h-4 w-4" /> 특별한 날
+            <Calendar className="mr-2 h-4 w-4" /> {t("special_days")}
           </Button>
           <Button onClick={() => setIsAdding(true)} className="bg-emerald-600 hover:bg-emerald-700">
             <Plus className="mr-2 h-4 w-4" /> {t("add")} {t("schedule")}
