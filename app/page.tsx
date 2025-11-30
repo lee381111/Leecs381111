@@ -25,7 +25,6 @@ import {
   ChevronDown,
   Search,
   X,
-  User,
   Award as IdCard,
   DollarSign,
 } from "lucide-react"
@@ -374,193 +373,6 @@ const GlobalSearch = ({
   )
 }
 
-const ConnectionStatus = ({
-  user,
-  dataCounts,
-}: {
-  user: any
-  dataCounts: { notes: number; schedules: number; diaries: number; travels: number; vehicles: number; health: number }
-}) => {
-  const hasSupabaseUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL
-  const hasSupabaseKey = !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  const [isExpanded, setIsExpanded] = useState(true)
-  const [authUid, setAuthUid] = useState<string | null>(null)
-  const [isCheckingAuth, setIsCheckingAuth] = useState(false)
-
-  const CODE_VERSION = "v2.1" // Increment this when making changes
-
-  useEffect(() => {
-    const checkAuthUid = async () => {
-      if (!hasSupabaseUrl || !hasSupabaseKey || !user) {
-        setAuthUid(null)
-        return
-      }
-
-      setIsCheckingAuth(true)
-      try {
-        const { getSupabaseBrowserClient } = await import("@/lib/supabase-client")
-        const supabase = getSupabaseBrowserClient()
-
-        const { data, error } = await supabase.rpc("get_current_user_id", {})
-
-        if (error) {
-          const { data: testData, error: testError } = await supabase.from("notes").select("user_id").limit(1)
-
-          if (testError) {
-            console.error("[v0] Error checking auth.uid():", testError)
-            setAuthUid("❌ 에러")
-          } else if (testData && testData.length > 0) {
-            setAuthUid("✓ 인증됨")
-          } else {
-            setAuthUid("⚠️ 데이터 없음")
-          }
-        } else {
-          setAuthUid(data || "✓ 인증됨")
-        }
-      } catch (error) {
-        console.error("[v0] Error checking auth:", error)
-        setAuthUid("❌ 체크 실패")
-      } finally {
-        setIsCheckingAuth(false)
-      }
-    }
-
-    checkAuthUid()
-  }, [user, hasSupabaseUrl, hasSupabaseKey])
-
-  const handleForceRefresh = () => {
-    // Clear cache and reload
-    if ("caches" in window) {
-      caches.keys().then((names) => {
-        names.forEach((name) => {
-          caches.delete(name)
-        })
-      })
-    }
-    window.location.reload()
-  }
-
-  return (
-    <div className="fixed top-0 left-0 right-0 bg-emerald-50 border-b border-emerald-200 p-3 text-xs z-50 shadow-sm">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded font-mono text-[10px]">{CODE_VERSION}</span>
-            <span className="font-semibold text-emerald-800">상태:</span>
-            <span
-              className={hasSupabaseUrl && hasSupabaseKey ? "text-green-600 font-medium" : "text-red-600 font-medium"}
-            >
-              {hasSupabaseUrl && hasSupabaseKey ? "✓ Supabase 연결됨" : "❌ Supabase 연결 안됨"}
-            </span>
-            {user && (
-              <span className={authUid?.includes("✓") ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
-                | {isCheckingAuth ? "확인중..." : authUid || "인증 체크 중"}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleForceRefresh}
-              className="text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-100 text-[10px] font-medium"
-              title="캐시를 지우고 새로고침"
-            >
-              🔄 새로고침
-            </button>
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="text-emerald-600 hover:text-emerald-800 px-2 py-1 rounded hover:bg-emerald-100"
-            >
-              {isExpanded ? "▼ 숨기기" : "▶ 자세히"}
-            </button>
-          </div>
-        </div>
-
-        {isExpanded && (
-          <>
-            <div className="flex flex-col gap-2 mb-2 pb-2 border-b border-emerald-200">
-              <div className="flex items-center gap-2">
-                <User className="h-3 w-3 text-emerald-600" />
-                <span className="font-semibold text-emerald-800">이메일:</span>
-                <span className="text-emerald-900 font-medium">{user?.email || "로그인 안됨"}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-emerald-800">User ID:</span>
-                <span className="text-emerald-900 font-mono text-[10px] bg-emerald-100 px-2 py-1 rounded">
-                  {user?.id || "없음"}
-                </span>
-              </div>
-              {user && (
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-emerald-800">Supabase 인증:</span>
-                  <span
-                    className={`font-mono text-[10px] px-2 py-1 rounded ${
-                      authUid?.includes("✓")
-                        ? "bg-green-100 text-green-700"
-                        : authUid?.includes("❌")
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {isCheckingAuth ? "체크 중..." : authUid || "알 수 없음"}
-                  </span>
-                  {authUid?.includes("❌") && (
-                    <span className="text-red-600 text-[10px]">⚠️ RLS 인증 실패 - 데이터 조회 불가</span>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              <div className="flex items-center gap-1">
-                <FileText className="h-3 w-3 text-blue-500" />
-                <span>
-                  노트: <strong>{dataCounts.notes}</strong>개
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                <CalendarIcon className="h-3 w-3 text-purple-500" />
-                <span>
-                  일정: <strong>{dataCounts.schedules}</strong>개
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                <BookOpen className="h-3 w-3 text-pink-500" />
-                <span>
-                  일기: <strong>{dataCounts.diaries}</strong>개
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Plane className="h-3 w-3 text-cyan-500" />
-                <span>
-                  여행: <strong>{dataCounts.travels}</strong>개
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Car className="h-3 w-3 text-orange-500" />
-                <span>
-                  차량: <strong>{dataCounts.vehicles}</strong>개
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Heart className="h-3 w-3 text-red-500" />
-                <span>
-                  건강: <strong>{dataCounts.health}</strong>개
-                </span>
-              </div>
-            </div>
-
-            {(!hasSupabaseUrl || !hasSupabaseKey) && (
-              <div className="mt-2 pt-2 border-t border-red-200 text-red-600 font-medium">
-                ⚠️ 환경 변수 누락: URL {hasSupabaseUrl ? "✓" : "❌"}, Key {hasSupabaseKey ? "✓" : "❌"}
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    </div>
-  )
-}
-
 const ForestNotePage = () => {
   const { user, signOut, loading } = useAuth()
   const [currentSection, setCurrentSection] = useState<Section>("home")
@@ -574,7 +386,6 @@ const ForestNotePage = () => {
   const [allTravels, setAllTravels] = useState<any[]>([])
   const [allVehicles, setAllVehicles] = useState<any[]>([])
   const [allHealthRecords, setAllHealthRecords] = useState<any[]>([])
-  const [showConnectionStatus, setShowConnectionStatus] = useState(true)
 
   const ADMIN_EMAILS = ["chanse1984@hanmail.net", "lee381111@gmail.com"] // 관리자 이메일 목록
   const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email) : false
@@ -860,20 +671,6 @@ const ForestNotePage = () => {
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50">
-      {showConnectionStatus && currentSection === "home" && (
-        <ConnectionStatus
-          user={user}
-          dataCounts={{
-            notes: allNotes.length,
-            schedules: allSchedules.length,
-            diaries: allDiaries.length,
-            travels: allTravels.length,
-            vehicles: allVehicles.length,
-            health: allHealthRecords.length,
-          }}
-        />
-      )}
-
       <div className="absolute inset-0 opacity-30">
         <ForestCanvas />
       </div>
@@ -897,7 +694,7 @@ const ForestNotePage = () => {
                   try {
                     await signOut()
                   } catch (error) {
-                    console.error("[v0] Logout error:", error)
+                    console.error("Logout error:", error)
                   }
                 }}
                 className="text-black flex items-center gap-1 bg-transparent"
