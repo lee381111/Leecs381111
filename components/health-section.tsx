@@ -4,14 +4,19 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, Plus, Trash2, TrendingUp, Pill, Bell, Pencil } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, TrendingUp, Pill, Bell, Pencil } from "lucide-react"
 import { saveHealthRecords, loadHealthRecords, saveMedications, loadMedications } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import type { HealthRecord, Medication, Attachment } from "@/lib/types"
 import { MediaTools } from "@/components/media-tools"
 import { Spinner } from "@/components/ui/spinner"
 import { getTranslation } from "@/lib/i18n"
-import { scheduleNotification, cancelNotification, setupMedicationAlarms, getMedicationCompletions, toggleMedicationCompletion } from "@/lib/notification-manager"
+import {
+  cancelNotification,
+  setupMedicationAlarms,
+  getMedicationCompletions,
+  toggleMedicationCompletion,
+} from "@/lib/notification-manager"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
 
 interface HealthSectionProps {
@@ -80,7 +85,7 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
 
   const loadData = async () => {
     if (!user?.id) return
-    
+
     try {
       setLoading(true)
       console.log("[v0] 건강 섹션: 데이터 로드 시작")
@@ -101,7 +106,7 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
       alert("로그인이 필요합니다")
       return
     }
-    
+
     if (!formData.date) {
       alert("날짜를 입력해주세요")
       return
@@ -182,7 +187,7 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
       alert("로그인이 필요합니다")
       return
     }
-    
+
     if (!medFormData.name || medFormData.times.length === 0) {
       alert("약 이름과 복용 시간을 입력해주세요")
       return
@@ -264,7 +269,7 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
       alert("로그인이 필요합니다")
       return
     }
-    
+
     if (!confirm("이 기록을 삭제하시겠습니까?")) return
 
     try {
@@ -283,7 +288,7 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
       alert("로그인이 필요합니다")
       return
     }
-    
+
     if (!confirm("이 복약 일정을 삭제하시겠습니까?")) return
 
     try {
@@ -726,11 +731,13 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
           <Button variant="ghost" onClick={() => setViewMode("list")}>
             <ArrowLeft className="mr-2 h-4 w-4" /> 뒤로
           </Button>
-          <Button onClick={() => {
-            resetMedForm()
-            setEditingMedId(null)
-            setViewMode("add_medication")
-          }}>
+          <Button
+            onClick={() => {
+              resetMedForm()
+              setEditingMedId(null)
+              setViewMode("add_medication")
+            }}
+          >
             <Plus className="mr-2 h-4 w-4" /> 복약 추가
           </Button>
         </div>
@@ -742,7 +749,7 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
             .filter((m) => m.isActive)
             .map((med) => {
               const completedTimes = medicationCompletions[med.id] || []
-              
+
               return (
                 <Card key={med.id} className="p-4">
                   <div className="flex justify-between items-start">
@@ -754,7 +761,7 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
                       </div>
                       {med.dosage && <p className="text-sm mt-1">용량: {med.dosage}</p>}
                       {med.frequency && <p className="text-sm">주기: {med.frequency}</p>}
-                      
+
                       <div className="mt-2 space-y-1">
                         <p className="text-sm font-medium">오늘의 복용 시간:</p>
                         {med.times.map((time) => (
@@ -809,11 +816,7 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
                     </div>
 
                     <div className="flex gap-2 ml-4">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleEditMedication(med)}
-                      >
+                      <Button size="sm" variant="ghost" onClick={() => handleEditMedication(med)}>
                         <Pencil className="w-4 h-4 text-black" />
                       </Button>
                       <Button size="sm" variant="ghost" onClick={() => handleDeleteMedication(med.id)}>
@@ -982,17 +985,23 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <Button onClick={() => setViewMode("add_record")} className="h-20 bg-teal-600 hover:bg-teal-700 text-white">
-          <Plus className="mr-2 h-5 w-5" /> 건강 기록
+          <Plus className="mr-2 h-5 w-5" /> {t("health_record_btn")}
         </Button>
-        <Button onClick={() => setViewMode("medications")} className="h-20 bg-purple-600 hover:bg-purple-700 text-white">
-          <Pill className="mr-2 h-5 w-5" /> 복약 관리
+        <Button
+          onClick={() => setViewMode("medications")}
+          className="h-20 bg-purple-600 hover:bg-purple-700 text-white"
+        >
+          <Pill className="mr-2 h-5 w-5" /> {t("medication_management_btn")}
         </Button>
-        <Button onClick={() => setViewMode("charts")} className="h-20 col-span-2 bg-indigo-600 hover:bg-indigo-700 text-white">
-          <TrendingUp className="mr-2 h-5 w-5" /> 그래프 보기
+        <Button
+          onClick={() => setViewMode("charts")}
+          className="h-20 col-span-2 bg-indigo-600 hover:bg-indigo-700 text-white"
+        >
+          <TrendingUp className="mr-2 h-5 w-5" /> {t("view_graph")}
         </Button>
       </div>
 
-      <h2 className="text-lg font-bold mt-6">최근 기록</h2>
+      <h2 className="text-lg font-bold mt-6">{t("recent_records")}</h2>
 
       <div className="grid gap-4">
         {records.slice(0, 10).map((record) => (
@@ -1001,9 +1010,9 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
               <div className="flex-1">
                 <div className="flex justify-between">
                   <span className="font-semibold">
-                    {record.type === "vital_signs" && "💓 생체 징후"}
-                    {record.type === "exercise" && "🏃 운동"}
-                    {record.type === "expense" && "💰 의료비"}
+                    {record.type === "vital_signs" && `💓 ${t("vital_signs")}`}
+                    {record.type === "exercise" && `🏃 ${t("exercise")}`}
+                    {record.type === "expense" && `💰 ${t("medical_expenses")}`}
                   </span>
                   <span className="text-sm text-muted-foreground">{record.date}</span>
                 </div>
@@ -1018,9 +1027,7 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
                 {record.weight && <p className="text-sm">몸무게: {record.weight} kg</p>}
                 {record.steps && <p className="text-sm">걸음수: {record.steps.toLocaleString()}보</p>}
                 {record.distance && <p className="text-sm">거리: {record.distance} km</p>}
-                {record.medicalExpense && (
-                  <p className="text-sm">의료비: {record.medicalExpense.toLocaleString()}원</p>
-                )}
+                {record.medicalExpense && <p className="text-sm">의료비: {record.medicalExpense.toLocaleString()}원</p>}
                 {record.medicationExpense && (
                   <p className="text-sm">약값: {record.medicationExpense.toLocaleString()}원</p>
                 )}

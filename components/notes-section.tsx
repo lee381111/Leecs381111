@@ -370,11 +370,11 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <Tag className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium">{language === "ko" ? "태그로 필터" : "Filter by tag"}</span>
+            <span className="text-sm font-medium">{t("filter_by_tag")}</span>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button variant={selectedTag === "" ? "default" : "outline"} size="sm" onClick={() => setSelectedTag("")}>
-              {language === "ko" ? "전체" : "All"}
+              {t("all")}
             </Button>
             {allTags.map((tag) => (
               <Button

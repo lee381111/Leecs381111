@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, Plus, Download, Edit, Trash2, Calendar } from 'lucide-react'
+import { ArrowLeft, Plus, Download, Edit, Trash2, Calendar } from "lucide-react"
 import { saveSchedules, loadSchedules } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import type { ScheduleEvent, Attachment } from "@/lib/types"
@@ -46,14 +46,14 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
     alarmEnabled: false,
     alarmMinutesBefore: 30,
   })
-  const [batchEvents, setBatchEvents] = useState<Array<{
-    name: string
-    date: string
-    category: string
-    alarmMinutesBefore: number
-  }>>([
-    { name: "", date: "", category: "생일", alarmMinutesBefore: 1440 },
-  ])
+  const [batchEvents, setBatchEvents] = useState<
+    Array<{
+      name: string
+      date: string
+      category: string
+      alarmMinutesBefore: number
+    }>
+  >([{ name: "", date: "", category: "생일", alarmMinutesBefore: 1440 }])
 
   useEffect(() => {
     notificationManager.requestPermission()
@@ -63,7 +63,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
 
   const loadData = async () => {
     if (!user?.id) return
-    
+
     try {
       setLoading(true)
       const data = await loadSchedules(user.id)
@@ -93,7 +93,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
       alert("로그인이 필요합니다")
       return
     }
-    
+
     if (!confirm(getTranslation(language as any, "confirmDelete") || "정말 삭제하시겠습니까?")) return
 
     try {
@@ -113,7 +113,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
       alert("로그인이 필요합니다")
       return
     }
-    
+
     if (!formData.title.trim()) {
       alert("제목을 입력해주세요")
       return
@@ -195,8 +195,8 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
       return
     }
 
-    const validEvents = batchEvents.filter(e => e.name.trim() && e.date)
-    
+    const validEvents = batchEvents.filter((e) => e.name.trim() && e.date)
+
     if (validEvents.length === 0) {
       alert("최소 1개 이상의 일정을 입력해주세요")
       return
@@ -204,8 +204,8 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
 
     try {
       setSaving(true)
-      
-      const newSchedules: ScheduleEvent[] = validEvents.map(event => {
+
+      const newSchedules: ScheduleEvent[] = validEvents.map((event) => {
         const scheduleId = window.crypto.randomUUID()
         const scheduleDateTime = new Date(`${event.date}T00:00`)
         const alarmTime = new Date(scheduleDateTime.getTime() - event.alarmMinutesBefore * 60 * 1000)
@@ -335,12 +335,10 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
         >
           <ArrowLeft className="mr-2 h-4 w-4" /> {t("cancel")}
         </Button>
-        
+
         <Card className="p-4 bg-amber-50">
           <h2 className="text-xl font-bold mb-4">✨ 특별한 날 일괄 등록</h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            가족 생일, 기념일 등을 한번에 등록하세요
-          </p>
+          <p className="text-sm text-muted-foreground mb-4">가족 생일, 기념일 등을 한번에 등록하세요</p>
         </Card>
 
         <div className="space-y-4">
@@ -361,7 +359,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                   </Button>
                 )}
               </div>
-              
+
               <Input
                 placeholder="이름 (예: 엄마 생일, 결혼기념일)"
                 value={event.name}
@@ -371,7 +369,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                   setBatchEvents(updated)
                 }}
               />
-              
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-sm text-muted-foreground mb-1 block">날짜</label>
@@ -386,7 +384,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                     className="w-full p-2 border rounded bg-white/50 dark:bg-slate-800/50"
                   />
                 </div>
-                
+
                 <div>
                   <label className="text-sm text-muted-foreground mb-1 block">분류</label>
                   <select
@@ -441,13 +439,9 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
           <Plus className="mr-2 h-4 w-4" /> 일정 추가
         </Button>
 
-        <Button
-          onClick={handleBatchSave}
-          disabled={saving}
-          className="w-full bg-emerald-600 hover:bg-emerald-700"
-        >
+        <Button onClick={handleBatchSave} disabled={saving} className="w-full bg-emerald-600 hover:bg-emerald-700">
           {saving ? <Spinner className="h-4 w-4 mr-2" /> : null}
-          {saving ? "저장 중..." : `${batchEvents.filter(e => e.name.trim() && e.date).length}개 일정 저장`}
+          {saving ? "저장 중..." : `${batchEvents.filter((e) => e.name.trim() && e.date).length}개 일정 저장`}
         </Button>
       </div>
     )
@@ -552,10 +546,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
           <ArrowLeft className="mr-2 h-4 w-4" /> {t("title")}
         </Button>
         <div className="flex gap-2">
-          <Button
-            onClick={() => setIsBatchAdding(true)}
-            className="bg-green-500 hover:bg-green-600 text-white"
-          >
+          <Button onClick={() => setIsBatchAdding(true)} className="bg-green-500 hover:bg-green-600 text-white">
             <Calendar className="mr-2 h-4 w-4" /> 특별한 날
           </Button>
           <Button onClick={() => setIsAdding(true)} className="bg-emerald-600 hover:bg-emerald-700">
@@ -563,13 +554,15 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
           </Button>
         </div>
       </div>
-      
-      {schedules.filter(s => s.isSpecialEvent).length > 0 && (
+
+      {schedules.filter((s) => s.isSpecialEvent).length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-green-600" />
-            <h2 className="text-lg font-semibold text-green-700">특별한 날</h2>
-            <span className="text-sm text-muted-foreground">({schedules.filter(s => s.isSpecialEvent).length}개)</span>
+            <h2 className="text-lg font-semibold text-green-700">{t("special_days")}</h2>
+            <span className="text-sm text-muted-foreground">
+              ({schedules.filter((s) => s.isSpecialEvent).length}개)
+            </span>
           </div>
           <div className="grid gap-4">
             {schedules
@@ -631,9 +624,19 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                       <p className="text-sm font-medium">첨부파일 ({schedule.attachments.length}개)</p>
                       <div className="grid grid-cols-3 gap-2">
                         {schedule.attachments.map((file: any, idx: number) => {
-                          const isImage = file.type?.startsWith("image/") || file.type === "image" || file.type === "drawing" || file.name?.match(/\.(jpg|jpeg|png|gif|webp)$/i)
-                          const isVideo = file.type?.startsWith("video/") || file.type === "video" || file.name?.match(/\.(mp4|webm|mov)$/i)
-                          const isAudio = file.type?.startsWith("audio/") || file.type === "audio" || file.name?.match(/\.(mp3|wav|ogg)$/i)
+                          const isImage =
+                            file.type?.startsWith("image/") ||
+                            file.type === "image" ||
+                            file.type === "drawing" ||
+                            file.name?.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+                          const isVideo =
+                            file.type?.startsWith("video/") ||
+                            file.type === "video" ||
+                            file.name?.match(/\.(mp4|webm|mov)$/i)
+                          const isAudio =
+                            file.type?.startsWith("audio/") ||
+                            file.type === "audio" ||
+                            file.name?.match(/\.(mp3|wav|ogg)$/i)
                           const mediaUrl = file.url || file.data
 
                           if (isImage) {
@@ -643,7 +646,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                                   src={mediaUrl || "/placeholder.svg"}
                                   alt={file.name || "첨부파일"}
                                   className="w-full h-24 object-cover cursor-pointer hover:opacity-90"
-                                  onClick={() => window.open(mediaUrl, '_blank')}
+                                  onClick={() => window.open(mediaUrl, "_blank")}
                                   onError={(e) => {
                                     e.currentTarget.src = "/placeholder.svg?height=96&width=96"
                                   }}
@@ -654,10 +657,10 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                           if (isVideo) {
                             return (
                               <div key={idx} className="border rounded overflow-hidden bg-black">
-                                <video 
-                                  src={mediaUrl} 
-                                  controls 
-                                  className="w-full h-24 object-cover" 
+                                <video
+                                  src={mediaUrl}
+                                  controls
+                                  className="w-full h-24 object-cover"
                                   preload="metadata"
                                 />
                               </div>
@@ -665,13 +668,19 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                           }
                           if (isAudio) {
                             return (
-                              <div key={idx} className="flex items-center justify-center h-24 bg-gray-100 border rounded p-2">
+                              <div
+                                key={idx}
+                                className="flex items-center justify-center h-24 bg-gray-100 border rounded p-2"
+                              >
                                 <audio src={mediaUrl} controls className="w-full" preload="metadata" />
                               </div>
                             )
                           }
                           return (
-                            <div key={idx} className="flex items-center justify-center h-24 bg-gray-200 border rounded p-2">
+                            <div
+                              key={idx}
+                              className="flex items-center justify-center h-24 bg-gray-200 border rounded p-2"
+                            >
                               <p className="text-xs text-center truncate">{file.name || "파일"}</p>
                             </div>
                           )
@@ -685,11 +694,13 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
         </div>
       )}
 
-      {schedules.filter(s => !s.isSpecialEvent).length > 0 && (
+      {schedules.filter((s) => !s.isSpecialEvent).length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold">일반 일정</h2>
-            <span className="text-sm text-muted-foreground">({schedules.filter(s => !s.isSpecialEvent).length}개)</span>
+            <h2 className="text-lg font-semibold">{t("regular_schedule")}</h2>
+            <span className="text-sm text-muted-foreground">
+              ({schedules.filter((s) => !s.isSpecialEvent).length}개)
+            </span>
           </div>
           <div className="grid gap-4">
             {schedules
@@ -751,9 +762,19 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                       <p className="text-sm font-medium">첨부파일 ({schedule.attachments.length}개)</p>
                       <div className="grid grid-cols-3 gap-2">
                         {schedule.attachments.map((file: any, idx: number) => {
-                          const isImage = file.type?.startsWith("image/") || file.type === "image" || file.type === "drawing" || file.name?.match(/\.(jpg|jpeg|png|gif|webp)$/i)
-                          const isVideo = file.type?.startsWith("video/") || file.type === "video" || file.name?.match(/\.(mp4|webm|mov)$/i)
-                          const isAudio = file.type?.startsWith("audio/") || file.type === "audio" || file.name?.match(/\.(mp3|wav|ogg)$/i)
+                          const isImage =
+                            file.type?.startsWith("image/") ||
+                            file.type === "image" ||
+                            file.type === "drawing" ||
+                            file.name?.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+                          const isVideo =
+                            file.type?.startsWith("video/") ||
+                            file.type === "video" ||
+                            file.name?.match(/\.(mp4|webm|mov)$/i)
+                          const isAudio =
+                            file.type?.startsWith("audio/") ||
+                            file.type === "audio" ||
+                            file.name?.match(/\.(mp3|wav|ogg)$/i)
                           const mediaUrl = file.url || file.data
 
                           if (isImage) {
@@ -763,7 +784,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                                   src={mediaUrl || "/placeholder.svg"}
                                   alt={file.name || "첨부파일"}
                                   className="w-full h-24 object-cover cursor-pointer hover:opacity-90"
-                                  onClick={() => window.open(mediaUrl, '_blank')}
+                                  onClick={() => window.open(mediaUrl, "_blank")}
                                   onError={(e) => {
                                     e.currentTarget.src = "/placeholder.svg?height=96&width=96"
                                   }}
@@ -774,10 +795,10 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                           if (isVideo) {
                             return (
                               <div key={idx} className="border rounded overflow-hidden bg-black">
-                                <video 
-                                  src={mediaUrl} 
-                                  controls 
-                                  className="w-full h-24 object-cover" 
+                                <video
+                                  src={mediaUrl}
+                                  controls
+                                  className="w-full h-24 object-cover"
                                   preload="metadata"
                                 />
                               </div>
@@ -785,13 +806,19 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                           }
                           if (isAudio) {
                             return (
-                              <div key={idx} className="flex items-center justify-center h-24 bg-gray-100 border rounded p-2">
+                              <div
+                                key={idx}
+                                className="flex items-center justify-center h-24 bg-gray-100 border rounded p-2"
+                              >
                                 <audio src={mediaUrl} controls className="w-full" preload="metadata" />
                               </div>
                             )
                           }
                           return (
-                            <div key={idx} className="flex items-center justify-center h-24 bg-gray-200 border rounded p-2">
+                            <div
+                              key={idx}
+                              className="flex items-center justify-center h-24 bg-gray-200 border rounded p-2"
+                            >
                               <p className="text-xs text-center truncate">{file.name || "파일"}</p>
                             </div>
                           )
