@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, MapPin, RefreshCw, Wind, Droplet } from "lucide-react"
+import { ArrowLeft, MapPin, RefreshCw, Wind, Droplet } from 'lucide-react'
 import { Spinner } from "@/components/ui/spinner"
 import { getTranslation } from "@/lib/i18n"
 import type { Language } from "@/lib/types"
@@ -117,21 +117,21 @@ export function WeatherSection({ onBack, language }: { onBack: () => void; langu
       }
 
       const data = await response.json()
-
+      
       const weekdayNames: { [key: string]: string[] } = {
         ko: ["일", "월", "화", "수", "목", "금", "토"],
         en: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
         zh: ["日", "一", "二", "三", "四", "五", "六"],
-        ja: ["日", "月", "火", "水", "木", "金", "土"],
+        ja: ["日", "月", "火", "水", "木", "金", "土"]
       }
       const currentLangWeekdays = weekdayNames[language] || weekdayNames.ko
 
       const dailyData: { [key: string]: any[] } = {}
-
+      
       data.list.forEach((item: any) => {
         const date = new Date(item.dt * 1000)
-        const dateString = date.toISOString().split("T")[0]
-
+        const dateString = date.toISOString().split('T')[0]
+        
         if (!dailyData[dateString]) {
           dailyData[dateString] = []
         }
@@ -146,34 +146,31 @@ export function WeatherSection({ onBack, language }: { onBack: () => void; langu
         weather: Array<{ description: string; icon: string }>
       }> = []
 
-      Object.keys(dailyData)
-        .slice(0, 7)
-        .forEach((dateString) => {
-          const dayItems = dailyData[dateString]
-          const date = new Date(dateString)
-
-          const temps = dayItems.map((item) => item.main.temp)
-          const temp_max = Math.max(...temps)
-          const temp_min = Math.min(...temps)
-
-          const noonItem =
-            dayItems.find((item) => {
-              const hour = new Date(item.dt * 1000).getHours()
-              return hour >= 12 && hour <= 15
-            }) || dayItems[0]
-
-          dailyForecasts.push({
-            dt: noonItem.dt,
-            date: date.toLocaleDateString("ko-KR"),
-            dayName: currentLangWeekdays[date.getDay()],
-            main: {
-              temp_max,
-              temp_min,
-              humidity: noonItem.main.humidity,
-            },
-            weather: noonItem.weather,
-          })
+      Object.keys(dailyData).slice(0, 7).forEach((dateString) => {
+        const dayItems = dailyData[dateString]
+        const date = new Date(dateString)
+        
+        const temps = dayItems.map(item => item.main.temp)
+        const temp_max = Math.max(...temps)
+        const temp_min = Math.min(...temps)
+        
+        const noonItem = dayItems.find(item => {
+          const hour = new Date(item.dt * 1000).getHours()
+          return hour >= 12 && hour <= 15
+        }) || dayItems[0]
+        
+        dailyForecasts.push({
+          dt: noonItem.dt,
+          date: date.toLocaleDateString("ko-KR"),
+          dayName: currentLangWeekdays[date.getDay()],
+          main: {
+            temp_max,
+            temp_min,
+            humidity: noonItem.main.humidity
+          },
+          weather: noonItem.weather
         })
+      })
 
       setForecast(dailyForecasts)
     } catch (err) {
@@ -221,7 +218,7 @@ export function WeatherSection({ onBack, language }: { onBack: () => void; langu
         "broken clouds": "흐림",
         "overcast clouds": "매우 흐림",
         "shower rain": "소나기",
-        rain: "비",
+        "rain": "비",
         "light rain": "약한 비",
         "moderate rain": "보통 비",
         "heavy intensity rain": "강한 비",
@@ -231,17 +228,17 @@ export function WeatherSection({ onBack, language }: { onBack: () => void; langu
         "light intensity shower rain": "약한 소나기",
         "heavy intensity shower rain": "강한 소나기",
         "ragged shower rain": "불규칙한 소나기",
-        thunderstorm: "천둥번개",
+        "thunderstorm": "천둥번개",
         "thunderstorm with light rain": "약한 비를 동반한 천둥번개",
         "thunderstorm with rain": "비를 동반한 천둥번개",
         "thunderstorm with heavy rain": "강한 비를 동반한 천둥번개",
         "light thunderstorm": "약한 천둥번개",
         "heavy thunderstorm": "강한 천둥번개",
         "ragged thunderstorm": "불규칙한 천둥번개",
-        snow: "눈",
+        "snow": "눈",
         "light snow": "약한 눈",
         "heavy snow": "강한 눈",
-        sleet: "진눈깨비",
+        "sleet": "진눈깨비",
         "light shower sleet": "약한 진눈깨비",
         "shower sleet": "진눈깨비",
         "light rain and snow": "약한 비와 눈",
@@ -249,15 +246,15 @@ export function WeatherSection({ onBack, language }: { onBack: () => void; langu
         "light shower snow": "약한 눈보라",
         "shower snow": "눈보라",
         "heavy shower snow": "강한 눈보라",
-        mist: "박무",
-        fog: "안개",
-        haze: "실안개",
-        smoke: "연기",
-        sand: "모래",
-        dust: "먼지",
+        "mist": "박무",
+        "fog": "안개",
+        "haze": "실안개",
+        "smoke": "연기",
+        "sand": "모래",
+        "dust": "먼지",
         "volcanic ash": "화산재",
-        squalls: "돌풍",
-        tornado: "토네이도",
+        "squalls": "돌풍",
+        "tornado": "토네이도",
       },
       en: {
         "clear sky": "Clear",
@@ -266,7 +263,7 @@ export function WeatherSection({ onBack, language }: { onBack: () => void; langu
         "broken clouds": "Overcast",
         "overcast clouds": "Very Cloudy",
         "shower rain": "Showers",
-        rain: "Rain",
+        "rain": "Rain",
         "light rain": "Light Rain",
         "moderate rain": "Rain",
         "heavy intensity rain": "Heavy Rain",
@@ -276,17 +273,17 @@ export function WeatherSection({ onBack, language }: { onBack: () => void; langu
         "light intensity shower rain": "Light Showers",
         "heavy intensity shower rain": "Heavy Showers",
         "ragged shower rain": "Ragged Showers",
-        thunderstorm: "Thunderstorm",
+        "thunderstorm": "Thunderstorm",
         "thunderstorm with light rain": "Thunderstorm with Light Rain",
         "thunderstorm with rain": "Thunderstorm with Rain",
         "thunderstorm with heavy rain": "Thunderstorm with Heavy Rain",
         "light thunderstorm": "Light Thunderstorm",
         "heavy thunderstorm": "Heavy Thunderstorm",
         "ragged thunderstorm": "Ragged Thunderstorm",
-        snow: "Snow",
+        "snow": "Snow",
         "light snow": "Light Snow",
         "heavy snow": "Heavy Snow",
-        sleet: "Sleet",
+        "sleet": "Sleet",
         "light shower sleet": "Light Sleet",
         "shower sleet": "Sleet Showers",
         "light rain and snow": "Light Rain and Snow",
@@ -294,15 +291,15 @@ export function WeatherSection({ onBack, language }: { onBack: () => void; langu
         "light shower snow": "Light Snow Showers",
         "shower snow": "Snow Showers",
         "heavy shower snow": "Heavy Snow Showers",
-        mist: "Mist",
-        fog: "Fog",
-        haze: "Haze",
-        smoke: "Smoke",
-        sand: "Sand",
-        dust: "Dust",
+        "mist": "Mist",
+        "fog": "Fog",
+        "haze": "Haze",
+        "smoke": "Smoke",
+        "sand": "Sand",
+        "dust": "Dust",
         "volcanic ash": "Volcanic Ash",
-        squalls: "Squalls",
-        tornado: "Tornado",
+        "squalls": "Squalls",
+        "tornado": "Tornado",
       },
       zh: {
         "clear sky": "晴朗",
@@ -311,7 +308,7 @@ export function WeatherSection({ onBack, language }: { onBack: () => void; langu
         "broken clouds": "阴天",
         "overcast clouds": "密云",
         "shower rain": "阵雨",
-        rain: "雨",
+        "rain": "雨",
         "light rain": "小雨",
         "moderate rain": "中雨",
         "heavy intensity rain": "大雨",
@@ -321,17 +318,17 @@ export function WeatherSection({ onBack, language }: { onBack: () => void; langu
         "light intensity shower rain": "小阵雨",
         "heavy intensity shower rain": "大阵雨",
         "ragged shower rain": "不规则阵雨",
-        thunderstorm: "雷暴",
+        "thunderstorm": "雷暴",
         "thunderstorm with light rain": "雷阵雨",
         "thunderstorm with rain": "雷雨",
         "thunderstorm with heavy rain": "强雷雨",
         "light thunderstorm": "弱雷暴",
         "heavy thunderstorm": "强雷暴",
         "ragged thunderstorm": "不规则雷暴",
-        snow: "雪",
+        "snow": "雪",
         "light snow": "小雪",
         "heavy snow": "大雪",
-        sleet: "雨夹雪",
+        "sleet": "雨夹雪",
         "light shower sleet": "小雨夹雪",
         "shower sleet": "阵雨夹雪",
         "light rain and snow": "小雨雪",
@@ -339,15 +336,15 @@ export function WeatherSection({ onBack, language }: { onBack: () => void; langu
         "light shower snow": "小阵雪",
         "shower snow": "阵雪",
         "heavy shower snow": "大阵雪",
-        mist: "薄雾",
-        fog: "雾",
-        haze: "霾",
-        smoke: "烟",
-        sand: "沙",
-        dust: "尘",
+        "mist": "薄雾",
+        "fog": "雾",
+        "haze": "霾",
+        "smoke": "烟",
+        "sand": "沙",
+        "dust": "尘",
         "volcanic ash": "火山灰",
-        squalls: "飑",
-        tornado: "龙卷风",
+        "squalls": "飑",
+        "tornado": "龙卷风",
       },
       ja: {
         "clear sky": "晴れ",
@@ -356,7 +353,7 @@ export function WeatherSection({ onBack, language }: { onBack: () => void; langu
         "broken clouds": "曇り",
         "overcast clouds": "曇り",
         "shower rain": "にわか雨",
-        rain: "雨",
+        "rain": "雨",
         "light rain": "小雨",
         "moderate rain": "雨",
         "heavy intensity rain": "大雨",
@@ -366,17 +363,17 @@ export function WeatherSection({ onBack, language }: { onBack: () => void; langu
         "light intensity shower rain": "弱いにわか雨",
         "heavy intensity shower rain": "強いにわか雨",
         "ragged shower rain": "不規則なにわか雨",
-        thunderstorm: "雷雨",
+        "thunderstorm": "雷雨",
         "thunderstorm with light rain": "弱い雨を伴う雷雨",
         "thunderstorm with rain": "雨を伴う雷雨",
         "thunderstorm with heavy rain": "強い雨を伴う雷雨",
         "light thunderstorm": "弱い雷雨",
         "heavy thunderstorm": "強い雷雨",
         "ragged thunderstorm": "不規則な雷雨",
-        snow: "雪",
+        "snow": "雪",
         "light snow": "小雪",
         "heavy snow": "大雪",
-        sleet: "みぞれ",
+        "sleet": "みぞれ",
         "light shower sleet": "小みぞれ",
         "shower sleet": "にわかみぞれ",
         "light rain and snow": "小雨雪",
@@ -384,87 +381,87 @@ export function WeatherSection({ onBack, language }: { onBack: () => void; langu
         "light shower snow": "小雪の阵",
         "shower snow": "雪の阵",
         "heavy shower snow": "強い雪の阵",
-        mist: "霧",
-        fog: "霧",
-        haze: "もや",
-        smoke: "煙",
-        sand: "砂",
-        dust: "塵",
+        "mist": "霧",
+        "fog": "霧",
+        "haze": "もや",
+        "smoke": "煙",
+        "sand": "砂",
+        "dust": "塵",
         "volcanic ash": "火山灰",
-        squalls: "スコール",
-        tornado: "竜巻",
-      },
+        "squalls": "スコール",
+        "tornado": "竜巻",
+      }
     }
-
+    
     const translations = weatherTranslations[language] || weatherTranslations.ko
     const lowerDesc = description.toLowerCase()
     return translations[lowerDesc] || description
   }
 
   const translateCityName = (cityName: string): string => {
-    const cleanName = cityName.replace(/\s*$$[^)]*$$/, "").trim()
-
+    const cleanName = cityName.replace(/\s*$$[^)]*$$/, '').trim()
+    
     const nameWithoutSuffix = cleanName
-      .replace(/-si$/i, "")
-      .replace(/-gun$/i, "")
-      .replace(/-gu$/i, "")
-      .replace(/\sCounty$/i, "")
-      .replace(/\sCity$/i, "")
+      .replace(/-si$/i, '')
+      .replace(/-gun$/i, '')
+      .replace(/-gu$/i, '')
+      .replace(/\sCounty$/i, '')
+      .replace(/\sCity$/i, '')
       .trim()
-
+    
     const cityTranslations: { [key: string]: { [key: string]: string } } = {
       ko: {
-        Seoul: "서울",
-        Busan: "부산",
-        Incheon: "인천",
-        Daegu: "대구",
-        Daejeon: "대전",
-        Gwangju: "광주",
-        Ulsan: "울산",
-        Suwon: "수원",
-        Changwon: "창원",
-        Goyang: "고양",
-        Seongnam: "성남",
-        Yongin: "용인",
-        Bucheon: "부천",
-        Ansan: "안산",
-        Cheongju: "청주",
-        Jeonju: "전주",
-        Anyang: "안양",
-        Pohang: "포항",
-        Gimpo: "김포",
-        Gimhae: "김해",
-        Jeju: "제주",
-        Pyeongtaek: "평택",
-        Siheung: "시흥",
-        Paju: "파주",
-        Uijeongbu: "의정부",
-        Hwaseong: "화성",
+        "Seoul": "서울",
+        "Busan": "부산",
+        "Incheon": "인천",
+        "Daegu": "대구",
+        "Daejeon": "대전",
+        "Gwangju": "광주",
+        "Ulsan": "울산",
+        "Suwon": "수원",
+        "Changwon": "창원",
+        "Goyang": "고양",
+        "Seongnam": "성남",
+        "Yongin": "용인",
+        "Bucheon": "부천",
+        "Ansan": "안산",
+        "Cheongju": "청주",
+        "Jeonju": "전주",
+        "Anyang": "안양",
+        "Pohang": "포항",
+        "Gimpo": "김포",
+        "Gimhae": "김해",
+        "Jeju": "제주",
+        "Pyeongtaek": "평택",
+        "Siheung": "시흥",
+        "Paju": "파주",
+        "Uijeongbu": "의정부",
+        "Hwaseong": "화성",
       },
       zh: {
-        Seoul: "首尔",
-        Busan: "釜山",
-        Incheon: "仁川",
-        Daegu: "大邱",
-        Daejeon: "大田",
-        Gwangju: "光州",
-        Ulsan: "蔚山",
-        Gimpo: "金浦",
-        Jeju: "济州",
+        "Seoul": "首尔",
+        "Busan": "釜山",
+        "Incheon": "仁川",
+        "Daegu": "大邱",
+        "Daejeon": "大田",
+        "Gwangju": "光州",
+        "Ulsan": "蔚山",
+        "Gimpo": "金浦",
+        "Jeju": "济州",
       },
       ja: {
-        Seoul: "ソウル",
-        Busan: "釜山",
-        Incheon: "仁川",
-        Daegu: "大邱",
-        Daejeon: "大田",
-        Gwangju: "光州",
-        Ulsan: "蔚山",
-        Gimpo: "金浦",
-        Jeju: "済州",
-      },
+        "Seoul": "ソウル",
+        "Busan": "釜山",
+        "Incheon": "仁川",
+        "Daegu": "大邱",
+        "Daejeon": "大田",
+        "Gwangju": "光州",
+        "Ulsan": "蔚山",
+        "Gimpo": "金浦",
+        "Jeju": "済州",
+      }
     }
-
+    
     const translations = cityTranslations[language]
     return translations?.[nameWithoutSuffix] || cleanName
   }
@@ -477,12 +474,7 @@ export function WeatherSection({ onBack, language }: { onBack: () => void; langu
         <Button variant="ghost" onClick={onBack}>
           <ArrowLeft className="mr-2 h-4 w-4" /> {t("back_to_forest")}
         </Button>
-        <Button
-          className="bg-cyan-600 hover:bg-cyan-700 text-white"
-          size="sm"
-          onClick={getCurrentLocation}
-          disabled={loading}
-        >
+        <Button className="bg-cyan-600 hover:bg-cyan-700 text-white" size="sm" onClick={getCurrentLocation} disabled={loading}>
           <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
           {t("refresh")}
         </Button>
@@ -510,9 +502,7 @@ export function WeatherSection({ onBack, language }: { onBack: () => void; langu
                 <div className="text-sm text-muted-foreground">{t("current_temp")}</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-semibold">
-                  {translateWeatherCondition(weather.weather[0].description)}
-                </div>
+                <div className="text-2xl font-semibold">{translateWeatherCondition(weather.weather[0].description)}</div>
                 <div className="text-sm text-muted-foreground">{t("weather_status")}</div>
               </div>
             </div>
@@ -594,9 +584,7 @@ export function WeatherSection({ onBack, language }: { onBack: () => void; langu
                     <div className="flex items-center gap-3 flex-1">
                       <div className="text-sm font-semibold w-12">{day.dayName}</div>
                       <span className="text-2xl">{getWeatherEmoji(day.weather[0].icon)}</span>
-                      <div className="text-sm text-muted-foreground">
-                        {translateWeatherCondition(day.weather[0].description)}
-                      </div>
+                      <div className="text-sm text-muted-foreground">{translateWeatherCondition(day.weather[0].description)}</div>
                     </div>
 
                     <div className="flex items-center gap-4">

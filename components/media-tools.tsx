@@ -4,7 +4,7 @@ import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Camera, Mic, Video, ImageIcon, Trash2, Save, PenTool, X, FileImage, FileAudio } from "lucide-react"
+import { Camera, Mic, Video, ImageIcon, Trash2, Save, PenTool, X, MessageSquare, FileImage } from "lucide-react"
 import type { Attachment } from "@/lib/types"
 
 // Using browser-based OCR with Tesseract.js workaround
@@ -19,26 +19,32 @@ interface MediaToolsProps {
   onAttachmentsChange: (attachments: Attachment[]) => void
   onSave?: (attachments: Attachment[]) => void
   saving?: boolean
-  onAddContent?: (text: string) => void
+  onTextFromSpeech?: (text: string) => void
 }
 
-export function MediaTools({ attachments = [], onAttachmentsChange, onSave, saving, onAddContent }: MediaToolsProps) {
+export function MediaTools({
+  attachments = [],
+  onAttachmentsChange,
+  onSave,
+  saving,
+  onTextFromSpeech,
+}: MediaToolsProps) {
   const [isRecordingAudio, setIsRecordingAudio] = useState(false)
   const [isRecordingVideo, setIsRecordingVideo] = useState(false)
   const [isDrawing, setIsDrawing] = useState(false)
   const [drawing, setDrawing] = useState(false)
+  const [isRecognizing, setIsRecognizing] = useState(false)
+  const [recognizedText, setRecognizedText] = useState("")
   const [isProcessingOCR, setIsProcessingOCR] = useState(false)
   const [ocrProgress, setOcrProgress] = useState(0)
-  const [isVoiceRecognizing, setIsVoiceRecognizing] = useState(false)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [lastPos, setLastPos] = useState<{ x: number; y: number } | null>(null)
+  const recognitionRef = useRef<any>(null)
   const ocrVideoRef = useRef<HTMLVideoElement | null>(null)
   const [isOCRCameraOpen, setIsOCRCameraOpen] = useState(false)
-  const audioChunksRef = useRef<Blob[]>([])
-  const recognitionRef = useRef<any>(null)
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
@@ -61,12 +67,12 @@ export function MediaTools({ attachments = [], onAttachmentsChange, onSave, savi
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       const mediaRecorder = new MediaRecorder(stream)
-      audioChunksRef.current = []
+      const chunks: Blob[] = []
 
-      mediaRecorder.ondataavailable = (e) => audioChunksRef.current.push(e.data)
-
+      mediaRecorder.ondataavailable = (e) => chunks.push(e.data)
       mediaRecorder.onstop = () => {
-        const blob = new Blob(audioChunksRef.current, { type: "audio/webm" })
+        const blob = new Blob(chunks, { type: "audio/webm" })
+        const url = URL.createObjectURL(blob)
         const reader = new FileReader()
         reader.onload = () => {
           onAttachmentsChange([
@@ -78,7 +84,6 @@ export function MediaTools({ attachments = [], onAttachmentsChange, onSave, savi
               url: reader.result as string,
             },
           ])
-          setIsRecordingAudio(false)
         }
         reader.readAsDataURL(blob)
         stream.getTracks().forEach((track) => track.stop())
@@ -88,14 +93,14 @@ export function MediaTools({ attachments = [], onAttachmentsChange, onSave, savi
       mediaRecorderRef.current = mediaRecorder
       setIsRecordingAudio(true)
     } catch (error) {
-      console.error("Audio recording error:", error)
-      setIsRecordingAudio(false)
+      alert("오디오 녹음 권한이 필요합니다")
     }
   }
 
   const stopAudioRecording = () => {
-    if (mediaRecorderRef.current && isRecordingAudio) {
+    if (mediaRecorderRef.current) {
       mediaRecorderRef.current.stop()
+      setIsRecordingAudio(false)
     }
   }
 
@@ -353,6 +358,108 @@ export function MediaTools({ attachments = [], onAttachmentsChange, onSave, savi
     setLastPos(null)
   }
 
+  const startSpeechRecognition = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+
+    if (!SpeechRecognition) {
+      alert("이 브라우저는 음성 인식을 지원하지 않습니다. Chrome, Edge, Safari를 사용해주세요.")
+      return
+    }
+
+    try {
+      const recognition = new SpeechRecognition()
+      recognition.lang = "ko-KR"
+      recognition.continuous = false
+      recognition.interimResults = true
+      recognition.maxAlternatives = 1
+
+      recognition.onstart = () => {
+        console.log("[v0] Speech recognition started")
+        setIsRecognizing(true)
+        setRecognizedText("")
+      }
+
+      recognition.onresult = (event: any) => {
+        let finalTranscript = ""
+        let interimTranscript = ""
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript + " "
+          } else {
+            interimTranscript += transcript
+          }
+        }
+
+        if (finalTranscript) {
+          const currentText = recognizedText + finalTranscript
+          setRecognizedText(currentText)
+          console.log("[v0] Final transcript:", finalTranscript)
+        } else if (interimTranscript) {
+          setRecognizedText(recognizedText + interimTranscript)
+          console.log("[v0] Interim transcript:", interimTranscript)
+        }
+      }
+
+      recognition.onerror = (event: any) => {
+        console.error("[v0] Speech recognition error:", event.error)
+        if (event.error === "no-speech") {
+          console.log("[v0] No speech detected, restarting...")
+          if (isRecognizing) {
+            setTimeout(() => {
+              if (recognitionRef.current) {
+                recognitionRef.current.start()
+              }
+            }, 100)
+          }
+        } else if (event.error === "not-allowed") {
+          alert("마이크 권한이 필요합니다.")
+          setIsRecognizing(false)
+        } else if (event.error === "aborted") {
+          console.log("[v0] Recognition aborted")
+        } else {
+          setIsRecognizing(false)
+        }
+      }
+
+      recognition.onend = () => {
+        console.log("[v0] Speech recognition ended")
+        if (isRecognizing && recognitionRef.current) {
+          console.log("[v0] Auto-restarting recognition...")
+          setTimeout(() => {
+            if (recognitionRef.current && isRecognizing) {
+              recognitionRef.current.start()
+            }
+          }, 100)
+        }
+      }
+
+      recognition.start()
+      recognitionRef.current = recognition
+    } catch (error) {
+      console.error("[v0] Speech recognition error:", error)
+      alert("음성 인식을 시작할 수 없습니다: " + (error as Error).message)
+      setIsRecognizing(false)
+    }
+  }
+
+  const stopSpeechRecognition = () => {
+    setIsRecognizing(false)
+
+    if (recognitionRef.current) {
+      recognitionRef.current.stop()
+      recognitionRef.current = null
+    }
+
+    if (recognizedText.trim() && onTextFromSpeech) {
+      console.log("[v0] Applying recognized text:", recognizedText)
+      onTextFromSpeech(recognizedText.trim())
+    }
+
+    setRecognizedText("")
+  }
+
   const openOCRCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -385,12 +492,14 @@ export function MediaTools({ attachments = [], onAttachmentsChange, onSave, savi
       ctx.drawImage(video, 0, 0)
     }
 
+    // Stop camera
     const stream = video.srcObject as MediaStream
     if (stream) {
       stream.getTracks().forEach((track) => track.stop())
     }
     setIsOCRCameraOpen(false)
 
+    // Process OCR
     const dataUrl = canvas.toDataURL("image/jpeg", 0.9)
     await performSimpleOCR(dataUrl)
   }
@@ -413,11 +522,13 @@ export function MediaTools({ attachments = [], onAttachmentsChange, onSave, savi
       console.log("[v0] OCR processing started")
       setOcrProgress(20)
 
+      // Dynamic import of Tesseract.js
       const Tesseract = await import("tesseract.js")
 
       setOcrProgress(30)
       console.log("[v0] Tesseract loaded")
 
+      // Create worker with Korean and English language support
       const worker = await Tesseract.createWorker("kor+eng", 1, {
         logger: (m: any) => {
           if (m.status === "recognizing text") {
@@ -429,6 +540,7 @@ export function MediaTools({ attachments = [], onAttachmentsChange, onSave, savi
 
       console.log("[v0] Worker created, processing image...")
 
+      // Recognize text from image
       const {
         data: { text },
       } = await worker.recognize(imageData)
@@ -440,8 +552,8 @@ export function MediaTools({ attachments = [], onAttachmentsChange, onSave, savi
       setOcrProgress(100)
 
       if (text.trim()) {
-        if (onAddContent) {
-          onAddContent(text.trim())
+        if (onTextFromSpeech) {
+          onTextFromSpeech(text.trim())
         }
         alert("이미지에서 텍스트 추출 완료:\n" + text.substring(0, 200) + (text.length > 200 ? "..." : ""))
       } else {
@@ -465,60 +577,6 @@ export function MediaTools({ attachments = [], onAttachmentsChange, onSave, savi
       await performSimpleOCR(reader.result as string)
     }
     reader.readAsDataURL(file)
-  }
-
-  const startVoiceRecognition = () => {
-    try {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-      if (!SpeechRecognition) {
-        alert("음성 인식이 지원되지 않는 브라우저입니다.")
-        return
-      }
-
-      const recognition = new SpeechRecognition()
-      recognition.lang = "ko-KR"
-      recognition.continuous = false
-      recognition.interimResults = false
-
-      recognition.onstart = () => {
-        console.log("[v0] Voice recognition started")
-        setIsVoiceRecognizing(true)
-      }
-
-      recognition.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript
-        console.log("[v0] Voice recognition result:", transcript)
-        if (transcript && onAddContent) {
-          onAddContent(transcript)
-          console.log("[v0] Text added from voice recognition")
-        }
-      }
-
-      recognition.onerror = (event: any) => {
-        console.error("[v0] Voice recognition error:", event.error)
-        alert(`음성 인식 오류: ${event.error}`)
-        setIsVoiceRecognizing(false)
-      }
-
-      recognition.onend = () => {
-        console.log("[v0] Voice recognition ended")
-        setIsVoiceRecognizing(false)
-      }
-
-      recognitionRef.current = recognition
-      recognition.start()
-    } catch (error) {
-      console.error("[v0] Voice recognition error:", error)
-      alert("음성 인식 시작 실패")
-      setIsVoiceRecognizing(false)
-    }
-  }
-
-  const stopVoiceRecognition = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop()
-      setIsVoiceRecognizing(false)
-    }
   }
 
   return (
@@ -558,6 +616,29 @@ export function MediaTools({ attachments = [], onAttachmentsChange, onSave, savi
         </div>
       )}
 
+      {isRecognizing && (
+        <div className="space-y-2 bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border-2 border-blue-500">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-blue-600 dark:text-blue-400">🎤 음성 인식 중...</p>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={stopSpeechRecognition}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <MessageSquare className="h-4 w-4 mr-2" />
+              인식 중지 및 적용
+            </Button>
+          </div>
+          {recognizedText && (
+            <div className="bg-white dark:bg-slate-800 p-3 rounded border">
+              <p className="text-sm text-foreground">{recognizedText}</p>
+            </div>
+          )}
+          <p className="text-xs text-blue-600 dark:text-blue-400">말씀하시면 자동으로 텍스트로 변환됩니다</p>
+        </div>
+      )}
+
       {isRecordingVideo && (
         <div className="space-y-2 bg-red-50 p-4 rounded-lg border-2 border-red-500">
           <div className="flex items-center justify-between">
@@ -576,7 +657,7 @@ export function MediaTools({ attachments = [], onAttachmentsChange, onSave, savi
         </div>
       )}
 
-      {!isRecordingVideo && !isOCRCameraOpen && !isProcessingOCR && (
+      {!isRecordingVideo && !isRecognizing && !isOCRCameraOpen && !isProcessingOCR && (
         <div className="flex flex-wrap gap-2">
           <input
             type="file"
@@ -607,36 +688,28 @@ export function MediaTools({ attachments = [], onAttachmentsChange, onSave, savi
             <PenTool className="h-4 w-4 mr-2" />
             손글씨
           </Button>
-          <Button
-            onClick={isVoiceRecognizing ? stopVoiceRecognition : startVoiceRecognition}
-            variant="outline"
-            size="sm"
-          >
-            {isVoiceRecognizing ? (
-              <>
-                <Mic className="mr-2 h-4 w-4 animate-pulse text-red-500" />
-                인식중
-              </>
-            ) : (
-              <>
-                <Mic className="mr-2 h-4 w-4" />
-                음성→텍스트
-              </>
-            )}
-          </Button>
-          <Button onClick={isRecordingAudio ? stopAudioRecording : startAudioRecording} variant="outline" size="sm">
-            {isRecordingAudio ? (
-              <>
-                <Mic className="mr-2 h-4 w-4 animate-pulse text-red-500" />
-                녹음중
-              </>
-            ) : (
-              <>
-                <FileAudio className="mr-2 h-4 w-4" />
-                오디오 녹음
-              </>
-            )}
-          </Button>
+          {onTextFromSpeech && (
+            <Button variant="outline" size="sm" onClick={startSpeechRecognition}>
+              <MessageSquare className="h-4 w-4 mr-2" />
+              음성→텍스트
+            </Button>
+          )}
+          {isRecordingAudio ? (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={stopAudioRecording}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              <Mic className="h-4 w-4 mr-2" />
+              녹음 중지
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" onClick={startAudioRecording}>
+              <Mic className="h-4 w-4 mr-2" />
+              오디오 녹음
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={startVideoRecording}>
             <Video className="h-4 w-4 mr-2" />
             동영상 녹화

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, Plus, Pencil, Trash2 } from "lucide-react"
+import { ArrowLeft, Plus, Pencil, Trash2 } from 'lucide-react'
 import { saveTravelRecords, loadTravelRecords } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import type { TravelRecord, Attachment } from "@/lib/types"
@@ -14,15 +14,19 @@ import { getCoordinates } from "@/lib/geocoding"
 import { Spinner } from "@/components/ui/spinner"
 import { getTranslation } from "@/lib/i18n"
 import dynamic from "next/dynamic"
+import type { TravelMap as TravelMapType } from "@/components/travel-map"
 
-const TravelMap = dynamic(() => import("@/components/travel-map").then((mod) => mod.TravelMap), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-[600px] flex items-center justify-center bg-gray-100 rounded-lg">
-      <Spinner className="h-12 w-12" />
-    </div>
-  ),
-})
+const TravelMap = dynamic(
+  () => import("@/components/travel-map").then((mod) => mod.TravelMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[600px] flex items-center justify-center bg-gray-100 rounded-lg">
+        <Spinner className="h-12 w-12" />
+      </div>
+    ),
+  },
+)
 
 interface TravelSectionProps {
   onBack: () => void
@@ -67,9 +71,9 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
       console.log("[v0] loadData: Starting")
       setLoading(true)
       setError(null)
-
+      
       if (!user?.id) return
-
+      
       const data = await loadTravelRecords(user.id)
       console.log("[v0] loadData: Loaded", data.length, "travels")
 
@@ -100,7 +104,7 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
       alert("로그인이 필요합니다")
       return
     }
-
+    
     if (!formData.destination.trim()) {
       alert("여행지를 입력해주세요")
       return
@@ -151,7 +155,7 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
           endDate: formData.endDate,
           notes: formData.notes,
           description: formData.notes,
-          expenses: "",
+          expenses: '',
           category: formData.category || "기타",
           latitude: formData.latitude,
           longitude: formData.longitude,
@@ -181,7 +185,7 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
         expense: "",
         attachments: [],
       })
-
+      
       alert("여행 기록이 저장되었습니다!")
     } catch (error) {
       console.error("[v0] Error saving travel:", error)
@@ -370,13 +374,15 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
           variant={isSelectingLocation ? "default" : "outline"}
           className={`w-full ${isSelectingLocation ? "bg-yellow-500 hover:bg-yellow-600 text-black" : ""}`}
         >
-          {isSelectingLocation ? t("cancel_location_selection") : t("select_location_on_map")}
+          {isSelectingLocation ? "✖️ 위치 선택 취소" : "🗺️ 지도에서 직접 위치 선택하기"}
         </Button>
 
         {isSelectingLocation && (
           <Card className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-400">
             <div className="mb-4 bg-yellow-100 border-2 border-yellow-400 rounded-lg p-3">
-              <p className="text-sm font-semibold text-yellow-900 text-center">💡 {t("click_map_select_location")}</p>
+              <p className="text-sm font-semibold text-yellow-900 text-center">
+                💡 지도를 클릭하여 정확한 위치를 선택하세요
+              </p>
             </div>
             <TravelMap
               travels={[]}
@@ -391,11 +397,8 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
                 })
                 setIsSelectingLocation(false)
                 console.log("[v0] Form updated with coordinates, selection mode closed")
-                alert(
-                  `✅ ${t("location_selected")}\n📍 ${t("latitude")}: ${lat.toFixed(4)}, ${t("longitude")}: ${lon.toFixed(4)}`,
-                )
+                alert(`✅ 위치가 선택되었습니다!\n📍 위도: ${lat.toFixed(4)}, 경도: ${lon.toFixed(4)}`)
               }}
-              language={language}
             />
           </Card>
         )}
@@ -450,7 +453,9 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
             onChange={(e) => setFormData({ ...formData, expense: e.target.value })}
             className="p-2 border rounded"
           />
-          <p className="text-xs text-muted-foreground mt-2">💡 입력하면 가계부에 자동으로 기록됩니다</p>
+          <p className="text-xs text-muted-foreground">
+            💡 입력하면 가계부에 자동으로 기록됩니다
+          </p>
         </div>
 
         <Textarea
@@ -490,8 +495,8 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
       </div>
 
       <Card className="p-4 bg-gradient-to-br from-emerald-50 to-teal-50">
-        <h3 className="font-semibold mb-4 text-lg">🗺️ {t("travel_map")}</h3>
-        <TravelMap travels={travels} onMarkerClick={(travel) => setSelectedTravel(travel)} language={language} />
+        <h3 className="font-semibold mb-4 text-lg">🗺️ 여행 지도</h3>
+        <TravelMap travels={travels} onMarkerClick={(travel) => setSelectedTravel(travel)} />
       </Card>
 
       <div className="grid gap-4">
@@ -544,24 +549,14 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
                 <p className="text-sm font-medium">첨부파일 ({travel.attachments.length}개)</p>
                 <div className="grid grid-cols-2 gap-2">
                   {travel.attachments.map((file: any, idx: number) => {
-                    const isImage =
-                      file.type?.startsWith("image/") ||
-                      file.type === "image" ||
-                      file.type === "drawing" ||
-                      file.name?.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)
-                    const isVideo =
-                      file.type?.startsWith("video/") ||
-                      file.type === "video" ||
-                      file.name?.match(/\.(mp4|webm|mov|avi)$/i)
-                    const isAudio =
-                      file.type?.startsWith("audio/") ||
-                      file.type === "audio" ||
-                      file.name?.match(/\.(mp3|wav|ogg|m4a)$/i)
-
+                    const isImage = file.type?.startsWith("image/") || file.type === "image" || file.type === "drawing" || file.name?.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)
+                    const isVideo = file.type?.startsWith("video/") || file.type === "video" || file.name?.match(/\.(mp4|webm|mov|avi)$/i)
+                    const isAudio = file.type?.startsWith("audio/") || file.type === "audio" || file.name?.match(/\.(mp3|wav|ogg|m4a)$/i)
+                    
                     if (isImage) {
                       return (
-                        <div
-                          key={idx}
+                        <div 
+                          key={idx} 
                           className="relative border rounded overflow-hidden cursor-pointer hover:ring-2 hover:ring-emerald-500 transition-all"
                           onClick={() => setSelectedImage(file.url || file.data)}
                         >
@@ -579,7 +574,12 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
                     if (isVideo) {
                       return (
                         <div key={idx} className="border rounded overflow-hidden">
-                          <video src={file.url || file.data} controls playsInline className="w-full h-32 bg-black" />
+                          <video
+                            src={file.url || file.data}
+                            controls
+                            playsInline
+                            className="w-full h-32 bg-black"
+                          />
                         </div>
                       )
                     }
@@ -611,7 +611,7 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
       </div>
 
       {selectedImage && (
-        <div
+        <div 
           className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
           onClick={() => setSelectedImage(null)}
         >

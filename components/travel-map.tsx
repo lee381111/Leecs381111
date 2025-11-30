@@ -1,23 +1,17 @@
 "use client"
 
-import type React from "react"
-
 import { useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
-import type { TravelRecord, Language } from "@/lib/types"
-import { getTranslation } from "@/lib/i18n"
+import type { TravelRecord } from "@/lib/types"
 
 interface TravelMapProps {
   travels: TravelRecord[]
   onMarkerClick?: (travel: TravelRecord) => void
   clickMode?: boolean
   onMapClick?: (lat: number, lon: number) => void
-  language?: Language
 }
 
-export function TravelMap({ travels, onMarkerClick, clickMode = false, onMapClick, language = "ko" }: TravelMapProps) {
-  const t = (key: string) => getTranslation(language, key)
-
+export function TravelMap({ travels, onMarkerClick, clickMode = false, onMapClick }: TravelMapProps) {
   const [center, setCenter] = useState({ lat: 37.5665, lon: 126.978 })
   const [zoom, setZoom] = useState(7)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -29,18 +23,18 @@ export function TravelMap({ travels, onMarkerClick, clickMode = false, onMapClic
 
   const latLonToPixel = (lat: number, lon: number, mapZoom: number, mapCenter: { lat: number; lon: number }) => {
     const scale = 256 * Math.pow(2, mapZoom)
-
-    const centerX = ((mapCenter.lon + 180) / 360) * scale
-    const centerLatRad = (mapCenter.lat * Math.PI) / 180
-    const centerY = ((1 - Math.log(Math.tan(centerLatRad) + 1 / Math.cos(centerLatRad)) / Math.PI) / 2) * scale
-
-    const x = ((lon + 180) / 360) * scale
-    const latRad = (lat * Math.PI) / 180
-    const y = ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * scale
-
+    
+    const centerX = (mapCenter.lon + 180) / 360 * scale
+    const centerLatRad = mapCenter.lat * Math.PI / 180
+    const centerY = (1 - Math.log(Math.tan(centerLatRad) + 1 / Math.cos(centerLatRad)) / Math.PI) / 2 * scale
+    
+    const x = (lon + 180) / 360 * scale
+    const latRad = lat * Math.PI / 180
+    const y = (1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * scale
+    
     return {
       x: x - centerX,
-      y: y - centerY,
+      y: y - centerY
     }
   }
 
@@ -52,10 +46,10 @@ export function TravelMap({ travels, onMarkerClick, clickMode = false, onMapClic
       x: e.clientX,
       y: e.clientY,
       centerLat: center.lat,
-      centerLon: center.lon,
+      centerLon: center.lon
     }
     if (containerRef.current) {
-      containerRef.current.style.cursor = "grabbing"
+      containerRef.current.style.cursor = 'grabbing'
     }
   }
 
@@ -71,12 +65,12 @@ export function TravelMap({ travels, onMarkerClick, clickMode = false, onMapClic
     }
 
     const scale = 256 * Math.pow(2, zoom)
-    const dlat = (dy / scale) * 360
-    const dlon = (-dx / scale) * 360
+    const dlat = dy / scale * 360
+    const dlon = -dx / scale * 360
 
     setCenter({
       lat: dragStart.current.centerLat + dlat,
-      lon: dragStart.current.centerLon + dlon,
+      lon: dragStart.current.centerLon + dlon
     })
   }
 
@@ -84,30 +78,30 @@ export function TravelMap({ travels, onMarkerClick, clickMode = false, onMapClic
     const wasDragging = hasDragged.current
     isDragging.current = false
     hasDragged.current = false
-
+    
     if (containerRef.current) {
-      containerRef.current.style.cursor = clickMode ? "crosshair" : "grab"
+      containerRef.current.style.cursor = clickMode ? 'crosshair' : 'grab'
     }
 
     if (clickMode && !wasDragging && onMapClick && containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect()
       const clickX = e.clientX - rect.left
       const clickY = e.clientY - rect.top
-
+      
       const containerWidth = containerRef.current.clientWidth
       const containerHeight = containerRef.current.clientHeight
-
+      
       const scale = 256 * Math.pow(2, zoom)
-
+      
       const offsetX = clickX - containerWidth / 2
       const offsetY = clickY - containerHeight / 2
-
-      const dlon = (offsetX / scale) * 360
-      const dlat = (-offsetY / scale) * 360
-
+      
+      const dlon = offsetX / scale * 360
+      const dlat = -offsetY / scale * 360
+      
       const clickLon = center.lon + dlon
       const clickLat = center.lat + dlat
-
+      
       console.log("[v0] 🔵 Setting blue temp marker at:", clickLat, clickLon)
       setTempMarker({ lat: clickLat, lon: clickLon })
     }
@@ -116,7 +110,7 @@ export function TravelMap({ travels, onMarkerClick, clickMode = false, onMapClic
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault()
     const delta = e.deltaY > 0 ? -1 : 1
-    setZoom((prev) => Math.max(2, Math.min(18, prev + delta)))
+    setZoom(prev => Math.max(2, Math.min(18, prev + delta)))
   }
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -130,7 +124,7 @@ export function TravelMap({ travels, onMarkerClick, clickMode = false, onMapClic
         x: touch.clientX,
         y: touch.clientY,
         centerLat: center.lat,
-        centerLon: center.lon,
+        centerLon: center.lon
       }
     }
   }
@@ -148,12 +142,12 @@ export function TravelMap({ travels, onMarkerClick, clickMode = false, onMapClic
       }
 
       const scale = 256 * Math.pow(2, zoom)
-      const dlat = (dy / scale) * 360
-      const dlon = (-dx / scale) * 360
+      const dlat = dy / scale * 360
+      const dlon = -dx / scale * 360
 
       setCenter({
         lat: dragStart.current.centerLat + dlat,
-        lon: dragStart.current.centerLon + dlon,
+        lon: dragStart.current.centerLon + dlon
       })
     }
   }
@@ -186,9 +180,9 @@ export function TravelMap({ travels, onMarkerClick, clickMode = false, onMapClic
     const numTiles = Math.pow(2, zoom)
 
     const scale = numTiles
-    const centerTileX = ((center.lon + 180) / 360) * scale
-    const centerLatRad = (center.lat * Math.PI) / 180
-    const centerTileY = ((1 - Math.log(Math.tan(centerLatRad) + 1 / Math.cos(centerLatRad)) / Math.PI) / 2) * scale
+    const centerTileX = (center.lon + 180) / 360 * scale
+    const centerLatRad = center.lat * Math.PI / 180
+    const centerTileY = (1 - Math.log(Math.tan(centerLatRad) + 1 / Math.cos(centerLatRad)) / Math.PI) / 2 * scale
 
     const tilesX = Math.ceil(containerWidth / tileSize) + 2
     const tilesY = Math.ceil(containerHeight / tileSize) + 2
@@ -222,12 +216,12 @@ export function TravelMap({ travels, onMarkerClick, clickMode = false, onMapClic
               src={tileUrl || "/placeholder.svg"}
               alt=""
               className="w-full h-full"
-              style={{ pointerEvents: "none" }}
+              style={{ pointerEvents: 'none' }}
               onError={(e) => {
-                e.currentTarget.style.display = "none"
+                e.currentTarget.style.display = 'none'
               }}
             />
-          </div>,
+          </div>
         )
       }
     }
@@ -257,7 +251,7 @@ export function TravelMap({ travels, onMarkerClick, clickMode = false, onMapClic
           style={{
             left: `${markerX}px`,
             top: `${markerY}px`,
-            transform: "translate(-50%, -100%)",
+            transform: 'translate(-50%, -100%)'
           }}
           onClick={(e) => {
             e.stopPropagation()
@@ -292,7 +286,7 @@ export function TravelMap({ travels, onMarkerClick, clickMode = false, onMapClic
         style={{
           left: `${markerX}px`,
           top: `${markerY}px`,
-          transform: "translate(-50%, -100%)",
+          transform: 'translate(-50%, -100%)'
         }}
       >
         <div className="relative">
@@ -300,7 +294,7 @@ export function TravelMap({ travels, onMarkerClick, clickMode = false, onMapClic
           <div className="w-12 h-12 bg-blue-500 rounded-full border-4 border-white shadow-2xl animate-ping absolute top-0 left-0" />
           <div className="w-12 h-12 bg-blue-500 rounded-full border-4 border-white shadow-2xl relative" />
           <div className="absolute top-12 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[12px] border-r-[12px] border-t-[18px] border-transparent border-t-blue-500" />
-
+          
           {/* Label */}
           <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-1.5 bg-blue-500 text-white text-xs font-bold rounded whitespace-nowrap shadow-xl">
             🎯 선택 위치
@@ -313,22 +307,22 @@ export function TravelMap({ travels, onMarkerClick, clickMode = false, onMapClic
   const handleZoomIn = (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation()
     e.preventDefault()
-    setZoom((prev) => Math.min(18, prev + 1))
+    setZoom(prev => Math.min(18, prev + 1))
   }
-
+  
   const handleZoomOut = (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation()
     e.preventDefault()
-    setZoom((prev) => Math.max(2, prev - 1))
+    setZoom(prev => Math.max(2, prev - 1))
   }
 
   return (
     <div
       ref={containerRef}
-      className={`relative w-full h-[600px] md:h-[600px] overflow-hidden rounded-lg border-4 ${clickMode ? "border-yellow-400" : "border-gray-300"} bg-gray-100 select-none`}
+      className={`relative w-full h-[600px] md:h-[600px] overflow-hidden rounded-lg border-4 ${clickMode ? 'border-yellow-400' : 'border-gray-300'} bg-gray-100 select-none`}
       style={{
-        touchAction: "none",
-        cursor: clickMode ? "crosshair" : "grab",
+        touchAction: 'none',
+        cursor: clickMode ? 'crosshair' : 'grab'
       }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
@@ -339,7 +333,7 @@ export function TravelMap({ travels, onMarkerClick, clickMode = false, onMapClic
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      <div ref={mapRef} className="absolute inset-0 bg-blue-50" style={{ pointerEvents: "none" }}>
+      <div ref={mapRef} className="absolute inset-0 bg-blue-50" style={{ pointerEvents: 'none' }}>
         {renderTiles()}
       </div>
 
@@ -347,34 +341,31 @@ export function TravelMap({ travels, onMarkerClick, clickMode = false, onMapClic
       {renderTempMarker()}
 
       <div className="absolute top-4 right-4 flex flex-col gap-2 z-40">
-        <Button
+        <Button 
           onTouchEnd={handleZoomIn}
           onClick={handleZoomIn}
-          size="sm"
+          size="sm" 
           className="bg-white text-black hover:bg-gray-100 shadow-2xl font-bold text-2xl w-12 h-12 pointer-events-auto border-2 border-gray-400"
         >
           +
         </Button>
-        <Button
+        <Button 
           onTouchEnd={handleZoomOut}
           onClick={handleZoomOut}
-          size="sm"
+          size="sm" 
           className="bg-white text-black hover:bg-gray-100 shadow-2xl font-bold text-2xl w-12 h-12 pointer-events-auto border-2 border-gray-400"
         >
           −
         </Button>
       </div>
 
-      <div
-        className="absolute bottom-4 left-4 bg-white/95 px-3 py-2 rounded shadow-lg text-xs font-medium z-20 border border-gray-300"
-        style={{ pointerEvents: "none" }}
-      >
-        🗺️ {t("map_zoom_label")}: {zoom} | 🖱️ {t("map_drag_instruction")} | ➕➖ {t("map_zoom_buttons_instruction")}
+      <div className="absolute bottom-4 left-4 bg-white/95 px-3 py-2 rounded shadow-lg text-xs font-medium z-20 border border-gray-300" style={{ pointerEvents: 'none' }}>
+        🗺️ 줌: {zoom} | 🖱️ 드래그로 이동 | ➕➖ 버튼으로 확대/축소
       </div>
 
       {clickMode && !tempMarker && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-yellow-400 text-black px-4 py-2 rounded-full shadow-lg font-semibold text-sm z-30 animate-bounce pointer-events-none">
-          🎯 {t("map_click_to_select")}
+          🎯 지도를 클릭하여 위치를 선택하세요
         </div>
       )}
 
@@ -383,14 +374,10 @@ export function TravelMap({ travels, onMarkerClick, clickMode = false, onMapClic
           <div className="bg-white rounded-lg shadow-2xl p-4 border-4 border-blue-500 w-80">
             <div className="text-center mb-3">
               <div className="text-3xl mb-2">📍</div>
-              <div className="font-semibold text-base mb-2">{t("map_confirm_location")}</div>
+              <div className="font-semibold text-base mb-2">이 위치를 선택하시겠습니까?</div>
               <div className="text-xs text-gray-600 space-y-0.5">
-                <div>
-                  {t("latitude")}: {tempMarker.lat.toFixed(6)}
-                </div>
-                <div>
-                  {t("longitude")}: {tempMarker.lon.toFixed(6)}
-                </div>
+                <div>위도: {tempMarker.lat.toFixed(6)}</div>
+                <div>경도: {tempMarker.lon.toFixed(6)}</div>
               </div>
             </div>
             <div className="flex gap-2">
@@ -407,7 +394,7 @@ export function TravelMap({ travels, onMarkerClick, clickMode = false, onMapClic
                 variant="outline"
                 className="flex-1 text-sm py-5"
               >
-                {t("cancel")}
+                취소
               </Button>
               <Button
                 onPointerUp={(e) => {
@@ -421,7 +408,7 @@ export function TravelMap({ travels, onMarkerClick, clickMode = false, onMapClic
                 }}
                 className="flex-1 bg-blue-500 hover:bg-blue-600 text-sm py-5"
               >
-                ✅ {t("map_select")}
+                ✅ 선택
               </Button>
             </div>
           </div>

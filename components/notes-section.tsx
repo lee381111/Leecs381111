@@ -32,7 +32,6 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
   const [selectedImage, setSelectedImage] = useState<{ url: string; name: string } | null>(null)
   const [viewingAttachment, setViewingAttachment] = useState<{ url: string; name: string } | null>(null)
   const [imageLoadErrors, setImageLoadErrors] = useState<Set<string>>(new Set())
-  const [showForm, setShowForm] = useState(false)
 
   const t = (key: string) => getTranslation(language, key)
 
@@ -41,18 +40,14 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
   }, [user])
 
   const loadData = async () => {
-    if (!user?.id) {
-      setLoading(false)
-      return
-    }
+    if (!user?.id) return
 
     try {
       setLoading(true)
       const data = await loadNotes(user.id)
       setNotes(data)
-    } catch (err: any) {
+    } catch (err) {
       console.error("[v0] Error loading notes:", err)
-      alert(`데이터 로드 실패: ${err?.message || "알 수 없는 오류"}`)
     } finally {
       setLoading(false)
     }
@@ -65,7 +60,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
     }
 
     if (!user?.id) {
-      alert("로그인이 필요합니다")
+      alert(language === "ko" ? "로그인이 필요합니다" : "Login required")
       return
     }
 
@@ -90,22 +85,33 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
         user_id: user?.id,
       }
 
+      console.log("[v0] Saving note with", note.attachments?.length || 0, "attachments")
+
       const updated = editingNote ? notes.map((n) => (n.id === editingNote.id ? note : n)) : [note, ...notes]
 
       setNotes(updated)
 
+      // Save to database
       await saveNotes(updated, user.id)
 
       setFormData({ title: "", content: "", tags: "" })
       setAttachments([])
       setIsAdding(false)
       setEditingNote(null)
-      setShowForm(false)
 
-      alert(`저장 완료! (첨부파일 ${note.attachments?.length || 0}개)`)
-    } catch (error) {
-      console.error("Error saving note:", error)
-      alert(`저장 실패: ${error?.message || "알 수 없는 오류"}. 인터넷 연결을 확인해주세요.`)
+      alert(
+        language === "ko"
+          ? `저장 완료! (첨부파일 ${note.attachments?.length || 0}개)`
+          : `Saved! (${note.attachments?.length || 0} attachments)`,
+      )
+    } catch (err: any) {
+      console.error("[v0] Error saving note:", err)
+      alert(
+        language === "ko"
+          ? `저장 실패: ${err?.message || "알 수 없는 오류"}. 인터넷 연결을 확인해주세요.`
+          : `Save failed: ${err?.message || "Unknown error"}. Please check your internet connection.`,
+      )
+      // Revert UI change on error
       loadData()
     } finally {
       setSaving(false)
@@ -114,11 +120,11 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
 
   const handleDelete = async (id: string) => {
     if (!user?.id) {
-      alert("로그인이 필요합니다")
+      alert(language === "ko" ? "로그인이 필요합니다" : "Login required")
       return
     }
 
-    if (!confirm("정말 삭제하시겠습니까?")) {
+    if (!confirm(language === "ko" ? "정말 삭제하시겠습니까?" : "Are you sure you want to delete?")) {
       return
     }
 
@@ -126,15 +132,16 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
       const updated = notes.filter((n) => n.id !== id)
       setNotes(updated)
       await saveNotes(updated, user.id)
-      alert("삭제되었습니다")
+      alert(language === "ko" ? "삭제되었습니다" : "Deleted")
     } catch (err) {
       console.error("[v0] Delete failed:", err)
-      alert("삭제 실패")
-      loadData()
+      alert(language === "ko" ? "삭제 실패" : "Delete failed")
+      loadData() // Reload on error
     }
   }
 
   const handleEdit = (note: Note) => {
+    console.log("[v0] Editing note with attachments:", note.attachments?.length || 0)
     setEditingNote(note)
     setFormData({
       title: note.title,
@@ -148,8 +155,9 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
       type: att.type || "image",
       name: att.name || "attachment",
     }))
+    console.log("[v0] Loaded attachments for editing:", loadedAttachments.length)
     setAttachments(loadedAttachments)
-    setShowForm(true)
+    setIsAdding(true)
   }
 
   const searchImageOnBing = (imageUrl: string) => {
@@ -158,26 +166,32 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
   }
 
   const handleTextFromSpeech = (text: string) => {
-    setFormData({ ...formData, content: formData.content + " " + text })
+    setFormData((prev) => ({
+      ...prev,
+      content: prev.content ? `${prev.content}\n${text}` : text,
+    }))
+    console.log("[v0] Added text from speech:", text.length, "characters")
   }
 
   const handleShare = async (note: Note) => {
-    const shareText = `${note.title}\n\n${note.content}\n\n${note.tags && note.tags.length > 0 ? `#${note.tags.join(" #")}` : ""}`
+    const shareText = `${note.title}\n\n${note.content}\n\n${note.tags.length > 0 ? `#${note.tags.join(" #")}` : ""}`
     const shareData = {
       title: note.title,
       text: shareText,
     }
 
-    if (navigator.share) {
+    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
       try {
         await navigator.share(shareData)
+        console.log("[v0] Note shared successfully")
       } catch (err: any) {
         if (err.name !== "AbortError") {
-          console.error("Share failed:", err)
+          console.error("[v0] Share failed:", err)
           fallbackCopyToClipboard(shareText)
         }
       }
     } else {
+      console.log("[v0] Web Share API not supported, using clipboard fallback")
       fallbackCopyToClipboard(shareText)
     }
   }
@@ -186,23 +200,21 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
     navigator.clipboard
       .writeText(text)
       .then(() => {
-        alert("클립보드에 복사되었습니다!")
+        alert(language === "ko" ? "클립보드에 복사되었습니다!" : "Copied to clipboard!")
       })
       .catch((err) => {
         console.error("[v0] Clipboard copy failed:", err)
-        alert("복사 실패")
+        alert(language === "ko" ? "복사 실패" : "Copy failed")
       })
   }
 
-  const allTags = Array.from(new Set(notes.flatMap((note) => note.tags || []))).sort()
+  const allTags = Array.from(new Set(notes.flatMap((note) => note.tags))).sort()
 
   const filteredNotes = notes.filter((note) => {
     const matchesSearch =
-      searchQuery === "" ||
-      (note.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (note.content || "").toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesTag =
-      selectedTag === "" || !selectedTag || (Array.isArray(note.tags) && note.tags.includes(selectedTag))
+      note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      note.content.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesTag = !selectedTag || note.tags.includes(selectedTag)
     return matchesSearch && matchesTag
   })
 
@@ -217,7 +229,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
     )
   }
 
-  if (isAdding || showForm) {
+  if (isAdding) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
         <Button
@@ -227,14 +239,13 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
             setEditingNote(null)
             setFormData({ title: "", content: "", tags: "" })
             setAttachments([])
-            setShowForm(false)
           }}
         >
           <ArrowLeft className="mr-2 h-4 w-4" /> {t("title")}
         </Button>
         <div className="space-y-4">
           <Input
-            placeholder={t("title")}
+            placeholder={t("title_label")}
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
           />
@@ -245,7 +256,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
             rows={10}
           />
           <Input
-            placeholder={t("tags_placeholder")}
+            placeholder={language === "ko" ? "태그 (쉼표로 구분)" : "Tags (comma separated)"}
             value={formData.tags}
             onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
           />
@@ -253,13 +264,12 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
             attachments={attachments}
             onAttachmentsChange={setAttachments}
             onTextFromSpeech={handleTextFromSpeech}
-            onAddContent={handleTextFromSpeech}
           />
 
           {attachments.length > 0 && (
             <div className="mt-4 space-y-2">
               <p className="text-sm font-medium">
-                {t("attached_files")} ({attachments.length})
+                {language === "ko" ? "첨부된 파일" : "Attached Files"} ({attachments.length})
               </p>
               <div className="grid grid-cols-3 gap-2">
                 {attachments.map((file, idx) => {
@@ -288,6 +298,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
                       <button
                         onClick={() => {
                           const newAttachments = attachments.filter((_, i) => i !== idx)
+                          console.log("[v0] Removing attachment, remaining:", newAttachments.length)
                           setAttachments(newAttachments)
                         }}
                         className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
@@ -303,7 +314,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
 
           <Button onClick={handleSave} disabled={saving} className="w-full bg-green-600 hover:bg-green-700" size="lg">
             <Save className="mr-2 h-4 w-4" />
-            {saving ? t("saving") : editingNote ? t("edit") : t("save")}
+            {saving ? (language === "ko" ? "저장 중..." : "Saving...") : editingNote ? t("edit") : t("save")}
           </Button>
         </div>
 
@@ -335,7 +346,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
       <div className="flex items-center justify-between">
         <Button variant="ghost" onClick={onBack}>
           <ArrowLeft className="mr-2 h-4 w-4" /> {t("title")}
@@ -359,11 +370,11 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <Tag className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium">{t("filter_by_tag")}</span>
+            <span className="text-sm font-medium">{language === "ko" ? "태그로 필터" : "Filter by tag"}</span>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button variant={selectedTag === "" ? "default" : "outline"} size="sm" onClick={() => setSelectedTag("")}>
-              {t("all")}
+              {language === "ko" ? "전체" : "All"}
             </Button>
             {allTags.map((tag) => (
               <Button
@@ -389,7 +400,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center">
-              <h3 className="font-semibold flex-1">이미지 옵션</h3>
+              <h3 className="font-semibold">{language === "ko" ? "이미지 옵션" : "Image Options"}</h3>
               <Button variant="ghost" size="icon" onClick={() => setSelectedImage(null)}>
                 <Tag className="h-4 w-4 rotate-45" />
               </Button>
@@ -408,7 +419,8 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
                   setSelectedImage(null)
                 }}
               >
-                <Eye className="mr-2 h-4 w-4" />새 창에서 보기
+                <Eye className="mr-2 h-4 w-4" />
+                {language === "ko" ? "새 창에서 보기" : "Open in new tab"}
               </Button>
               <Button
                 variant="outline"
@@ -419,7 +431,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
                 }}
               >
                 <Search className="mr-2 h-4 w-4" />
-                Bing으로 이미지 검색
+                {language === "ko" ? "Bing으로 이미지 검색" : "Search with Bing"}
               </Button>
             </div>
           </Card>
@@ -446,7 +458,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
               </div>
               <div className="w-full">
                 <p className="text-sm text-muted-foreground">{note.content}</p>
-                {note.tags && note.tags.length > 0 && (
+                {note.tags.length > 0 && (
                   <div className="flex gap-2 mt-2">
                     {note.tags.map((tag) => (
                       <span key={tag} className="text-xs bg-primary/10 px-2 py-1 rounded">
@@ -458,7 +470,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
                 {note.attachments && note.attachments.length > 0 && (
                   <div className="mt-4 space-y-2">
                     <p className="text-sm font-medium">
-                      {t("attached_files")} ({note.attachments.length}개)
+                      {language === "ko" ? "첨부파일" : "Attachments"} ({note.attachments.length}개)
                     </p>
                     <div className="grid grid-cols-2 gap-2">
                       {note.attachments.map((file: any, idx: number) => {
@@ -489,12 +501,17 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
                                 onClick={() =>
                                   setSelectedImage({ url: mediaUrl, name: file.name || `첨부파일 ${idx + 1}` })
                                 }
-                                onError={() => setImageLoadErrors((prev) => new Set(prev).add(imageErrorKey))}
+                                onError={(e) => {
+                                  console.log("[v0] Image load failed for:", file.name || `attachment ${idx}`)
+                                  setImageLoadErrors((prev) => new Set(prev).add(imageErrorKey))
+                                }}
                               />
                             )}
                             {isImage && hasError && (
                               <div className="flex flex-col items-center justify-center h-32 bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400 p-2">
-                                <p className="text-xs text-center">이미지를 불러올 수 없습니다</p>
+                                <p className="text-xs text-center">
+                                  {language === "ko" ? "이미지를 불러올 수 없습니다" : "Cannot load image"}
+                                </p>
                                 <p className="text-xs text-center mt-1 truncate w-full">{file.name}</p>
                               </div>
                             )}
@@ -508,12 +525,16 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
                                   playsInline
                                   className="w-full h-auto min-h-[128px] max-h-[300px]"
                                   style={{ display: "block" }}
-                                  onError={() => console.log("[v0] Video load failed:", file.name || `video ${idx}`)}
+                                  onError={(e) => {
+                                    console.log("[v0] Video load failed:", file.name || `video ${idx}`)
+                                  }}
                                 >
-                                  영상을 재생할 수 없습니다
+                                  {language === "ko" ? "영상을 재생할 수 없습니다" : "Cannot play video"}
                                 </video>
                                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent p-2">
-                                  <p className="text-xs text-white truncate">{file.name || `동영상 ${idx + 1}`}</p>
+                                  <p className="text-xs text-white truncate">
+                                    {file.name || `${language === "ko" ? "동영상" : "Video"} ${idx + 1}`}
+                                  </p>
                                 </div>
                               </div>
                             )}
@@ -524,7 +545,9 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
                                   controls
                                   preload="metadata"
                                   className="w-full"
-                                  onError={() => console.log("[v0] Audio load failed:", file.name || `audio ${idx}`)}
+                                  onError={(e) => {
+                                    console.log("[v0] Audio load failed:", file.name || `audio ${idx}`)
+                                  }}
                                 />
                               </div>
                             )}
@@ -547,7 +570,13 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
         ))}
         {filteredNotes.length === 0 && (
           <div className="text-center py-12 text-muted-foreground">
-            {searchQuery || selectedTag ? "검색 결과가 없습니다" : "노트가 없습니다. 새로 만들어보세요!"}
+            {searchQuery || selectedTag
+              ? language === "ko"
+                ? "검색 결과가 없습니다"
+                : "No results found"
+              : language === "ko"
+                ? "노트가 없습니다. 새로 만들어보세요!"
+                : "No notes. Create one!"}
           </div>
         )}
       </div>

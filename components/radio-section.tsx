@@ -4,10 +4,9 @@ import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { ArrowLeft, Play, Pause, Volume2, Plus, Trash2 } from "lucide-react"
+import { ArrowLeft, Play, Pause, Volume2, Plus, Trash2 } from 'lucide-react'
 import { getTranslation } from "@/lib/i18n"
 import type { Language } from "@/lib/types"
-import { loadRadioStations, saveRadioStations } from "@/lib/storage"
 
 const defaultRadioStations = [
   { name: "NPR News", url: "https://npr-ice.streamguys1.com/live.mp3" },
@@ -27,44 +26,15 @@ const defaultRadioStations = [
   { name: "Radio Paradise", url: "https://stream.radioparadise.com/aac-320" },
 ]
 
-export function RadioSection({ onBack, language, user }: { onBack: () => void; language: string; user: any }) {
+export function RadioSection({ onBack, language }: { onBack: () => void; language: string }) {
   const [isPlaying, setIsPlaying] = useState(false)
-  const [radioStations, setRadioStations] = useState<{ name: string; url: string }[]>([])
-  const [currentStation, setCurrentStation] = useState<{ name: string; url: string } | null>(null)
+  const [radioStations, setRadioStations] = useState(defaultRadioStations)
+  const [currentStation, setCurrentStation] = useState(radioStations[0])
   const [volume, setVolume] = useState(70)
   const [isAdding, setIsAdding] = useState(false)
   const [newStationName, setNewStationName] = useState("")
   const [newStationUrl, setNewStationUrl] = useState("")
-  const [isLoading, setIsLoading] = useState(true)
   const audioRef = useRef<HTMLAudioElement | null>(null)
-
-  useEffect(() => {
-    if (user?.id) {
-      console.log("[v0] Loading radio stations for user:", user.id)
-      setIsLoading(true)
-      loadRadioStations(user.id)
-        .then((stations) => {
-          console.log("[v0] Loaded radio stations from DB:", stations)
-          if (stations && stations.length > 0) {
-            console.log("[v0] Setting loaded stations:", stations.length)
-            setRadioStations(stations)
-            setCurrentStation(stations[0])
-          } else {
-            console.log("[v0] No saved stations, using defaults")
-            setRadioStations(defaultRadioStations)
-            setCurrentStation(defaultRadioStations[0])
-            saveRadioStations(defaultRadioStations, user.id).catch(console.error)
-          }
-          setIsLoading(false)
-        })
-        .catch((error) => {
-          console.error("[v0] Error loading radio stations:", error)
-          setRadioStations(defaultRadioStations)
-          setCurrentStation(defaultRadioStations[0])
-          setIsLoading(false)
-        })
-    }
-  }, [user?.id])
 
   useEffect(() => {
     if (!audioRef.current) {
@@ -87,7 +57,7 @@ export function RadioSection({ onBack, language, user }: { onBack: () => void; l
   }, [volume])
 
   const togglePlay = () => {
-    if (!audioRef.current || !currentStation) return
+    if (!audioRef.current) return
 
     if (isPlaying) {
       audioRef.current.pause()
@@ -119,7 +89,7 @@ export function RadioSection({ onBack, language, user }: { onBack: () => void; l
     setIsPlaying(false)
   }
 
-  const addStation = async () => {
+  const addStation = () => {
     if (!newStationName.trim() || !newStationUrl.trim()) {
       const lang = language as Language
       const msg =
@@ -135,21 +105,7 @@ export function RadioSection({ onBack, language, user }: { onBack: () => void; l
     }
 
     const newStation = { name: newStationName.trim(), url: newStationUrl.trim() }
-    const updatedStations = [...radioStations, newStation]
-    setRadioStations(updatedStations)
-
-    if (user?.id) {
-      try {
-        await saveRadioStations(updatedStations, user.id)
-        console.log("[v0] Radio station added and saved:", newStation.name)
-      } catch (error) {
-        console.error("[v0] Failed to save radio station:", error)
-        setRadioStations(radioStations)
-        alert("Failed to save station. Please try again.")
-        return
-      }
-    }
-
+    setRadioStations([...radioStations, newStation])
     setNewStationName("")
     setNewStationUrl("")
     setIsAdding(false)
@@ -165,7 +121,7 @@ export function RadioSection({ onBack, language, user }: { onBack: () => void; l
     alert(msg)
   }
 
-  const deleteStation = async (url: string) => {
+  const deleteStation = (url: string) => {
     if (radioStations.length <= 1) {
       const lang = language as Language
       const msg =
@@ -180,32 +136,15 @@ export function RadioSection({ onBack, language, user }: { onBack: () => void; l
       return
     }
 
-    if (currentStation?.url === url) {
+    if (currentStation.url === url) {
       setIsPlaying(false)
       if (audioRef.current) {
         audioRef.current.pause()
       }
+      setCurrentStation(radioStations[0])
     }
 
-    const updatedStations = radioStations.filter((station) => station.url !== url)
-    if (currentStation?.url === url) {
-      setCurrentStation(updatedStations[0])
-    }
-    setRadioStations(updatedStations)
-
-    if (user?.id) {
-      try {
-        await saveRadioStations(updatedStations, user.id)
-        console.log("[v0] Radio station deleted from database, remaining:", updatedStations.length)
-      } catch (error) {
-        console.error("[v0] Failed to delete radio station:", error)
-        setRadioStations(radioStations)
-        if (currentStation?.url === url) {
-          setCurrentStation(currentStation)
-        }
-        alert("Failed to delete station. Please try again.")
-      }
-    }
+    setRadioStations(radioStations.filter((station) => station.url !== url))
   }
 
   const lang = language as Language
@@ -232,21 +171,8 @@ export function RadioSection({ onBack, language, user }: { onBack: () => void; l
           ? "流媒体URL (例: https://...)"
           : "ストリーミングURL (例: https://...)"
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 p-6">
-        <Button variant="ghost" onClick={onBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> {getTranslation(lang, "back_to_forest")}
-        </Button>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-lg text-muted-foreground">Loading radio stations...</div>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 p-6 space-y-4">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
       <Button variant="ghost" onClick={onBack}>
         <ArrowLeft className="mr-2 h-4 w-4" /> {getTranslation(lang, "back_to_forest")}
       </Button>
@@ -254,39 +180,37 @@ export function RadioSection({ onBack, language, user }: { onBack: () => void; l
       <Card className="p-6 bg-gradient-to-br from-purple-50 to-pink-50">
         <h2 className="text-2xl font-bold mb-6 text-center">📻 {getTranslation(lang, "radio")}</h2>
 
-        {currentStation && (
-          <div className="flex flex-col items-center space-y-6">
-            <div className="text-center">
-              <div className="text-xl font-semibold text-purple-700 mb-2">{currentStation.name}</div>
-              <div className="text-sm text-muted-foreground">{isPlaying ? playingText : pausedText}</div>
-            </div>
+        <div className="flex flex-col items-center space-y-6">
+          <div className="text-center">
+            <div className="text-xl font-semibold text-purple-700 mb-2">{currentStation.name}</div>
+            <div className="text-sm text-muted-foreground">{isPlaying ? playingText : pausedText}</div>
+          </div>
 
-            <Button
-              onClick={togglePlay}
-              size="lg"
-              className={`w-24 h-24 rounded-full text-white ${
-                isPlaying ? "bg-red-500 hover:bg-red-600" : "bg-purple-500 hover:bg-purple-600"
-              }`}
-            >
-              {isPlaying ? <Pause className="h-12 w-12" /> : <Play className="h-12 w-12 ml-1" />}
-            </Button>
+          <Button
+            onClick={togglePlay}
+            size="lg"
+            className={`w-24 h-24 rounded-full text-white ${
+              isPlaying ? "bg-red-500 hover:bg-red-600" : "bg-purple-500 hover:bg-purple-600"
+            }`}
+          >
+            {isPlaying ? <Pause className="h-12 w-12" /> : <Play className="h-12 w-12 ml-1" />}
+          </Button>
 
-            <div className="w-full space-y-2">
-              <div className="flex items-center gap-3">
-                <Volume2 className="h-5 w-5 text-purple-600" />
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={volume}
-                  onChange={(e) => setVolume(Number(e.target.value))}
-                  className="flex-1 h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
-                />
-                <span className="text-sm font-medium w-12 text-center">{volume}%</span>
-              </div>
+          <div className="w-full space-y-2">
+            <div className="flex items-center gap-3">
+              <Volume2 className="h-5 w-5 text-purple-600" />
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={volume}
+                onChange={(e) => setVolume(Number(e.target.value))}
+                className="flex-1 h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
+              />
+              <span className="text-sm font-medium w-12 text-center">{volume}%</span>
             </div>
           </div>
-        )}
+        </div>
       </Card>
 
       <div className="space-y-2">
@@ -325,11 +249,11 @@ export function RadioSection({ onBack, language, user }: { onBack: () => void; l
           {radioStations.map((station) => (
             <div key={station.url} className="flex items-center gap-2">
               <Button
-                variant={currentStation?.url === station.url ? "default" : "outline"}
+                variant={currentStation.url === station.url ? "default" : "outline"}
                 onClick={() => selectStation(station)}
                 className="justify-start flex-1"
               >
-                <span className="mr-2">{currentStation?.url === station.url && isPlaying ? "🔴" : "📻"}</span>
+                <span className="mr-2">{currentStation.url === station.url && isPlaying ? "🔴" : "📻"}</span>
                 {station.name}
               </Button>
               <Button

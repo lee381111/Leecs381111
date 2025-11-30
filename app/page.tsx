@@ -1,8 +1,6 @@
 "use client"
 
 import type React from "react"
-import { Suspense } from "react"
-import { useMemo } from "react"
 
 import { useState, useEffect, useRef } from "react"
 import dynamic from "next/dynamic"
@@ -25,8 +23,8 @@ import {
   ChevronDown,
   Search,
   X,
-  Award as IdCard,
-  DollarSign,
+  User,
+  Wallet,
 } from "lucide-react"
 import { getTranslation } from "@/lib/i18n"
 import type { Language } from "@/lib/types"
@@ -373,23 +371,27 @@ const GlobalSearch = ({
   )
 }
 
-const ForestNotePage = () => {
-  const { user, signOut, loading } = useAuth()
+export default function ForestNotePage() {
+  const { user, logout, loading } = useAuth()
   const [currentSection, setCurrentSection] = useState<Section>("home")
   const [language, setLanguage] = useState<Language>("ko")
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([])
   const [storageUsed, setStorageUsed] = useState(0)
   const isCalculatingRef = useRef(false)
-  const [allNotes, setAllNotes] = useState<any[]>([])
-  const [allDiaries, setAllDiaries] = useState<any[]>([])
-  const [allSchedules, setAllSchedules] = useState<any[]>([])
-  const [allTravels, setAllTravels] = useState<any[]>([])
-  const [allVehicles, setAllVehicles] = useState<any[]>([])
-  const [allHealthRecords, setAllHealthRecords] = useState<any[]>([])
 
   const ADMIN_EMAILS = ["chanse1984@hanmail.net", "lee381111@gmail.com"] // 관리자 이메일 목록
   const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email) : false
   const STORAGE_LIMIT = isAdmin ? 1000 * 1024 * 1024 : 500 * 1024 * 1024 // Admin: 1000MB, Others: 500MB
+
+  console.log(
+    "[v0] User email:",
+    user?.email,
+    "Is admin:",
+    isAdmin,
+    "Storage limit:",
+    STORAGE_LIMIT / 1024 / 1024,
+    "MB",
+  )
 
   useEffect(() => {
     const calculateStorage = async () => {
@@ -399,6 +401,7 @@ const ForestNotePage = () => {
       }
 
       if (isCalculatingRef.current) {
+        console.log("[v0] Storage calculation already in progress, skipping")
         return
       }
 
@@ -408,9 +411,10 @@ const ForestNotePage = () => {
         const fetchWithFallback = async (fn: () => Promise<any[]>, name: string): Promise<any[]> => {
           try {
             const result = await fn()
+            console.log(`[v0] Loaded ${name}:`, result.length, "items")
             return Array.isArray(result) ? result : []
           } catch (error) {
-            console.error(`Failed to load ${name}:`, error)
+            console.warn(`[v0] Failed to load ${name}, using empty array:`, error)
             return []
           }
         }
@@ -426,13 +430,6 @@ const ForestNotePage = () => {
           fetchWithFallback(() => loadVehicleMaintenanceRecords(user.id), "maintenance"),
         ])
 
-        setAllNotes(notes)
-        setAllDiaries(diaries)
-        setAllSchedules(schedules)
-        setAllTravels(travels)
-        setAllVehicles(vehicles)
-        setAllHealthRecords(health)
-
         const jsonData = JSON.stringify({
           notes: Array.isArray(notes) ? notes : [],
           diaries: Array.isArray(diaries) ? diaries : [],
@@ -444,6 +441,8 @@ const ForestNotePage = () => {
           maintenance: Array.isArray(maintenance) ? maintenance : [],
         })
         const totalSize = new Blob([jsonData]).size
+
+        console.log("[v0] JSON data size:", totalSize, "bytes")
 
         let mediaCount = 0
 
@@ -471,13 +470,17 @@ const ForestNotePage = () => {
           })
         }
 
-        const estimatedMediaSize = mediaCount * 500 * 1024
+        const estimatedMediaSize = mediaCount * 500 * 1024 // 500KB per media
+
+        console.log("[v0] Media count:", mediaCount, "files")
+        console.log("[v0] Estimated media size:", estimatedMediaSize, "bytes")
 
         const finalSize = totalSize + estimatedMediaSize
+        console.log("[v0] Total storage used:", finalSize, "bytes", "(" + (finalSize / 1024 / 1024).toFixed(2) + " MB)")
 
         setStorageUsed(finalSize)
       } catch (error) {
-        console.error("Storage calculation error:", error)
+        console.error("[v0] Storage calculation error:", error)
         setStorageUsed(0)
       } finally {
         isCalculatingRef.current = false
@@ -490,7 +493,7 @@ const ForestNotePage = () => {
       calculateStorage()
     }
 
-    const interval = setInterval(calculateStorage, 60000)
+    const interval = setInterval(calculateStorage, 60000) // Every 60 seconds
 
     return () => clearInterval(interval)
   }, [user, currentSection])
@@ -518,91 +521,16 @@ const ForestNotePage = () => {
     }
   }, [user])
 
-  const handleSearchResultClick = (section: Section, item: any) => {
-    setCurrentSection(section)
-  }
-
-  const menuItems = useMemo(() => {
-    const items = [
-      {
-        id: "schedule",
-        label: getTranslation(language, "schedule"),
-        icon: CalendarIcon,
-        color: "blue",
-        count: allSchedules.length,
-      },
-      {
-        id: "notes",
-        label: getTranslation(language, "notes"),
-        icon: FileText,
-        color: "yellow",
-        count: allNotes.length,
-      },
-      {
-        id: "diary",
-        label: getTranslation(language, "diary"),
-        icon: BookOpen,
-        color: "pink",
-        count: allDiaries.length,
-      },
-      {
-        id: "travel",
-        label: getTranslation(language, "travel"),
-        icon: Plane,
-        color: "indigo",
-        count: allTravels.length,
-      },
-      { id: "vehicle", label: getTranslation(language, "vehicle"), icon: Car, color: "red", count: allVehicles.length },
-      {
-        id: "health",
-        label: getTranslation(language, "health"),
-        icon: Heart,
-        color: "rose",
-        count: allHealthRecords.length,
-      },
-      {
-        id: "business-card",
-        label: getTranslation(language, "businessCard"),
-        icon: IdCard,
-        color: "emerald",
-        count: 0,
-      },
-      { id: "budget", label: getTranslation(language, "budget"), icon: DollarSign, color: "green", count: 0 },
-      { id: "weather", label: getTranslation(language, "weather"), icon: Cloud, color: "cyan", count: 0 },
-      { id: "radio", label: getTranslation(language, "radio"), icon: Radio, color: "purple", count: 0 },
-      { id: "statistics", label: getTranslation(language, "statistics"), icon: BarChart3, color: "amber", count: 0 },
-    ]
-
-    return items
-  }, [allSchedules, allNotes, allDiaries, allTravels, allVehicles, allHealthRecords, language])
-
-  const formatBytes = (bytes: number) => {
-    if (bytes === 0) return "0 MB"
-    const mb = bytes / 1024 / 1024
-    if (mb < 1) {
-      // Show KB instead of 0.00 MB for small sizes
-      const kb = bytes / 1024
-      return `${kb.toFixed(0)} KB`
-    }
-    return `${mb.toFixed(2)} MB`
-  }
-
-  const storagePercentage = (storageUsed / STORAGE_LIMIT) * 100
+  useEffect(() => {
+    console.log("[v0] Auth state:", { user: user?.email, loading })
+  }, [user, loading])
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-          <p className="text-emerald-800">
-            {language === "ko"
-              ? "로딩 중..."
-              : language === "en"
-                ? "Loading..."
-                : language === "zh"
-                  ? "加载中..."
-                  : "読み込み中..."}
-          </p>
+          <p className="text-emerald-800">로딩 중...</p>
         </div>
       </div>
     )
@@ -610,16 +538,43 @@ const ForestNotePage = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 flex items-center justify-center p-4">
-        <div className="absolute inset-0 opacity-30">
-          <ForestCanvas />
-        </div>
-        <div className="relative z-10">
-          <LoginForm language={language} onLanguageChange={setLanguage} />
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 flex items-center justify-center p-6">
+        <LoginForm language={language} onLanguageChange={setLanguage} />
       </div>
     )
   }
+
+  const menuItems = [
+    { id: "schedule", label: getTranslation(language, "schedule"), icon: CalendarIcon, color: "teal" },
+    { id: "notes", label: getTranslation(language, "notes"), icon: FileText, color: "emerald" },
+    { id: "diary", label: getTranslation(language, "diary"), icon: BookOpen, color: "green" },
+    { id: "travel", label: getTranslation(language, "travel"), icon: Plane, color: "blue" },
+    { id: "vehicle", label: getTranslation(language, "vehicle"), icon: Car, color: "indigo" },
+    { id: "health", label: getTranslation(language, "health"), icon: Heart, color: "rose" },
+    { id: "weather", label: getTranslation(language, "weather"), icon: Cloud, color: "cyan" },
+    { id: "radio", label: getTranslation(language, "radio"), icon: Radio, color: "purple" },
+    {
+      id: "budget",
+      label: language === "ko" ? "가계부" : language === "en" ? "Budget" : language === "zh" ? "家庭账本" : "家計簿",
+      icon: Wallet,
+      color: "yellow",
+    },
+    {
+      id: "businessCard",
+      label: language === "ko" ? "명함" : language === "en" ? "Business Card" : language === "zh" ? "名片" : "名刺",
+      icon: User,
+      color: "violet",
+    },
+    { id: "statistics", label: getTranslation(language, "statistics"), icon: BarChart3, color: "amber" },
+  ]
+
+  const formatBytes = (bytes: number) => {
+    if (bytes === 0) return "0 MB"
+    const mb = bytes / (1024 * 1024)
+    return `${mb.toFixed(2)} MB`
+  }
+
+  const storagePercentage = (storageUsed / STORAGE_LIMIT) * 100
 
   if (currentSection === "notes") {
     return <NotesSection onBack={() => setCurrentSection("home")} language={language} />
@@ -638,7 +593,7 @@ const ForestNotePage = () => {
   }
 
   if (currentSection === "radio") {
-    return <RadioSection onBack={() => setCurrentSection("home")} language={language} user={user} />
+    return <RadioSection onBack={() => setCurrentSection("home")} language={language} />
   }
 
   if (currentSection === "travel") {
@@ -670,7 +625,7 @@ const ForestNotePage = () => {
   }
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50">
+    <div className="min-h-screen bg-[rgb(220,252,231)] relative overflow-hidden">
       <div className="absolute inset-0 opacity-30">
         <ForestCanvas />
       </div>
@@ -678,7 +633,7 @@ const ForestNotePage = () => {
       <div className="relative z-10 p-6 space-y-6">
         <div className="flex items-center justify-between gap-4">
           <h1 className="text-3xl md:text-4xl font-bold text-emerald-700 whitespace-nowrap flex-1 text-center">
-            🌲 {getTranslation(language, "title")}
+            🌲 기록의 숲
           </h1>
           <div className="flex flex-col gap-2 items-end flex-shrink-0">
             <div className="flex items-center gap-2">
@@ -686,17 +641,16 @@ const ForestNotePage = () => {
               <LanguageSelector language={language} onChange={setLanguage} />
             </div>
             <div className="flex items-center gap-2">
-              <GlobalSearch language={language} onResultClick={handleSearchResultClick} />
+              <GlobalSearch
+                language={language}
+                onResultClick={(section, item) => {
+                  setCurrentSection(section)
+                }}
+              />
               <Button
                 variant="outline"
                 size="sm"
-                onClick={async () => {
-                  try {
-                    await signOut()
-                  } catch (error) {
-                    console.error("Logout error:", error)
-                  }
-                }}
+                onClick={logout}
                 className="text-black flex items-center gap-1 bg-transparent"
               >
                 <LogOut className="h-4 w-4" />
@@ -761,16 +715,16 @@ const ForestNotePage = () => {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {menuItems.map((item) => {
             const lightBg =
-              item.color === "blue"
-                ? "bg-blue-50"
-                : item.color === "yellow"
-                  ? "bg-yellow-50"
-                  : item.color === "pink"
-                    ? "bg-pink-50"
-                    : item.color === "indigo"
-                      ? "bg-indigo-50"
-                      : item.color === "red"
-                        ? "bg-red-50"
+              item.color === "teal"
+                ? "bg-teal-50"
+                : item.color === "emerald"
+                  ? "bg-emerald-50"
+                  : item.color === "green"
+                    ? "bg-green-50"
+                    : item.color === "blue"
+                      ? "bg-blue-50"
+                      : item.color === "indigo"
+                        ? "bg-indigo-50"
                         : item.color === "rose"
                           ? "bg-rose-50"
                           : item.color === "cyan"
@@ -779,22 +733,22 @@ const ForestNotePage = () => {
                               ? "bg-purple-50"
                               : item.color === "amber"
                                 ? "bg-amber-50"
-                                : item.color === "green"
-                                  ? "bg-green-50"
+                                : item.color === "yellow"
+                                  ? "bg-yellow-50"
                                   : "bg-gray-50"
 
             const textColor = "text-gray-900"
             const iconColor =
-              item.color === "blue"
-                ? "text-blue-700"
-                : item.color === "yellow"
-                  ? "text-yellow-700"
-                  : item.color === "pink"
-                    ? "text-pink-700"
-                    : item.color === "indigo"
-                      ? "text-indigo-700"
-                      : item.color === "red"
-                        ? "text-red-700"
+              item.color === "teal"
+                ? "text-teal-700"
+                : item.color === "emerald"
+                  ? "text-emerald-700"
+                  : item.color === "green"
+                    ? "text-green-700"
+                    : item.color === "blue"
+                      ? "text-blue-700"
+                      : item.color === "indigo"
+                        ? "text-indigo-700"
                         : item.color === "rose"
                           ? "text-rose-700"
                           : item.color === "cyan"
@@ -803,8 +757,8 @@ const ForestNotePage = () => {
                               ? "text-purple-700"
                               : item.color === "amber"
                                 ? "text-amber-700"
-                                : item.color === "green"
-                                  ? "text-green-700"
+                                : item.color === "yellow"
+                                  ? "text-yellow-700"
                                   : "text-gray-700"
 
             return (
@@ -815,7 +769,6 @@ const ForestNotePage = () => {
               >
                 <item.icon className={`h-8 w-8 mb-4 ${iconColor}`} />
                 <h3 className={`font-semibold text-lg text-center ${textColor}`}>{item.label}</h3>
-                {item.count > 0 && <p className={`text-sm mt-2 ${iconColor}`}>{item.count}개</p>}
               </Card>
             )
           })}
@@ -847,14 +800,14 @@ const ForestNotePage = () => {
   )
 }
 
-const LoginForm = ({
+function LoginForm({
   language,
   onLanguageChange,
 }: {
   language: Language
   onLanguageChange: (lang: Language) => void
-}) => {
-  const { signIn, signUp } = useAuth()
+}) {
+  const { login, register } = useAuth()
   const [isRegister, setIsRegister] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -868,7 +821,7 @@ const LoginForm = ({
 
     try {
       if (isRegister) {
-        await signUp(email, password)
+        await register(email, password)
         alert(
           language === "ko"
             ? "회원가입이 완료되었습니다. 이메일을 확인해주세요."
@@ -882,7 +835,9 @@ const LoginForm = ({
         setEmail("")
         setPassword("")
       } else {
-        await signIn(email, password)
+        console.log("[v0] Attempting login...")
+        await login(email, password)
+        console.log("[v0] Login successful")
       }
     } catch (error: any) {
       console.error("[v0] Login error:", error)
@@ -919,7 +874,16 @@ const LoginForm = ({
   return (
     <Card className="p-6 w-full max-w-md bg-white/90 backdrop-blur">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-emerald-800">🌲 {getTranslation(language, "title")}</h2>
+        <h2 className="text-2xl font-bold text-emerald-800">
+          🌲{" "}
+          {language === "ko"
+            ? "기록의 숲"
+            : language === "en"
+              ? "Forest Notes"
+              : language === "zh"
+                ? "记录之森"
+                : "記録の森"}
+        </h2>
         <LanguageSelector language={language} onChange={onLanguageChange} />
       </div>
       <h3 className="text-xl font-semibold mb-4">
@@ -1020,22 +984,5 @@ const LoginForm = ({
         </p>
       </div>
     </Card>
-  )
-}
-
-export default function Page() {
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-            <p className="text-emerald-800">로딩 중...</p>
-          </div>
-        </div>
-      }
-    >
-      <ForestNotePage />
-    </Suspense>
   )
 }

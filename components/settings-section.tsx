@@ -5,11 +5,12 @@ import { useAuth } from "@/lib/auth-context"
 import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, Download, Upload, BookOpen, CheckCircle2, FileJson, FileSpreadsheet, FileText } from "lucide-react"
+import { ArrowLeft, Download, Upload, BookOpen, CheckCircle2, FileJson, FileSpreadsheet, FileText } from 'lucide-react'
 import { exportAllData, importAllData } from "@/lib/storage"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { getTranslation } from "@/lib/i18n"
 import type { Language } from "@/lib/types"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export function SettingsSection({ onBack, language }: { onBack: () => void; language: string }) {
   const { user } = useAuth()
@@ -46,16 +47,8 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
     }
 
     try {
-      const {
-        loadNotes,
-        loadDiaries,
-        loadSchedules,
-        loadTravelRecords,
-        loadHealthRecords,
-        loadMedications,
-        loadBudgetTransactions,
-      } = await import("@/lib/storage")
-
+      const { loadNotes, loadDiaries, loadSchedules, loadTravelRecords, loadHealthRecords, loadMedications, loadBudgetTransactions } = await import("@/lib/storage")
+      
       const [notes, diaries, schedules, travels, health, medications, budgetTransactions] = await Promise.all([
         loadNotes(user.id),
         loadDiaries(user.id),
@@ -67,13 +60,13 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
       ])
 
       let csvContent = ""
-
+      
       csvContent += "=== 노트 ===\n"
       csvContent += "제목,내용,작성일\n"
       notes.forEach((note: any) => {
-        const title = `"${(note.title || "").replace(/"/g, '""')}"`
-        const content = `"${(note.content || "").replace(/"/g, '""')}"`
-        const date = note.createdAt?.split("T")[0] || ""
+        const title = `"${(note.title || '').replace(/"/g, '""')}"`
+        const content = `"${(note.content || '').replace(/"/g, '""')}"`
+        const date = note.createdAt?.split('T')[0] || ''
         csvContent += `${title},${content},${date}\n`
       })
       csvContent += "\n"
@@ -81,10 +74,10 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
       csvContent += "=== 일기 ===\n"
       csvContent += "날짜,내용,기분,날씨\n"
       diaries.forEach((diary: any) => {
-        const date = diary.date || ""
-        const content = `"${(diary.content || "").replace(/"/g, '""')}"`
-        const mood = diary.mood || ""
-        const weather = diary.weather || ""
+        const date = diary.date || ''
+        const content = `"${(diary.content || '').replace(/"/g, '""')}"`
+        const mood = diary.mood || ''
+        const weather = diary.weather || ''
         csvContent += `${date},${content},${mood},${weather}\n`
       })
       csvContent += "\n"
@@ -92,19 +85,19 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
       csvContent += "=== 가계부 ===\n"
       csvContent += "날짜,구분,카테고리,금액,설명\n"
       budgetTransactions.forEach((t: any) => {
-        const date = t.date || ""
-        const type = t.type === "income" ? "수입" : "지출"
-        const category = t.category || ""
+        const date = t.date || ''
+        const type = t.type === 'income' ? '수입' : '지출'
+        const category = t.category || ''
         const amount = t.amount || 0
-        const description = `"${(t.description || "").replace(/"/g, '""')}"`
+        const description = `"${(t.description || '').replace(/"/g, '""')}"`
         csvContent += `${date},${type},${category},${amount},${description}\n`
       })
 
-      const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" })
+      const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' })
       const url = URL.createObjectURL(blob)
-      const a = document.createElement("a")
+      const a = document.createElement('a')
       a.href = url
-      a.download = `forest-note-export-${new Date().toISOString().split("T")[0]}.csv`
+      a.download = `forest-note-export-${new Date().toISOString().split('T')[0]}.csv`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
@@ -124,16 +117,8 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
     }
 
     try {
-      const {
-        loadNotes,
-        loadDiaries,
-        loadSchedules,
-        loadTravelRecords,
-        loadHealthRecords,
-        loadMedications,
-        loadBudgetTransactions,
-      } = await import("@/lib/storage")
-
+      const { loadNotes, loadDiaries, loadSchedules, loadTravelRecords, loadHealthRecords, loadMedications, loadBudgetTransactions } = await import("@/lib/storage")
+      
       const [notes, diaries, schedules, travels, health, medications, budgetTransactions] = await Promise.all([
         loadNotes(user.id),
         loadDiaries(user.id),
@@ -145,36 +130,36 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
       ])
 
       let html = '<html><head><meta charset="utf-8"></head><body>'
-
-      html += "<h2>노트</h2>"
+      
+      html += '<h2>노트</h2>'
       html += '<table border="1"><tr><th>제목</th><th>내용</th><th>작성일</th></tr>'
       notes.forEach((note: any) => {
-        html += `<tr><td>${note.title || ""}</td><td>${note.content || ""}</td><td>${note.createdAt?.split("T")[0] || ""}</td></tr>`
+        html += `<tr><td>${note.title || ''}</td><td>${note.content || ''}</td><td>${note.createdAt?.split('T')[0] || ''}</td></tr>`
       })
-      html += "</table><br>"
+      html += '</table><br>'
 
-      html += "<h2>일기</h2>"
+      html += '<h2>일기</h2>'
       html += '<table border="1"><tr><th>날짜</th><th>내용</th><th>기분</th><th>날씨</th></tr>'
       diaries.forEach((diary: any) => {
-        html += `<tr><td>${diary.date || ""}</td><td>${diary.content || ""}</td><td>${diary.mood || ""}</td><td>${diary.weather || ""}</td></tr>`
+        html += `<tr><td>${diary.date || ''}</td><td>${diary.content || ''}</td><td>${diary.mood || ''}</td><td>${diary.weather || ''}</td></tr>`
       })
-      html += "</table><br>"
+      html += '</table><br>'
 
-      html += "<h2>가계부</h2>"
+      html += '<h2>가계부</h2>'
       html += '<table border="1"><tr><th>날짜</th><th>구분</th><th>카테고리</th><th>금액</th><th>설명</th></tr>'
       budgetTransactions.forEach((t: any) => {
-        const type = t.type === "income" ? "수입" : "지출"
-        html += `<tr><td>${t.date || ""}</td><td>${type}</td><td>${t.category || ""}</td><td>${t.amount || 0}</td><td>${t.description || ""}</td></tr>`
+        const type = t.type === 'income' ? '수입' : '지출'
+        html += `<tr><td>${t.date || ''}</td><td>${type}</td><td>${t.category || ''}</td><td>${t.amount || 0}</td><td>${t.description || ''}</td></tr>`
       })
-      html += "</table>"
+      html += '</table>'
 
-      html += "</body></html>"
+      html += '</body></html>'
 
-      const blob = new Blob([html], { type: "application/vnd.ms-excel;charset=utf-8;" })
+      const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' })
       const url = URL.createObjectURL(blob)
-      const a = document.createElement("a")
+      const a = document.createElement('a')
       a.href = url
-      a.download = `forest-note-export-${new Date().toISOString().split("T")[0]}.xls`
+      a.download = `forest-note-export-${new Date().toISOString().split('T')[0]}.xls`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
@@ -226,14 +211,7 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
         : language === "zh"
           ? "可以将数据导出为JSON、CSV、Excel格式。只能用JSON格式恢复。"
           : "Export data in JSON, CSV, or Excel format. Only JSON can be restored."
-  const downloadBackupText =
-    language === "ko"
-      ? "데이터 내보내기"
-      : language === "en"
-        ? "Export Data"
-        : language === "zh"
-          ? "导出数据"
-          : "データエクスポート"
+  const downloadBackupText = language === "ko" ? "데이터 내보내기" : language === "en" ? "Export Data" : language === "zh" ? "导出数据" : "データエクスポート"
   const restoreBackupText = importing ? getTranslation(lang, "restoring") : getTranslation(lang, "restore_backup")
   const userGuideTitle = getTranslation(lang, "user_guide_title")
   const openGuideText = getTranslation(lang, "open_guide")
@@ -257,14 +235,14 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
 
           <div className="flex flex-col gap-2">
             <div className="relative">
-              <Button
-                onClick={() => setShowExportMenu(!showExportMenu)}
+              <Button 
+                onClick={() => setShowExportMenu(!showExportMenu)} 
                 className="gap-2 w-full bg-emerald-600 hover:bg-emerald-700"
               >
                 <Download className="h-4 w-4" />
                 {downloadBackupText}
               </Button>
-
+              
               {showExportMenu && (
                 <div className="absolute top-full mt-1 w-full bg-card border rounded-lg shadow-lg py-1 z-10">
                   <button
@@ -335,22 +313,10 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
 
       <Card className="p-6 space-y-2 bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950 dark:to-green-950">
         <h3 className="font-semibold text-emerald-800 dark:text-emerald-200">
-          {language === "ko"
-            ? "앱 개발자"
-            : language === "ja"
-              ? "アプリ開発者"
-              : language === "zh"
-                ? "应用开发者"
-                : "App Developer"}
+          {language === "ko" ? "앱 개발자" : language === "ja" ? "アプリ開発者" : language === "zh" ? "应用开发者" : "App Developer"}
         </h3>
         <p className="text-sm text-emerald-700 dark:text-emerald-300">
-          {language === "ko"
-            ? "경기도 김포시 장기동 이찬세"
-            : language === "ja"
-              ? "京畿道金浦市長期洞 イ・チャンセ"
-              : language === "zh"
-                ? "京畿道金浦市长期洞 李赞世"
-                : "Lee Chan-se, Janggi-dong, Gimpo-si, Gyeonggi-do"}
+          {language === "ko" ? "경기도 김포시 장기동 이찬세" : language === "ja" ? "京畿道金浦市長期洞 イ・チャンセ" : language === "zh" ? "京畿道金浦市长期洞 李赞世" : "Lee Chan-se, Janggi-dong, Gimpo-si, Gyeonggi-do"}
         </p>
       </Card>
 
@@ -367,8 +333,8 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
                 기록의 숲 소개
               </h3>
               <p className="text-muted-foreground">
-                기록의 숲은 일상의 모든 기록을 한 곳에서 관리할 수 있는 통합 노트 앱입니다. 노트, 일기, 일정부터 여행,
-                차량, 건강 기록까지 다양한 섹션을 제공합니다.
+                기록의 숲은 일상의 모든 기록을 한 곳에서 관리할 수 있는 통합 노트 앱입니다. 
+                노트, 일기, 일정부터 여행, 차량, 건강 기록까지 다양한 섹션을 제공합니다.
               </p>
             </section>
 
@@ -394,8 +360,8 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
                 {getTranslation(lang, "schedules")}
               </h3>
               <p className="text-muted-foreground">
-                일정을 등록하면 메인 화면의 캘린더에 자동으로 표시됩니다. 알림 기능을 활성화하여 중요한 일정을 놓치지
-                마세요.
+                일정을 등록하면 메인 화면의 캘린더에 자동으로 표시됩니다. 
+                알림 기능을 활성화하여 중요한 일정을 놓치지 마세요.
               </p>
             </section>
 
@@ -405,8 +371,8 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
                 {getTranslation(lang, "travel_records")}
               </h3>
               <p className="text-muted-foreground">
-                여행지를 입력하면 지도에 빨간 점으로 자동 표시됩니다. 사진, 동영상, 음성 메모를 첨부하여 여행의 추억을
-                생생하게 보관하세요.
+                여행지를 입력하면 지도에 빨간 점으로 자동 표시됩니다. 
+                사진, 동영상, 음성 메모를 첨부하여 여행의 추억을 생생하게 보관하세요.
               </p>
             </section>
 
@@ -445,13 +411,7 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
             <section>
               <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
-                {language === "ko"
-                  ? "명함 관리"
-                  : language === "ja"
-                    ? "名刺管理"
-                    : language === "zh"
-                      ? "名片管理"
-                      : "Business Cards"}
+                {language === "ko" ? "명함 관리" : language === "ja" ? "名刺管理" : language === "zh" ? "名片管理" : "Business Cards"}
               </h3>
               <p className="text-muted-foreground">
                 {language === "ko"

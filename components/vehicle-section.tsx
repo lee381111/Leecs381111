@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, Plus, Pencil, Trash2, Car, Calendar } from "lucide-react"
+import { ArrowLeft, Plus, Pencil, Trash2, Car, Calendar } from 'lucide-react'
 import { saveVehicles, loadVehicles, saveVehicleMaintenanceRecords, loadVehicleMaintenanceRecords } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import type { Vehicle, VehicleMaintenanceRecord, PreventiveMaintenanceSchedule, Attachment } from "@/lib/types"
@@ -70,7 +70,7 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
 
   const loadData = async () => {
     if (!user?.id) return
-
+    
     try {
       setLoading(true)
       const [vehiclesData, recordsData] = await Promise.all([
@@ -94,7 +94,7 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
       alert("로그인이 필요합니다")
       return
     }
-
+    
     if (!vehicleForm.name || !vehicleForm.licensePlate) {
       alert(t("vehicle_name_and_plate_required"))
       return
@@ -136,7 +136,7 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
       alert("로그인이 필요합니다")
       return
     }
-
+    
     if (!confirm(t("delete_vehicle_confirm"))) return
 
     try {
@@ -167,7 +167,7 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
       alert("로그인이 필요합니다")
       return
     }
-
+    
     console.log("[v0] 🔧 Saving maintenance record")
     console.log("[v0] Selected vehicle ID:", selectedVehicleId)
     console.log("[v0] Maintenance form:", maintenanceForm)
@@ -228,7 +228,7 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
       alert("로그인이 필요합니다")
       return
     }
-
+    
     if (!confirm(t("delete_maintenance_confirm"))) return
 
     try {
@@ -318,7 +318,7 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
       alert("로그인이 필요합니다")
       return
     }
-
+    
     if (!confirm(t("delete_schedule_confirm"))) return
 
     try {
@@ -672,11 +672,7 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
                   )}
                 </Card>
 
-                <Button
-                  onClick={handleSaveSchedule}
-                  disabled={saving}
-                  className="w-full bg-green-600 hover:bg-green-700"
-                >
+                <Button onClick={handleSaveSchedule} disabled={saving} className="w-full bg-green-600 hover:bg-green-700">
                   {saving ? <Spinner className="mr-2 h-4 w-4" /> : null}
                   {t("save_schedule")}
                 </Button>

@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Plus, Edit, Trash2, Lock, Unlock, X } from "lucide-react"
+import { ArrowLeft, Plus, Edit, Trash2, Lock, Unlock, X } from 'lucide-react'
 import { saveDiaries, loadDiaries } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import type { DiaryEntry, Attachment } from "@/lib/types"
@@ -25,9 +25,9 @@ const weathers = ["☀️ 맑음", "☁️ 흐림", "🌧️ 비", "⛈️ 폭�
 async function hashPassword(password: string): Promise<string> {
   const encoder = new TextEncoder()
   const data = encoder.encode(password)
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
   const hashArray = Array.from(new Uint8Array(hashBuffer))
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
 export function DiarySection({ onBack, language }: DiarySectionProps) {
@@ -54,7 +54,7 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
   const t = (key: string) => getTranslation(language as any, key)
 
   useEffect(() => {
-    const savedPasswordHash = localStorage.getItem("diary_password_hash")
+    const savedPasswordHash = localStorage.getItem('diary_password_hash')
     if (!savedPasswordHash) {
       setIsSettingPassword(true)
       setIsLocked(false)
@@ -71,7 +71,7 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
 
   const loadData = async () => {
     if (!user?.id) return
-
+    
     try {
       setLoading(true)
       const data = await loadDiaries(user.id)
@@ -87,95 +87,95 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
 
   const handleSetPassword = async () => {
     if (!password || password.length < 4) {
-      alert(t("password_too_short"))
+      alert(t("password_too_short") || "비밀번호는 최소 4자 이상이어야 합니다")
       return
     }
     if (password !== confirmPassword) {
-      alert(t("password_mismatch"))
+      alert(t("password_mismatch") || "비밀번호가 일치하지 않습니다")
       return
     }
 
     const hash = await hashPassword(password)
-    localStorage.setItem("diary_password_hash", hash)
+    localStorage.setItem('diary_password_hash', hash)
     setIsSettingPassword(false)
     setIsLocked(false)
     setPassword("")
     setConfirmPassword("")
-    alert(t("password_set"))
+    alert(t("password_set") || "일기 비밀번호가 설정되었습니다")
   }
 
   const handleUnlock = async () => {
     if (!password) {
-      alert(t("enter_password"))
+      alert(t("enter_password") || "비밀번호를 입력하세요")
       return
     }
 
-    const savedHash = localStorage.getItem("diary_password_hash")
+    const savedHash = localStorage.getItem('diary_password_hash')
     const inputHash = await hashPassword(password)
 
     if (inputHash === savedHash) {
       setIsLocked(false)
       setPassword("")
-      alert(t("unlocked"))
+      alert(t("unlocked") || "잠금이 해제되었습니다")
     } else {
-      alert(t("wrong_password"))
+      alert(t("wrong_password") || "비밀번호가 틀렸습니다")
       setPassword("")
     }
   }
 
   const handleChangePassword = async () => {
-    const savedHash = localStorage.getItem("diary_password_hash")
+    const savedHash = localStorage.getItem('diary_password_hash')
     const currentHash = await hashPassword(password)
 
     if (currentHash !== savedHash) {
-      alert(t("current_password_wrong"))
+      alert(t("wrong_password") || "현재 비밀번호가 틀렸습니다")
       return
     }
 
     if (!confirmPassword || confirmPassword.length < 4) {
-      alert(t("new_password_too_short"))
+      alert(t("password_too_short") || "새 비밀번호는 최소 4자 이상이어야 합니다")
       return
     }
 
     const newHash = await hashPassword(confirmPassword)
-    localStorage.setItem("diary_password_hash", newHash)
-    alert(t("password_changed"))
+    localStorage.setItem('diary_password_hash', newHash)
+    alert(t("password_changed") || "비밀번호가 변경되었습니다")
     setPassword("")
     setConfirmPassword("")
   }
 
   const handleRemovePassword = async () => {
-    const savedHash = localStorage.getItem("diary_password_hash")
+    const savedHash = localStorage.getItem('diary_password_hash')
     const inputHash = await hashPassword(password)
 
     if (inputHash !== savedHash) {
-      alert(t("wrong_password"))
+      alert(t("wrong_password") || "비밀번호가 틀렸습니다")
       return
     }
 
-    if (confirm(t("confirm_remove_password"))) {
-      localStorage.removeItem("diary_password_hash")
+    if (confirm(t("confirm_remove_password") || "정말 비밀번호를 제거하시겠습니까?")) {
+      localStorage.removeItem('diary_password_hash')
       setIsLocked(false)
       setPassword("")
-      alert(t("password_removed"))
+      alert(t("password_removed") || "비밀번호가 제거되었습니다")
     }
   }
 
   const handleEdit = (diary: DiaryEntry) => {
     console.log("[v0] Editing diary, attachments:", diary.attachments?.length || 0)
     setEditingId(diary.id)
-    const loadedAttachments = (diary.attachments || []).map((att) => ({
-      type: att.type || "image",
-      name: att.name || "attachment",
-      url: att.url || att.data || "",
-      data: att.data || att.url || "",
+    const loadedAttachments = (diary.attachments || []).map(att => ({
+      type: att.type || 'image',
+      name: att.name || 'attachment',
+      url: att.url || att.data || '',
+      data: att.data || att.url || '',
     }))
     console.log("[v0] Loaded attachments for editing:", loadedAttachments.length)
     setFormData({
-      date: diary.date || new Date().toISOString().split("T")[0],
-      content: diary.content || "",
-      mood: diary.mood || moods[0],
-      weather: diary.weather || weathers[0],
+      date: diary.date,
+      content: diary.content,
+      mood: diary.mood,
+      weather: diary.weather,
       attachments: loadedAttachments,
     })
     setIsAdding(true)
@@ -186,14 +186,14 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
       alert("로그인이 필요합니다")
       return
     }
-
-    if (!confirm("정말 삭제하시겠습니까?")) return
+    
+    if (!confirm(t("confirmDelete") || "정말 삭제하시겠습니까?")) return
 
     try {
       const updated = diaries.filter((d) => d.id !== id)
       setDiaries(updated)
       await saveDiaries(updated, user.id)
-      alert("삭제되었습니다!")
+      alert(t("deleteSuccess") || "삭제되었습니다!")
     } catch (error) {
       console.error("[v0] Error deleting diary:", error)
       alert("삭제 실패: " + error)
@@ -205,7 +205,7 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
       alert("로그인이 필요합니다")
       return
     }
-
+    
     if (!formData.content.trim()) {
       alert("내용을 입력해주세요")
       return
@@ -282,36 +282,38 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
         <Card className="max-w-md w-full p-8 space-y-6">
           <div className="text-center space-y-2">
             <Lock className="h-12 w-12 mx-auto text-green-600" />
-            <h2 className="text-2xl font-bold">{t("set_diary_password")}</h2>
-            <p className="text-sm text-muted-foreground">{t("password_description")}</p>
+            <h2 className="text-2xl font-bold">{t("set_diary_password") || "일기 비밀번호 설정"}</h2>
+            <p className="text-sm text-muted-foreground">
+              {t("password_description") || "일기를 보호하기 위한 비밀번호를 설정하세요"}
+            </p>
           </div>
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium">{t("new_password")}</label>
+              <label className="text-sm font-medium">{t("new_password") || "비밀번호"}</label>
               <Input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder={t("password_placeholder")}
+                placeholder={t("password_placeholder") || "최소 4자 이상"}
                 className="mt-1"
               />
             </div>
             <div>
-              <label className="text-sm font-medium">{t("confirm_password")}</label>
+              <label className="text-sm font-medium">{t("confirm_password") || "비밀번호 확인"}</label>
               <Input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder={t("confirm_password_placeholder")}
+                placeholder={t("confirm_password_placeholder") || "비밀번호 재입력"}
                 className="mt-1"
               />
             </div>
             <div className="flex gap-2">
               <Button onClick={handleSetPassword} className="flex-1 bg-green-600 hover:bg-green-700">
-                {t("set_password")}
+                {t("set_password") || "설정"}
               </Button>
-              <Button variant="outline" onClick={onBack} className="flex-1 bg-transparent">
-                {t("skip")}
+              <Button variant="outline" onClick={onBack} className="flex-1">
+                {t("skip") || "건너뛰기"}
               </Button>
             </div>
           </div>
@@ -326,25 +328,27 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
         <Card className="max-w-md w-full p-8 space-y-6">
           <div className="text-center space-y-2">
             <Lock className="h-12 w-12 mx-auto text-green-600" />
-            <h2 className="text-2xl font-bold">{t("locked_diary")}</h2>
-            <p className="text-sm text-muted-foreground">{t("enter_password_to_unlock")}</p>
+            <h2 className="text-2xl font-bold">{t("locked_diary") || "잠긴 일기"}</h2>
+            <p className="text-sm text-muted-foreground">
+              {t("enter_password_to_unlock") || "비밀번호를 입력하여 일기를 확인하세요"}
+            </p>
           </div>
           <div className="space-y-4">
             <Input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder={t("password")}
+              placeholder={t("password") || "비밀번호"}
               onKeyPress={(e) => {
-                if (e.key === "Enter") handleUnlock()
+                if (e.key === 'Enter') handleUnlock()
               }}
             />
             <div className="flex gap-2">
               <Button onClick={handleUnlock} className="flex-1 bg-green-600 hover:bg-green-700">
-                <Unlock className="mr-2 h-4 w-4" /> {t("unlock")}
+                <Unlock className="mr-2 h-4 w-4" /> {t("unlock") || "잠금 해제"}
               </Button>
-              <Button variant="outline" onClick={onBack} className="flex-1 bg-transparent">
-                {t("cancel")}
+              <Button variant="outline" onClick={onBack} className="flex-1">
+                {t("cancel") || "취소"}
               </Button>
             </div>
           </div>
@@ -358,7 +362,7 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center space-y-4">
           <Spinner className="h-12 w-12 mx-auto" />
-          <p className="text-muted-foreground">로딩중...</p>
+          <p className="text-muted-foreground">{t("loading")}</p>
         </div>
       </div>
     )
@@ -410,7 +414,15 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
             </Select>
           </div>
           <Textarea
-            placeholder={t("diary_content_placeholder")}
+            placeholder={
+              language === "ko"
+                ? "오늘 하루는 어땠나요?"
+                : language === "en"
+                  ? "How was your day?"
+                  : language === "zh"
+                    ? "今天过得怎么样?"
+                    : "今日はどうでしたか?"
+            }
             value={formData.content}
             onChange={(e) => setFormData({ ...formData, content: e.target.value })}
             rows={10}
@@ -441,14 +453,19 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
       <div className="flex items-center justify-between">
         <Button variant="ghost" onClick={onBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> {t("diary")}
+          <ArrowLeft className="mr-2 h-4 w-4" /> {t("title")}
         </Button>
         <div className="flex gap-2">
-          <Button variant="outline" size="icon" onClick={() => setIsLocked(true)} title={t("lock_diary")}>
+          <Button 
+            variant="outline" 
+            size="icon"
+            onClick={() => setIsLocked(true)}
+            title={t("lock_diary") || "일기 잠그기"}
+          >
             <Lock className="h-4 w-4" />
           </Button>
           <Button onClick={() => setIsAdding(true)} className="bg-green-600 hover:bg-green-700">
-            <Plus className="mr-2 h-4 w-4" /> {t("add_diary")}
+            <Plus className="mr-2 h-4 w-4" /> {t("add")} {t("diary")}
           </Button>
         </div>
       </div>
@@ -475,21 +492,11 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
                 <p className="text-sm font-medium">첨부파일 ({diary.attachments.length}개)</p>
                 <div className="grid grid-cols-2 gap-2">
                   {diary.attachments.map((file: any, idx: number) => {
-                    const isImage =
-                      file.type?.startsWith("image/") ||
-                      file.type === "image" ||
-                      file.type === "drawing" ||
-                      file.name?.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)
-                    const isVideo =
-                      file.type?.startsWith("video/") ||
-                      file.type === "video" ||
-                      file.name?.match(/\.(mp4|webm|mov|avi)$/i)
-                    const isAudio =
-                      file.type?.startsWith("audio/") ||
-                      file.type === "audio" ||
-                      file.name?.match(/\.(mp3|wav|ogg|m4a)$/i)
+                    const isImage = file.type?.startsWith("image/") || file.type === "image" || file.type === "drawing" || file.name?.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)
+                    const isVideo = file.type?.startsWith("video/") || file.type === "video" || file.name?.match(/\.(mp4|webm|mov|avi)$/i)
+                    const isAudio = file.type?.startsWith("audio/") || file.type === "audio" || file.name?.match(/\.(mp3|wav|ogg|m4a)$/i)
                     const mediaUrl = file.url || file.data
-
+                    
                     return (
                       <div key={idx} className="border rounded overflow-hidden bg-muted dark:bg-muted">
                         {isImage && (
@@ -503,7 +510,14 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
                             }}
                           />
                         )}
-                        {isVideo && <video src={mediaUrl} controls playsInline className="w-full h-32 bg-black" />}
+                        {isVideo && (
+                          <video
+                            src={mediaUrl}
+                            controls
+                            playsInline
+                            className="w-full h-32 bg-black"
+                          />
+                        )}
                         {isAudio && (
                           <div className="flex items-center justify-center h-20 bg-gray-100">
                             <audio src={mediaUrl} controls className="w-full px-2" />
@@ -520,13 +534,13 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
       </div>
 
       {selectedImage && (
-        <div
-          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+        <div 
+          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4" 
           onClick={() => setSelectedImage(null)}
         >
           <div className="relative max-w-4xl max-h-screen">
-            <img
-              src={selectedImage.url || "/placeholder.svg"}
+            <img 
+              src={selectedImage.url || "/placeholder.svg"} 
               alt={selectedImage.name}
               className="max-w-full max-h-screen object-contain"
               onClick={(e) => e.stopPropagation()}
