@@ -697,7 +697,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
       {schedules.filter((s) => !s.isSpecialEvent).length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold">{t("regular_schedule")}</h2>
+            <h2 className="text-lg font-semibold">{t("general_schedule")}</h2>
             <span className="text-sm text-muted-foreground">
               ({schedules.filter((s) => !s.isSpecialEvent).length}개)
             </span>
