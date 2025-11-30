@@ -32,6 +32,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
   const [selectedImage, setSelectedImage] = useState<{ url: string; name: string } | null>(null)
   const [viewingAttachment, setViewingAttachment] = useState<{ url: string; name: string } | null>(null)
   const [imageLoadErrors, setImageLoadErrors] = useState<Set<string>>(new Set())
+  const [showForm, setShowForm] = useState(false)
 
   const t = (key: string) => getTranslation(language, key)
 
@@ -89,25 +90,22 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
         user_id: user?.id,
       }
 
-      console.log("[v0] Saving note with", note.attachments?.length || 0, "attachments")
-
       const updated = editingNote ? notes.map((n) => (n.id === editingNote.id ? note : n)) : [note, ...notes]
 
       setNotes(updated)
 
-      // Save to database
       await saveNotes(updated, user.id)
 
       setFormData({ title: "", content: "", tags: "" })
       setAttachments([])
       setIsAdding(false)
       setEditingNote(null)
+      setShowForm(false)
 
       alert(`저장 완료! (첨부파일 ${note.attachments?.length || 0}개)`)
-    } catch (err: any) {
-      console.error("[v0] Error saving note:", err)
-      alert(`저장 실패: ${err?.message || "알 수 없는 오류"}. 인터넷 연결을 확인해주세요.`)
-      // Revert UI change on error
+    } catch (error) {
+      console.error("Error saving note:", error)
+      alert(`저장 실패: ${error?.message || "알 수 없는 오류"}. 인터넷 연결을 확인해주세요.`)
       loadData()
     } finally {
       setSaving(false)
@@ -132,12 +130,11 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
     } catch (err) {
       console.error("[v0] Delete failed:", err)
       alert("삭제 실패")
-      loadData() // Reload on error
+      loadData()
     }
   }
 
   const handleEdit = (note: Note) => {
-    console.log("[v0] Editing note with attachments:", note.attachments?.length || 0)
     setEditingNote(note)
     setFormData({
       title: note.title,
@@ -151,9 +148,8 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
       type: att.type || "image",
       name: att.name || "attachment",
     }))
-    console.log("[v0] Loaded attachments for editing:", loadedAttachments.length)
     setAttachments(loadedAttachments)
-    setIsAdding(true)
+    setShowForm(true)
   }
 
   const searchImageOnBing = (imageUrl: string) => {
@@ -162,11 +158,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
   }
 
   const handleTextFromSpeech = (text: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      content: prev.content ? `${prev.content}\n${text}` : text,
-    }))
-    console.log("[v0] Added text from speech:", text.length, "characters")
+    setFormData({ ...formData, content: formData.content + " " + text })
   }
 
   const handleShare = async (note: Note) => {
@@ -176,18 +168,16 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
       text: shareText,
     }
 
-    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+    if (navigator.share) {
       try {
         await navigator.share(shareData)
-        console.log("[v0] Note shared successfully")
       } catch (err: any) {
         if (err.name !== "AbortError") {
-          console.error("[v0] Share failed:", err)
+          console.error("Share failed:", err)
           fallbackCopyToClipboard(shareText)
         }
       }
     } else {
-      console.log("[v0] Web Share API not supported, using clipboard fallback")
       fallbackCopyToClipboard(shareText)
     }
   }
@@ -229,7 +219,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
     )
   }
 
-  if (isAdding) {
+  if (isAdding || showForm) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
         <Button
@@ -239,6 +229,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
             setEditingNote(null)
             setFormData({ title: "", content: "", tags: "" })
             setAttachments([])
+            setShowForm(false)
           }}
         >
           <ArrowLeft className="mr-2 h-4 w-4" /> {t("title")}
@@ -299,7 +290,6 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
                       <button
                         onClick={() => {
                           const newAttachments = attachments.filter((_, i) => i !== idx)
-                          console.log("[v0] Removing attachment, remaining:", newAttachments.length)
                           setAttachments(newAttachments)
                         }}
                         className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
@@ -348,7 +338,6 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
-      {/* Debug Info Banner */}
       <Card className="bg-yellow-100 p-4 mb-4">
         <h3 className="font-bold mb-2">디버그 정보</h3>
         <p>총 노트 개수: {notes.length}</p>
@@ -512,10 +501,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
                                 onClick={() =>
                                   setSelectedImage({ url: mediaUrl, name: file.name || `첨부파일 ${idx + 1}` })
                                 }
-                                onError={(e) => {
-                                  console.log("[v0] Image load failed for:", file.name || `attachment ${idx}`)
-                                  setImageLoadErrors((prev) => new Set(prev).add(imageErrorKey))
-                                }}
+                                onError={() => setImageLoadErrors((prev) => new Set(prev).add(imageErrorKey))}
                               />
                             )}
                             {isImage && hasError && (
@@ -534,9 +520,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
                                   playsInline
                                   className="w-full h-auto min-h-[128px] max-h-[300px]"
                                   style={{ display: "block" }}
-                                  onError={(e) => {
-                                    console.log("[v0] Video load failed:", file.name || `video ${idx}`)
-                                  }}
+                                  onError={() => console.log("[v0] Video load failed:", file.name || `video ${idx}`)}
                                 >
                                   영상을 재생할 수 없습니다
                                 </video>
@@ -552,9 +536,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
                                   controls
                                   preload="metadata"
                                   className="w-full"
-                                  onError={(e) => {
-                                    console.log("[v0] Audio load failed:", file.name || `audio ${idx}`)
-                                  }}
+                                  onError={() => console.log("[v0] Audio load failed:", file.name || `audio ${idx}`)}
                                 />
                               </div>
                             )}

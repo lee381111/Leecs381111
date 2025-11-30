@@ -26,7 +26,8 @@ import {
   Search,
   X,
   User,
-  Wallet,
+  Award as IdCard,
+  DollarSign,
 } from "lucide-react"
 import { getTranslation } from "@/lib/i18n"
 import type { Language } from "@/lib/types"
@@ -580,18 +581,9 @@ const ForestNotePage = () => {
   const STORAGE_LIMIT = isAdmin ? 1000 * 1024 * 1024 : 500 * 1024 * 1024 // Admin: 1000MB, Others: 500MB
 
   useEffect(() => {
-    console.log(
-      "[v0] State updated - Notes:",
-      allNotes.length,
-      "Schedules:",
-      allSchedules.length,
-      "Diaries:",
-      allDiaries.length,
-      "Storage:",
-      storageUsed,
-      "bytes",
-    )
+    // State updated
   }, [allNotes, allSchedules, allDiaries, allTravels, allVehicles, allHealthRecords, storageUsed])
+  // </CHANGE>
 
   useEffect(() => {
     const calculateStorage = async () => {
@@ -601,7 +593,7 @@ const ForestNotePage = () => {
       }
 
       if (isCalculatingRef.current) {
-        console.log("[v0] Storage calculation already in progress, skipping")
+        // console.log("[v0] Storage calculation already in progress, skipping") // REMOVED
         return
       }
 
@@ -611,10 +603,10 @@ const ForestNotePage = () => {
         const fetchWithFallback = async (fn: () => Promise<any[]>, name: string): Promise<any[]> => {
           try {
             const result = await fn()
-            console.log(`[v0] Loaded ${name}:`, result.length, "items")
+            // console.log(`[v0] Loaded ${name}:`, result.length, "items") // REMOVED
             return Array.isArray(result) ? result : []
           } catch (error) {
-            console.warn(`[v0] Failed to load ${name}, using empty array:`, error)
+            console.error(`[v0] Failed to load ${name}, using empty array:`, error) // MODIFIED
             return []
           }
         }
@@ -630,14 +622,14 @@ const ForestNotePage = () => {
           fetchWithFallback(() => loadVehicleMaintenanceRecords(user.id), "maintenance"),
         ])
 
-        console.log(
-          "[v0] Data loaded - Notes:",
-          notes.length,
-          "Schedules:",
-          schedules.length,
-          "Diaries:",
-          diaries.length,
-        )
+        // console.log( // REMOVED
+        //   "[v0] Data loaded - Notes:",
+        //   notes.length,
+        //   "Schedules:",
+        //   schedules.length,
+        //   "Diaries:",
+        //   diaries.length,
+        // )
 
         setAllNotes(notes)
         setAllDiaries(diaries)
@@ -646,7 +638,7 @@ const ForestNotePage = () => {
         setAllVehicles(vehicles)
         setAllHealthRecords(health)
 
-        console.log("[v0] setState called - This should trigger re-render")
+        // console.log("[v0] setState called - This should trigger re-render") // REMOVED
 
         const jsonData = JSON.stringify({
           notes: Array.isArray(notes) ? notes : [],
@@ -660,7 +652,7 @@ const ForestNotePage = () => {
         })
         const totalSize = new Blob([jsonData]).size
 
-        console.log("[v0] JSON data size:", totalSize, "bytes")
+        // console.log("[v0] JSON data size:", totalSize, "bytes") // REMOVED
 
         let mediaCount = 0
 
@@ -690,15 +682,15 @@ const ForestNotePage = () => {
 
         const estimatedMediaSize = mediaCount * 500 * 1024 // 500KB per media
 
-        console.log("[v0] Media count:", mediaCount, "files")
-        console.log("[v0] Estimated media size:", estimatedMediaSize, "bytes")
+        // console.log("[v0] Media count:", mediaCount, "files") // REMOVED
+        // console.log("[v0] Estimated media size:", estimatedMediaSize, "bytes") // REMOVED
 
         const finalSize = totalSize + estimatedMediaSize
-        console.log("[v0] Total storage used:", finalSize, "bytes", "(" + (finalSize / 1024 / 1024).toFixed(2) + " MB)")
+        // console.log("[v0] Total storage used:", finalSize, "bytes", "(" + (finalSize / 1024 / 1024).toFixed(2) + " MB)") // REMOVED
 
         setStorageUsed(finalSize)
       } catch (error) {
-        console.error("[v0] Storage calculation error:", error)
+        console.error("[v0] Storage calculation error:", error) // MODIFIED
         setStorageUsed(0)
       } finally {
         isCalculatingRef.current = false
@@ -740,7 +732,7 @@ const ForestNotePage = () => {
   }, [user])
 
   useEffect(() => {
-    console.log("[v0] Auth state:", { user: user?.email, loading })
+    // console.log("[v0] Auth state:", { user: user?.email, loading }) // REMOVED
   }, [user, loading])
 
   const handleSearchResultClick = (section: Section, item: any) => {
@@ -753,31 +745,31 @@ const ForestNotePage = () => {
         id: "schedule",
         label: getTranslation(language, "schedule"),
         icon: CalendarIcon,
-        color: "teal",
+        color: "blue",
         count: allSchedules.length,
       },
       {
         id: "notes",
         label: getTranslation(language, "notes"),
         icon: FileText,
-        color: "emerald",
+        color: "yellow",
         count: allNotes.length,
       },
       {
         id: "diary",
         label: getTranslation(language, "diary"),
         icon: BookOpen,
-        color: "green",
+        color: "pink",
         count: allDiaries.length,
       },
-      { id: "travel", label: getTranslation(language, "travel"), icon: Plane, color: "blue", count: allTravels.length },
       {
-        id: "vehicle",
-        label: getTranslation(language, "vehicle"),
-        icon: Car,
+        id: "travel",
+        label: getTranslation(language, "travel"),
+        icon: Plane,
         color: "indigo",
-        count: allVehicles.length,
+        count: allTravels.length,
       },
+      { id: "vehicle", label: getTranslation(language, "vehicle"), icon: Car, color: "red", count: allVehicles.length },
       {
         id: "health",
         label: getTranslation(language, "health"),
@@ -786,28 +778,17 @@ const ForestNotePage = () => {
         count: allHealthRecords.length,
       },
       {
-        id: "budget",
-        label: language === "ko" ? "가계부" : language === "en" ? "Budget" : language === "zh" ? "家庭账本" : "家計簿",
-        icon: Wallet,
-        color: "yellow",
+        id: "business-card",
+        label: getTranslation(language, "businessCard"),
+        icon: IdCard,
+        color: "emerald",
         count: 0,
       },
-      {
-        id: "businessCard",
-        label: language === "ko" ? "명함" : language === "en" ? "Business Card" : language === "zh" ? "名片" : "名刺",
-        icon: User,
-        color: "violet",
-        count: 0,
-      },
+      { id: "budget", label: getTranslation(language, "budget"), icon: DollarSign, color: "green", count: 0 },
       { id: "weather", label: getTranslation(language, "weather"), icon: Cloud, color: "cyan", count: 0 },
       { id: "radio", label: getTranslation(language, "radio"), icon: Radio, color: "purple", count: 0 },
       { id: "statistics", label: getTranslation(language, "statistics"), icon: BarChart3, color: "amber", count: 0 },
     ]
-
-    console.log(
-      "[v0] Menu items recalculated with counts:",
-      items.map((item) => `${item.label}: ${item.count}`).join(", "),
-    )
 
     return items
   }, [allSchedules, allNotes, allDiaries, allTravels, allVehicles, allHealthRecords, language])
@@ -945,9 +926,9 @@ const ForestNotePage = () => {
                 size="sm"
                 onClick={async () => {
                   try {
-                    console.log("[v0] Logout button clicked")
+                    // console.log("[v0] Logout button clicked") // REMOVED
                     await signOut()
-                    console.log("[v0] Logout successful")
+                    // console.log("[v0] Logout successful") // REMOVED
                   } catch (error) {
                     console.error("[v0] Logout error:", error)
                   }
@@ -1016,16 +997,16 @@ const ForestNotePage = () => {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {menuItems.map((item) => {
             const lightBg =
-              item.color === "teal"
-                ? "bg-teal-50"
-                : item.color === "emerald"
-                  ? "bg-emerald-50"
-                  : item.color === "green"
-                    ? "bg-green-50"
-                    : item.color === "blue"
-                      ? "bg-blue-50"
-                      : item.color === "indigo"
-                        ? "bg-indigo-50"
+              item.color === "blue"
+                ? "bg-blue-50"
+                : item.color === "yellow"
+                  ? "bg-yellow-50"
+                  : item.color === "pink"
+                    ? "bg-pink-50"
+                    : item.color === "indigo"
+                      ? "bg-indigo-50"
+                      : item.color === "red"
+                        ? "bg-red-50"
                         : item.color === "rose"
                           ? "bg-rose-50"
                           : item.color === "cyan"
@@ -1034,22 +1015,22 @@ const ForestNotePage = () => {
                               ? "bg-purple-50"
                               : item.color === "amber"
                                 ? "bg-amber-50"
-                                : item.color === "yellow"
-                                  ? "bg-yellow-50"
+                                : item.color === "green"
+                                  ? "bg-green-50"
                                   : "bg-gray-50"
 
             const textColor = "text-gray-900"
             const iconColor =
-              item.color === "teal"
-                ? "text-teal-700"
-                : item.color === "emerald"
-                  ? "text-emerald-700"
-                  : item.color === "green"
-                    ? "text-green-700"
-                    : item.color === "blue"
-                      ? "text-blue-700"
-                      : item.color === "indigo"
-                        ? "text-indigo-700"
+              item.color === "blue"
+                ? "text-blue-700"
+                : item.color === "yellow"
+                  ? "text-yellow-700"
+                  : item.color === "pink"
+                    ? "text-pink-700"
+                    : item.color === "indigo"
+                      ? "text-indigo-700"
+                      : item.color === "red"
+                        ? "text-red-700"
                         : item.color === "rose"
                           ? "text-rose-700"
                           : item.color === "cyan"
@@ -1058,8 +1039,8 @@ const ForestNotePage = () => {
                               ? "text-purple-700"
                               : item.color === "amber"
                                 ? "text-amber-700"
-                                : item.color === "yellow"
-                                  ? "text-yellow-700"
+                                : item.color === "green"
+                                  ? "text-green-700"
                                   : "text-gray-700"
 
             return (
@@ -1137,9 +1118,9 @@ const LoginForm = ({
         setEmail("")
         setPassword("")
       } else {
-        console.log("[v0] Attempting login...")
+        // console.log("[v0] Attempting login...") // REMOVED
         await signIn(email, password)
-        console.log("[v0] Login successful")
+        // console.log("[v0] Login successful") // REMOVED
       }
     } catch (error: any) {
       console.error("[v0] Login error:", error)

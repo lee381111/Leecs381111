@@ -75,7 +75,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
       const data = await loadSchedules(user.id)
       setSchedules(data)
     } catch (err: any) {
-      console.error("[v0] Error loading schedules:", err)
+      console.error("Error loading schedules:", err)
       setError(`일정 로드 실패: ${err?.message || "알 수 없는 오류"}`)
     } finally {
       setLoading(false)
@@ -112,7 +112,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
       notificationManager.cancelAlarm(`schedule_${id}`)
       alert(t("deleted_successfully"))
     } catch (error) {
-      console.error("[v0] Error deleting schedule:", error)
+      console.error("Error deleting schedule:", error)
       alert(t("delete_failed") + error)
     }
   }
@@ -189,7 +189,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
       setEditingId(null)
       setIsAdding(false)
     } catch (error) {
-      console.error("[v0] Error saving schedule:", error)
+      console.error("Error saving schedule:", error)
       alert(t("save_failed") + error)
     } finally {
       setSaving(false)
@@ -253,16 +253,16 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
       setBatchEvents([{ name: "", date: "", category: "생일", alarmMinutesBefore: 1440 }])
       setIsBatchAdding(false)
     } catch (error) {
-      console.error("[v0] Error saving batch schedules:", error)
+      console.error("Error saving batch schedules:", error)
       alert(t("save_failed") + error)
     } finally {
       setSaving(false)
     }
   }
 
-  const exportToCalendar = (schedule: ScheduleEvent) => {
+  const handleExportToICS = () => {
     try {
-      const startDate = new Date(`${schedule.date}T${schedule.time || "00:00"}`)
+      const startDate = new Date(`${formData.date}T${formData.time || "00:00"}`)
       const endDate = new Date(startDate.getTime() + 60 * 60 * 1000)
 
       const formatDate = (date: Date) => {
@@ -275,13 +275,13 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
         "PRODID:-//Forest Note App//EN",
         "CALSCALE:GREGORIAN",
         "BEGIN:VEVENT",
-        `UID:${schedule.id}@forestnote.app`,
+        `UID:${formData.id}@forestnote.app`,
         `DTSTAMP:${formatDate(new Date())}`,
         `DTSTART:${formatDate(startDate)}`,
         `DTEND:${formatDate(endDate)}`,
-        `SUMMARY:${schedule.title}`,
-        `DESCRIPTION:${(schedule.description || "").replace(/\n/g, "\\n")}`,
-        `CATEGORIES:${schedule.category}`,
+        `SUMMARY:${formData.title}`,
+        `DESCRIPTION:${(formData.description || "").replace(/\n/g, "\\n")}`,
+        `CATEGORIES:${formData.category}`,
         "STATUS:CONFIRMED",
         "SEQUENCE:0",
         "END:VEVENT",
@@ -292,7 +292,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
       const url = URL.createObjectURL(blob)
       const link = document.createElement("a")
       link.href = url
-      link.download = `${schedule.title.replace(/[^a-z0-9가-힣]/gi, "_")}.ics`
+      link.download = `${formData.title.replace(/[^a-z0-9가-힣]/gi, "_")}.ics`
 
       document.body.appendChild(link)
       link.click()
@@ -303,14 +303,13 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
         "✅ 일정 다운로드 완료!\n\n다운로드한 .ics 파일을:\n1. 다운로드 폴더에서 찾아 캘린더 앱으로 열기\n2. 또는 캘린더 앱에서 '가져오기' 선택",
       )
     } catch (error) {
-      console.error("[v0] Export error:", error)
+      console.error("Export error:", error)
       alert("❌ 다운로드 실패\n\n오류: " + error)
     }
   }
 
   const handleAttachmentsChange = (attachments: Attachment[]) => {
     setFormData({ ...formData, attachments })
-    console.log("[v0] Schedule attachments updated:", attachments.length)
   }
 
   const handleTranscriptReceived = (text: string) => {
@@ -631,7 +630,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                         onClick={(e) => {
                           e.preventDefault()
                           e.stopPropagation()
-                          exportToCalendar(schedule)
+                          handleExportToICS()
                         }}
                         className="p-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md transition-colors flex items-center justify-center"
                         title="휴대폰 캘린더에 추가"
@@ -775,7 +774,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                         onClick={(e) => {
                           e.preventDefault()
                           e.stopPropagation()
-                          exportToCalendar(schedule)
+                          handleExportToICS()
                         }}
                         className="p-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md transition-colors flex items-center justify-center"
                         title="휴대폰 캘린더에 추가"
