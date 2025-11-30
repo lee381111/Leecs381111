@@ -444,13 +444,13 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
             setEditingId(null)
           }}
         >
-          <ArrowLeft className="mr-2 h-4 w-4" /> 취소
+          <ArrowLeft className="mr-2 h-4 w-4" /> {t("cancel")}
         </Button>
-        <h2 className="text-xl font-bold">건강 기록 추가</h2>
+        <h2 className="text-xl font-bold">{t("add_health_record")}</h2>
 
         <div className="space-y-4">
           <div>
-            <label className="text-sm font-medium">날짜</label>
+            <label className="text-sm font-medium">{t("date_label")}</label>
             <input
               type="date"
               value={formData.date}
@@ -460,33 +460,33 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
           </div>
 
           <div>
-            <label className="text-sm font-medium">기록 유형</label>
+            <label className="text-sm font-medium">{t("record_type")}</label>
             <select
               value={formData.type}
               onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
               className="w-full p-2 border rounded bg-white/50 dark:bg-slate-800/50"
             >
-              <option value="vital_signs">생체 징후</option>
-              <option value="exercise">운동</option>
-              <option value="expense">의료비</option>
+              <option value="vital_signs">{t("vital_signs")}</option>
+              <option value="exercise">{t("exercise")}</option>
+              <option value="expense">{t("medical_expenses")}</option>
             </select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium">수축기 혈압 (mmHg)</label>
+              <label className="text-sm font-medium">{t("systolic_bp")}</label>
               <Input
                 type="number"
-                placeholder="120"
+                placeholder={t("systolic_placeholder")}
                 value={formData.systolic}
                 onChange={(e) => setFormData({ ...formData, systolic: e.target.value })}
               />
             </div>
             <div>
-              <label className="text-sm font-medium">이완기 혈압 (mmHg)</label>
+              <label className="text-sm font-medium">{t("diastolic_bp")}</label>
               <Input
                 type="number"
-                placeholder="80"
+                placeholder={t("diastolic_placeholder")}
                 value={formData.diastolic}
                 onChange={(e) => setFormData({ ...formData, diastolic: e.target.value })}
               />
@@ -494,82 +494,82 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
           </div>
 
           <div>
-            <label className="text-sm font-medium">혈당 (mg/dL)</label>
+            <label className="text-sm font-medium">{t("blood_sugar")}</label>
             <Input
               type="number"
-              placeholder="100"
+              placeholder={t("blood_sugar_placeholder")}
               value={formData.bloodSugar}
               onChange={(e) => setFormData({ ...formData, bloodSugar: e.target.value })}
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium">체온 (°C)</label>
+            <label className="text-sm font-medium">{t("temperature")}</label>
             <Input
               type="number"
               step="0.1"
-              placeholder="36.5"
+              placeholder={t("temperature_placeholder")}
               value={formData.temperature}
               onChange={(e) => setFormData({ ...formData, temperature: e.target.value })}
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium">몸무게 (kg)</label>
+            <label className="text-sm font-medium">{t("weight")}</label>
             <Input
               type="number"
               step="0.1"
-              placeholder="70.5"
+              placeholder={t("weight_placeholder")}
               value={formData.weight}
               onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium">걸음수</label>
+            <label className="text-sm font-medium">{t("steps")}</label>
             <Input
               type="number"
-              placeholder="10000"
+              placeholder={t("steps_placeholder")}
               value={formData.steps}
               onChange={(e) => setFormData({ ...formData, steps: e.target.value })}
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium">걸은 거리 (km)</label>
+            <label className="text-sm font-medium">{t("distance")}</label>
             <Input
               type="number"
               step="0.1"
-              placeholder="5.2"
+              placeholder={t("distance_placeholder")}
               value={formData.distance}
               onChange={(e) => setFormData({ ...formData, distance: e.target.value })}
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium">의료비 (원)</label>
+            <label className="text-sm font-medium">{t("medical_expense")}</label>
             <Input
               type="number"
-              placeholder="50000"
+              placeholder={t("medical_expense_placeholder")}
               value={formData.medicalExpense}
               onChange={(e) => setFormData({ ...formData, medicalExpense: e.target.value })}
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium">약값 (원)</label>
+            <label className="text-sm font-medium">{t("medication_expense")}</label>
             <Input
               type="number"
-              placeholder="20000"
+              placeholder={t("medication_expense_placeholder")}
               value={formData.medicationExpense}
               onChange={(e) => setFormData({ ...formData, medicationExpense: e.target.value })}
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium">메모</label>
+            <label className="text-sm font-medium">{t("memo")}</label>
             <Input
-              placeholder="추가 메모"
+              placeholder={t("memo_additional")}
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
             />
@@ -597,40 +597,40 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
             resetMedForm()
           }}
         >
-          <ArrowLeft className="mr-2 h-4 w-4" /> 취소
+          <ArrowLeft className="mr-2 h-4 w-4" /> {t("cancel")}
         </Button>
-        <h2 className="text-xl font-bold">복약 일정 추가</h2>
+        <h2 className="text-xl font-bold">{t("add_medication_schedule")}</h2>
 
         <div className="space-y-4">
           <div>
-            <label className="text-sm font-medium">약 이름 *</label>
+            <label className="text-sm font-medium">{t("medicine_name")}</label>
             <Input
-              placeholder="예: 아스피린"
+              placeholder={t("medicine_name_placeholder")}
               value={medFormData.name}
               onChange={(e) => setMedFormData({ ...medFormData, name: e.target.value })}
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium">용량</label>
+            <label className="text-sm font-medium">{t("dosage")}</label>
             <Input
-              placeholder="예: 100mg"
+              placeholder={t("dosage_placeholder")}
               value={medFormData.dosage}
               onChange={(e) => setMedFormData({ ...medFormData, dosage: e.target.value })}
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium">복용 주기</label>
+            <label className="text-sm font-medium">{t("frequency")}</label>
             <Input
-              placeholder="예: 하루 3회"
+              placeholder={t("frequency_placeholder")}
               value={medFormData.frequency}
               onChange={(e) => setMedFormData({ ...medFormData, frequency: e.target.value })}
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-2 block">복용 시간 *</label>
+            <label className="text-sm font-medium mb-2 block">{t("medication_times")}</label>
             {medFormData.times.map((time, idx) => (
               <div key={idx} className="flex gap-2 mb-2">
                 <input
@@ -662,13 +662,13 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
               variant="outline"
               onClick={() => setMedFormData({ ...medFormData, times: [...medFormData.times, ""] })}
             >
-              <Plus className="w-4 h-4 mr-2" /> 시간 추가
+              <Plus className="w-4 h-4 mr-2" /> {t("add_time")}
             </Button>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium">시작일</label>
+              <label className="text-sm font-medium">{t("start_date")}</label>
               <input
                 type="date"
                 value={medFormData.startDate}
@@ -677,7 +677,7 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
               />
             </div>
             <div>
-              <label className="text-sm font-medium">종료일 (선택)</label>
+              <label className="text-sm font-medium">{t("end_date_optional")}</label>
               <input
                 type="date"
                 value={medFormData.endDate}
@@ -688,9 +688,9 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
           </div>
 
           <div>
-            <label className="text-sm font-medium">메모</label>
+            <label className="text-sm font-medium">{t("memo")}</label>
             <Input
-              placeholder="추가 메모"
+              placeholder={t("memo_additional")}
               value={medFormData.notes}
               onChange={(e) => setMedFormData({ ...medFormData, notes: e.target.value })}
             />
@@ -701,7 +701,7 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
             onAttachmentsChange={handleMedAttachmentsChange}
             onSave={handleSaveMedication}
             saving={saving}
-            saveButtonText="복약 일정 저장"
+            saveButtonText={t("save_medication_schedule")}
             onTextFromSpeech={handleMedicationTranscript}
           />
 
@@ -714,7 +714,7 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
             />
             <label htmlFor="alarm" className="text-sm">
               <Bell className="inline w-4 h-4 mr-1" />
-              알람 설정
+              {t("enable_alarm")}
             </label>
           </div>
         </div>
@@ -729,7 +729,7 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
         <div className="flex items-center justify-between">
           <Button variant="ghost" onClick={() => setViewMode("list")}>
-            <ArrowLeft className="mr-2 h-4 w-4" /> 뒤로
+            <ArrowLeft className="mr-2 h-4 w-4" /> {t("back")}
           </Button>
           <Button
             onClick={() => {
@@ -738,11 +738,11 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
               setViewMode("add_medication")
             }}
           >
-            <Plus className="mr-2 h-4 w-4" /> 복약 추가
+            <Plus className="mr-2 h-4 w-4" /> {t("add_medication")}
           </Button>
         </div>
 
-        <h2 className="text-xl font-bold">💊 복약 관리</h2>
+        <h2 className="text-xl font-bold">{t("medication_management_title")}</h2>
 
         <div className="grid gap-4">
           {medications
@@ -759,11 +759,19 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
                         <span className="font-semibold">{med.name}</span>
                         {med.alarmEnabled && <Bell className="w-4 h-4 text-green-500" />}
                       </div>
-                      {med.dosage && <p className="text-sm mt-1">용량: {med.dosage}</p>}
-                      {med.frequency && <p className="text-sm">주기: {med.frequency}</p>}
+                      {med.dosage && (
+                        <p className="text-sm mt-1">
+                          {t("dosage_label")} {med.dosage}
+                        </p>
+                      )}
+                      {med.frequency && (
+                        <p className="text-sm">
+                          {t("frequency_label")} {med.frequency}
+                        </p>
+                      )}
 
                       <div className="mt-2 space-y-1">
-                        <p className="text-sm font-medium">오늘의 복용 시간:</p>
+                        <p className="text-sm font-medium">{t("today_medication_times")}</p>
                         {med.times.map((time) => (
                           <div key={time} className="flex items-center gap-2">
                             <input
@@ -839,19 +847,19 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-6">
         <Button variant="ghost" onClick={() => setViewMode("list")}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> 뒤로
+          <ArrowLeft className="mr-2 h-4 w-4" /> {t("back")}
         </Button>
 
-        <h2 className="text-xl font-bold">📊 건강 그래프</h2>
+        <h2 className="text-xl font-bold">{t("view_graph")}</h2>
 
         {chartData.length === 0 && expenseData.length === 0 ? (
-          <p className="text-center text-muted-foreground py-8">건강 기록을 추가하면 그래프가 표시됩니다</p>
+          <p className="text-center text-muted-foreground py-8">{t("no_health_records_message")}</p>
         ) : (
           <>
             {/* Blood Pressure Chart */}
             {chartData.some((d) => d.systolic || d.diastolic) && (
               <Card className="p-4">
-                <h3 className="font-semibold mb-4">혈압 (mmHg)</h3>
+                <h3 className="font-semibold mb-4">{t("blood_pressure")} (mmHg)</h3>
                 <ResponsiveContainer width="100%" height={200}>
                   <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -859,8 +867,8 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Line type="monotone" dataKey="systolic" stroke="#ef4444" name="수축기" />
-                    <Line type="monotone" dataKey="diastolic" stroke="#3b82f6" name="이완기" />
+                    <Line type="monotone" dataKey="systolic" stroke="#ef4444" name={t("systolic")} />
+                    <Line type="monotone" dataKey="diastolic" stroke="#3b82f6" name={t("diastolic")} />
                   </LineChart>
                 </ResponsiveContainer>
               </Card>
@@ -869,7 +877,7 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
             {/* Blood Sugar Chart */}
             {chartData.some((d) => d.bloodSugar) && (
               <Card className="p-4">
-                <h3 className="font-semibold mb-4">혈당 (mg/dL)</h3>
+                <h3 className="font-semibold mb-4">{t("blood_sugar")} (mg/dL)</h3>
                 <ResponsiveContainer width="100%" height={200}>
                   <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -877,7 +885,7 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Line type="monotone" dataKey="bloodSugar" stroke="#f59e0b" name="혈당" />
+                    <Line type="monotone" dataKey="bloodSugar" stroke="#f59e0b" name={t("blood_sugar")} />
                   </LineChart>
                 </ResponsiveContainer>
               </Card>
@@ -886,7 +894,7 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
             {/* Weight Chart */}
             {chartData.some((d) => d.weight) && (
               <Card className="p-4">
-                <h3 className="font-semibold mb-4">몸무게 (kg)</h3>
+                <h3 className="font-semibold mb-4">{t("weight")} (kg)</h3>
                 <ResponsiveContainer width="100%" height={200}>
                   <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -894,7 +902,7 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Line type="monotone" dataKey="weight" stroke="#10b981" name="몸무게" />
+                    <Line type="monotone" dataKey="weight" stroke="#10b981" name={t("weight")} />
                   </LineChart>
                 </ResponsiveContainer>
               </Card>
@@ -903,7 +911,7 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
             {/* Temperature Chart */}
             {chartData.some((d) => d.temperature) && (
               <Card className="p-4">
-                <h3 className="font-semibold mb-4">체온 (°C)</h3>
+                <h3 className="font-semibold mb-4">{t("temperature")} (°C)</h3>
                 <ResponsiveContainer width="100%" height={200}>
                   <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -911,7 +919,7 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
                     <YAxis domain={[35, 40]} />
                     <Tooltip />
                     <Legend />
-                    <Line type="monotone" dataKey="temperature" stroke="#ec4899" name="체온" />
+                    <Line type="monotone" dataKey="temperature" stroke="#ec4899" name={t("temperature")} />
                   </LineChart>
                 </ResponsiveContainer>
               </Card>
@@ -920,7 +928,7 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
             {/* Steps Chart */}
             {chartData.some((d) => d.steps) && (
               <Card className="p-4">
-                <h3 className="font-semibold mb-4">걸음수 (보)</h3>
+                <h3 className="font-semibold mb-4">{t("steps")} (보)</h3>
                 <ResponsiveContainer width="100%" height={200}>
                   <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -928,7 +936,7 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Line type="monotone" dataKey="steps" stroke="#8b5cf6" name="걸음수" />
+                    <Line type="monotone" dataKey="steps" stroke="#8b5cf6" name={t("steps")} />
                   </LineChart>
                 </ResponsiveContainer>
               </Card>
@@ -937,7 +945,7 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
             {/* Distance Chart */}
             {chartData.some((d) => d.distance) && (
               <Card className="p-4">
-                <h3 className="font-semibold mb-4">걸은 거리 (km)</h3>
+                <h3 className="font-semibold mb-4">{t("distance")} (km)</h3>
                 <ResponsiveContainer width="100%" height={200}>
                   <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -945,7 +953,7 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Line type="monotone" dataKey="distance" stroke="#06b6d4" name="거리" />
+                    <Line type="monotone" dataKey="distance" stroke="#06b6d4" name={t("distance")} />
                   </LineChart>
                 </ResponsiveContainer>
               </Card>
@@ -954,7 +962,7 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
             {/* Medical/Medication Expense Chart */}
             {expenseData.length > 0 && (
               <Card className="p-4">
-                <h3 className="font-semibold mb-4">의료비 및 약값 (원)</h3>
+                <h3 className="font-semibold mb-4">{t("medical_and_medication_expenses")} (원)</h3>
                 <ResponsiveContainer width="100%" height={200}>
                   <LineChart data={expenseData}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -962,9 +970,9 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Line type="monotone" dataKey="medicalExpense" stroke="#f97316" name="의료비" />
-                    <Line type="monotone" dataKey="medicationExpense" stroke="#84cc16" name="약값" />
-                    <Line type="monotone" dataKey="total" stroke="#dc2626" name="총액" strokeWidth={2} />
+                    <Line type="monotone" dataKey="medicalExpense" stroke="#f97316" name={t("medical_expense")} />
+                    <Line type="monotone" dataKey="medicationExpense" stroke="#84cc16" name={t("medication_expense")} />
+                    <Line type="monotone" dataKey="total" stroke="#dc2626" name={t("total_expense")} strokeWidth={2} />
                   </LineChart>
                 </ResponsiveContainer>
               </Card>
@@ -1019,17 +1027,43 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
 
                 {record.bloodPressure && (
                   <p className="text-sm mt-2">
-                    혈압: {record.bloodPressure.systolic}/{record.bloodPressure.diastolic} mmHg
+                    {t("blood_pressure")}: {record.bloodPressure.systolic}/{record.bloodPressure.diastolic} mmHg
                   </p>
                 )}
-                {record.bloodSugar && <p className="text-sm">혈당: {record.bloodSugar} mg/dL</p>}
-                {record.temperature && <p className="text-sm">체온: {record.temperature}°C</p>}
-                {record.weight && <p className="text-sm">몸무게: {record.weight} kg</p>}
-                {record.steps && <p className="text-sm">걸음수: {record.steps.toLocaleString()}보</p>}
-                {record.distance && <p className="text-sm">거리: {record.distance} km</p>}
-                {record.medicalExpense && <p className="text-sm">의료비: {record.medicalExpense.toLocaleString()}원</p>}
+                {record.bloodSugar && (
+                  <p className="text-sm">
+                    {t("blood_sugar")}: {record.bloodSugar} mg/dL
+                  </p>
+                )}
+                {record.temperature && (
+                  <p className="text-sm">
+                    {t("temperature")}: {record.temperature}°C
+                  </p>
+                )}
+                {record.weight && (
+                  <p className="text-sm">
+                    {t("weight")}: {record.weight} kg
+                  </p>
+                )}
+                {record.steps && (
+                  <p className="text-sm">
+                    {t("steps")}: {record.steps.toLocaleString()}보
+                  </p>
+                )}
+                {record.distance && (
+                  <p className="text-sm">
+                    {t("distance")}: {record.distance} km
+                  </p>
+                )}
+                {record.medicalExpense && (
+                  <p className="text-sm">
+                    {t("medical_expense")}: {record.medicalExpense.toLocaleString()}원
+                  </p>
+                )}
                 {record.medicationExpense && (
-                  <p className="text-sm">약값: {record.medicationExpense.toLocaleString()}원</p>
+                  <p className="text-sm">
+                    {t("medication_expense")}: {record.medicationExpense.toLocaleString()}원
+                  </p>
                 )}
                 {record.notes && <p className="text-sm mt-1 text-muted-foreground">{record.notes}</p>}
 

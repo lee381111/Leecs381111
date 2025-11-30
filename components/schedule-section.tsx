@@ -214,7 +214,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
           notificationManager.scheduleAlarm({
             id: `schedule_${scheduleId}`,
             title: `${event.category}: ${event.name}`,
-            message: `곧 특별한 날입니다!`,
+            message: getTranslation(language as any, "special_day_coming") || "곧 특별한 날입니다!",
             scheduleTime: alarmTime,
             type: "schedule",
           })
