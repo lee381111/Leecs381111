@@ -22,7 +22,6 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
   const { user } = useAuth()
   const [notes, setNotes] = useState<Note[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedTag, setSelectedTag] = useState<string>("")
@@ -42,28 +41,19 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
 
   const loadData = async () => {
     if (!user?.id) {
-      console.log("[v0] No user ID, skipping load")
       setLoading(false)
       return
     }
 
     try {
-      console.log("[v0] Starting loadData for user:", user.id)
       setLoading(true)
-      setError(null)
-
       const data = await loadNotes(user.id)
-      console.log("[v0] loadNotes returned", data.length, "notes")
-      console.log("[v0] First note:", data[0])
-
       setNotes(data)
-      console.log("[v0] State updated with", data.length, "notes")
     } catch (err: any) {
       console.error("[v0] Error loading notes:", err)
-      setError(`데이터 로드 실패: ${err?.message || "알 수 없는 오류"}`)
+      alert(`데이터 로드 실패: ${err?.message || "알 수 없는 오류"}`)
     } finally {
       setLoading(false)
-      console.log("[v0] Loading complete")
     }
   }
 
@@ -239,36 +229,6 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
     )
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950 dark:to-red-900 p-6">
-        <Button variant="ghost" onClick={onBack} className="mb-4">
-          <ArrowLeft className="mr-2 h-4 w-4" /> 돌아가기
-        </Button>
-        <Card className="p-6 bg-red-500 text-white border-0">
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold">오류 발생</h2>
-            <p className="text-lg">{error}</p>
-            <div className="text-sm space-y-1 bg-white/20 p-4 rounded">
-              <p>사용자: {user?.email}</p>
-              <p>User ID: {user?.id}</p>
-              <p>Supabase URL: {process.env.NEXT_PUBLIC_SUPABASE_URL ? "설정됨" : "누락"}</p>
-            </div>
-            <Button
-              onClick={() => {
-                setError(null)
-                loadData()
-              }}
-              className="w-full bg-white text-red-600 hover:bg-gray-100"
-            >
-              다시 시도
-            </Button>
-          </div>
-        </Card>
-      </div>
-    )
-  }
-
   if (isAdding) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
@@ -397,7 +357,6 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
         <p>선택된 태그: "{selectedTag}"</p>
         <p>로딩 중: {loading ? "true" : "false"}</p>
         <p>사용자 ID: {user?.id}</p>
-        {error && <p className="text-red-600 font-bold mt-2">에러: {error}</p>}
       </Card>
 
       <div className="flex items-center justify-between">

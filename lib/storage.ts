@@ -20,30 +20,19 @@ export async function saveNotes(notes: Note[], userId: string) {
 }
 
 export async function loadNotes(userId: string): Promise<Note[]> {
-  console.log("[v0] loadNotes called with userId:", userId)
-
   const supabase = getSupabaseClient()
-  console.log("[v0] Supabase client obtained")
-
   const { data, error } = await supabase
     .from("notes")
     .select("*")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
 
-  console.log("[v0] Supabase query completed")
-  console.log("[v0] Error:", error)
-  console.log("[v0] Data:", data)
-  console.log("[v0] Data length:", data?.length || 0)
-
   if (error) {
     console.error("[v0] Error loading notes:", error)
     throw error
   }
 
-  const result = data || []
-  console.log("[v0] Returning", result.length, "notes")
-  return result
+  return data || []
 }
 
 // Health Records

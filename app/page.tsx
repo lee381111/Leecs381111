@@ -575,6 +575,10 @@ const ForestNotePage = () => {
   const [allHealthRecords, setAllHealthRecords] = useState<any[]>([])
   const [showConnectionStatus, setShowConnectionStatus] = useState(true)
 
+  const ADMIN_EMAILS = ["chanse1984@hanmail.net", "lee381111@gmail.com"] // 관리자 이메일 목록
+  const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email) : false
+  const STORAGE_LIMIT = isAdmin ? 1000 * 1024 * 1024 : 500 * 1024 * 1024 // Admin: 1000MB, Others: 500MB
+
   useEffect(() => {
     console.log(
       "[v0] State updated - Notes:",
@@ -588,20 +592,6 @@ const ForestNotePage = () => {
       "bytes",
     )
   }, [allNotes, allSchedules, allDiaries, allTravels, allVehicles, allHealthRecords, storageUsed])
-
-  const ADMIN_EMAILS = ["chanse1984@hanmail.net", "lee381111@gmail.com"] // 관리자 이메일 목록
-  const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email) : false
-  const STORAGE_LIMIT = isAdmin ? 1000 * 1024 * 1024 : 500 * 1024 * 1024 // Admin: 1000MB, Others: 500MB
-
-  console.log(
-    "[v0] User email:",
-    user?.email,
-    "Is admin:",
-    isAdmin,
-    "Storage limit:",
-    STORAGE_LIMIT / 1024 / 1024,
-    "MB",
-  )
 
   useEffect(() => {
     const calculateStorage = async () => {
@@ -834,6 +824,40 @@ const ForestNotePage = () => {
   }
 
   const storagePercentage = (storageUsed / STORAGE_LIMIT) * 100
+  // </CHANGE>
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+          <p className="text-emerald-800">
+            {language === "ko"
+              ? "로딩 중..."
+              : language === "en"
+                ? "Loading..."
+                : language === "zh"
+                  ? "加载中..."
+                  : "読み込み中..."}
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 flex items-center justify-center p-4">
+        <div className="absolute inset-0 opacity-30">
+          <ForestCanvas />
+        </div>
+        <div className="relative z-10">
+          <LoginForm language={language} onLanguageChange={setLanguage} />
+        </div>
+      </div>
+    )
+  }
+  // </CHANGE>
 
   if (currentSection === "notes") {
     return <NotesSection onBack={() => setCurrentSection("home")} language={language} />
