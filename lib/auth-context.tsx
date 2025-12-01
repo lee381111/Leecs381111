@@ -16,50 +16,18 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false) // Set to false initially to avoid fetch on mount
   const supabase = createClient()
 
   useEffect(() => {
-    let retryCount = 0
-    const maxRetries = 3
+    // Only listen to auth state changes, don't fetch initial session
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
 
-    const getInitialSession = async () => {
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession()
-        setUser(session?.user ?? null)
-        retryCount = 0 // Reset on success
-      } catch (error) {
-        console.error("Failed to get initial session:", error)
-        retryCount++
-
-        if (retryCount < maxRetries) {
-          const backoffDelay = Math.min(1000 * Math.pow(2, retryCount), 10000)
-          setTimeout(getInitialSession, backoffDelay)
-        } else {
-          setUser(null)
-          setLoading(false)
-        }
-        return
-      }
-      setLoading(false)
-    }
-
-    getInitialSession()
-
-    try {
-      const {
-        data: { subscription },
-      } = supabase.auth.onAuthStateChange((_event, session) => {
-        setUser(session?.user ?? null)
-      })
-
-      return () => subscription.unsubscribe()
-    } catch (error) {
-      console.error("Failed to setup auth state listener:", error)
-      setLoading(false)
-    }
+    return () => subscription.unsubscribe()
   }, [supabase])
 
   const login = async (email: string, password: string): Promise<void> => {

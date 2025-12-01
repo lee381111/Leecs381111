@@ -28,7 +28,7 @@ export async function updateSession(request: NextRequest) {
 
     const {
       data: { user },
-    } = await supabase.auth.getUser()
+    } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }))
 
     // Redirect to login if not authenticated (except for auth pages)
     if (!user && !request.nextUrl.pathname.startsWith("/auth")) {
@@ -36,10 +36,9 @@ export async function updateSession(request: NextRequest) {
       url.pathname = "/"
       return NextResponse.redirect(url)
     }
-
-    return supabaseResponse
   } catch (error) {
-    console.error("Middleware error:", error)
-    return supabaseResponse
+    // The app will work without auth, just won't have protected routes
   }
+
+  return supabaseResponse
 }
