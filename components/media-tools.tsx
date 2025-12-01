@@ -744,7 +744,11 @@ export function MediaTools({
               onTouchEnd={handleCanvasEnd}
             />
             <div className="flex gap-2">
-              <Button variant="outline" onClick={clearCanvas} className="flex-1 bg-transparent">
+              <Button
+                variant="outline"
+                onClick={clearCanvas}
+                className="flex-1 bg-white text-black hover:bg-gray-100 border-white"
+              >
                 {t("clear")}
               </Button>
               <Button onClick={saveDrawing} className="flex-1">
