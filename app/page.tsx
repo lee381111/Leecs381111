@@ -632,10 +632,10 @@ export default function ForestNotePage() {
 
       <div className="relative z-10 p-6 space-y-6">
         <div className="flex items-center justify-between gap-4">
-          <h1 className="text-3xl md:text-4xl font-bold text-emerald-700 whitespace-nowrap flex-1 text-center">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-emerald-700 truncate max-w-[40%] sm:max-w-[50%]">
             🌲 {getTranslation(language, "title")}
           </h1>
-          <div className="flex flex-col gap-2 items-end flex-shrink-0">
+          <div className="flex flex-col gap-2 items-end min-w-fit flex-shrink-0">
             <div className="flex items-center gap-2">
               <NotificationCenter language={language} />
               <LanguageSelector language={language} onChange={setLanguage} />
