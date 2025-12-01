@@ -369,7 +369,7 @@ export function TravelMap({ travels, onMarkerClick, clickMode = false, onMapClic
         className="absolute bottom-4 left-4 bg-white/95 px-3 py-2 rounded shadow-lg text-xs font-medium z-20 border border-gray-300"
         style={{ pointerEvents: "none" }}
       >
-        🗺️ {t("map_instructions")}: {zoom} | 🖱️ {t("map_drag")} | {t("map_zoom_buttons")}
+        🗺️ {t("map_zoom_instruction")}: {zoom} | 🖱️ {t("map_drag_instruction")} | {t("map_button_instruction")}
       </div>
 
       {clickMode && !tempMarker && (
