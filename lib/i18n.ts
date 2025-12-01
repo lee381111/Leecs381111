@@ -47,6 +47,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     settings: "설정",
 
     // Notes
+    title_label: "제목",
     title_required: "제목을 입력해주세요",
     content: "내용",
     tags_placeholder: "태그 (쉼표로 구분)",
@@ -137,7 +138,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     hours_before_3: "3시간 전",
     day_before_1: "1일 전",
     days_before_3: "3일 전",
-    week_before_1: "일주일 전",
+    week_before_1: "1주일 전",
 
     // Travel Section
     travel_map: "여행 지도",
@@ -374,6 +375,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     settings: "Settings",
 
     // Notes
+    title_label: "Title",
     title_required: "Please enter a title",
     content: "Content",
     tags_placeholder: "Tags (comma separated)",
@@ -704,6 +706,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     settings: "设置",
 
     // Notes
+    title_label: "标题",
     title_required: "请输入标题",
     content: "内容",
     tags_placeholder: "标签（逗号分隔）",
@@ -1027,6 +1030,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     settings: "設定",
 
     // Notes
+    title_label: "タイトル",
     title_required: "タイトルを入力してください",
     content: "内容",
     tags_placeholder: "タグ（カンマ区切り）",

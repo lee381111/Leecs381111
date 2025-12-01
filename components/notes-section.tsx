@@ -256,7 +256,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
             rows={10}
           />
           <Input
-            placeholder={language === "ko" ? "태그 (쉼표로 구분)" : "Tags (comma separated)"}
+            placeholder={t("tags_placeholder")}
             value={formData.tags}
             onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
           />
