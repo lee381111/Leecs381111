@@ -430,14 +430,14 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
             onChange={(e) => setFormData({ ...formData, category: e.target.value as any })}
             className="w-full p-2 border rounded bg-white"
           >
-            <option value="도시">🏙️ 도시</option>
-            <option value="자연">🌿 자연</option>
-            <option value="산">⛰️ 산</option>
-            <option value="바다">🌊 바다</option>
-            <option value="유적지">🏛️ 유적지</option>
-            <option value="맛집">🍽️ 맛집</option>
-            <option value="카페">☕ 카페</option>
-            <option value="기타">📌 기타</option>
+            <option value="도시">🏙️ {t("city_category")}</option>
+            <option value="자연">🌿 {t("nature_category")}</option>
+            <option value="산">⛰️ {t("mountain_category")}</option>
+            <option value="바다">🌊 {t("sea_category")}</option>
+            <option value="유적지">🏛️ {t("historic_category")}</option>
+            <option value="맛집">🍽️ {t("restaurant_category")}</option>
+            <option value="카페">☕ {t("cafe_category")}</option>
+            <option value="기타">📌 {t("other_category")}</option>
           </select>
         </div>
 
@@ -510,7 +510,18 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
                   {travel.category === "카페" && "☕"}
                   {(!travel.category || travel.category === "기타") && "📍"} {travel.destination}
                 </h3>
-                {travel.category && <span className="text-xs text-gray-500">{travel.category}</span>}
+                {travel.category && (
+                  <span className="text-xs text-gray-500">
+                    {travel.category === "도시" && t("city_category")}
+                    {travel.category === "자연" && t("nature_category")}
+                    {travel.category === "산" && t("mountain_category")}
+                    {travel.category === "바다" && t("sea_category")}
+                    {travel.category === "유적지" && t("historic_category")}
+                    {travel.category === "맛집" && t("restaurant_category")}
+                    {travel.category === "카페" && t("cafe_category")}
+                    {travel.category === "기타" && t("other_category")}
+                  </span>
+                )}
               </div>
               <div className="flex gap-2">
                 <Button size="sm" variant="ghost" onClick={() => handleEdit(travel)}>
