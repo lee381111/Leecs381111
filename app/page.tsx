@@ -631,40 +631,36 @@ export default function ForestNotePage() {
       </div>
 
       <div className="relative z-10 p-6 space-y-6">
-        <div className="flex items-center justify-between gap-4">
-          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-emerald-700 truncate max-w-[40%] sm:max-w-[50%]">
+        <div className="flex items-center justify-between gap-2">
+          <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-emerald-700">
             🌲 {getTranslation(language, "title")}
           </h1>
-          <div className="flex flex-col gap-2 items-end min-w-fit flex-shrink-0">
-            <div className="flex items-center gap-2">
-              <NotificationCenter language={language} />
-              <LanguageSelector language={language} onChange={setLanguage} />
-            </div>
-            <div className="flex items-center gap-2">
-              <GlobalSearch
-                language={language}
-                onResultClick={(section, item) => {
-                  setCurrentSection(section)
-                }}
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={logout}
-                className="text-black flex items-center gap-1 bg-transparent"
-              >
-                <LogOut className="h-4 w-4" />
-                <span className="text-sm hidden sm:inline">
-                  {language === "ko"
-                    ? "로그아웃"
-                    : language === "en"
-                      ? "Logout"
-                      : language === "zh"
-                        ? "登出"
-                        : "ログアウト"}
-                </span>
-              </Button>
-            </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <NotificationCenter language={language} />
+            <LanguageSelector language={language} onChange={setLanguage} />
+            <GlobalSearch
+              language={language}
+              onResultClick={(section, item) => {
+                setCurrentSection(section)
+              }}
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={logout}
+              className="text-black flex items-center gap-1 bg-transparent"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="text-sm hidden sm:inline">
+                {language === "ko"
+                  ? "로그아웃"
+                  : language === "en"
+                    ? "Logout"
+                    : language === "zh"
+                      ? "登出"
+                      : "ログアウト"}
+              </span>
+            </Button>
           </div>
         </div>
 
