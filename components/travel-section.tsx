@@ -88,7 +88,7 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
       }
     } catch (err) {
       console.error("[v0] Error loading travel records:", err)
-      setError("여행 기록을 불러오는 중 오류가 발생했습니다.")
+      setError(t("load_error"))
     } finally {
       setLoading(false)
       console.log("[v0] loadData: Finished")
@@ -97,18 +97,18 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
 
   const handleSave = async (attachments: Attachment[] = []) => {
     if (!user?.id) {
-      alert("로그인이 필요합니다")
+      alert(t("login_required"))
       return
     }
 
     if (!formData.destination.trim()) {
-      alert("여행지를 입력해주세요")
+      alert(t("enter_destination"))
       return
     }
 
     // Validate dates
     if (!formData.startDate || !formData.endDate) {
-      alert("출발일과 종료일을 입력해주세요")
+      alert(t("enter_dates"))
       return
     }
 
@@ -182,10 +182,10 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
         attachments: [],
       })
 
-      alert("여행 기록이 저장되었습니다!")
+      alert(t("travel_saved"))
     } catch (error) {
       console.error("[v0] Error saving travel:", error)
-      alert("저장 중 오류가 발생했습니다: " + (error as Error).message)
+      alert(t("save_error") + ": " + (error as Error).message)
     } finally {
       setSaving(false)
     }
@@ -208,10 +208,10 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm("이 여행 기록을 삭제하시겠습니까?")) return
+    if (!confirm(t("travel_delete_confirm"))) return
 
     if (!user?.id) {
-      alert("로그인이 필요합니다")
+      alert(t("login_required"))
       return
     }
 
@@ -219,10 +219,10 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
       const updated = travels.filter((t) => t.id !== id)
       setTravels(updated)
       await saveTravelRecords(updated, user.id)
-      alert("삭제되었습니다")
+      alert(t("deleted"))
     } catch (error) {
       console.error("[v0] Error deleting travel:", error)
-      alert("삭제 중 오류가 발생했습니다")
+      alert(t("delete_error"))
     }
   }
 
@@ -282,7 +282,7 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
         <Card className="p-8 text-center bg-red-50 border-red-200">
           <p className="text-red-600 font-semibold">{error}</p>
           <Button onClick={loadData} className="mt-4">
-            다시 시도
+            {t("retry")}
           </Button>
         </Card>
       </div>
@@ -315,12 +315,12 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
         >
           <ArrowLeft className="mr-2 h-4 w-4" /> {t("title")}
         </Button>
-        <h2 className="text-xl font-bold">{editingId ? "여행 기록 수정" : "새 여행 기록"}</h2>
+        <h2 className="text-xl font-bold">{editingId ? t("edit_travel_record") : t("new_travel_record")}</h2>
 
         <div className="space-y-2">
-          <label className="block text-sm font-medium">여행지</label>
+          <label className="block text-sm font-medium">{t("destination_label")}</label>
           <Input
-            placeholder="예: 제주 한라산, 서울 남산, 파리, 뉴욕"
+            placeholder={t("destination_placeholder")}
             value={formData.destination}
             onChange={(e) => {
               const newDestination = e.target.value
@@ -336,7 +336,7 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
                     longitude: coords.lon.toFixed(4),
                   }))
                   console.log(
-                    `[v0] 좌표 계산: ${newDestination} → 위도 ${coords.lat.toFixed(4)}, 경도 ${coords.lon.toFixed(4)}`,
+                    `[v0] ${t("coordinates_calculated")}: ${newDestination} → ${t("latitude_label")} ${coords.lat.toFixed(4)}, ${t("longitude_label")} ${coords.lon.toFixed(4)}`,
                   )
                 }
               }
@@ -346,18 +346,18 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-emerald-700">📍 위도</label>
+            <label className="block text-sm font-medium text-emerald-700">📍 {t("latitude_label")}</label>
             <Input
-              placeholder="자동 계산 또는 수동 입력"
+              placeholder={t("auto_or_manual_input")}
               value={formData.latitude}
               onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
               className="bg-emerald-100 border-emerald-300 font-mono text-emerald-900 font-semibold"
             />
           </div>
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-emerald-700">📍 경도</label>
+            <label className="block text-sm font-medium text-emerald-700">📍 {t("longitude_label")}</label>
             <Input
-              placeholder="자동 계산 또는 수동 입력"
+              placeholder={t("auto_or_manual_input")}
               value={formData.longitude}
               onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
               className="bg-emerald-100 border-emerald-300 font-mono text-emerald-900 font-semibold"
@@ -370,15 +370,13 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
           variant={isSelectingLocation ? "default" : "outline"}
           className={`w-full ${isSelectingLocation ? "bg-yellow-500 hover:bg-yellow-600 text-black" : ""}`}
         >
-          {isSelectingLocation ? "✖️ 위치 선택 취소" : "🗺️ 지도에서 직접 위치 선택하기"}
+          {isSelectingLocation ? `✖️ ${t("select_location_cancel")}` : `🗺️ ${t("select_location_on_map")}`}
         </Button>
 
         {isSelectingLocation && (
           <Card className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-400">
             <div className="mb-4 bg-yellow-100 border-2 border-yellow-400 rounded-lg p-3">
-              <p className="text-sm font-semibold text-yellow-900 text-center">
-                💡 지도를 클릭하여 정확한 위치를 선택하세요
-              </p>
+              <p className="text-sm font-semibold text-yellow-900 text-center">💡 {t("select_location_instruction")}</p>
             </div>
             <TravelMap
               travels={[]}
@@ -394,7 +392,9 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
                 })
                 setIsSelectingLocation(false)
                 console.log("[v0] Form updated with coordinates, selection mode closed")
-                alert(`✅ 위치가 선택되었습니다!\n📍 위도: ${lat.toFixed(4)}, 경도: ${lon.toFixed(4)}`)
+                alert(
+                  `✅ ${t("location_selected_message")}\n📍 ${t("latitude_label")}: ${lat.toFixed(4)}, ${t("longitude_label")}: ${lon.toFixed(4)}`,
+                )
               }}
             />
           </Card>
@@ -402,7 +402,7 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <label className="block text-sm font-medium">출발일</label>
+            <label className="block text-sm font-medium">{t("start_date_label")}</label>
             <Input
               type="date"
               value={formData.startDate}
@@ -412,7 +412,7 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
             />
           </div>
           <div className="space-y-2">
-            <label className="block text-sm font-medium">종료일</label>
+            <label className="block text-sm font-medium">{t("end_date_label")}</label>
             <Input
               type="date"
               value={formData.endDate}
@@ -424,7 +424,7 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2">카테고리</label>
+          <label className="block text-sm font-medium mb-2">{t("category_label")}</label>
           <select
             value={formData.category}
             onChange={(e) => setFormData({ ...formData, category: e.target.value as any })}
@@ -442,15 +442,15 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
         </div>
 
         <div className="space-y-2">
-          <label className="block text-sm font-medium">💰 여행 비용 (원)</label>
+          <label className="block text-sm font-medium">💰 {t("travel_expense_label")}</label>
           <Input
             type="number"
-            placeholder="여행 비용을 입력하세요"
+            placeholder={t("travel_expense_placeholder")}
             value={formData.expense}
             onChange={(e) => setFormData({ ...formData, expense: e.target.value })}
             className="p-2 border rounded"
           />
-          <p className="text-xs text-muted-foreground">💡 입력하면 가계부에 자동으로 기록됩니다</p>
+          <p className="text-xs text-muted-foreground">💡 {t("expense_auto_save_notice")}</p>
         </div>
 
         <Textarea
@@ -528,13 +528,14 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
 
             {travel.latitude && travel.longitude && (
               <p className="text-xs text-emerald-600 mb-2">
-                📍 위도: {Number(travel.latitude).toFixed(4)}, 경도: {Number(travel.longitude).toFixed(4)}
+                📍 {t("latitude_label")}: {Number(travel.latitude).toFixed(4)}, {t("longitude_label")}:{" "}
+                {Number(travel.longitude).toFixed(4)}
               </p>
             )}
 
             {travel.expense && travel.expense > 0 && (
               <p className="text-sm font-semibold text-blue-600 mb-2">
-                💰 여행 비용: {travel.expense.toLocaleString()}원
+                💰 {t("travel_expense_with_unit")}: {travel.expense.toLocaleString()}원
               </p>
             )}
 
@@ -542,7 +543,9 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
 
             {travel.attachments && travel.attachments.length > 0 && (
               <div className="mt-4 space-y-2">
-                <p className="text-sm font-medium">첨부파일 ({travel.attachments.length}개)</p>
+                <p className="text-sm font-medium">
+                  {t("attachments_count_label")} ({travel.attachments.length}개)
+                </p>
                 <div className="grid grid-cols-2 gap-2">
                   {travel.attachments.map((file: any, idx: number) => {
                     const isImage =
@@ -568,7 +571,7 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
                         >
                           <img
                             src={file.url || file.data}
-                            alt={file.name || "첨부파일"}
+                            alt={file.name || t("attachments_count_label")}
                             className="w-full h-32 object-cover"
                             onError={(e) => {
                               e.currentTarget.src = "/placeholder.svg?height=128&width=128"
@@ -593,7 +596,7 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
                     }
                     return (
                       <div key={idx} className="flex items-center justify-center h-20 bg-gray-200 border rounded p-2">
-                        <p className="text-xs text-gray-600 text-center truncate">{file.name || "파일"}</p>
+                        <p className="text-xs text-gray-600 text-center truncate">{file.name || t("file")}</p>
                       </div>
                     )
                   })}
@@ -605,8 +608,8 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
 
         {travels.length === 0 && (
           <Card className="p-8 text-center text-muted-foreground">
-            <p>아직 여행 기록이 없습니다</p>
-            <p className="text-sm mt-2">첫 여행 기록을 추가해보세요!</p>
+            <p>{t("no_travel_records")}</p>
+            <p className="text-sm mt-2">{t("add_first_travel")}</p>
           </Card>
         )}
       </div>
@@ -619,7 +622,7 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
           <div className="relative max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center">
             <img
               src={selectedImage || "/placeholder.svg"}
-              alt="확대 이미지"
+              alt={t("close_image")}
               className="max-w-full max-h-full object-contain"
               onClick={(e) => e.stopPropagation()}
             />
@@ -627,7 +630,7 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
               onClick={() => setSelectedImage(null)}
               className="absolute top-4 right-4 bg-white/90 hover:bg-white text-black font-bold py-2 px-4 rounded-full shadow-lg"
             >
-              ✕ 닫기
+              ✕ {t("close")}
             </button>
           </div>
         </div>
