@@ -448,7 +448,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
           {saving ? <Spinner className="h-4 w-4 mr-2" /> : null}
           {saving
             ? t("saving")
-            : `${batchEvents.filter((e) => e.name.trim() && e.date).length}${t("save_schedules_count")}`}
+            : `${batchEvents.filter((e) => e.name.trim() && e.date).length} ${t("save_schedules_count")}`}
         </Button>
       </div>
     )
