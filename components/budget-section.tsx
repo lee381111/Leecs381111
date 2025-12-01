@@ -232,7 +232,7 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
       currentMonth: { ko: "이번 달", en: "Current Month", zh: "本月", ja: "今月" },
       monthlyComparison: { ko: "월별 비교", en: "Monthly Comparison", zh: "月度对比", ja: "月別比較" },
       monthlyTrend: { ko: "월별 추이", en: "Monthly Trend", zh: "月度趋势", ja: "月別推移" },
-      month: { ko: "월", en: "Month", zh: "月", ja: "月" },
+      month: { ko: "월", en: "", zh: "月", ja: "月" },
       sixMonthSummary: { ko: "12개월 요약", en: "12-Month Summary", zh: "12个月总结", ja: "12ヶ月集計" },
       totalIncome: { ko: "총 수입", en: "Total Income", zh: "总收入", ja: "総収入" },
       totalExpense: { ko: "총 지출", en: "Total Expense", zh: "总支出", ja: "総支出" },
@@ -315,7 +315,7 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
       },
       krw_unit: { ko: "원", en: "$", zh: "元", ja: "円" },
       krw: { ko: "원", en: "$", zh: "元", ja: "円" },
-      year: { ko: "년", en: "Year", zh: "年", ja: "年" },
+      year: { ko: "년", en: "", zh: "年", ja: "年" },
     }
     return translations[key]?.[language] || key
   }
