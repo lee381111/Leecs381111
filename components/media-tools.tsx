@@ -373,7 +373,13 @@ export function MediaTools({
 
     try {
       const recognition = new SpeechRecognition()
-      recognition.lang = language
+      const languageMap: Record<string, string> = {
+        ko: "ko-KR",
+        en: "en-US",
+        zh: "zh-CN",
+        ja: "ja-JP",
+      }
+      recognition.lang = languageMap[language] || "en-US"
       recognition.continuous = false
       recognition.interimResults = true
       recognition.maxAlternatives = 1
@@ -622,26 +628,23 @@ export function MediaTools({
       )}
 
       {isRecognizing && (
-        <div className="space-y-2 bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border-2 border-blue-500">
+        <Card className="p-4 bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-blue-600 dark:text-blue-400">{t("speech_recognition")}</p>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-blue-600 rounded-full animate-pulse" />
+              <p className="text-sm font-medium text-blue-600 dark:text-blue-400">{t("speech_recognition")}</p>
+            </div>
             <Button
-              variant="destructive"
+              variant="outline"
               size="sm"
               onClick={stopSpeechRecognition}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="text-blue-600 hover:text-blue-700 dark:text-blue-400 bg-transparent"
             >
-              <MessageSquare className="h-4 w-4 mr-2" />
               {t("stop_recognition")}
             </Button>
           </div>
-          {recognizedText && (
-            <div className="bg-white dark:bg-slate-800 p-3 rounded border">
-              <p className="text-sm text-foreground">{recognizedText}</p>
-            </div>
-          )}
-          <p className="text-xs text-blue-600 dark:text-blue-400">{t("speech_to_text")}</p>
-        </div>
+          {recognizedText && <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{recognizedText}</p>}
+        </Card>
       )}
 
       {isRecordingVideo && (
