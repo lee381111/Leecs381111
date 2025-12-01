@@ -16,18 +16,28 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(false) // Set to false initially to avoid fetch on mount
+  const [loading, setLoading] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
-    // Only listen to auth state changes, don't fetch initial session
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-    })
+    try {
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user ?? null)
+      })
 
-    return () => subscription.unsubscribe()
+      return () => {
+        try {
+          subscription.unsubscribe()
+        } catch (error) {
+          // Silently ignore unsubscribe errors
+        }
+      }
+    } catch (error) {
+      // Silently ignore auth state change errors - app will work without auth
+      return () => {}
+    }
   }, [supabase])
 
   const login = async (email: string, password: string): Promise<void> => {
