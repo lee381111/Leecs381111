@@ -1,1201 +1,1143 @@
 "use client"
 
-import type React from "react"
-import { useState, useRef } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+import { Card } from "@/components/ui/card"
+import { ArrowLeft, Plus, Trash2, TrendingUp, Pill, Bell, Pencil } from "lucide-react"
+import { saveHealthRecords, loadHealthRecords, saveMedications, loadMedications } from "@/lib/storage"
+import { useAuth } from "@/lib/auth-context"
+import type { HealthRecord, Medication, Attachment } from "@/lib/types"
+import { MediaTools } from "@/components/media-tools"
+import { Spinner } from "@/components/ui/spinner"
+import { getTranslation } from "@/lib/i18n"
 import {
-  Plus,
-  Trash2,
-  Paperclip,
-  Mic,
-  X,
-  ImageIcon,
-  Pencil,
-  PenTool,
-  ArrowUpDown,
-  Heart,
-  Pill,
-  Bell,
-  BellOff,
-  Footprints,
-  Activity,
-  Droplet,
-  WeightIcon,
-  Thermometer,
-} from "lucide-react"
-import type { HealthRecord, Medication, MedicationLog } from "./personal-organizer-app"
-import { useLanguage } from "@/lib/language-context"
-import { AttachmentList } from "./attachment-list"
-import { HandwritingCanvas } from "./handwriting-canvas"
-import { uploadFileToStorage } from "@/lib/storage"
+  cancelNotification,
+  setupMedicationAlarms,
+  getMedicationCompletions,
+  toggleMedicationCompletion,
+} from "@/lib/notification-manager"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
 
-type UploadedFile = {
-  name: string
-  url: string
-  type: string
+interface HealthSectionProps {
+  onBack: () => void
+  language: string
 }
 
-type HealthSectionProps = {
-  healthRecords: HealthRecord[]
-  setHealthRecords: (records: HealthRecord[]) => void
-  medications: Medication[]
-  setMedications: (medications: Medication[]) => void
-  medicationLogs: MedicationLog[]
-  setMedicationLogs: (logs: MedicationLog[]) => void
-  userId?: string
-}
+type ViewMode = "list" | "add_record" | "medications" | "add_medication" | "charts"
 
-export function HealthSection({
-  healthRecords,
-  setHealthRecords,
-  medications,
-  setMedications,
-  medicationLogs,
-  setMedicationLogs,
-  userId,
-}: HealthSectionProps) {
-  const [activeTab, setActiveTab] = useState<"records" | "medications">("records")
-  const [isAddingRecord, setIsAddingRecord] = useState(false)
-  const [editingRecordId, setEditingRecordId] = useState<string | null>(null)
-  const [isAddingMedication, setIsAddingMedication] = useState(false)
-  const [editingMedicationId, setEditingMedicationId] = useState<string | null>(null)
-  const [newRecord, setNewRecord] = useState({
-    date: "",
-    bloodPressureSystolic: "",
-    bloodPressureDiastolic: "",
+export function HealthSection({ onBack, language }: HealthSectionProps) {
+  const { user } = useAuth()
+  const [records, setRecords] = useState<HealthRecord[]>([])
+  const [medications, setMedications] = useState<Medication[]>([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [viewMode, setViewMode] = useState<ViewMode>("list")
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingMedId, setEditingMedId] = useState<string | null>(null)
+  const [medicationCompletions, setMedicationCompletions] = useState<Record<string, string[]>>({})
+
+  const [formData, setFormData] = useState<{
+    date: string
+    type: "vital_signs" | "medication" | "expense" | "exercise"
+    systolic: string
+    diastolic: string
+    bloodSugar: string
+    temperature: string
+    weight: string
+    steps: string
+    distance: string
+    medicalExpense: string
+    medicationExpense: string
+    notes: string
+    attachments: Attachment[]
+  }>({
+    date: new Date().toISOString().split("T")[0],
+    type: "vital_signs",
+    systolic: "",
+    diastolic: "",
     bloodSugar: "",
-    pulse: "",
-    weight: "",
     temperature: "",
+    weight: "",
     steps: "",
-    distanceKm: "",
-    medicalCost: "",
-    medicineCost: "",
+    distance: "",
+    medicalExpense: "",
+    medicationExpense: "",
     notes: "",
+    attachments: [],
   })
-  const [newMedication, setNewMedication] = useState({
+
+  const [medFormData, setMedFormData] = useState({
     name: "",
     dosage: "",
     frequency: "",
-    startDate: "",
+    times: [""],
+    startDate: new Date().toISOString().split("T")[0],
     endDate: "",
-    time: "",
-    alarmEnabled: false,
     notes: "",
+    alarmEnabled: true,
+    attachments: [] as Attachment[],
   })
-  const [attachedFiles, setAttachedFiles] = useState<File[]>([])
-  const [existingAttachments, setExistingAttachments] = useState<UploadedFile[]>([])
-  const [isRecording, setIsRecording] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const recognitionRef = useRef<any>(null)
-  const [isHandwritingOpen, setIsHandwritingOpen] = useState(false)
-  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest")
-  const { t, language } = useLanguage()
 
-  const handleFileAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const newFiles = Array.from(e.target.files)
-      setAttachedFiles([...attachedFiles, ...newFiles])
+  useEffect(() => {
+    loadData()
+  }, [user])
+
+  const loadData = async () => {
+    if (!user?.id) return
+
+    try {
+      setLoading(true)
+      console.log("[v0] 건강 섹션: 데이터 로드 시작")
+      const [healthData, medData] = await Promise.all([loadHealthRecords(user.id), loadMedications(user.id)])
+      console.log("[v0] 건강 기록 로드됨:", healthData.length, "개")
+      console.log("[v0] 복약 기록 로드됨:", medData.length, "개")
+      setRecords(healthData)
+      setMedications(medData)
+
+      setupMedicationAlarms(medData)
+    } finally {
+      setLoading(false)
     }
   }
 
-  const handleRemoveFile = (index: number) => {
-    setAttachedFiles(attachedFiles.filter((_, i) => i !== index))
-  }
-
-  const handleVoiceInput = () => {
-    if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
-      const messages = {
-        ko: "음성 인식이 지원되지 않는 브라우저입니다.",
-        en: "Speech recognition is not supported in this browser.",
-        zh: "此浏览器不支持语音识别。",
-        ja: "このブラウザは音声認識をサポートしていません。",
-      }
-      alert(messages[language])
+  const handleSaveRecord = async (attachments: Attachment[]) => {
+    if (!user?.id) {
+      alert("로그인이 필요합니다")
       return
     }
 
-    if (isRecording) {
-      recognitionRef.current?.stop()
-      setIsRecording(false)
+    if (!formData.date) {
+      alert("날짜를 입력해주세요")
       return
     }
 
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-    const recognition = new SpeechRecognition()
-    const langCodes = { ko: "ko-KR", en: "en-US", zh: "zh-CN", ja: "ja-JP" }
-    recognition.lang = langCodes[language]
+    try {
+      setSaving(true)
 
-    recognition.onstart = () => {
-      setIsRecording(true)
-    }
-
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript
-      if (activeTab === "records") {
-        setNewRecord({ ...newRecord, notes: newRecord.notes + " " + transcript })
+      let updated: HealthRecord[]
+      if (editingId) {
+        console.log("[v0] 건강 기록 수정:", editingId)
+        updated = records.map((r) =>
+          r.id === editingId
+            ? {
+                ...r,
+                date: formData.date,
+                type: formData.type,
+                bloodPressure:
+                  formData.systolic && formData.diastolic
+                    ? { systolic: Number(formData.systolic), diastolic: Number(formData.diastolic) }
+                    : undefined,
+                bloodSugar: formData.bloodSugar ? Number(formData.bloodSugar) : undefined,
+                temperature: formData.temperature ? Number(formData.temperature) : undefined,
+                weight: formData.weight ? Number(formData.weight) : undefined,
+                steps: formData.steps ? Number(formData.steps) : undefined,
+                distance: formData.distance ? Number(formData.distance) : undefined,
+                medicalExpense: formData.medicalExpense ? Number(formData.medicalExpense) : undefined,
+                medicationExpense: formData.medicationExpense ? Number(formData.medicationExpense) : undefined,
+                notes: formData.notes,
+                attachments,
+              }
+            : r,
+        )
       } else {
-        setNewMedication({ ...newMedication, notes: newMedication.notes + " " + transcript })
-      }
-    }
-
-    recognition.onerror = (event: any) => {
-      console.error("[v0] Speech recognition error:", event.error)
-      setIsRecording(false)
-    }
-
-    recognition.onend = () => {
-      setIsRecording(false)
-    }
-
-    recognitionRef.current = recognition
-    recognition.start()
-  }
-
-  const convertFilesToDataUrls = async (files: File[], userId: string): Promise<UploadedFile[]> => {
-    const results: UploadedFile[] = []
-
-    for (const file of files) {
-      const isAudioOrVideo = file.type.startsWith("audio/") || file.type.startsWith("video/")
-
-      if (isAudioOrVideo) {
-        // Upload to Storage via Server Action
-        const storageFile = await uploadFileToStorage(file, userId)
-        if (storageFile) {
-          results.push({
-            name: storageFile.name,
-            url: storageFile.url,
-            type: storageFile.type,
-          })
-        } else {
-          console.error("[v0] Failed to upload file:", file.name)
-          const errorMessages = {
-            ko: `파일 업로드에 실패했습니다: ${file.name}`,
-            en: `Failed to upload file: ${file.name}`,
-            zh: `文件上传失败：${file.name}`,
-            ja: `ファイルのアップロードに失敗しました：${file.name}`,
-          }
-          alert(errorMessages[language])
-          continue
+        console.log("[v0] 새 건강 기록 추가")
+        const record: HealthRecord = {
+          id: crypto.randomUUID(),
+          date: formData.date,
+          type: formData.type,
+          bloodPressure:
+            formData.systolic && formData.diastolic
+              ? { systolic: Number(formData.systolic), diastolic: Number(formData.diastolic) }
+              : undefined,
+          bloodSugar: formData.bloodSugar ? Number(formData.bloodSugar) : undefined,
+          temperature: formData.temperature ? Number(formData.temperature) : undefined,
+          weight: formData.weight ? Number(formData.weight) : undefined,
+          steps: formData.steps ? Number(formData.steps) : undefined,
+          distance: formData.distance ? Number(formData.distance) : undefined,
+          medicalExpense: formData.medicalExpense ? Number(formData.medicalExpense) : undefined,
+          medicationExpense: formData.medicationExpense ? Number(formData.medicationExpense) : undefined,
+          notes: formData.notes,
+          attachments,
+          createdAt: new Date().toISOString(),
+          user_id: user.id,
         }
-      } else {
-        // Convert images to data URLs
-        const dataUrl = await new Promise<UploadedFile>((resolve) => {
-          const reader = new FileReader()
-          reader.onload = (e) => {
-            resolve({
-              name: file.name,
-              url: e.target?.result as string,
-              type: file.type,
-            })
-          }
-          reader.readAsDataURL(file)
-        })
-        results.push(dataUrl)
+        updated = [record, ...records]
       }
-    }
 
-    return results
+      console.log("[v0] 저장할 건강 기록 수:", updated.length)
+      setRecords(updated)
+      await saveHealthRecords(updated, user.id)
+      console.log("[v0] 건강 기록 저장 완료")
+
+      setViewMode("list")
+      setEditingId(null)
+      resetForm()
+      alert("건강 기록이 저장되었습니다!")
+    } catch (error) {
+      console.error("[v0] 건강 기록 저장 에러:", error)
+      alert("저장 중 오류가 발생했습니다")
+    } finally {
+      setSaving(false)
+    }
   }
 
-  const handleAddRecord = async () => {
-    if (!newRecord.date) {
-      alert(t("pleaseEnterDate"))
+  const handleSaveMedication = async () => {
+    if (!user?.id) {
+      alert("로그인이 필요합니다")
       return
     }
 
-    let uploadedFiles: UploadedFile[] = []
-    if (attachedFiles.length > 0 && userId) {
-      uploadedFiles = await convertFilesToDataUrls(attachedFiles, userId)
+    if (!medFormData.name || medFormData.times.length === 0) {
+      alert("약 이름과 복용 시간을 입력해주세요")
+      return
     }
 
-    const record: HealthRecord = {
-      id: Date.now().toString(),
-      date: newRecord.date,
-      bloodPressureSystolic: newRecord.bloodPressureSystolic
-        ? Number.parseInt(newRecord.bloodPressureSystolic)
-        : undefined,
-      bloodPressureDiastolic: newRecord.bloodPressureDiastolic
-        ? Number.parseInt(newRecord.bloodPressureDiastolic)
-        : undefined,
-      bloodSugar: newRecord.bloodSugar ? Number.parseFloat(newRecord.bloodSugar) : undefined,
-      pulse: newRecord.pulse ? Number.parseInt(newRecord.pulse) : undefined,
-      weight: newRecord.weight ? Number.parseFloat(newRecord.weight) : undefined,
-      temperature: newRecord.temperature ? Number.parseFloat(newRecord.temperature) : undefined,
-      steps: newRecord.steps ? Number.parseInt(newRecord.steps) : undefined,
-      distanceKm: newRecord.distanceKm ? Number.parseFloat(newRecord.distanceKm) : undefined,
-      cost: newRecord.medicalCost ? Number.parseFloat(newRecord.medicalCost) : undefined,
-      medicineCost: newRecord.medicineCost ? Number.parseFloat(newRecord.medicineCost) : undefined,
-      notes: newRecord.notes,
-      attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
-      createdAt: new Date(),
-      user_id: userId || null,
+    try {
+      setSaving(true)
+
+      let updated: Medication[]
+      if (editingMedId) {
+        console.log("[v0] 복약 일정 수정:", editingMedId)
+        // Cancel old alarms
+        const oldMed = medications.find((m) => m.id === editingMedId)
+        if (oldMed) {
+          oldMed.times.forEach((time) => {
+            cancelNotification(`med_${editingMedId}_${time}`)
+          })
+        }
+
+        // Update existing medication
+        updated = medications.map((m) =>
+          m.id === editingMedId
+            ? {
+                ...m,
+                name: medFormData.name,
+                dosage: medFormData.dosage,
+                frequency: medFormData.frequency,
+                times: medFormData.times.filter((t) => t),
+                startDate: medFormData.startDate,
+                endDate: medFormData.endDate,
+                notes: medFormData.notes,
+                alarmEnabled: medFormData.alarmEnabled,
+                attachments: medFormData.attachments || [],
+              }
+            : m,
+        )
+      } else {
+        console.log("[v0] 새 복약 일정 추가")
+        const medication: Medication = {
+          id: crypto.randomUUID(),
+          name: medFormData.name,
+          dosage: medFormData.dosage,
+          frequency: medFormData.frequency,
+          times: medFormData.times.filter((t) => t),
+          startDate: medFormData.startDate,
+          endDate: medFormData.endDate,
+          notes: medFormData.notes,
+          alarmEnabled: medFormData.alarmEnabled,
+          isActive: true,
+          createdAt: new Date().toISOString(),
+          user_id: user.id,
+          attachments: medFormData.attachments || [],
+        }
+        updated = [medication, ...medications]
+      }
+
+      console.log("[v0] 저장할 복약 일정 수:", updated.length)
+      setMedications(updated)
+      await saveMedications(updated, user.id)
+      console.log("[v0] 복약 일정 저장 완료")
+
+      // Setup alarms for all medications
+      setupMedicationAlarms(updated)
+
+      setViewMode("medications")
+      setEditingMedId(null)
+      resetMedForm()
+      alert("복약 일정이 저장되었습니다!")
+    } catch (error) {
+      console.error("[v0] 복약 일정 저장 에러:", error)
+      alert("저장 중 오류가 발생했습니다")
+    } finally {
+      setSaving(false)
     }
-    setHealthRecords([...healthRecords, record])
-    setNewRecord({
-      date: "",
-      bloodPressureSystolic: "",
-      bloodPressureDiastolic: "",
-      bloodSugar: "",
-      pulse: "",
-      weight: "",
-      temperature: "",
-      steps: "",
-      distanceKm: "",
-      medicalCost: "",
-      medicineCost: "",
-      notes: "",
-    })
-    setAttachedFiles([])
-    setIsAddingRecord(false)
-  }
-
-  const handleEditRecord = (record: HealthRecord) => {
-    setEditingRecordId(record.id)
-    setNewRecord({
-      date: record.date,
-      bloodPressureSystolic: record.bloodPressureSystolic?.toString() || "",
-      bloodPressureDiastolic: record.bloodPressureDiastolic?.toString() || "",
-      bloodSugar: record.bloodSugar?.toString() || "",
-      pulse: record.pulse?.toString() || "",
-      weight: record.weight?.toString() || "",
-      temperature: record.temperature?.toString() || "",
-      steps: record.steps?.toString() || "",
-      distanceKm: record.distanceKm?.toString() || "",
-      medicalCost: record.cost?.toString() || "",
-      medicineCost: record.medicineCost?.toString() || "",
-      notes: record.notes || "",
-    })
-    setExistingAttachments((record.attachments as UploadedFile[]) || [])
-    setAttachedFiles([])
-    setIsAddingRecord(true)
-  }
-
-  const handleUpdateRecord = async () => {
-    if (!editingRecordId || !newRecord.date) return
-
-    let uploadedFiles: UploadedFile[] = []
-    if (attachedFiles.length > 0 && userId) {
-      uploadedFiles = await convertFilesToDataUrls(attachedFiles, userId)
-    }
-
-    const allAttachments = [...existingAttachments, ...uploadedFiles]
-
-    const updatedRecord: HealthRecord = {
-      id: editingRecordId,
-      date: newRecord.date,
-      bloodPressureSystolic: newRecord.bloodPressureSystolic
-        ? Number.parseInt(newRecord.bloodPressureSystolic)
-        : undefined,
-      bloodPressureDiastolic: newRecord.bloodPressureDiastolic
-        ? Number.parseInt(newRecord.bloodPressureDiastolic)
-        : undefined,
-      bloodSugar: newRecord.bloodSugar ? Number.parseFloat(newRecord.bloodSugar) : undefined,
-      pulse: newRecord.pulse ? Number.parseInt(newRecord.pulse) : undefined,
-      weight: newRecord.weight ? Number.parseFloat(newRecord.weight) : undefined,
-      temperature: newRecord.temperature ? Number.parseFloat(newRecord.temperature) : undefined,
-      steps: newRecord.steps ? Number.parseInt(newRecord.steps) : undefined,
-      distanceKm: newRecord.distanceKm ? Number.parseFloat(newRecord.distanceKm) : undefined,
-      cost: newRecord.medicalCost ? Number.parseFloat(newRecord.medicalCost) : undefined,
-      medicineCost: newRecord.medicineCost ? Number.parseFloat(newRecord.medicineCost) : undefined,
-      notes: newRecord.notes,
-      attachments: allAttachments.length > 0 ? allAttachments : undefined,
-      createdAt: new Date(),
-      user_id: userId || null,
-    }
-
-    setHealthRecords(healthRecords.map((r) => (r.id === editingRecordId ? updatedRecord : r)))
-    setNewRecord({
-      date: "",
-      bloodPressureSystolic: "",
-      bloodPressureDiastolic: "",
-      bloodSugar: "",
-      pulse: "",
-      weight: "",
-      temperature: "",
-      steps: "",
-      distanceKm: "",
-      medicalCost: "",
-      medicineCost: "",
-      notes: "",
-    })
-    setAttachedFiles([])
-    setExistingAttachments([])
-    setEditingRecordId(null)
-    setIsAddingRecord(false)
   }
 
   const handleDeleteRecord = async (id: string) => {
-    setHealthRecords(healthRecords.filter((r) => r.id !== id))
-  }
-
-  const handleAddMedication = async () => {
-    if (!newMedication.name) {
-      alert(t("pleaseEnterMedicationName"))
+    if (!user?.id) {
+      alert("로그인이 필요합니다")
       return
     }
 
-    const medication: Medication = {
-      id: Date.now().toString(),
-      name: newMedication.name,
-      dosage: newMedication.dosage,
-      frequency: newMedication.frequency,
-      startDate: newMedication.startDate || undefined,
-      endDate: newMedication.endDate || undefined,
-      time: newMedication.time || undefined,
-      alarmEnabled: newMedication.alarmEnabled,
-      notes: newMedication.notes,
-      createdAt: new Date(),
-      user_id: userId || null,
+    if (!confirm("이 기록을 삭제하시겠습니까?")) return
+
+    try {
+      const updated = records.filter((r) => r.id !== id)
+      setRecords(updated)
+      await saveHealthRecords(updated, user.id)
+      alert("삭제되었습니다")
+    } catch (error) {
+      console.error("Error deleting record:", error)
+      alert("삭제 중 오류가 발생했습니다")
     }
-    setMedications([...medications, medication])
-    setNewMedication({
-      name: "",
-      dosage: "",
-      frequency: "",
-      startDate: "",
-      endDate: "",
-      time: "",
-      alarmEnabled: false,
-      notes: "",
-    })
-    setIsAddingMedication(false)
-  }
-
-  const handleEditMedication = (medication: Medication) => {
-    setEditingMedicationId(medication.id)
-    setNewMedication({
-      name: medication.name,
-      dosage: medication.dosage || "",
-      frequency: medication.frequency || "",
-      startDate: medication.startDate || "",
-      endDate: medication.endDate || "",
-      time: medication.time || "",
-      alarmEnabled: medication.alarmEnabled || false,
-      notes: medication.notes || "",
-    })
-    setIsAddingMedication(true)
-  }
-
-  const handleUpdateMedication = async () => {
-    if (!editingMedicationId || !newMedication.name) return
-
-    const updatedMedication: Medication = {
-      id: editingMedicationId,
-      name: newMedication.name,
-      dosage: newMedication.dosage,
-      frequency: newMedication.frequency,
-      startDate: newMedication.startDate || undefined,
-      endDate: newMedication.endDate || undefined,
-      time: newMedication.time || undefined,
-      alarmEnabled: newMedication.alarmEnabled,
-      notes: newMedication.notes,
-      createdAt: new Date(),
-      user_id: userId || null,
-    }
-
-    setMedications(medications.map((m) => (m.id === editingMedicationId ? updatedMedication : m)))
-    setNewMedication({
-      name: "",
-      dosage: "",
-      frequency: "",
-      startDate: "",
-      endDate: "",
-      time: "",
-      alarmEnabled: false,
-      notes: "",
-    })
-    setEditingMedicationId(null)
-    setIsAddingMedication(false)
   }
 
   const handleDeleteMedication = async (id: string) => {
-    setMedications(medications.filter((m) => m.id !== id))
+    if (!user?.id) {
+      alert("로그인이 필요합니다")
+      return
+    }
+
+    if (!confirm("이 복약 일정을 삭제하시겠습니까?")) return
+
+    try {
+      const med = medications.find((m) => m.id === id)
+      if (med) {
+        // Cancel alarms
+        med.times.forEach((time) => {
+          cancelNotification(`med_${id}_${time}`)
+        })
+      }
+
+      const updated = medications.filter((m) => m.id !== id)
+      setMedications(updated)
+      await saveMedications(updated, user.id)
+      alert("삭제되었습니다")
+    } catch (error) {
+      console.error("Error deleting medication:", error)
+      alert("삭제 중 오류가 발생했습니다")
+    }
   }
 
-  const handleRemoveExistingAttachment = (index: number) => {
-    setExistingAttachments(existingAttachments.filter((_, i) => i !== index))
-  }
-
-  const handleCancelRecord = () => {
-    setIsAddingRecord(false)
-    setEditingRecordId(null)
-    setNewRecord({
-      date: "",
-      bloodPressureSystolic: "",
-      bloodPressureDiastolic: "",
+  const resetForm = () => {
+    setFormData({
+      date: new Date().toISOString().split("T")[0],
+      type: "vital_signs",
+      systolic: "",
+      diastolic: "",
       bloodSugar: "",
-      pulse: "",
-      weight: "",
       temperature: "",
+      weight: "",
       steps: "",
-      distanceKm: "",
-      medicalCost: "",
-      medicineCost: "",
+      distance: "",
+      medicalExpense: "",
+      medicationExpense: "",
       notes: "",
+      attachments: [],
     })
-    setAttachedFiles([])
-    setExistingAttachments([])
   }
 
-  const handleCancelMedication = () => {
-    setIsAddingMedication(false)
-    setEditingMedicationId(null)
-    setNewMedication({
+  const resetMedForm = () => {
+    setMedFormData({
       name: "",
       dosage: "",
       frequency: "",
-      startDate: "",
+      times: [""],
+      startDate: new Date().toISOString().split("T")[0],
       endDate: "",
-      time: "",
-      alarmEnabled: false,
       notes: "",
+      alarmEnabled: true,
+      attachments: [],
     })
   }
 
-  const handleHandwritingSave = async (imageBlob: Blob) => {
-    const file = new File([imageBlob], `handwriting-${Date.now()}.png`, { type: "image/png" })
-    setAttachedFiles([...attachedFiles, file])
+  const handleAttachmentsChange = (attachments: Attachment[]) => {
+    setFormData({ ...formData, attachments })
   }
 
-  const sortedRecords = [...healthRecords].sort((a, b) => {
-    if (sortOrder === "newest") {
-      return new Date(b.date).getTime() - new Date(a.date).getTime()
-    } else {
-      return new Date(a.date).getTime() - new Date(b.date).getTime()
-    }
-  })
-
-  const sortedMedications = [...medications].sort((a, b) => {
-    if (sortOrder === "newest") {
-      return b.createdAt.getTime() - a.createdAt.getTime()
-    } else {
-      return a.createdAt.getTime() - b.createdAt.getTime()
-    }
-  })
-
-  const getLangCode = () => {
-    const langCodes = { ko: "ko-KR", en: "en-US", zh: "zh-CN", ja: "ja-JP" }
-    return langCodes[language]
+  const handleMedAttachmentsChange = (attachments: Attachment[]) => {
+    setMedFormData({ ...medFormData, attachments })
   }
 
-  const wasTakenToday = (medicationId: string) => {
-    const today = new Date().toISOString().split("T")[0]
-    return medicationLogs.some((log) => {
-      const logDate = new Date(log.takenAt).toISOString().split("T")[0]
-      return log.medicationId === medicationId && logDate === today
+  const handleRecordTranscript = (text: string) => {
+    setFormData({ ...formData, notes: formData.notes + text })
+  }
+
+  const handleMedicationTranscript = (text: string) => {
+    setMedFormData({ ...medFormData, notes: medFormData.notes + text })
+  }
+
+  const getChartData = () => {
+    const sortedRecords = [...records]
+      .filter((r) => r.date)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .slice(-30) // Last 30 records
+
+    return sortedRecords.map((r) => ({
+      date: r.date,
+      systolic: r.bloodPressure?.systolic,
+      diastolic: r.bloodPressure?.diastolic,
+      bloodSugar: r.bloodSugar,
+      weight: r.weight,
+      temperature: r.temperature,
+      steps: r.steps,
+      distance: r.distance,
+    }))
+  }
+
+  const getMedicationExpenseData = () => {
+    const sortedRecords = [...records]
+      .filter((r) => r.date && (r.medicalExpense || r.medicationExpense))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .slice(-30)
+
+    return sortedRecords.map((r) => ({
+      date: r.date,
+      medicalExpense: r.medicalExpense,
+      medicationExpense: r.medicationExpense,
+      total: (r.medicalExpense || 0) + (r.medicationExpense || 0),
+    }))
+  }
+
+  const t = (key: string) => getTranslation(language as any, key)
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      // Reload completion data
+      const today = new Date().toISOString().split("T")[0]
+      const newCompletions: Record<string, string[]> = {}
+      medications.forEach((med) => {
+        newCompletions[med.id] = getMedicationCompletions(med.id, today)
+      })
+      setMedicationCompletions(newCompletions)
+    }
+
+    window.addEventListener("storage", handleStorageChange)
+    handleStorageChange() // Initial load
+
+    return () => window.removeEventListener("storage", handleStorageChange)
+  }, [medications])
+
+  const handleEditMedication = (med: Medication) => {
+    setMedFormData({
+      name: med.name,
+      dosage: med.dosage,
+      frequency: med.frequency,
+      times: med.times,
+      startDate: med.startDate,
+      endDate: med.endDate || "",
+      notes: med.notes || "",
+      alarmEnabled: med.alarmEnabled,
+      attachments: med.attachments || [],
     })
+    setEditingMedId(med.id)
+    setViewMode("add_medication")
   }
 
-  const stepsDistanceData = sortedRecords
-    .filter((r) => r.steps || r.distanceKm)
-    .map((r) => ({
-      date: r.date,
-      steps: r.steps || 0,
-      distance: r.distanceKm || 0,
-    }))
-    .reverse()
-
-  const bloodPressureData = sortedRecords
-    .filter((r) => r.bloodPressureSystolic || r.bloodPressureDiastolic)
-    .map((r) => ({
-      date: r.date,
-      systolic: r.bloodPressureSystolic || 0,
-      diastolic: r.bloodPressureDiastolic || 0,
-    }))
-    .reverse()
-
-  const bloodSugarData = sortedRecords
-    .filter((r) => r.bloodSugar)
-    .map((r) => ({
-      date: r.date,
-      bloodSugar: r.bloodSugar || 0,
-    }))
-    .reverse()
-
-  const pulseData = sortedRecords
-    .filter((r) => r.pulse)
-    .map((r) => ({
-      date: r.date,
-      pulse: r.pulse || 0,
-    }))
-    .reverse()
-
-  const weightData = sortedRecords
-    .filter((r) => r.weight)
-    .map((r) => ({
-      date: r.date,
-      weight: r.weight || 0,
-    }))
-    .reverse()
-
-  const temperatureData = sortedRecords
-    .filter((r) => r.temperature)
-    .map((r) => ({
-      date: r.date,
-      temperature: r.temperature || 0,
-    }))
-    .reverse()
-
-  return (
-    <div className="rounded-lg border bg-card p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">{t("healthTitle")}</h2>
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Spinner className="h-12 w-12" />
       </div>
+    )
+  }
 
-      <div className="mb-6 flex gap-2">
+  if (viewMode === "add_record") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
         <Button
-          variant={activeTab === "records" ? "default" : "outline"}
-          onClick={() => setActiveTab("records")}
-          className="flex-1"
+          variant="ghost"
+          onClick={() => {
+            setViewMode("list")
+            resetForm()
+            setEditingId(null)
+          }}
         >
-          <Heart className="mr-2 h-4 w-4" />
-          {t("healthRecords")}
+          <ArrowLeft className="mr-2 h-4 w-4" /> {t("cancel")}
         </Button>
-        <Button
-          variant={activeTab === "medications" ? "default" : "outline"}
-          onClick={() => setActiveTab("medications")}
-          className="flex-1"
-        >
-          <Pill className="mr-2 h-4 w-4" />
-          {t("medications")}
-        </Button>
+        <h2 className="text-xl font-bold">{t("add_health_record")}</h2>
+
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium">{t("date_label")}</label>
+            <input
+              type="date"
+              value={formData.date}
+              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              className="w-full p-2 border rounded bg-white/50 dark:bg-slate-800/50"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">{t("record_type")}</label>
+            <select
+              value={formData.type}
+              onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
+              className="w-full p-2 border rounded bg-white/50 dark:bg-slate-800/50"
+            >
+              <option value="vital_signs">{t("vital_signs")}</option>
+              <option value="exercise">{t("exercise")}</option>
+              <option value="expense">{t("medical_expenses")}</option>
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium">{t("systolic_bp")}</label>
+              <Input
+                type="number"
+                placeholder={t("systolic_placeholder")}
+                value={formData.systolic}
+                onChange={(e) => setFormData({ ...formData, systolic: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">{t("diastolic_bp")}</label>
+              <Input
+                type="number"
+                placeholder={t("diastolic_placeholder")}
+                value={formData.diastolic}
+                onChange={(e) => setFormData({ ...formData, diastolic: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">{t("blood_sugar")}</label>
+            <Input
+              type="number"
+              placeholder={t("blood_sugar_placeholder")}
+              value={formData.bloodSugar}
+              onChange={(e) => setFormData({ ...formData, bloodSugar: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">{t("temperature")}</label>
+            <Input
+              type="number"
+              step="0.1"
+              placeholder={t("temperature_placeholder")}
+              value={formData.temperature}
+              onChange={(e) => setFormData({ ...formData, temperature: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">{t("weight")}</label>
+            <Input
+              type="number"
+              step="0.1"
+              placeholder={t("weight_placeholder")}
+              value={formData.weight}
+              onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">{t("steps")}</label>
+            <Input
+              type="number"
+              placeholder={t("steps_placeholder")}
+              value={formData.steps}
+              onChange={(e) => setFormData({ ...formData, steps: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">{t("distance")}</label>
+            <Input
+              type="number"
+              step="0.1"
+              placeholder={t("distance_placeholder")}
+              value={formData.distance}
+              onChange={(e) => setFormData({ ...formData, distance: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">{t("medical_expense")}</label>
+            <Input
+              type="number"
+              placeholder={t("medical_expense_placeholder")}
+              value={formData.medicalExpense}
+              onChange={(e) => setFormData({ ...formData, medicalExpense: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">{t("medication_expense")}</label>
+            <Input
+              type="number"
+              placeholder={t("medication_expense_placeholder")}
+              value={formData.medicationExpense}
+              onChange={(e) => setFormData({ ...formData, medicationExpense: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">{t("memo")}</label>
+            <Input
+              placeholder={t("memo_additional")}
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+            />
+          </div>
+
+          <MediaTools
+            language={language}
+            attachments={formData.attachments || []}
+            onAttachmentsChange={handleAttachmentsChange}
+            onSave={(attachments) => handleSaveRecord(attachments)}
+            saving={saving}
+            onTextFromSpeech={handleRecordTranscript}
+          />
+        </div>
       </div>
+    )
+  }
 
-      {activeTab === "records" && (
-        <>
-          <div className="mb-4 flex items-center justify-between">
-            <Button onClick={() => setIsAddingRecord(!isAddingRecord)} size="sm">
-              <Plus className="mr-2 h-4 w-4" />
-              {t("addHealthRecord")}
+  if (viewMode === "add_medication") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
+        <Button
+          variant="ghost"
+          onClick={() => {
+            setViewMode("medications")
+            resetMedForm()
+          }}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" /> {t("cancel")}
+        </Button>
+        <h2 className="text-xl font-bold">{t("add_medication_schedule")}</h2>
+
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium">{t("medicine_name")}</label>
+            <Input
+              placeholder={t("medicine_name_placeholder")}
+              value={medFormData.name}
+              onChange={(e) => setMedFormData({ ...medFormData, name: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">{t("dosage")}</label>
+            <Input
+              placeholder={t("dosage_placeholder")}
+              value={medFormData.dosage}
+              onChange={(e) => setMedFormData({ ...medFormData, dosage: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">{t("frequency")}</label>
+            <Input
+              placeholder={t("frequency_placeholder")}
+              value={medFormData.frequency}
+              onChange={(e) => setMedFormData({ ...medFormData, frequency: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium mb-2 block">{t("medication_times")}</label>
+            {medFormData.times.map((time, idx) => (
+              <div key={idx} className="flex gap-2 mb-2">
+                <input
+                  type="time"
+                  value={time}
+                  onChange={(e) => {
+                    const newTimes = [...medFormData.times]
+                    newTimes[idx] = e.target.value
+                    setMedFormData({ ...medFormData, times: newTimes })
+                  }}
+                  className="flex-1 p-2 border rounded bg-white/50 dark:bg-slate-800/50"
+                />
+                {idx > 0 && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      const newTimes = medFormData.times.filter((_, i) => i !== idx)
+                      setMedFormData({ ...medFormData, times: newTimes })
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+            ))}
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setMedFormData({ ...medFormData, times: [...medFormData.times, ""] })}
+            >
+              <Plus className="w-4 h-4 mr-2" /> {t("add_time")}
             </Button>
           </div>
 
-          {isAddingRecord && (
-            <div className="mb-6 space-y-4 rounded-lg border bg-muted/50 p-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="record-date">{t("recordDate")}</Label>
-                  <Input
-                    id="record-date"
-                    type="date"
-                    lang={getLangCode()}
-                    value={newRecord.date}
-                    onChange={(e) => setNewRecord({ ...newRecord, date: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="blood-pressure">{t("bloodPressure")}</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="blood-pressure-systolic"
-                      type="number"
-                      value={newRecord.bloodPressureSystolic}
-                      onChange={(e) => setNewRecord({ ...newRecord, bloodPressureSystolic: e.target.value })}
-                      placeholder={t("systolic")}
-                    />
-                    <span className="flex items-center">/</span>
-                    <Input
-                      id="blood-pressure-diastolic"
-                      type="number"
-                      value={newRecord.bloodPressureDiastolic}
-                      onChange={(e) => setNewRecord({ ...newRecord, bloodPressureDiastolic: e.target.value })}
-                      placeholder={t("diastolic")}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="blood-sugar">{t("bloodSugar")}</Label>
-                  <Input
-                    id="blood-sugar"
-                    type="number"
-                    value={newRecord.bloodSugar}
-                    onChange={(e) => setNewRecord({ ...newRecord, bloodSugar: e.target.value })}
-                    placeholder="mg/dL"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="pulse">{t("pulse")}</Label>
-                  <Input
-                    id="pulse"
-                    type="number"
-                    value={newRecord.pulse}
-                    onChange={(e) => setNewRecord({ ...newRecord, pulse: e.target.value })}
-                    placeholder="bpm"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="weight">{t("weight")}</Label>
-                  <Input
-                    id="weight"
-                    type="number"
-                    step="0.1"
-                    value={newRecord.weight}
-                    onChange={(e) => setNewRecord({ ...newRecord, weight: e.target.value })}
-                    placeholder="kg"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="temperature">{t("temperature")}</Label>
-                  <Input
-                    id="temperature"
-                    type="number"
-                    step="0.1"
-                    value={newRecord.temperature}
-                    onChange={(e) => setNewRecord({ ...newRecord, temperature: e.target.value })}
-                    placeholder="°C"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="steps">걸음수</Label>
-                  <Input
-                    id="steps"
-                    type="number"
-                    value={newRecord.steps}
-                    onChange={(e) => setNewRecord({ ...newRecord, steps: e.target.value })}
-                    placeholder="걸음수 입력"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="distance-km">걸은 거리 (km)</Label>
-                  <Input
-                    id="distance-km"
-                    type="number"
-                    step="0.1"
-                    value={newRecord.distanceKm}
-                    onChange={(e) => setNewRecord({ ...newRecord, distanceKm: e.target.value })}
-                    placeholder="km"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="medical-cost">의료비</Label>
-                  <Input
-                    id="medical-cost"
-                    type="number"
-                    value={newRecord.medicalCost}
-                    onChange={(e) => setNewRecord({ ...newRecord, medicalCost: e.target.value })}
-                    placeholder="원"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="medicine-cost">약값</Label>
-                  <Input
-                    id="medicine-cost"
-                    type="number"
-                    value={newRecord.medicineCost}
-                    onChange={(e) => setNewRecord({ ...newRecord, medicineCost: e.target.value })}
-                    placeholder="원"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="record-notes">{t("notes")}</Label>
-                <Textarea
-                  id="record-notes"
-                  value={newRecord.notes}
-                  onChange={(e) => setNewRecord({ ...newRecord, notes: e.target.value })}
-                  placeholder={t("notes")}
-                  rows={3}
-                />
-              </div>
-              {existingAttachments.length > 0 && (
-                <div className="space-y-2">
-                  <Label>{t("existingAttachments")}</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {existingAttachments.map((file, index) => (
-                      <div key={index} className="flex items-center gap-2 rounded-md border bg-background px-3 py-2">
-                        <ImageIcon className="h-4 w-4" />
-                        <span className="text-sm">{file.name}</span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-5 w-5 p-0"
-                          onClick={() => handleRemoveExistingAttachment(index)}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {attachedFiles.length > 0 && (
-                <div className="space-y-2">
-                  <Label>{t("attachedFiles")}</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {attachedFiles.map((file, index) => (
-                      <div key={index} className="flex items-center gap-2 rounded-md border bg-background px-3 py-2">
-                        <ImageIcon className="h-4 w-4" />
-                        <span className="text-sm">{file.name}</span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-5 w-5 p-0"
-                          onClick={() => handleRemoveFile(index)}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              <div className="flex flex-wrap gap-2">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  multiple
-                  accept="image/*,video/*,.pdf"
-                  className="hidden"
-                  onChange={handleFileAttach}
-                />
-                <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
-                  <Paperclip className="mr-2 h-4 w-4" />
-                  {t("attachFile")}
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => setIsHandwritingOpen(true)}>
-                  <PenTool className="mr-2 h-4 w-4" />
-                  {t("handwriting")}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleVoiceInput}
-                  className={isRecording ? "bg-red-500 text-white hover:bg-red-600" : ""}
-                >
-                  <Mic className="mr-2 h-4 w-4" />
-                  {isRecording ? t("recording") : t("voiceInput")}
-                </Button>
-              </div>
-              <div className="flex gap-2">
-                <Button onClick={editingRecordId ? handleUpdateRecord : handleAddRecord}>
-                  {editingRecordId ? t("update") : t("save")}
-                </Button>
-                <Button variant="outline" onClick={handleCancelRecord}>
-                  {t("cancel")}
-                </Button>
-              </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium">{t("start_date")}</label>
+              <input
+                type="date"
+                value={medFormData.startDate}
+                onChange={(e) => setMedFormData({ ...medFormData, startDate: e.target.value })}
+                className="w-full p-2 border rounded bg-white/50 dark:bg-slate-800/50"
+              />
             </div>
-          )}
+            <div>
+              <label className="text-sm font-medium">{t("end_date_optional")}</label>
+              <input
+                type="date"
+                value={medFormData.endDate}
+                onChange={(e) => setMedFormData({ ...medFormData, endDate: e.target.value })}
+                className="w-full p-2 border rounded bg-white/50 dark:bg-slate-800/50"
+              />
+            </div>
+          </div>
 
-          <div className="mb-6 space-y-6">
-            {bloodPressureData.length > 0 && (
-              <div className="rounded-lg border bg-card p-4">
-                <h3 className="mb-4 flex items-center gap-2 font-medium">
-                  <Activity className="h-5 w-5 text-red-500" />
-                  혈압 그래프
-                </h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={bloodPressureData}>
+          <div>
+            <label className="text-sm font-medium">{t("memo")}</label>
+            <Input
+              placeholder={t("memo_additional")}
+              value={medFormData.notes}
+              onChange={(e) => setMedFormData({ ...medFormData, notes: e.target.value })}
+            />
+          </div>
+
+          <MediaTools
+            language={language}
+            attachments={medFormData.attachments || []}
+            onAttachmentsChange={handleMedAttachmentsChange}
+            onSave={handleSaveMedication}
+            saving={saving}
+            saveButtonText={t("save_medication_schedule")}
+            onTextFromSpeech={handleMedicationTranscript}
+          />
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="alarm"
+              checked={medFormData.alarmEnabled}
+              onChange={(e) => setMedFormData({ ...medFormData, alarmEnabled: e.target.checked })}
+            />
+            <label htmlFor="alarm" className="text-sm">
+              <Bell className="inline w-4 h-4 mr-1" />
+              {t("enable_alarm")}
+            </label>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (viewMode === "medications") {
+    const today = new Date().toISOString().split("T")[0]
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <Button variant="ghost" onClick={() => setViewMode("list")}>
+            <ArrowLeft className="mr-2 h-4 w-4" /> {t("back")}
+          </Button>
+          <Button
+            onClick={() => {
+              resetMedForm()
+              setEditingMedId(null)
+              setViewMode("add_medication")
+            }}
+          >
+            <Plus className="mr-2 h-4 w-4" /> {t("add_medication")}
+          </Button>
+        </div>
+
+        <h2 className="text-xl font-bold">{t("medication_management_title")}</h2>
+
+        <div className="grid gap-4">
+          {medications
+            .filter((m) => m.isActive)
+            .map((med) => {
+              const completedTimes = medicationCompletions[med.id] || []
+
+              return (
+                <Card key={med.id} className="p-4">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <Pill className="w-5 h-5 text-blue-500" />
+                        <span className="font-semibold">{med.name}</span>
+                        {med.alarmEnabled && <Bell className="w-4 h-4 text-green-500" />}
+                      </div>
+                      {med.dosage && (
+                        <p className="text-sm mt-1">
+                          {t("dosage_label")} {med.dosage}
+                        </p>
+                      )}
+                      {med.frequency && (
+                        <p className="text-sm">
+                          {t("frequency_label")} {med.frequency}
+                        </p>
+                      )}
+
+                      <div className="mt-2 space-y-1">
+                        <p className="text-sm font-medium">{t("today_medication_times")}</p>
+                        {med.times.map((time) => (
+                          <div key={time} className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              id={`${med.id}_${time}`}
+                              checked={completedTimes.includes(time)}
+                              onChange={() => toggleMedicationCompletion(med.id, time, today)}
+                              className="w-4 h-4"
+                            />
+                            <label htmlFor={`${med.id}_${time}`} className="text-sm">
+                              {time} {completedTimes.includes(time) && "✓"}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {med.startDate} ~ {med.endDate || "계속"}
+                      </p>
+                      {med.notes && <p className="text-sm mt-1">{med.notes}</p>}
+
+                      {med.attachments && med.attachments.length > 0 && (
+                        <div className="mt-3 space-y-2">
+                          <p className="text-sm font-medium">첨부파일 ({med.attachments.length}개)</p>
+                          <div className="grid grid-cols-2 gap-2">
+                            {med.attachments.map((file: any, idx: number) => {
+                              if (file.type?.startsWith("image/") || file.type === "image" || file.type === "drawing") {
+                                return (
+                                  <div key={idx} className="relative border rounded overflow-hidden">
+                                    <img
+                                      src={file.url || file.data}
+                                      alt={file.name || "첨부파일"}
+                                      className="w-full h-32 object-cover"
+                                    />
+                                  </div>
+                                )
+                              }
+                              if (file.type?.startsWith("video/") || file.type === "video") {
+                                return (
+                                  <div key={idx} className="border rounded overflow-hidden">
+                                    <video src={file.url || file.data} controls className="w-full h-32 bg-black" />
+                                  </div>
+                                )
+                              }
+                              return null
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex gap-2 ml-4">
+                      <Button size="sm" variant="ghost" onClick={() => handleEditMedication(med)}>
+                        <Pencil className="w-4 h-4 text-black" />
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => handleDeleteMedication(med.id)}>
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              )
+            })}
+        </div>
+      </div>
+    )
+  }
+
+  if (viewMode === "charts") {
+    const chartData = getChartData()
+    const expenseData = getMedicationExpenseData()
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-6">
+        <Button variant="ghost" onClick={() => setViewMode("list")}>
+          <ArrowLeft className="mr-2 h-4 w-4" /> {t("back")}
+        </Button>
+
+        <h2 className="text-xl font-bold">{t("view_graph")}</h2>
+
+        {chartData.length === 0 && expenseData.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8">{t("no_health_records_message")}</p>
+        ) : (
+          <>
+            {/* Blood Pressure Chart */}
+            {chartData.some((d) => d.systolic || d.diastolic) && (
+              <Card className="p-4">
+                <h3 className="font-semibold mb-4">{t("blood_pressure")} (mmHg)</h3>
+                <ResponsiveContainer width="100%" height={200}>
+                  <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
+                    <XAxis dataKey="date" tick={{ fontSize: 12 }} />
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Line type="monotone" dataKey="systolic" stroke="#ef4444" name="수축기" strokeWidth={2} />
-                    <Line type="monotone" dataKey="diastolic" stroke="#f97316" name="이완기" strokeWidth={2} />
+                    <Line type="monotone" dataKey="systolic" stroke="#ef4444" name={t("systolic")} />
+                    <Line type="monotone" dataKey="diastolic" stroke="#3b82f6" name={t("diastolic")} />
                   </LineChart>
                 </ResponsiveContainer>
-              </div>
+              </Card>
             )}
 
-            {bloodSugarData.length > 0 && (
-              <div className="rounded-lg border bg-card p-4">
-                <h3 className="mb-4 flex items-center gap-2 font-medium">
-                  <Droplet className="h-5 w-5 text-blue-500" />
-                  혈당 그래프
-                </h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={bloodSugarData}>
+            {/* Blood Sugar Chart */}
+            {chartData.some((d) => d.bloodSugar) && (
+              <Card className="p-4">
+                <h3 className="font-semibold mb-4">{t("blood_sugar")} (mg/dL)</h3>
+                <ResponsiveContainer width="100%" height={200}>
+                  <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
+                    <XAxis dataKey="date" tick={{ fontSize: 12 }} />
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Line type="monotone" dataKey="bloodSugar" stroke="#3b82f6" name="혈당 (mg/dL)" strokeWidth={2} />
+                    <Line type="monotone" dataKey="bloodSugar" stroke="#f59e0b" name={t("blood_sugar")} />
                   </LineChart>
                 </ResponsiveContainer>
-              </div>
+              </Card>
             )}
 
-            {pulseData.length > 0 && (
-              <div className="rounded-lg border bg-card p-4">
-                <h3 className="mb-4 flex items-center gap-2 font-medium">
-                  <Heart className="h-5 w-5 text-pink-500" />
-                  맥박 그래프
-                </h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={pulseData}>
+            {/* Weight Chart */}
+            {chartData.some((d) => d.weight) && (
+              <Card className="p-4">
+                <h3 className="font-semibold mb-4">{t("weight")} (kg)</h3>
+                <ResponsiveContainer width="100%" height={200}>
+                  <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
+                    <XAxis dataKey="date" tick={{ fontSize: 12 }} />
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Line type="monotone" dataKey="pulse" stroke="#ec4899" name="맥박 (bpm)" strokeWidth={2} />
+                    <Line type="monotone" dataKey="weight" stroke="#10b981" name={t("weight")} />
                   </LineChart>
                 </ResponsiveContainer>
-              </div>
+              </Card>
             )}
 
-            {weightData.length > 0 && (
-              <div className="rounded-lg border bg-card p-4">
-                <h3 className="mb-4 flex items-center gap-2 font-medium">
-                  <WeightIcon className="h-5 w-5 text-purple-500" />
-                  체중 그래프
-                </h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={weightData}>
+            {/* Temperature Chart */}
+            {chartData.some((d) => d.temperature) && (
+              <Card className="p-4">
+                <h3 className="font-semibold mb-4">{t("temperature")} (°C)</h3>
+                <ResponsiveContainer width="100%" height={200}>
+                  <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line type="monotone" dataKey="weight" stroke="#a855f7" name="체중 (kg)" strokeWidth={2} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-
-            {temperatureData.length > 0 && (
-              <div className="rounded-lg border bg-card p-4">
-                <h3 className="mb-4 flex items-center gap-2 font-medium">
-                  <Thermometer className="h-5 w-5 text-orange-500" />
-                  체온 그래프
-                </h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={temperatureData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
+                    <XAxis dataKey="date" tick={{ fontSize: 12 }} />
                     <YAxis domain={[35, 40]} />
                     <Tooltip />
                     <Legend />
-                    <Line type="monotone" dataKey="temperature" stroke="#f97316" name="체온 (°C)" strokeWidth={2} />
+                    <Line type="monotone" dataKey="temperature" stroke="#ec4899" name={t("temperature")} />
                   </LineChart>
                 </ResponsiveContainer>
-              </div>
+              </Card>
             )}
 
-            {stepsDistanceData.length > 0 && (
-              <div className="rounded-lg border bg-card p-4">
-                <h3 className="mb-4 flex items-center gap-2 font-medium">
-                  <Footprints className="h-5 w-5 text-green-500" />
-                  활동 기록 그래프
+            {/* Steps Chart */}
+            {chartData.some((d) => d.steps) && (
+              <Card className="p-4">
+                <h3 className="font-semibold mb-4">
+                  {t("steps")} ({t("steps_unit")})
                 </h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={stepsDistanceData}>
+                <ResponsiveContainer width="100%" height={200}>
+                  <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis yAxisId="left" />
-                    <YAxis yAxisId="right" orientation="right" />
+                    <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                    <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Line
-                      yAxisId="left"
-                      type="monotone"
-                      dataKey="steps"
-                      stroke="#8884d8"
-                      name="걸음수"
-                      strokeWidth={2}
-                    />
-                    <Line
-                      yAxisId="right"
-                      type="monotone"
-                      dataKey="distance"
-                      stroke="#82ca9d"
-                      name="거리 (km)"
-                      strokeWidth={2}
-                    />
+                    <Line type="monotone" dataKey="steps" stroke="#8b5cf6" name={t("steps")} />
                   </LineChart>
                 </ResponsiveContainer>
-              </div>
+              </Card>
             )}
-          </div>
 
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="font-medium">{t("healthRecordsList")}</h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSortOrder(sortOrder === "newest" ? "oldest" : "newest")}
-                className="gap-2"
-              >
-                <ArrowUpDown className="h-4 w-4" />
-                <span className="text-xs">{sortOrder === "newest" ? t("sortNewest") : t("sortOldest")}</span>
-              </Button>
-            </div>
-            {sortedRecords.length === 0 ? (
-              <p className="text-center text-muted-foreground">{t("noHealthRecords")}</p>
-            ) : (
-              sortedRecords.map((record) => (
-                <div key={record.id} className="rounded-lg border bg-card p-3 space-y-2">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <Heart className="h-4 w-4 text-primary flex-shrink-0" />
-                        <p className="text-sm font-medium">{record.date}</p>
-                      </div>
-                      <div className="mt-2 grid gap-1 text-sm">
-                        {record.bloodPressureSystolic && record.bloodPressureDiastolic && (
-                          <p>
-                            {t("bloodPressure")}: {record.bloodPressureSystolic}/{record.bloodPressureDiastolic} mmHg
-                          </p>
-                        )}
-                        {record.bloodSugar && (
-                          <p>
-                            {t("bloodSugar")}: {record.bloodSugar} mg/dL
-                          </p>
-                        )}
-                        {record.pulse && (
-                          <p>
-                            {t("pulse")}: {record.pulse} bpm
-                          </p>
-                        )}
-                        {record.weight && (
-                          <p>
-                            {t("weight")}: {record.weight} kg
-                          </p>
-                        )}
-                        {record.temperature && (
-                          <p>
-                            {t("temperature")}: {record.temperature} °C
-                          </p>
-                        )}
-                        {record.steps && (
-                          <p className="flex items-center gap-1">
-                            <Footprints className="h-3 w-3" />
-                            걸음수: {record.steps.toLocaleString()}
-                          </p>
-                        )}
-                        {record.distanceKm && <p>걸은 거리: {record.distanceKm} km</p>}
-                        {record.cost && <p>의료비: {record.cost.toLocaleString()} 원</p>}
-                        {record.medicineCost && <p>약값: {record.medicineCost.toLocaleString()} 원</p>}
-                        {record.notes && <p className="mt-1 text-muted-foreground">{record.notes}</p>}
-                      </div>
-                    </div>
-                    <div className="flex gap-2 flex-shrink-0">
-                      <Button variant="ghost" size="sm" onClick={() => handleEditRecord(record)}>
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDeleteRecord(record.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  {record.attachments && record.attachments.length > 0 && (
-                    <AttachmentList attachments={record.attachments as UploadedFile[]} compact />
-                  )}
-                </div>
-              ))
+            {/* Distance Chart */}
+            {chartData.some((d) => d.distance) && (
+              <Card className="p-4">
+                <h3 className="font-semibold mb-4">{t("distance")} (km)</h3>
+                <ResponsiveContainer width="100%" height={200}>
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="distance" stroke="#06b6d4" name={t("distance")} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </Card>
             )}
-          </div>
-        </>
-      )}
 
-      {activeTab === "medications" && (
-        <>
-          <div className="mb-4 flex items-center justify-between">
-            <Button onClick={() => setIsAddingMedication(!isAddingMedication)} size="sm">
-              <Plus className="mr-2 h-4 w-4" />
-              {t("addMedication")}
-            </Button>
-          </div>
+            {/* Medical/Medication Expense Chart */}
+            {expenseData.length > 0 && (
+              <Card className="p-4">
+                <h3 className="font-semibold mb-4">
+                  {t("medical_and_medication_expenses")} ({t("krw_unit")})
+                </h3>
+                <ResponsiveContainer width="100%" height={200}>
+                  <LineChart data={expenseData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="medicalExpense" stroke="#f97316" name={t("medical_expense")} />
+                    <Line type="monotone" dataKey="medicationExpense" stroke="#84cc16" name={t("medication_expense")} />
+                    <Line type="monotone" dataKey="total" stroke="#dc2626" name={t("total_expense")} strokeWidth={2} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </Card>
+            )}
+          </>
+        )}
+      </div>
+    )
+  }
 
-          {isAddingMedication && (
-            <div className="mb-6 space-y-4 rounded-lg border bg-muted/50 p-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="medication-name">{t("medicationName")}</Label>
-                  <Input
-                    id="medication-name"
-                    value={newMedication.name}
-                    onChange={(e) => setNewMedication({ ...newMedication, name: e.target.value })}
-                    placeholder={t("medicationName")}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="dosage">{t("dosage")}</Label>
-                  <Input
-                    id="dosage"
-                    value={newMedication.dosage}
-                    onChange={(e) => setNewMedication({ ...newMedication, dosage: e.target.value })}
-                    placeholder={t("dosagePlaceholder")}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="frequency">{t("frequency")}</Label>
-                  <Input
-                    id="frequency"
-                    value={newMedication.frequency}
-                    onChange={(e) => setNewMedication({ ...newMedication, frequency: e.target.value })}
-                    placeholder={t("frequencyPlaceholder")}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="medication-time">{t("time")}</Label>
-                  <Input
-                    id="medication-time"
-                    type="time"
-                    lang={getLangCode()}
-                    value={newMedication.time}
-                    onChange={(e) => setNewMedication({ ...newMedication, time: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="start-date">{t("startDate")}</Label>
-                  <Input
-                    id="start-date"
-                    type="date"
-                    lang={getLangCode()}
-                    value={newMedication.startDate}
-                    onChange={(e) => setNewMedication({ ...newMedication, startDate: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="end-date">{t("endDate")}</Label>
-                  <Input
-                    id="end-date"
-                    type="date"
-                    lang={getLangCode()}
-                    value={newMedication.endDate}
-                    onChange={(e) => setNewMedication({ ...newMedication, endDate: e.target.value })}
-                  />
-                </div>
-              </div>
-              {newMedication.time && (
-                <div className="flex items-center space-x-2 rounded-lg border bg-background p-3">
-                  <input
-                    type="checkbox"
-                    id="alarm-enabled"
-                    checked={newMedication.alarmEnabled}
-                    onChange={(e) => setNewMedication({ ...newMedication, alarmEnabled: e.target.checked })}
-                    className="h-4 w-4 rounded border-gray-300"
-                  />
-                  <Label htmlFor="alarm-enabled" className="flex items-center gap-2 cursor-pointer">
-                    {newMedication.alarmEnabled ? (
-                      <Bell className="h-4 w-4 text-primary" />
-                    ) : (
-                      <BellOff className="h-4 w-4 text-muted-foreground" />
-                    )}
-                    <span>{t("enableMedicationAlarm")}</span>
-                  </Label>
-                </div>
-              )}
-              <div className="space-y-2">
-                <Label htmlFor="medication-notes">{t("notes")}</Label>
-                <Textarea
-                  id="medication-notes"
-                  value={newMedication.notes}
-                  onChange={(e) => setNewMedication({ ...newMedication, notes: e.target.value })}
-                  placeholder={t("notes")}
-                  rows={3}
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button onClick={editingMedicationId ? handleUpdateMedication : handleAddMedication}>
-                  {editingMedicationId ? t("update") : t("save")}
-                </Button>
-                <Button variant="outline" onClick={handleCancelMedication}>
-                  {t("cancel")}
-                </Button>
-              </div>
-            </div>
-          )}
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" onClick={onBack}>
+          <ArrowLeft className="mr-2 h-4 w-4" /> {t("title")}
+        </Button>
+      </div>
 
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="font-medium">{t("medicationsList")}</h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSortOrder(sortOrder === "newest" ? "oldest" : "newest")}
-                className="gap-2"
-              >
-                <ArrowUpDown className="h-4 w-4" />
-                <span className="text-xs">{sortOrder === "newest" ? t("sortNewest") : t("sortOldest")}</span>
-              </Button>
-            </div>
-            {sortedMedications.length === 0 ? (
-              <p className="text-center text-muted-foreground">{t("noMedications")}</p>
-            ) : (
-              sortedMedications.map((medication) => {
-                const takenToday = wasTakenToday(medication.id)
+      <div className="grid grid-cols-2 gap-4">
+        <Button onClick={() => setViewMode("add_record")} className="h-20 bg-teal-600 hover:bg-teal-700 text-white">
+          <Plus className="mr-2 h-5 w-5" /> {t("health_record_btn")}
+        </Button>
+        <Button
+          onClick={() => setViewMode("medications")}
+          className="h-20 bg-purple-600 hover:bg-purple-700 text-white text-sm"
+        >
+          <Pill className="mr-2 h-5 w-5 flex-shrink-0" />
+          <span className="break-words">{t("medication_management_btn")}</span>
+        </Button>
+        <Button
+          onClick={() => setViewMode("charts")}
+          className="h-20 col-span-2 bg-indigo-600 hover:bg-indigo-700 text-white"
+        >
+          <TrendingUp className="mr-2 h-5 w-5" /> {t("view_graph")}
+        </Button>
+      </div>
 
-                return (
-                  <div
-                    key={medication.id}
-                    className={`rounded-lg border p-3 space-y-2 ${
-                      takenToday ? "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800" : "bg-card"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <Pill className="h-4 w-4 text-primary flex-shrink-0" />
-                          <h5 className="font-medium">{medication.name}</h5>
-                          {medication.alarmEnabled && medication.time && (
-                            <Bell className="h-4 w-4 text-primary flex-shrink-0" />
-                          )}
-                          {takenToday && (
-                            <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400 font-medium">
-                              ✓ {t("takenToday")}
-                            </span>
-                          )}
-                        </div>
-                        <div className="mt-2 grid gap-1 text-sm">
-                          {medication.dosage && (
-                            <p>
-                              {t("dosage")}: {medication.dosage}
-                            </p>
-                          )}
-                          {medication.frequency && (
-                            <p>
-                              {t("frequency")}: {medication.frequency}
-                            </p>
-                          )}
-                          {medication.time && (
-                            <p className="flex items-center gap-1">
-                              {t("time")}: {medication.time}
-                              {medication.alarmEnabled && (
-                                <span className="text-xs text-muted-foreground">({t("alarmEnabled")})</span>
-                              )}
-                            </p>
-                          )}
-                          {medication.startDate && (
-                            <p>
-                              {t("startDate")}: {medication.startDate}
-                              {medication.endDate && ` ~ ${medication.endDate}`}
-                            </p>
-                          )}
-                          {medication.notes && <p className="mt-1 text-muted-foreground">{medication.notes}</p>}
-                        </div>
-                      </div>
-                      <div className="flex gap-2 flex-shrink-0">
-                        <Button variant="ghost" size="sm" onClick={() => handleEditMedication(medication)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDeleteMedication(medication.id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+      <h2 className="text-lg font-bold mt-6">{t("recent_records")}</h2>
+
+      <div className="grid gap-4">
+        {records.slice(0, 10).map((record) => (
+          <Card key={record.id} className="p-4">
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                <div className="flex justify-between">
+                  <span className="font-semibold">
+                    {record.type === "vital_signs" && `💓 ${t("vital_signs")}`}
+                    {record.type === "exercise" && `🏃 ${t("exercise")}`}
+                    {record.type === "expense" && `💰 ${t("medical_expenses")}`}
+                  </span>
+                  <span className="text-sm text-muted-foreground">{record.date}</span>
+                </div>
+
+                {record.bloodPressure && (
+                  <p className="text-sm mt-2">
+                    {t("blood_pressure")}: {record.bloodPressure.systolic}/{record.bloodPressure.diastolic} mmHg
+                  </p>
+                )}
+                {record.bloodSugar && (
+                  <p className="text-sm">
+                    {t("blood_sugar")}: {record.bloodSugar} mg/dL
+                  </p>
+                )}
+                {record.temperature && (
+                  <p className="text-sm">
+                    {t("temperature")}: {record.temperature}°C
+                  </p>
+                )}
+                {record.weight && (
+                  <p className="text-sm">
+                    {t("weight")}: {record.weight} kg
+                  </p>
+                )}
+                {record.steps && (
+                  <p className="text-sm">
+                    {t("steps")}: {record.steps.toLocaleString()} {t("steps_unit")}
+                  </p>
+                )}
+                {record.distance && (
+                  <p className="text-sm">
+                    {t("distance")}: {record.distance} km
+                  </p>
+                )}
+                {record.medicalExpense && (
+                  <p className="text-sm">
+                    {t("medical_expense")}: {record.medicalExpense.toLocaleString()} {t("krw_unit")}
+                  </p>
+                )}
+                {record.medicationExpense && (
+                  <p className="text-sm">
+                    {t("medication_expense")}: {record.medicationExpense.toLocaleString()} {t("krw_unit")}
+                  </p>
+                )}
+                {record.notes && <p className="text-sm mt-1 text-muted-foreground">{record.notes}</p>}
+
+                {record.attachments && record.attachments.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    <p className="text-sm font-medium">첨부파일 ({record.attachments.length}개)</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {record.attachments.map((file: any, idx: number) => {
+                        if (file.type?.startsWith("image/") || file.type === "image" || file.type === "drawing") {
+                          return (
+                            <div key={idx} className="relative border rounded overflow-hidden">
+                              <img
+                                src={file.url || file.data}
+                                alt={file.name || "첨부파일"}
+                                className="w-full h-32 object-cover"
+                              />
+                            </div>
+                          )
+                        }
+                        if (file.type?.startsWith("video/") || file.type === "video") {
+                          return (
+                            <div key={idx} className="border rounded overflow-hidden">
+                              <video src={file.url || file.data} controls className="w-full h-32 bg-black" />
+                            </div>
+                          )
+                        }
+                        return null
+                      })}
                     </div>
                   </div>
-                )
-              })
-            )}
-          </div>
-        </>
-      )}
+                )}
+              </div>
 
-      <HandwritingCanvas
-        isOpen={isHandwritingOpen}
-        onClose={() => setIsHandwritingOpen(false)}
-        onSave={handleHandwritingSave}
-      />
+              <div className="flex gap-2 ml-4">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setFormData({
+                      date: record.date,
+                      type: record.type,
+                      systolic: record.bloodPressure?.systolic?.toString() || "",
+                      diastolic: record.bloodPressure?.diastolic?.toString() || "",
+                      bloodSugar: record.bloodSugar?.toString() || "",
+                      temperature: record.temperature?.toString() || "",
+                      weight: record.weight?.toString() || "",
+                      steps: record.steps?.toString() || "",
+                      distance: record.distance?.toString() || "",
+                      medicalExpense: record.medicalExpense?.toString() || "",
+                      medicationExpense: record.medicationExpense?.toString() || "",
+                      notes: record.notes || "",
+                      attachments: record.attachments || [],
+                    })
+                    setEditingId(record.id)
+                    setViewMode("add_record")
+                  }}
+                >
+                  <Pencil className="w-4 h-4 text-black" />
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => handleDeleteRecord(record.id)}>
+                  <Trash2 className="w-4 h-4 text-red-500" />
+                </Button>
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
     </div>
   )
 }
