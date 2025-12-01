@@ -20,30 +20,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const supabase = createClient()
 
   useEffect(() => {
+    let retryCount = 0
+    const maxRetries = 3
+
     const getInitialSession = async () => {
       try {
         const {
           data: { session },
         } = await supabase.auth.getSession()
         setUser(session?.user ?? null)
+        retryCount = 0 // Reset on success
       } catch (error) {
         console.error("Failed to get initial session:", error)
-        // Don't throw - just set user to null and continue
-        setUser(null)
-      } finally {
-        setLoading(false)
+        retryCount++
+
+        if (retryCount < maxRetries) {
+          const backoffDelay = Math.min(1000 * Math.pow(2, retryCount), 10000)
+          setTimeout(getInitialSession, backoffDelay)
+        } else {
+          setUser(null)
+          setLoading(false)
+        }
+        return
       }
+      setLoading(false)
     }
 
     getInitialSession()
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-    })
+    try {
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user ?? null)
+      })
 
-    return () => subscription.unsubscribe()
+      return () => subscription.unsubscribe()
+    } catch (error) {
+      console.error("Failed to setup auth state listener:", error)
+      setLoading(false)
+    }
   }, [supabase])
 
   const login = async (email: string, password: string): Promise<void> => {
