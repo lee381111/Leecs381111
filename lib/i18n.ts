@@ -40,9 +40,12 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
 
     // Health Section
     health_record: "건강 기록",
+    health_record_btn: "건강 기록",
     medication_management: "복약 관리",
+    medication_management_btn: "복약 관리",
     health_statistics: "통계",
     health_graph: "그래프",
+    view_graph: "그래프",
     recent_records: "최근 기록",
     vital_signs: "생체 징후",
     exercise: "운동",
@@ -131,9 +134,12 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
 
     // Health Section
     health_record: "Health Record",
+    health_record_btn: "Health Record",
     medication_management: "Medication Management",
+    medication_management_btn: "Medication Management",
     health_statistics: "Statistics",
     health_graph: "Graph",
+    view_graph: "Graph",
     recent_records: "Recent Records",
     vital_signs: "Vital Signs",
     exercise: "Exercise",
@@ -222,9 +228,12 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
 
     // Health Section
     health_record: "健康记录",
+    health_record_btn: "健康记录",
     medication_management: "用药管理",
+    medication_management_btn: "用药管理",
     health_statistics: "统计",
     health_graph: "图表",
+    view_graph: "图表",
     recent_records: "最近记录",
     vital_signs: "生命体征",
     exercise: "运动",
@@ -313,9 +322,12 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
 
     // Health Section
     health_record: "健康記録",
+    health_record_btn: "健康記録",
     medication_management: "服薬管理",
+    medication_management_btn: "服薬管理",
     health_statistics: "統計",
     health_graph: "グラフ",
+    view_graph: "グラフ",
     recent_records: "最近の記録",
     vital_signs: "バイタルサイン",
     exercise: "運動",
