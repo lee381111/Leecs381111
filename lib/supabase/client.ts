@@ -1,34 +1,51 @@
-import { createBrowserClient } from '@supabase/ssr'
+import { createBrowserClient } from "@supabase/ssr"
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-export interface SupabaseClient {
-  auth: {
-    signUp: (credentials: { email: string; password: string; options?: any }) => Promise<any>
-    signInWithPassword: (credentials: { email: string; password: string }) => Promise<any>
-    signOut: () => Promise<void>
-    getSession: () => Promise<{ data: { session: any | null } }>
-    onAuthStateChange: (callback: (event: string, session: any) => void) => { data: { subscription: { unsubscribe: () => void } } }
-  }
-  from: (table: string) => {
-    select: (columns?: string) => any
-    insert: (data: any) => Promise<any>
-    update: (data: any) => any
-    delete: () => any
-    upsert: (data: any) => Promise<any>
-  }
-}
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 let supabaseClient: ReturnType<typeof createBrowserClient> | null = null
 
+function parseCookies() {
+  return document.cookie.split(";").reduce((acc: Record<string, string>, cookie) => {
+    const [name, value] = cookie.trim().split("=")
+    if (name && value) acc[name] = decodeURIComponent(value)
+    return acc
+  }, {})
+}
+
+function serializeCookieOptions(options: any = {}) {
+  const parts = []
+  if (options.maxAge) parts.push(`max-age=${options.maxAge}`)
+  if (options.path) parts.push(`path=${options.path}`)
+  if (options.domain) parts.push(`domain=${options.domain}`)
+  if (options.sameSite) parts.push(`samesite=${options.sameSite}`)
+  if (options.secure) parts.push("secure")
+  if (options.httpOnly) parts.push("httponly")
+  return parts.join("; ")
+}
+
 export function createClient() {
   if (supabaseClient) return supabaseClient
-  
-  supabaseClient = createBrowserClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY
-  )
-  
+
+  supabaseClient = createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    cookies: {
+      getAll() {
+        if (typeof document === "undefined") return []
+        const cookies = parseCookies()
+        return Object.entries(cookies).map(([name, value]) => ({
+          name,
+          value,
+        }))
+      },
+      setAll(cookiesToSet) {
+        if (typeof document === "undefined") return
+        cookiesToSet.forEach(({ name, value, options }) => {
+          const serialized = serializeCookieOptions(options)
+          document.cookie = `${name}=${encodeURIComponent(value)}; ${serialized}`
+        })
+      },
+    },
+  })
+
   return supabaseClient
 }

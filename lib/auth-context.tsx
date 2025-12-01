@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import { createClient } from "./supabase/client"
-import type { User } from '@supabase/supabase-js'
+import type { User } from "@supabase/supabase-js"
 
 type AuthContextType = {
   user: User | null
@@ -20,28 +20,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const supabase = createClient()
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
+    console.log("[v0] Auth state:", { loading })
 
-    // Listen for auth changes
+    const getInitialSession = async () => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession()
+        setUser(session?.user ?? null)
+
+        // Refresh session if it exists
+        if (session) {
+          await supabase.auth.refreshSession()
+        }
+      } catch (error) {
+        console.error("[v0] Failed to get initial session:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    getInitialSession()
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("[v0] Auth state:", { user: session?.user?.email, loading: false })
       setUser(session?.user ?? null)
     })
 
     return () => subscription.unsubscribe()
-  }, [])
+  }, [supabase])
 
   const login = async (email: string, password: string): Promise<void> => {
+    console.log("[v0] Attempting login...")
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
     if (error) throw error
+    console.log("[v0] Login successful")
   }
 
   const register = async (email: string, password: string): Promise<void> => {

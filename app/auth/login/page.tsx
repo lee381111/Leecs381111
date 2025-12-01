@@ -1,44 +1,42 @@
-"use client";
+"use client"
 
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import Link from "next/link";
-import { useRouter } from 'next/navigation';
-import { useState } from "react";
-import { useAuth } from '@/lib/auth-context';
+import type React from "react"
+
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { useAuth } from "@/lib/auth-context"
 
 export default function Page() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
-  const { login } = useAuth();
-
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
+  const { login } = useAuth()
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    setIsLoading(true);
-    setError(null);
+    e.preventDefault()
+
+    setIsLoading(true)
+    setError(null)
 
     try {
-      await login(email, password);
-      router.push("/");
+      await login(email, password)
+
+      await new Promise((resolve) => setTimeout(resolve, 500))
+
+      router.push("/")
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "로그인 중 오류가 발생했습니다");
+      setError(error instanceof Error ? error.message : "로그인 중 오류가 발생했습니다")
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
@@ -47,9 +45,7 @@ export default function Page() {
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl">로그인</CardTitle>
-              <CardDescription>
-                이메일과 비밀번호를 입력하여 로그인하세요
-              </CardDescription>
+              <CardDescription>이메일과 비밀번호를 입력하여 로그인하세요</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleLogin}>
@@ -82,10 +78,7 @@ export default function Page() {
                 </div>
                 <div className="mt-4 text-center text-sm">
                   계정이 없으신가요?{" "}
-                  <Link
-                    href="/auth/sign-up"
-                    className="underline underline-offset-4"
-                  >
+                  <Link href="/auth/sign-up" className="underline underline-offset-4">
                     회원가입
                   </Link>
                 </div>
@@ -95,5 +88,5 @@ export default function Page() {
         </div>
       </div>
     </div>
-  );
+  )
 }
