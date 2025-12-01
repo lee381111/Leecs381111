@@ -408,7 +408,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     back_to_forest: "Back to Forest",
 
     steps_unit: "steps",
-    krw_unit: "KRW",
+    krw_unit: "$",
 
     file_upload: "Upload File",
     take_photo: "Take Photo",
@@ -1443,7 +1443,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
       "収入と支出を記録し、月別統計を確認してください。カテゴリー別に分析して消費パターンを把握できます。",
     business_cards_description: "名刺を写真で撮って情報を自動認識して保存してください。連絡先を簡単に管理できます。",
     weather_description: "現在地のリアルタイム天気と大気質情報を確認してください。",
-    radio_description: "世界中のラジオ放送を聴きながら記録を作成してください。",
+    radio_description: "ラジオ放送を聴きながら記録を作成してください。",
     data_backup: "データバックアップ",
     data_backup_description:
       "すべての記録をJSONファイルとしてバックアップおよび復元できます。定期的なバックアップをお勧めします。",
