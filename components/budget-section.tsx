@@ -198,6 +198,7 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
       budget: { ko: "가계부", en: "Budget", zh: "家庭账本", ja: "家計簿" },
       back: { ko: "뒤로", en: "Back", zh: "返回", ja: "戻る" },
       add: { ko: "추가", en: "Add", zh: "添加", ja: "追加" },
+      edit: { ko: "수정", en: "Edit", zh: "编辑", ja: "編集" },
       stats: { ko: "통계", en: "Statistics", zh: "统计", ja: "統計" },
       income: { ko: "수입", en: "Income", zh: "收入", ja: "収入" },
       expense: { ko: "지출", en: "Expense", zh: "支出", ja: "支出" },
