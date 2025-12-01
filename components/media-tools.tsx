@@ -727,8 +727,8 @@ export function MediaTools({
           <Card className="w-full max-w-4xl p-4 space-y-4 bg-background">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold">{t("handwriting")}</h3>
-              <Button variant="ghost" size="icon" onClick={closeDrawing}>
-                <X className="h-4 w-4" />
+              <Button variant="ghost" size="icon" onClick={closeDrawing} className="bg-white hover:bg-gray-200">
+                <X className="h-4 w-4 text-black" />
               </Button>
             </div>
             <canvas
@@ -744,6 +744,13 @@ export function MediaTools({
               onTouchEnd={handleCanvasEnd}
             />
             <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={closeDrawing}
+                className="flex-1 bg-gray-500 text-white hover:bg-gray-600 border-gray-500"
+              >
+                {t("cancel")}
+              </Button>
               <Button
                 variant="outline"
                 onClick={clearCanvas}
