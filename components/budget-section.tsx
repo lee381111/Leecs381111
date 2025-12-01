@@ -312,6 +312,7 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
         zh: "备注（可选）",
         ja: "メモ（オプション）",
       },
+      krw: { ko: "원", en: "KRW", zh: "元", ja: "円" },
     }
     return translations[key]?.[language] || key
   }
@@ -600,13 +601,15 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm text-gray-600 dark:text-gray-400">{getText("income")}</span>
                     <span className="text-lg font-bold text-emerald-600 dark:text-emerald-300">
-                      +{monthlyIncome.toLocaleString()}원
+                      +{monthlyIncome.toLocaleString()}
+                      {getText("krw")}
                     </span>
                   </div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm text-gray-600 dark:text-gray-400">{getText("expense")}</span>
                     <span className="text-lg font-bold text-rose-600 dark:text-rose-300">
-                      -{monthlyExpense.toLocaleString()}원
+                      -{monthlyExpense.toLocaleString()}
+                      {getText("krw")}
                     </span>
                   </div>
                   <div className="flex items-center justify-between pt-2 border-t dark:border-gray-700">
@@ -614,7 +617,8 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
                     <span
                       className={`text-xl font-bold ${monthlyBalance >= 0 ? "text-emerald-600 dark:text-emerald-300" : "text-rose-600 dark:text-rose-300"}`}
                     >
-                      {monthlyBalance.toLocaleString()}원
+                      {monthlyBalance.toLocaleString()}
+                      {getText("krw")}
                     </span>
                   </div>
                 </Card>
@@ -632,7 +636,8 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-sm">{getText(category)}</span>
                               <span className="text-sm font-medium">
-                                {amount.toLocaleString()}원 ({percentage.toFixed(0)}%)
+                                {amount.toLocaleString()}
+                                {getText("krw")} ({percentage.toFixed(0)}%)
                               </span>
                             </div>
                             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
@@ -673,7 +678,8 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
                           <span
                             className={`text-sm font-bold ${balance >= 0 ? "text-emerald-600 dark:text-emerald-300" : "text-rose-600 dark:text-rose-300"}`}
                           >
-                            {balance.toLocaleString()}원
+                            {balance.toLocaleString()}
+                            {getText("krw")}
                           </span>
                         </div>
                         <div className="space-y-1">
@@ -687,6 +693,7 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
                             </div>
                             <span className="text-xs text-emerald-600 dark:text-emerald-300 w-20 text-right">
                               {income.toLocaleString()}
+                              {getText("krw")}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
@@ -699,6 +706,7 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
                             </div>
                             <span className="text-xs text-rose-600 dark:text-rose-300 w-20 text-right">
                               {expense.toLocaleString()}
+                              {getText("krw")}
                             </span>
                           </div>
                         </div>
@@ -713,13 +721,15 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600 dark:text-gray-400">{getText("totalIncome")}</span>
                       <span className="text-lg font-bold text-emerald-600 dark:text-emerald-300">
-                        +{monthlyData.reduce((sum, m) => sum + m.income, 0).toLocaleString()}원
+                        +{monthlyData.reduce((sum, m) => sum + m.income, 0).toLocaleString()}
+                        {getText("krw")}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600 dark:text-gray-400">{getText("totalExpense")}</span>
                       <span className="text-lg font-bold text-rose-600 dark:text-rose-300">
-                        -{monthlyData.reduce((sum, m) => sum + m.expense, 0).toLocaleString()}원
+                        -{monthlyData.reduce((sum, m) => sum + m.expense, 0).toLocaleString()}
+                        {getText("krw")}
                       </span>
                     </div>
                     <div className="flex items-center justify-between pt-2 border-t dark:border-gray-700">
@@ -731,7 +741,8 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
                             : "text-rose-600 dark:text-rose-300"
                         }`}
                       >
-                        {monthlyData.reduce((sum, m) => sum + m.balance, 0).toLocaleString()}원
+                        {monthlyData.reduce((sum, m) => sum + m.balance, 0).toLocaleString()}
+                        {getText("krw")}
                       </span>
                     </div>
                   </div>
@@ -785,6 +796,7 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
               </div>
               <p className="text-lg font-bold text-emerald-600 dark:text-emerald-300">
                 +{monthlyIncome.toLocaleString()}
+                {getText("krw")}
               </p>
             </div>
             <div className="text-center">
@@ -792,7 +804,10 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
                 <TrendingDown className="h-4 w-4 text-rose-600 dark:text-rose-300" />
                 <span className="text-xs text-gray-600 dark:text-gray-400">{getText("expense")}</span>
               </div>
-              <p className="text-lg font-bold text-rose-600 dark:text-rose-300">-{monthlyExpense.toLocaleString()}</p>
+              <p className="text-lg font-bold text-rose-600 dark:text-rose-300">
+                -{monthlyExpense.toLocaleString()}
+                {getText("krw")}
+              </p>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center gap-1 mb-1">
@@ -803,6 +818,7 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
                 className={`text-lg font-bold ${monthlyBalance >= 0 ? "text-emerald-600 dark:text-emerald-300" : "text-rose-600 dark:text-rose-300"}`}
               >
                 {monthlyBalance.toLocaleString()}
+                {getText("krw")}
               </p>
             </div>
           </div>
@@ -837,7 +853,8 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
                         }`}
                       >
                         {transaction.type === "income" ? "+" : "-"}
-                        {transaction.amount.toLocaleString()}원
+                        {transaction.amount.toLocaleString()}
+                        {getText("krw")}
                       </span>
                       <div className="flex gap-1">
                         <Button onClick={() => handleEdit(transaction)} variant="ghost" size="sm">
