@@ -368,10 +368,7 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
                 {getTranslation(lang, "schedules")}
               </h3>
-              <p className="text-muted-foreground">
-                일정을 등록하면 메인 화면의 캘린더에 자동으로 표시됩니다. 알림 기능을 활성화하여 중요한 일정을 놓치지
-                마세요.
-              </p>
+              <p className="text-muted-foreground">{getTranslation(lang, "schedules_description")}</p>
             </section>
 
             <section>
@@ -379,10 +376,7 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
                 {getTranslation(lang, "travel_records")}
               </h3>
-              <p className="text-muted-foreground">
-                여행지를 입력하면 지도에 빨간 점으로 자동 표시됩니다. 사진, 동영상, 음성 메모를 첨부하여 여행의 추억을
-                생생하게 보관하세요.
-              </p>
+              <p className="text-muted-foreground">{getTranslation(lang, "travel_records_description")}</p>
             </section>
 
             <section>
