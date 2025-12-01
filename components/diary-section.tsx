@@ -392,9 +392,13 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-background border border-border z-50">
+              <SelectContent className="bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-700 shadow-xl z-50">
                 {moods.map((m) => (
-                  <SelectItem key={m} value={m}>
+                  <SelectItem
+                    key={m}
+                    value={m}
+                    className="bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  >
                     {m}
                   </SelectItem>
                 ))}
@@ -404,9 +408,13 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-background border border-border z-50">
+              <SelectContent className="bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-700 shadow-xl z-50">
                 {weathers.map((w) => (
-                  <SelectItem key={w} value={w}>
+                  <SelectItem
+                    key={w}
+                    value={w}
+                    className="bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  >
                     {w}
                   </SelectItem>
                 ))}
