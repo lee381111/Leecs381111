@@ -55,6 +55,8 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
     }>
   >([{ name: "", date: "", category: "생일", alarmMinutesBefore: 1440 }])
 
+  const t = (key: string) => getTranslation(language as any, key)
+
   useEffect(() => {
     notificationManager.requestPermission()
     notificationManager.restoreAlarms()
@@ -173,7 +175,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
         title: "",
         date: "",
         time: "",
-        category: "회의",
+        category: t("meeting"),
         description: "",
         attachments: [],
         alarmEnabled: false,
@@ -312,8 +314,6 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
     setFormData({ ...formData, description: formData.description + text })
   }
 
-  const t = (key: string) => getTranslation(language as any, key)
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -398,11 +398,12 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                     }}
                     className="w-full p-2 border rounded bg-white/50 dark:bg-slate-800/50"
                   >
-                    <option value="생일">{t("birthday")}</option>
-                    <option value="기념일">{t("anniversary")}</option>
-                    <option value="명절">{t("holiday")}</option>
-                    <option value="휴일">{t("day_off")}</option>
-                    <option value="기타">{t("other")}</option>
+                    <option value={t("meeting")}>{t("meeting")}</option>
+                    <option value={t("birthday")}>{t("birthday")}</option>
+                    <option value={t("anniversary")}>{t("anniversary")}</option>
+                    <option value={t("holiday")}>{t("holiday")}</option>
+                    <option value={t("vacation")}>{t("vacation")}</option>
+                    <option value={t("other")}>{t("other")}</option>
                   </select>
                 </div>
               </div>
@@ -418,13 +419,15 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                   }}
                   className="w-full p-2 border rounded bg-white/50 dark:bg-slate-800/50"
                 >
-                  <option value={30}>{t("30_min_before")}</option>
-                  <option value={60}>{t("1_hour_before")}</option>
-                  <option value={120}>{t("2_hours_before")}</option>
-                  <option value={720}>{t("12_hours_before")}</option>
-                  <option value={1440}>{t("1_day_before")}</option>
-                  <option value={2880}>{t("2_days_before")}</option>
-                  <option value={10080}>{t("1_week_before")}</option>
+                  <option value={5}>{t("5_min_before")}</option>
+                  <option value={10}>{t("10_min_before")}</option>
+                  <option value={15}>{t("15_min_before")}</option>
+                  <option value={30}>{t("minutes_before_30")}</option>
+                  <option value={60}>{t("hours_before_1")}</option>
+                  <option value={180}>{t("hours_before_3")}</option>
+                  <option value={1440}>{t("day_before_1")}</option>
+                  <option value={4320}>{t("days_before_3")}</option>
+                  <option value={10080}>{t("week_before_1")}</option>
                 </select>
               </div>
             </Card>
@@ -514,10 +517,12 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                 <option value={5}>{t("5_min_before")}</option>
                 <option value={10}>{t("10_min_before")}</option>
                 <option value={15}>{t("15_min_before")}</option>
-                <option value={30}>{t("30_min_before")}</option>
-                <option value={60}>{t("1_hour_before")}</option>
-                <option value={120}>{t("2_hours_before")}</option>
-                <option value={1440}>{t("1_day_before")}</option>
+                <option value={30}>{t("minutes_before_30")}</option>
+                <option value={60}>{t("hours_before_1")}</option>
+                <option value={180}>{t("hours_before_3")}</option>
+                <option value={1440}>{t("day_before_1")}</option>
+                <option value={4320}>{t("days_before_3")}</option>
+                <option value={10080}>{t("week_before_1")}</option>
               </select>
             </div>
           )}
