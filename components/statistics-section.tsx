@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, FileText, BookOpen, Calendar, Plane, Car, Heart, TrendingUp, Wallet, Activity } from 'lucide-react'
+import { ArrowLeft, FileText, BookOpen, Calendar, Plane, Car, Heart, TrendingUp, Wallet, Activity } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import {
   loadNotes,
@@ -17,7 +17,21 @@ import {
 } from "@/lib/storage"
 import { getTranslation } from "@/lib/i18n"
 import type { Language } from "@/lib/types"
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts"
 
 export function StatisticsSection({ onBack, language }: { onBack: () => void; language: string }) {
   const { user } = useAuth()
@@ -47,16 +61,18 @@ export function StatisticsSection({ onBack, language }: { onBack: () => void; la
         return
       }
 
-      const [notes, diaries, schedules, travels, vehicles, health, budgetTransactions, medications] = await Promise.all([
-        loadNotes(user.id),
-        loadDiaries(user.id),
-        loadSchedules(user.id),
-        loadTravelRecords(user.id),
-        loadVehicleRecords(user.id),
-        loadHealthRecords(user.id),
-        loadBudgetTransactions(user.id),
-        loadMedications(user.id),
-      ])
+      const [notes, diaries, schedules, travels, vehicles, health, budgetTransactions, medications] = await Promise.all(
+        [
+          loadNotes(user.id),
+          loadDiaries(user.id),
+          loadSchedules(user.id),
+          loadTravelRecords(user.id),
+          loadVehicleRecords(user.id),
+          loadHealthRecords(user.id),
+          loadBudgetTransactions(user.id),
+          loadMedications(user.id),
+        ],
+      )
 
       const total = notes.length + diaries.length + schedules.length + travels.length + vehicles.length + health.length
 
@@ -74,24 +90,24 @@ export function StatisticsSection({ onBack, language }: { onBack: () => void; la
       setMonthlyActivity(monthlyData)
 
       const now = new Date()
-      const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+      const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
       const currentMonthTransactions = budgetTransactions.filter((t: any) => t.date.startsWith(currentMonth))
-      
+
       const income = currentMonthTransactions
-        .filter((t: any) => t.type === 'income')
+        .filter((t: any) => t.type === "income")
         .reduce((sum: number, t: any) => sum + t.amount, 0)
-      
+
       const expense = currentMonthTransactions
-        .filter((t: any) => t.type === 'expense')
+        .filter((t: any) => t.type === "expense")
         .reduce((sum: number, t: any) => sum + t.amount, 0)
-      
+
       setBudgetSummary({ income, expense, balance: income - expense })
 
       const healthData = calculateHealthTrends(health)
       setHealthTrends(healthData)
 
-      const CHART_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#8b5cf6', '#ef4444']
-      
+      const CHART_COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ec4899", "#8b5cf6", "#ef4444"]
+
       const distribution = [
         { name: getText("notes"), value: notes.length, fill: CHART_COLORS[0] },
         { name: getText("diary"), value: diaries.length, fill: CHART_COLORS[1] },
@@ -99,10 +115,9 @@ export function StatisticsSection({ onBack, language }: { onBack: () => void; la
         { name: getText("travel"), value: travels.length, fill: CHART_COLORS[3] },
         { name: getText("vehicle"), value: vehicles.length, fill: CHART_COLORS[4] },
         { name: getText("health"), value: health.length, fill: CHART_COLORS[5] },
-      ].filter(item => item.value > 0)
-      
-      setCategoryDistribution(distribution)
+      ].filter((item) => item.value > 0)
 
+      setCategoryDistribution(distribution)
     } catch (err) {
       console.error("[v0] Error loading statistics:", err)
     } finally {
@@ -113,16 +128,16 @@ export function StatisticsSection({ onBack, language }: { onBack: () => void; la
   const calculateMonthlyActivity = (notes: any[], diaries: any[], schedules: any[]) => {
     const months = []
     const now = new Date()
-    
+
     for (let i = 5; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1)
-      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
-      const monthName = date.toLocaleDateString(language === 'ko' ? 'ko-KR' : 'en-US', { month: 'short' })
-      
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`
+      const monthName = date.toLocaleDateString(language === "ko" ? "ko-KR" : "en-US", { month: "short" })
+
       const notesCount = notes.filter((n: any) => n.createdAt?.startsWith(monthKey)).length
       const diariesCount = diaries.filter((d: any) => d.createdAt?.startsWith(monthKey)).length
       const schedulesCount = schedules.filter((s: any) => s.date?.startsWith(monthKey)).length
-      
+
       months.push({
         month: monthName,
         notes: notesCount,
@@ -131,13 +146,13 @@ export function StatisticsSection({ onBack, language }: { onBack: () => void; la
         total: notesCount + diariesCount + schedulesCount,
       })
     }
-    
+
     return months
   }
 
   const calculateHealthTrends = (health: any[]) => {
-    const trends: { [key: string]: { weight?: number; steps?: number, date: string } } = {}
-    
+    const trends: { [key: string]: { weight?: number; steps?: number; date: string } } = {}
+
     health.forEach((record: any) => {
       const date = record.date
       if (!trends[date]) {
@@ -146,8 +161,10 @@ export function StatisticsSection({ onBack, language }: { onBack: () => void; la
       if (record.weight) trends[date].weight = record.weight
       if (record.steps) trends[date].steps = record.steps
     })
-    
-    return Object.values(trends).slice(-30).sort((a, b) => a.date.localeCompare(b.date))
+
+    return Object.values(trends)
+      .slice(-30)
+      .sort((a, b) => a.date.localeCompare(b.date))
   }
 
   const lang = language as Language
@@ -169,6 +186,14 @@ export function StatisticsSection({ onBack, language }: { onBack: () => void; la
       categoryDistribution: { ko: "카테고리 분포", en: "Category Distribution", zh: "类别分布", ja: "カテゴリー分布" },
       weight: { ko: "체중", en: "Weight", zh: "体重", ja: "体重" },
       steps: { ko: "걸음수", en: "Steps", zh: "步数", ja: "歩数" },
+      total_records: { ko: "전체 기록", en: "Total Records", zh: "总记录", ja: "総記録" },
+      precious_memories: { ko: "귀중한 추억", en: "Precious Memories", zh: "珍贵的回忆", ja: "貴重な思い出" },
+      loading_stats: {
+        ko: "통계 로딩 중...",
+        en: "Loading Statistics...",
+        zh: "加载统计中...",
+        ja: "統計を読み込んでいます...",
+      },
     }
     return translations[key]?.[lang] || getTranslation(lang, key)
   }
@@ -183,9 +208,9 @@ export function StatisticsSection({ onBack, language }: { onBack: () => void; la
   ]
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat(language === 'ko' ? 'ko-KR' : 'en-US', {
-      style: 'currency',
-      currency: language === 'ko' ? 'KRW' : 'USD',
+    return new Intl.NumberFormat(language === "ko" ? "ko-KR" : "en-US", {
+      style: "currency",
+      currency: language === "ko" ? "KRW" : "USD",
       minimumFractionDigits: 0,
     }).format(amount)
   }
@@ -263,15 +288,21 @@ export function StatisticsSection({ onBack, language }: { onBack: () => void; la
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="text-center p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
                   <p className="text-sm text-muted-foreground mb-1">{getText("income")}</p>
-                  <p className="text-xl md:text-2xl font-bold text-green-600 break-words">{formatCurrency(budgetSummary.income)}</p>
+                  <p className="text-xl md:text-2xl font-bold text-green-600 break-words">
+                    {formatCurrency(budgetSummary.income)}
+                  </p>
                 </div>
                 <div className="text-center p-4 bg-red-50 dark:bg-red-950/20 rounded-lg">
                   <p className="text-sm text-muted-foreground mb-1">{getText("expense")}</p>
-                  <p className="text-xl md:text-2xl font-bold text-red-600 break-words">{formatCurrency(budgetSummary.expense)}</p>
+                  <p className="text-xl md:text-2xl font-bold text-red-600 break-words">
+                    {formatCurrency(budgetSummary.expense)}
+                  </p>
                 </div>
                 <div className="text-center p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
                   <p className="text-sm text-muted-foreground mb-1">{getText("balance")}</p>
-                  <p className={`text-xl md:text-2xl font-bold break-words ${budgetSummary.balance >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                  <p
+                    className={`text-xl md:text-2xl font-bold break-words ${budgetSummary.balance >= 0 ? "text-blue-600" : "text-red-600"}`}
+                  >
                     {formatCurrency(budgetSummary.balance)}
                   </p>
                 </div>
@@ -279,7 +310,7 @@ export function StatisticsSection({ onBack, language }: { onBack: () => void; la
             </Card>
 
             {/* Health Trends */}
-            {healthTrends.length > 0 && (healthTrends.some(d => d.weight) || healthTrends.some(d => d.steps)) && (
+            {healthTrends.length > 0 && (healthTrends.some((d) => d.weight) || healthTrends.some((d) => d.steps)) && (
               <Card className="p-6 bg-card">
                 <div className="flex items-center gap-2 mb-4">
                   <Activity className="h-5 w-5 text-rose-600" />
@@ -288,15 +319,15 @@ export function StatisticsSection({ onBack, language }: { onBack: () => void; la
                 <ResponsiveContainer width="100%" height={300}>
                   <LineChart data={healthTrends}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" tickFormatter={(date) => date.split('-')[2]} />
+                    <XAxis dataKey="date" tickFormatter={(date) => date.split("-")[2]} />
                     <YAxis yAxisId="left" />
                     <YAxis yAxisId="right" orientation="right" />
                     <Tooltip />
                     <Legend />
-                    {healthTrends.some(d => d.weight) && (
+                    {healthTrends.some((d) => d.weight) && (
                       <Line yAxisId="left" type="monotone" dataKey="weight" stroke="#f43f5e" name={getText("weight")} />
                     )}
-                    {healthTrends.some(d => d.steps) && (
+                    {healthTrends.some((d) => d.steps) && (
                       <Line yAxisId="right" type="monotone" dataKey="steps" stroke="#3b82f6" name={getText("steps")} />
                     )}
                   </LineChart>
@@ -329,22 +360,15 @@ export function StatisticsSection({ onBack, language }: { onBack: () => void; la
                 </ResponsiveContainer>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-6">
                   {categoryDistribution.map((entry, index) => (
-                    <div 
-                      key={index} 
+                    <div
+                      key={index}
                       className="flex items-center gap-2 px-4 py-3 rounded-lg border-2"
                       style={{ borderColor: entry.fill, backgroundColor: `${entry.fill}15` }}
                     >
-                      <div 
-                        className="w-5 h-5 rounded-full flex-shrink-0" 
-                        style={{ backgroundColor: entry.fill }}
-                      />
+                      <div className="w-5 h-5 rounded-full flex-shrink-0" style={{ backgroundColor: entry.fill }} />
                       <div className="flex-1 min-w-0">
-                        <span className="text-sm font-semibold block truncate">
-                          {entry.name}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {entry.value}개
-                        </span>
+                        <span className="text-sm font-semibold block truncate">{entry.name}</span>
+                        <span className="text-xs text-muted-foreground">{entry.value}개</span>
                       </div>
                     </div>
                   ))}
