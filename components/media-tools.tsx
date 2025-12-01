@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Camera, Mic, Video, ImageIcon, Trash2, Save, PenTool, X, MessageSquare, FileImage } from "lucide-react"
 import type { Attachment } from "@/lib/types"
+import { getTranslation } from "@/lib/i18n"
+import { useLanguage } from "@/lib/language-context"
 
 // Using browser-based OCR with Tesseract.js workaround
 declare global {
@@ -22,7 +24,7 @@ interface MediaToolsProps {
   onTextFromSpeech?: (text: string) => void
 }
 
-export function MediaTools({
+export default function MediaTools({
   attachments = [],
   onAttachmentsChange,
   onSave,
@@ -45,6 +47,9 @@ export function MediaTools({
   const recognitionRef = useRef<any>(null)
   const ocrVideoRef = useRef<HTMLVideoElement | null>(null)
   const [isOCRCameraOpen, setIsOCRCameraOpen] = useState(false)
+
+  const { language } = useLanguage()
+  const t = (key: string) => getTranslation(language, key)
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
@@ -93,7 +98,7 @@ export function MediaTools({
       mediaRecorderRef.current = mediaRecorder
       setIsRecordingAudio(true)
     } catch (error) {
-      alert("오디오 녹음 권한이 필요합니다")
+      alert(t("audio_permission_required"))
     }
   }
 
@@ -170,7 +175,7 @@ export function MediaTools({
       mediaRecorderRef.current = mediaRecorder
     } catch (error) {
       console.error("[v0] Video recording error:", error)
-      alert("비디오 녹화 권한이 필요합니다: " + (error as Error).message)
+      alert(t("video_permission_required") + ": " + (error as Error).message)
       setIsRecordingVideo(false)
     }
   }
@@ -226,7 +231,7 @@ export function MediaTools({
       ])
     } catch (error) {
       console.error("[v0] Camera error:", error)
-      alert("카메라 권한이 필요합니다: " + (error as Error).message)
+      alert(t("camera_permission_required") + ": " + (error as Error).message)
     }
   }
 
@@ -362,7 +367,7 @@ export function MediaTools({
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
 
     if (!SpeechRecognition) {
-      alert("이 브라우저는 음성 인식을 지원하지 않습니다. Chrome, Edge, Safari를 사용해주세요.")
+      alert(t("speech_recognition_not_supported"))
       return
     }
 
@@ -414,7 +419,7 @@ export function MediaTools({
             }, 100)
           }
         } else if (event.error === "not-allowed") {
-          alert("마이크 권한이 필요합니다.")
+          alert(t("mic_permission_required"))
           setIsRecognizing(false)
         } else if (event.error === "aborted") {
           console.log("[v0] Recognition aborted")
@@ -439,7 +444,7 @@ export function MediaTools({
       recognitionRef.current = recognition
     } catch (error) {
       console.error("[v0] Speech recognition error:", error)
-      alert("음성 인식을 시작할 수 없습니다: " + (error as Error).message)
+      alert(t("speech_recognition_failed") + ": " + (error as Error).message)
       setIsRecognizing(false)
     }
   }
@@ -475,7 +480,7 @@ export function MediaTools({
       }
     } catch (error) {
       console.error("[v0] OCR camera error:", error)
-      alert("카메라 권한이 필요합니다")
+      alert(t("camera_permission_required"))
     }
   }
 
@@ -555,13 +560,13 @@ export function MediaTools({
         if (onTextFromSpeech) {
           onTextFromSpeech(text.trim())
         }
-        alert("이미지에서 텍스트 추출 완료:\n" + text.substring(0, 200) + (text.length > 200 ? "..." : ""))
+        alert(t("ocr_completed") + ":\n" + text.substring(0, 200) + (text.length > 200 ? "..." : ""))
       } else {
-        alert("이미지에서 텍스트를 찾을 수 없습니다. 더 선명한 이미지를 사용해주세요.")
+        alert(t("ocr_no_text_found"))
       }
     } catch (error) {
       console.error("[v0] OCR error:", error)
-      alert("텍스트 추출 중 오류가 발생했습니다. 다시 시도해주세요.")
+      alert(t("ocr_error_occurred"))
     } finally {
       setIsProcessingOCR(false)
       setOcrProgress(0)
@@ -584,7 +589,7 @@ export function MediaTools({
       {isProcessingOCR && (
         <div className="space-y-2 bg-purple-50 dark:bg-purple-950 p-4 rounded-lg border-2 border-purple-500">
           <p className="text-sm font-medium text-purple-600 dark:text-purple-400">
-            🔍 텍스트 추출 중... {ocrProgress}%
+            🔍 {t("ocr_processing")}... {ocrProgress}%
           </p>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div className="h-2 rounded-full bg-purple-600 transition-all" style={{ width: `${ocrProgress}%` }} />
@@ -595,7 +600,7 @@ export function MediaTools({
       {isOCRCameraOpen && (
         <div className="space-y-2 bg-purple-50 p-4 rounded-lg border-2 border-purple-500">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-purple-600">📸 텍스트 촬영</p>
+            <p className="text-sm font-medium text-purple-600">{t("ocr_camera")}</p>
             <div className="flex gap-2">
               <Button
                 variant="default"
@@ -604,7 +609,7 @@ export function MediaTools({
                 className="bg-purple-600 hover:bg-purple-700 text-white"
               >
                 <Camera className="h-4 w-4 mr-2" />
-                촬영 및 추출
+                {t("ocr_capture_and_process")}
               </Button>
               <Button variant="outline" size="sm" onClick={closeOCRCamera}>
                 <X className="h-4 w-4" />
@@ -612,14 +617,14 @@ export function MediaTools({
             </div>
           </div>
           <video ref={ocrVideoRef} className="w-full h-64 bg-black rounded" playsInline autoPlay />
-          <p className="text-xs text-purple-600">텍스트가 포함된 문서나 이미지를 촬영하세요</p>
+          <p className="text-xs text-purple-600">{t("ocr_take_photo")}</p>
         </div>
       )}
 
       {isRecognizing && (
         <div className="space-y-2 bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border-2 border-blue-500">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-blue-600 dark:text-blue-400">🎤 음성 인식 중...</p>
+            <p className="text-sm font-medium text-blue-600 dark:text-blue-400">{t("speech_recognition")}</p>
             <Button
               variant="destructive"
               size="sm"
@@ -627,7 +632,7 @@ export function MediaTools({
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               <MessageSquare className="h-4 w-4 mr-2" />
-              인식 중지 및 적용
+              {t("stop_recognition")}
             </Button>
           </div>
           {recognizedText && (
@@ -635,14 +640,14 @@ export function MediaTools({
               <p className="text-sm text-foreground">{recognizedText}</p>
             </div>
           )}
-          <p className="text-xs text-blue-600 dark:text-blue-400">말씀하시면 자동으로 텍스트로 변환됩니다</p>
+          <p className="text-xs text-blue-600 dark:text-blue-400">{t("speech_to_text")}</p>
         </div>
       )}
 
       {isRecordingVideo && (
         <div className="space-y-2 bg-red-50 p-4 rounded-lg border-2 border-red-500">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-red-600">🔴 동영상 녹화 중...</p>
+            <p className="text-sm font-medium text-red-600">{t("video_recording")}</p>
             <Button
               variant="destructive"
               size="sm"
@@ -650,7 +655,7 @@ export function MediaTools({
               className="bg-red-600 hover:bg-red-700 text-white"
             >
               <Video className="h-4 w-4 mr-2" />
-              녹화 중지 및 저장
+              {t("stop_recording")}
             </Button>
           </div>
           <video ref={videoRef} className="w-full h-64 bg-black rounded" playsInline autoPlay muted />
@@ -670,28 +675,28 @@ export function MediaTools({
           <input type="file" id="ocr-file-upload" accept="image/*" className="hidden" onChange={handleOCRFileUpload} />
           <Button variant="outline" size="sm" onClick={() => document.getElementById("file-upload")?.click()}>
             <ImageIcon className="h-4 w-4 mr-2" />
-            파일 업로드
+            {t("file_upload")}
           </Button>
           <Button variant="outline" size="sm" onClick={takePhoto}>
             <Camera className="h-4 w-4 mr-2" />
-            사진 촬영
+            {t("take_photo")}
           </Button>
           <Button variant="outline" size="sm" onClick={openOCRCamera}>
             <FileImage className="h-4 w-4 mr-2" />
-            촬영→텍스트
+            {t("ocr_camera")}
           </Button>
           <Button variant="outline" size="sm" onClick={() => document.getElementById("ocr-file-upload")?.click()}>
             <FileImage className="h-4 w-4 mr-2" />
-            이미지→텍스트
+            {t("ocr_upload")}
           </Button>
           <Button variant="outline" size="sm" onClick={startDrawing}>
             <PenTool className="h-4 w-4 mr-2" />
-            손글씨
+            {t("handwriting")}
           </Button>
           {onTextFromSpeech && (
             <Button variant="outline" size="sm" onClick={startSpeechRecognition}>
               <MessageSquare className="h-4 w-4 mr-2" />
-              음성→텍스트
+              {t("speech_to_text")}
             </Button>
           )}
           {isRecordingAudio ? (
@@ -702,17 +707,17 @@ export function MediaTools({
               className="bg-red-600 hover:bg-red-700 text-white"
             >
               <Mic className="h-4 w-4 mr-2" />
-              녹음 중지
+              {t("stop_recording")}
             </Button>
           ) : (
             <Button variant="outline" size="sm" onClick={startAudioRecording}>
               <Mic className="h-4 w-4 mr-2" />
-              오디오 녹음
+              {t("audio_recording")}
             </Button>
           )}
           <Button variant="outline" size="sm" onClick={startVideoRecording}>
             <Video className="h-4 w-4 mr-2" />
-            동영상 녹화
+            {t("video_recording")}
           </Button>
         </div>
       )}
@@ -721,7 +726,7 @@ export function MediaTools({
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <Card className="w-full max-w-4xl p-4 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">손글씨 작성</h3>
+              <h3 className="text-lg font-semibold">{t("handwriting")}</h3>
               <Button variant="ghost" size="icon" onClick={closeDrawing}>
                 <X className="h-4 w-4" />
               </Button>
@@ -740,11 +745,11 @@ export function MediaTools({
             />
             <div className="flex gap-2">
               <Button variant="outline" onClick={clearCanvas} className="flex-1 bg-transparent">
-                지우기
+                {t("clear")}
               </Button>
               <Button onClick={saveDrawing} className="flex-1">
                 <Save className="h-4 w-4 mr-2" />
-                저장
+                {t("save")}
               </Button>
             </div>
           </Card>
@@ -753,7 +758,9 @@ export function MediaTools({
 
       {attachments.length > 0 && (
         <div className="space-y-2">
-          <p className="text-sm font-medium">첨부파일 ({attachments.length}개)</p>
+          <p className="text-sm font-medium">
+            {t("attachments")} ({attachments.length}개)
+          </p>
           <div className="grid grid-cols-2 gap-2">
             {attachments.map((file, idx) => (
               <div key={idx} className="relative group border rounded overflow-hidden">
@@ -778,7 +785,7 @@ export function MediaTools({
                     }}
                   >
                     <source src={file.url || file.data} type={file.type || "video/webm"} />
-                    비디오를 재생할 수 없습니다
+                    {t("video_cannot_play")}
                   </video>
                 )}
                 {(file.type?.startsWith("audio/") || file.type === "audio") && (
@@ -792,7 +799,7 @@ export function MediaTools({
                       }}
                     >
                       <source src={file.url || file.data} type={file.type || "audio/webm"} />
-                      오디오를 재생할 수 없습니다
+                      {t("audio_cannot_play")}
                     </audio>
                   </div>
                 )}
@@ -817,7 +824,7 @@ export function MediaTools({
           className="w-full bg-green-600 hover:bg-green-700"
         >
           <Save className="mr-2 h-4 w-4" />
-          {saving ? "저장 중..." : "저장"}
+          {saving ? t("saving") : t("save")}
         </Button>
       )}
     </Card>

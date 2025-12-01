@@ -19,6 +19,19 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     back: "뒤로",
     back_to_forest: "숲으로 돌아가기",
 
+    steps_unit: "보",
+    krw_unit: "원",
+
+    file_upload: "파일 업로드",
+    take_photo: "사진 촬영",
+    ocr_camera: "촬영→텍스트",
+    ocr_upload: "이미지→텍스트",
+    handwriting: "손글씨",
+    speech_to_text: "음성→텍스트",
+    stop_recording: "녹음 중지",
+    audio_recording: "오디오 녹음",
+    video_recording: "동영상 녹화",
+
     // Sections
     notes: "노트",
     diary: "일기",
@@ -332,6 +345,19 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     date: "Date",
     back: "Back",
     back_to_forest: "Back to Forest",
+
+    steps_unit: "steps",
+    krw_unit: "KRW",
+
+    file_upload: "Upload File",
+    take_photo: "Take Photo",
+    ocr_camera: "Capture→Text",
+    ocr_upload: "Image→Text",
+    handwriting: "Handwriting",
+    speech_to_text: "Speech→Text",
+    stop_recording: "Stop Recording",
+    audio_recording: "Audio Recording",
+    video_recording: "Video Recording",
 
     // Sections
     notes: "Notes",
@@ -650,6 +676,19 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     back: "返回",
     back_to_forest: "返回森林",
 
+    steps_unit: "步",
+    krw_unit: "元",
+
+    file_upload: "上传文件",
+    take_photo: "拍照",
+    ocr_camera: "拍照→文字",
+    ocr_upload: "图片→文字",
+    handwriting: "手写",
+    speech_to_text: "语音→文字",
+    stop_recording: "停止录音",
+    audio_recording: "音频录音",
+    video_recording: "录制视频",
+
     // Sections
     notes: "笔记",
     diary: "日记",
@@ -959,6 +998,19 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     date: "日付",
     back: "戻る",
     back_to_forest: "森に戻る",
+
+    steps_unit: "歩",
+    krw_unit: "円",
+
+    file_upload: "ファイルアップロード",
+    take_photo: "写真撮影",
+    ocr_camera: "撮影→テキスト",
+    ocr_upload: "画像→テキスト",
+    handwriting: "手書き",
+    speech_to_text: "音声→テキスト",
+    stop_recording: "録音停止",
+    audio_recording: "音声録音",
+    video_recording: "動画撮影",
 
     // Sections
     notes: "ノート",

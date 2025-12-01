@@ -928,7 +928,9 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
             {/* Steps Chart */}
             {chartData.some((d) => d.steps) && (
               <Card className="p-4">
-                <h3 className="font-semibold mb-4">{t("steps")} (보)</h3>
+                <h3 className="font-semibold mb-4">
+                  {t("steps")} ({t("steps_unit")})
+                </h3>
                 <ResponsiveContainer width="100%" height={200}>
                   <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -962,7 +964,9 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
             {/* Medical/Medication Expense Chart */}
             {expenseData.length > 0 && (
               <Card className="p-4">
-                <h3 className="font-semibold mb-4">{t("medical_and_medication_expenses")} (원)</h3>
+                <h3 className="font-semibold mb-4">
+                  {t("medical_and_medication_expenses")} ({t("krw_unit")})
+                </h3>
                 <ResponsiveContainer width="100%" height={200}>
                   <LineChart data={expenseData}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -1047,7 +1051,7 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
                 )}
                 {record.steps && (
                   <p className="text-sm">
-                    {t("steps")}: {record.steps.toLocaleString()}보
+                    {t("steps")}: {record.steps.toLocaleString()} {t("steps_unit")}
                   </p>
                 )}
                 {record.distance && (
@@ -1057,12 +1061,12 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
                 )}
                 {record.medicalExpense && (
                   <p className="text-sm">
-                    {t("medical_expense")}: {record.medicalExpense.toLocaleString()}원
+                    {t("medical_expense")}: {record.medicalExpense.toLocaleString()} {t("krw_unit")}
                   </p>
                 )}
                 {record.medicationExpense && (
                   <p className="text-sm">
-                    {t("medication_expense")}: {record.medicationExpense.toLocaleString()}원
+                    {t("medication_expense")}: {record.medicationExpense.toLocaleString()} {t("krw_unit")}
                   </p>
                 )}
                 {record.notes && <p className="text-sm mt-1 text-muted-foreground">{record.notes}</p>}
