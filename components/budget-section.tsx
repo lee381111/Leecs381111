@@ -43,13 +43,13 @@ async function hashPassword(password: string): Promise<string> {
 export function BudgetSection({ onBack, language }: BudgetSectionProps) {
   const { user } = useAuth()
   const [transactions, setTransactions] = useState<BudgetTransaction[]>([])
-  const [view, setView] = useState<"list" | "add" | "edit" | "stats">("list")
+  const [view, setView] = useState<"list" | "add" | "edit" | "stats" | "setPassword" | "main">("main")
   const [editingTransaction, setEditingTransaction] = useState<BudgetTransaction | null>(null)
   const [statsView, setStatsView] = useState<"current" | "comparison">("current")
 
   const [isLocked, setIsLocked] = useState(true)
   const [password, setPassword] = useState("")
-  const [isSettingPassword, setIsSettingPassword] = useState(false)
+  const [passwordSet, setPasswordSet] = useState(false)
   const [confirmPassword, setConfirmPassword] = useState("")
   const [loading, setLoading] = useState(false)
 
@@ -65,20 +65,20 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
 
   useEffect(() => {
-    const savedPasswordHash = localStorage.getItem("budget_password_hash")
-    if (!savedPasswordHash) {
-      setIsSettingPassword(true)
+    const savedPasswordSkipped = localStorage.getItem("budget_password_skipped")
+    if (savedPasswordSkipped === "true") {
+      setPasswordSet(true)
       setIsLocked(false)
     } else {
-      setIsLocked(true)
+      setView("main")
     }
   }, [])
 
   useEffect(() => {
-    if (user && !isLocked) {
+    if (user && passwordSet && !isLocked) {
       loadTransactions()
     }
-  }, [user, isLocked])
+  }, [user, passwordSet, isLocked])
 
   const loadTransactions = async () => {
     if (!user) return
@@ -105,7 +105,7 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
 
     const hash = await hashPassword(password)
     localStorage.setItem("budget_password_hash", hash)
-    setIsSettingPassword(false)
+    setPasswordSet(true)
     setIsLocked(false)
     setPassword("")
     setConfirmPassword("")
@@ -288,7 +288,8 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
         zh: "重新输入密码",
         ja: "パスワード再入力",
       },
-      set_password: { ko: "설정", en: "Set", zh: "设置", ja: "設定" },
+      set_password: { ko: "비밀번호 설정", en: "Set Password", zh: "设置密码", ja: "パスワード設定" },
+      password_optional: { ko: "(선택사항)", en: "(Optional)", zh: "(可选)", ja: "(オプション)" },
       skip: { ko: "건너뛰기", en: "Skip", zh: "跳过", ja: "スキップ" },
       locked_budget: { ko: "잠긴 가계부", en: "Locked Budget", zh: "锁定的家庭账本", ja: "ロックされた家計簿" },
       enter_password_to_unlock: {
@@ -312,12 +313,48 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
         zh: "备注（可选）",
         ja: "メモ（オプション）",
       },
-      krw_unit: { ko: "원", en: "KRW", zh: "元", ja: "円" },
+      krw_unit: { ko: "원", en: "$", zh: "元", ja: "円" },
     }
     return translations[key]?.[language] || key
   }
 
-  if (isSettingPassword) {
+  const saveData = (key: string, value: boolean) => {
+    localStorage.setItem(key, value.toString())
+  }
+
+  if (!passwordSet && view === "main") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 flex items-center justify-center">
+        <Card className="p-6 border-2 border-yellow-500 dark:border-yellow-400">
+          <div className="text-center">
+            <h3 className="text-xl font-semibold mb-2">
+              {getText("set_password")} {getText("password_optional")}
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              {language === "ko" && "가계부 보호를 위해 비밀번호를 설정하시겠습니까?"}
+              {language === "en" && "Would you like to set a password to protect your budget?"}
+              {language === "zh" && "您想设置密码来保护家庭账本吗？"}
+              {language === "ja" && "家計簿を保護するためにパスワードを設定しますか？"}
+            </p>
+            <div className="flex gap-2 justify-center">
+              <Button
+                onClick={() => {
+                  setPasswordSet(true)
+                  saveData("budget_password_skipped", true)
+                }}
+                variant="outline"
+              >
+                {getText("skip")}
+              </Button>
+              <Button onClick={() => setView("setPassword")}>{getText("set_password")}</Button>
+            </div>
+          </div>
+        </Card>
+      </div>
+    )
+  }
+
+  if (view === "setPassword") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 flex items-center justify-center">
         <Card className="max-w-md w-full p-8 space-y-6">
@@ -354,7 +391,8 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
               <Button
                 variant="outline"
                 onClick={() => {
-                  setIsSettingPassword(false)
+                  setPasswordSet(true)
+                  saveData("budget_password_skipped", true)
                   onBack()
                 }}
                 className="flex-1"
