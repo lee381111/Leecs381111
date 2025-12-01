@@ -16,6 +16,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     search: "검색",
     all: "전체",
     date: "날짜",
+    back: "뒤로",
     back_to_forest: "숲으로 돌아가기",
 
     // Sections
@@ -319,6 +320,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     search: "Search",
     all: "All",
     date: "Date",
+    back: "Back",
     back_to_forest: "Back to Forest",
 
     // Sections
@@ -579,6 +581,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     search: "搜索",
     all: "全部",
     date: "日期",
+    back: "返回",
     back_to_forest: "返回森林",
 
     // Sections
@@ -808,6 +811,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     search: "検索",
     all: "すべて",
     date: "日付",
+    back: "戻る",
     back_to_forest: "森に戻る",
 
     // Sections
