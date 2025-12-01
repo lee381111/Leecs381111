@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { ArrowLeft, Plus, TrendingUp, TrendingDown, Wallet, Trash2, Edit2, PieChart, Lock, Unlock } from 'lucide-react'
+import { ArrowLeft, Plus, TrendingUp, TrendingDown, Wallet, Trash2, Edit2, PieChart, Lock, Unlock } from "lucide-react"
 import type { Language, BudgetTransaction } from "@/lib/types"
 import { saveBudgetTransactions, loadBudgetTransactions } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
@@ -16,14 +16,28 @@ interface BudgetSectionProps {
 }
 
 const incomeCategories = ["급여", "부업", "투자", "상여금", "기타수입"]
-const expenseCategories = ["식비", "교통비", "주거비", "의료비", "통신비", "쇼핑", "여가", "교육", "보험", "대출이자", "차량유지비", "여행", "기타지출"]
+const expenseCategories = [
+  "식비",
+  "교통비",
+  "주거비",
+  "의료비",
+  "통신비",
+  "쇼핑",
+  "여가",
+  "교육",
+  "보험",
+  "대출이자",
+  "차량유지비",
+  "여행",
+  "기타지출",
+]
 
 async function hashPassword(password: string): Promise<string> {
   const encoder = new TextEncoder()
   const data = encoder.encode(password)
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data)
   const hashArray = Array.from(new Uint8Array(hashBuffer))
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
 }
 
 export function BudgetSection({ onBack, language }: BudgetSectionProps) {
@@ -32,25 +46,26 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
   const [view, setView] = useState<"list" | "add" | "edit" | "stats">("list")
   const [editingTransaction, setEditingTransaction] = useState<BudgetTransaction | null>(null)
   const [statsView, setStatsView] = useState<"current" | "comparison">("current")
-  
+
   const [isLocked, setIsLocked] = useState(true)
   const [password, setPassword] = useState("")
   const [isSettingPassword, setIsSettingPassword] = useState(false)
   const [confirmPassword, setConfirmPassword] = useState("")
   const [loading, setLoading] = useState(false)
-  
+
   const [formData, setFormData] = useState({
     type: "expense" as "income" | "expense",
     category: "",
     amount: "",
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString().split("T")[0],
     description: "",
   })
-  
+
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7))
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
 
   useEffect(() => {
-    const savedPasswordHash = localStorage.getItem('budget_password_hash')
+    const savedPasswordHash = localStorage.getItem("budget_password_hash")
     if (!savedPasswordHash) {
       setIsSettingPassword(true)
       setIsLocked(false)
@@ -89,7 +104,7 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
     }
 
     const hash = await hashPassword(password)
-    localStorage.setItem('budget_password_hash', hash)
+    localStorage.setItem("budget_password_hash", hash)
     setIsSettingPassword(false)
     setIsLocked(false)
     setPassword("")
@@ -103,7 +118,7 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
       return
     }
 
-    const savedHash = localStorage.getItem('budget_password_hash')
+    const savedHash = localStorage.getItem("budget_password_hash")
     const inputHash = await hashPassword(password)
 
     if (inputHash === savedHash) {
@@ -123,7 +138,7 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
       id: editingTransaction?.id || crypto.randomUUID(),
       type: formData.type,
       category: formData.category,
-      amount: parseFloat(formData.amount),
+      amount: Number.parseFloat(formData.amount),
       date: formData.date,
       description: formData.description || "",
       createdAt: editingTransaction?.createdAt || new Date().toISOString(),
@@ -131,7 +146,7 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
     }
 
     const updated = editingTransaction
-      ? transactions.map(t => t.id === editingTransaction.id ? newTransaction : t)
+      ? transactions.map((t) => (t.id === editingTransaction.id ? newTransaction : t))
       : [...transactions, newTransaction]
 
     try {
@@ -146,7 +161,7 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
 
   const handleDelete = async (id: string) => {
     if (!user) return
-    const updated = transactions.filter(t => t.id !== id)
+    const updated = transactions.filter((t) => t.id !== id)
     try {
       await saveBudgetTransactions(updated, user.id)
       setTransactions(updated)
@@ -172,7 +187,7 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
       type: "expense",
       category: "",
       amount: "",
-      date: new Date().toISOString().split('T')[0],
+      date: new Date().toISOString().split("T")[0],
       description: "",
     })
     setEditingTransaction(null)
@@ -220,22 +235,67 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
       sixMonthSummary: { ko: "12개월 요약", en: "12-Month Summary", zh: "12个月总结", ja: "12ヶ月集計" },
       totalIncome: { ko: "총 수입", en: "Total Income", zh: "总收入", ja: "総収入" },
       totalExpense: { ko: "총 지출", en: "Total Expense", zh: "总支出", ja: "総支出" },
-      password_too_short: { ko: "비밀번호는 최소 4자 이상이어야 합니다", en: "Password must be at least 4 characters", zh: "密码至少4个字符", ja: "パスワードは4文字以上必要です" },
-      password_mismatch: { ko: "비밀번호가 일치하지 않습니다", en: "Passwords do not match", zh: "密码不匹配", ja: "パスワードが一致しません" },
-      password_set: { ko: "가계부 비밀번호가 설정되었습니다", en: "Budget password set", zh: "家庭账本密码已设置", ja: "家計簿パスワードが設定されました" },
-      enter_password: { ko: "비밀번호를 입력하세요", en: "Enter password", zh: "请输入密码", ja: "パスワードを入力してください" },
+      password_too_short: {
+        ko: "비밀번호는 최소 4자 이상이어야 합니다",
+        en: "Password must be at least 4 characters",
+        zh: "密码至少4个字符",
+        ja: "パスワードは4文字以上必要です",
+      },
+      password_mismatch: {
+        ko: "비밀번호가 일치하지 않습니다",
+        en: "Passwords do not match",
+        zh: "密码不匹配",
+        ja: "パスワードが一致しません",
+      },
+      password_set: {
+        ko: "가계부 비밀번호가 설정되었습니다",
+        en: "Budget password set",
+        zh: "家庭账本密码已设置",
+        ja: "家計簿パスワードが設定されました",
+      },
+      enter_password: {
+        ko: "비밀번호를 입력하세요",
+        en: "Enter password",
+        zh: "请输入密码",
+        ja: "パスワードを入力してください",
+      },
       unlocked: { ko: "잠금이 해제되었습니다", en: "Unlocked", zh: "已解锁", ja: "ロック解除されました" },
-      wrong_password: { ko: "비밀번호가 틀렸습니다", en: "Wrong password", zh: "密码错误", ja: "パスワードが間違っています" },
-      set_budget_password: { ko: "가계부 비밀번호 설정", en: "Set Budget Password", zh: "设置家庭账本密码", ja: "家計簿パスワード設定" },
-      password_description: { ko: "가계부를 보호하기 위한 비밀번호를 설정하세요", en: "Set a password to protect your budget", zh: "设置密码以保护您的家庭账本", ja: "家計簿を保護するためのパスワードを設定してください" },
+      wrong_password: {
+        ko: "비밀번호가 틀렸습니다",
+        en: "Wrong password",
+        zh: "密码错误",
+        ja: "パスワードが間違っています",
+      },
+      set_budget_password: {
+        ko: "가계부 비밀번호 설정",
+        en: "Set Budget Password",
+        zh: "设置家庭账本密码",
+        ja: "家計簿パスワード設定",
+      },
+      password_description: {
+        ko: "가계부를 보호하기 위한 비밀번호를 설정하세요",
+        en: "Set a password to protect your budget",
+        zh: "设置密码以保护您的家庭账本",
+        ja: "家計簿を保護するためのパスワードを設定してください",
+      },
       new_password: { ko: "비밀번호", en: "Password", zh: "密码", ja: "パスワード" },
       confirm_password: { ko: "비밀번호 확인", en: "Confirm Password", zh: "确认密码", ja: "パスワード確認" },
       password_placeholder: { ko: "최소 4자 이상", en: "Min 4 characters", zh: "至少4个字符", ja: "最低4文字" },
-      confirm_password_placeholder: { ko: "비밀번호 재입력", en: "Re-enter password", zh: "重新输入密码", ja: "パスワード再入力" },
+      confirm_password_placeholder: {
+        ko: "비밀번호 재입력",
+        en: "Re-enter password",
+        zh: "重新输入密码",
+        ja: "パスワード再入力",
+      },
       set_password: { ko: "설정", en: "Set", zh: "设置", ja: "設定" },
       skip: { ko: "건너뛰기", en: "Skip", zh: "跳过", ja: "スキップ" },
       locked_budget: { ko: "잠긴 가계부", en: "Locked Budget", zh: "锁定的家庭账本", ja: "ロックされた家計簿" },
-      enter_password_to_unlock: { ko: "비밀번호를 입력하여 가계부를 확인하세요", en: "Enter password to unlock budget", zh: "输入密码以解锁家庭账本", ja: "パスワードを入力して家計簿を表示" },
+      enter_password_to_unlock: {
+        ko: "비밀번호를 입력하여 가계부를 확인하세요",
+        en: "Enter password to unlock budget",
+        zh: "输入密码以解锁家庭账本",
+        ja: "パスワードを入力して家計簿を表示",
+      },
       password: { ko: "비밀번호", en: "Password", zh: "密码", ja: "パスワード" },
       unlock: { ko: "잠금 해제", en: "Unlock", zh: "解锁", ja: "ロック解除" },
       lock_budget: { ko: "가계부 잠그기", en: "Lock Budget", zh: "锁定家庭账本", ja: "家計簿をロック" },
@@ -250,9 +310,7 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
           <div className="text-center space-y-2">
             <Lock className="h-12 w-12 mx-auto text-emerald-600" />
             <h2 className="text-2xl font-bold">{getText("set_budget_password")}</h2>
-            <p className="text-sm text-muted-foreground">
-              {getText("password_description")}
-            </p>
+            <p className="text-sm text-muted-foreground">{getText("password_description")}</p>
           </div>
           <div className="space-y-4">
             <div>
@@ -279,10 +337,14 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
               <Button onClick={handleSetPassword} className="flex-1 bg-emerald-600 hover:bg-emerald-700">
                 {getText("set_password")}
               </Button>
-              <Button variant="outline" onClick={() => {
-                setIsSettingPassword(false)
-                onBack()
-              }} className="flex-1">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsSettingPassword(false)
+                  onBack()
+                }}
+                className="flex-1"
+              >
                 {getText("skip")}
               </Button>
             </div>
@@ -299,9 +361,7 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
           <div className="text-center space-y-2">
             <Lock className="h-12 w-12 mx-auto text-emerald-600" />
             <h2 className="text-2xl font-bold">{getText("locked_budget")}</h2>
-            <p className="text-sm text-muted-foreground">
-              {getText("enter_password_to_unlock")}
-            </p>
+            <p className="text-sm text-muted-foreground">{getText("enter_password_to_unlock")}</p>
           </div>
           <div className="space-y-4">
             <Input
@@ -310,14 +370,14 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
               onChange={(e) => setPassword(e.target.value)}
               placeholder={getText("password")}
               onKeyPress={(e) => {
-                if (e.key === 'Enter') handleUnlock()
+                if (e.key === "Enter") handleUnlock()
               }}
             />
             <div className="flex gap-2">
               <Button onClick={handleUnlock} className="flex-1 bg-emerald-600 hover:bg-emerald-700">
                 <Unlock className="mr-2 h-4 w-4" /> {getText("unlock")}
               </Button>
-              <Button variant="outline" onClick={onBack} className="flex-1">
+              <Button variant="outline" onClick={onBack} className="flex-1 bg-transparent">
                 {getText("cancel")}
               </Button>
             </div>
@@ -338,41 +398,39 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
     )
   }
 
-  const monthlyTransactions = transactions.filter(t => t.date.startsWith(selectedMonth))
-  const monthlyIncome = monthlyTransactions.filter(t => t.type === "income").reduce((sum, t) => sum + t.amount, 0)
-  const monthlyExpense = monthlyTransactions.filter(t => t.type === "expense").reduce((sum, t) => sum + t.amount, 0)
+  const monthlyTransactions = transactions.filter((t) => t.date.startsWith(selectedMonth))
+  const monthlyIncome = monthlyTransactions.filter((t) => t.type === "income").reduce((sum, t) => sum + t.amount, 0)
+  const monthlyExpense = monthlyTransactions.filter((t) => t.type === "expense").reduce((sum, t) => sum + t.amount, 0)
   const monthlyBalance = monthlyIncome - monthlyExpense
 
   const getMonthlyData = () => {
     const months = []
-    const now = new Date()
-    const currentYear = now.getFullYear()
-    
+
     for (let month = 0; month < 12; month++) {
-      const monthStr = `${currentYear}-${String(month + 1).padStart(2, '0')}`
-      
-      const monthTransactions = transactions.filter(t => {
+      const monthStr = `${selectedYear}-${String(month + 1).padStart(2, "0")}`
+
+      const monthTransactions = transactions.filter((t) => {
         // Extract YYYY-MM from transaction date regardless of format
         const txDate = t.date.substring(0, 7)
         return txDate === monthStr
       })
-      
-      const income = monthTransactions.filter(t => t.type === "income").reduce((sum, t) => sum + t.amount, 0)
-      const expense = monthTransactions.filter(t => t.type === "expense").reduce((sum, t) => sum + t.amount, 0)
-      
+
+      const income = monthTransactions.filter((t) => t.type === "income").reduce((sum, t) => sum + t.amount, 0)
+      const expense = monthTransactions.filter((t) => t.type === "expense").reduce((sum, t) => sum + t.amount, 0)
+
       months.push({
         month: monthStr,
         displayMonth: `${month + 1}${getText("month")}`,
         income,
         expense,
-        balance: income - expense
+        balance: income - expense,
       })
     }
     return months
   }
 
   const monthlyData = getMonthlyData()
-  const maxAmount = Math.max(...monthlyData.flatMap(m => [m.income, m.expense]))
+  const maxAmount = Math.max(...monthlyData.flatMap((m) => [m.income, m.expense]))
 
   if (view === "add" || view === "edit") {
     const categories = formData.type === "income" ? incomeCategories : expenseCategories
@@ -381,10 +439,14 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center gap-4 mb-6">
-            <Button onClick={() => {
-              setView("list")
-              resetForm()
-            }} variant="ghost" size="sm">
+            <Button
+              onClick={() => {
+                setView("list")
+                resetForm()
+              }}
+              variant="ghost"
+              size="sm"
+            >
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <h2 className="text-2xl font-bold text-emerald-800 dark:text-emerald-300">
@@ -394,7 +456,9 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
 
           <Card className="p-6 space-y-4 dark:bg-card">
             <div>
-              <label className="block text-sm font-medium mb-2">{getText("income")}/{getText("expense")}</label>
+              <label className="block text-sm font-medium mb-2">
+                {getText("income")}/{getText("expense")}
+              </label>
               <div className="flex gap-2">
                 <Button
                   onClick={() => setFormData({ ...formData, type: "income", category: "" })}
@@ -421,8 +485,10 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
                 className="w-full p-2 border rounded"
               >
                 <option value="">선택하세요</option>
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{getText(cat)}</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {getText(cat)}
+                  </option>
                 ))}
               </select>
             </div>
@@ -459,10 +525,14 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
               <Button onClick={handleSave} className="flex-1 bg-green-600 hover:bg-green-700">
                 {getText("save")}
               </Button>
-              <Button onClick={() => {
-                setView("list")
-                resetForm()
-              }} variant="outline" className="flex-1">
+              <Button
+                onClick={() => {
+                  setView("list")
+                  resetForm()
+                }}
+                variant="outline"
+                className="flex-1"
+              >
                 {getText("cancel")}
               </Button>
             </div>
@@ -473,10 +543,15 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
   }
 
   if (view === "stats") {
-    const categoryExpenses = expenseCategories.map(cat => ({
-      category: cat,
-      amount: monthlyTransactions.filter(t => t.type === "expense" && t.category === cat).reduce((sum, t) => sum + t.amount, 0)
-    })).filter(c => c.amount > 0).sort((a, b) => b.amount - a.amount)
+    const categoryExpenses = expenseCategories
+      .map((cat) => ({
+        category: cat,
+        amount: monthlyTransactions
+          .filter((t) => t.type === "expense" && t.category === cat)
+          .reduce((sum, t) => sum + t.amount, 0),
+      }))
+      .filter((c) => c.amount > 0)
+      .sort((a, b) => b.amount - a.amount)
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6">
@@ -511,15 +586,21 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
                 <Card className="p-4 dark:bg-card">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm text-gray-600 dark:text-gray-400">{getText("income")}</span>
-                    <span className="text-lg font-bold text-emerald-600 dark:text-emerald-300">+{monthlyIncome.toLocaleString()}원</span>
+                    <span className="text-lg font-bold text-emerald-600 dark:text-emerald-300">
+                      +{monthlyIncome.toLocaleString()}원
+                    </span>
                   </div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm text-gray-600 dark:text-gray-400">{getText("expense")}</span>
-                    <span className="text-lg font-bold text-rose-600 dark:text-rose-300">-{monthlyExpense.toLocaleString()}원</span>
+                    <span className="text-lg font-bold text-rose-600 dark:text-rose-300">
+                      -{monthlyExpense.toLocaleString()}원
+                    </span>
                   </div>
                   <div className="flex items-center justify-between pt-2 border-t dark:border-gray-700">
                     <span className="text-sm font-medium">{getText("balance")}</span>
-                    <span className={`text-xl font-bold ${monthlyBalance >= 0 ? 'text-emerald-600 dark:text-emerald-300' : 'text-rose-600 dark:text-rose-300'}`}>
+                    <span
+                      className={`text-xl font-bold ${monthlyBalance >= 0 ? "text-emerald-600 dark:text-emerald-300" : "text-rose-600 dark:text-rose-300"}`}
+                    >
                       {monthlyBalance.toLocaleString()}원
                     </span>
                   </div>
@@ -532,12 +613,14 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
                   ) : (
                     <div className="space-y-3">
                       {categoryExpenses.map(({ category, amount }) => {
-                        const percentage = monthlyExpense > 0 ? (amount / monthlyExpense * 100) : 0
+                        const percentage = monthlyExpense > 0 ? (amount / monthlyExpense) * 100 : 0
                         return (
                           <div key={category}>
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-sm">{getText(category)}</span>
-                              <span className="text-sm font-medium">{amount.toLocaleString()}원 ({percentage.toFixed(0)}%)</span>
+                              <span className="text-sm font-medium">
+                                {amount.toLocaleString()}원 ({percentage.toFixed(0)}%)
+                              </span>
                             </div>
                             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                               <div
@@ -555,13 +638,28 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
             ) : (
               <>
                 <Card className="p-4 dark:bg-card">
-                  <h3 className="font-semibold mb-4">{getText("monthlyTrend")}</h3>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold">{getText("monthlyTrend")}</h3>
+                    <select
+                      value={selectedYear}
+                      onChange={(e) => setSelectedYear(Number.parseInt(e.target.value))}
+                      className="px-3 py-1 border rounded text-sm dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                    >
+                      {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map((year) => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                   <div className="space-y-4">
                     {monthlyData.map(({ month, displayMonth, income, expense, balance }) => (
                       <div key={month} className="space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium">{displayMonth}</span>
-                          <span className={`text-sm font-bold ${balance >= 0 ? 'text-emerald-600 dark:text-emerald-300' : 'text-rose-600 dark:text-rose-300'}`}>
+                          <span
+                            className={`text-sm font-bold ${balance >= 0 ? "text-emerald-600 dark:text-emerald-300" : "text-rose-600 dark:text-rose-300"}`}
+                          >
                             {balance.toLocaleString()}원
                           </span>
                         </div>
@@ -571,20 +669,24 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
                             <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                               <div
                                 className="bg-emerald-500 dark:bg-emerald-600 h-2 rounded-full transition-all"
-                                style={{ width: maxAmount > 0 ? `${(income / maxAmount * 100)}%` : '0%' }}
+                                style={{ width: maxAmount > 0 ? `${(income / maxAmount) * 100}%` : "0%" }}
                               />
                             </div>
-                            <span className="text-xs text-emerald-600 dark:text-emerald-300 w-20 text-right">{income.toLocaleString()}</span>
+                            <span className="text-xs text-emerald-600 dark:text-emerald-300 w-20 text-right">
+                              {income.toLocaleString()}
+                            </span>
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="text-xs text-gray-500 dark:text-gray-400 w-12">{getText("expense")}</span>
                             <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                               <div
                                 className="bg-rose-500 dark:bg-rose-600 h-2 rounded-full transition-all"
-                                style={{ width: maxAmount > 0 ? `${(expense / maxAmount * 100)}%` : '0%' }}
+                                style={{ width: maxAmount > 0 ? `${(expense / maxAmount) * 100}%` : "0%" }}
                               />
                             </div>
-                            <span className="text-xs text-rose-600 dark:text-rose-300 w-20 text-right">{expense.toLocaleString()}</span>
+                            <span className="text-xs text-rose-600 dark:text-rose-300 w-20 text-right">
+                              {expense.toLocaleString()}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -609,9 +711,13 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
                     </div>
                     <div className="flex items-center justify-between pt-2 border-t dark:border-gray-700">
                       <span className="text-sm font-medium">{getText("balance")}</span>
-                      <span className={`text-xl font-bold ${
-                        monthlyData.reduce((sum, m) => sum + m.balance, 0) >= 0 ? 'text-emerald-600 dark:text-emerald-300' : 'text-rose-600 dark:text-rose-300'
-                      }`}>
+                      <span
+                        className={`text-xl font-bold ${
+                          monthlyData.reduce((sum, m) => sum + m.balance, 0) >= 0
+                            ? "text-emerald-600 dark:text-emerald-300"
+                            : "text-rose-600 dark:text-rose-300"
+                        }`}
+                      >
                         {monthlyData.reduce((sum, m) => sum + m.balance, 0).toLocaleString()}원
                       </span>
                     </div>
@@ -636,12 +742,7 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
             <h1 className="text-3xl font-bold text-emerald-800 dark:text-emerald-300">{getText("budget")}</h1>
           </div>
           <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setIsLocked(true)}
-              title={getText("lock_budget")}
-            >
+            <Button variant="outline" size="sm" onClick={() => setIsLocked(true)} title={getText("lock_budget")}>
               <Lock className="h-4 w-4" />
             </Button>
             <Button onClick={() => setView("stats")} variant="outline" size="sm">
@@ -669,7 +770,9 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
                 <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
                 <span className="text-xs text-gray-600 dark:text-gray-400">{getText("income")}</span>
               </div>
-              <p className="text-lg font-bold text-emerald-600 dark:text-emerald-300">+{monthlyIncome.toLocaleString()}</p>
+              <p className="text-lg font-bold text-emerald-600 dark:text-emerald-300">
+                +{monthlyIncome.toLocaleString()}
+              </p>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center gap-1 mb-1">
@@ -683,7 +786,9 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
                 <Wallet className="h-4 w-4 text-blue-600 dark:text-blue-300" />
                 <span className="text-xs text-gray-600 dark:text-gray-400">{getText("balance")}</span>
               </div>
-              <p className={`text-lg font-bold ${monthlyBalance >= 0 ? 'text-emerald-600 dark:text-emerald-300' : 'text-rose-600 dark:text-rose-300'}`}>
+              <p
+                className={`text-lg font-bold ${monthlyBalance >= 0 ? "text-emerald-600 dark:text-emerald-300" : "text-rose-600 dark:text-rose-300"}`}
+              >
                 {monthlyBalance.toLocaleString()}
               </p>
             </div>
@@ -696,36 +801,43 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
               <p className="text-muted-foreground dark:text-gray-400">{getText("noTransactions")}</p>
             </Card>
           ) : (
-            monthlyTransactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(transaction => (
-              <Card key={transaction.id} className="p-4 dark:bg-card">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium">{getText(transaction.category)}</span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">{transaction.date}</span>
+            monthlyTransactions
+              .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+              .map((transaction) => (
+                <Card key={transaction.id} className="p-4 dark:bg-card">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-medium">{getText(transaction.category)}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">{transaction.date}</span>
+                      </div>
+                      {transaction.description && (
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{transaction.description}</p>
+                      )}
                     </div>
-                    {transaction.description && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{transaction.description}</p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className={`text-lg font-bold ${
-                      transaction.type === "income" ? 'text-emerald-600 dark:text-emerald-300' : 'text-rose-600 dark:text-rose-300'
-                    }`}>
-                      {transaction.type === "income" ? '+' : '-'}{transaction.amount.toLocaleString()}원
-                    </span>
-                    <div className="flex gap-1">
-                      <Button onClick={() => handleEdit(transaction)} variant="ghost" size="sm">
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <Button onClick={() => handleDelete(transaction.id)} variant="ghost" size="sm">
-                        <Trash2 className="h-4 w-4 text-rose-600 dark:text-rose-300" />
-                      </Button>
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`text-lg font-bold ${
+                          transaction.type === "income"
+                            ? "text-emerald-600 dark:text-emerald-300"
+                            : "text-rose-600 dark:text-rose-300"
+                        }`}
+                      >
+                        {transaction.type === "income" ? "+" : "-"}
+                        {transaction.amount.toLocaleString()}원
+                      </span>
+                      <div className="flex gap-1">
+                        <Button onClick={() => handleEdit(transaction)} variant="ghost" size="sm">
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                        <Button onClick={() => handleDelete(transaction.id)} variant="ghost" size="sm">
+                          <Trash2 className="h-4 w-4 text-rose-600 dark:text-rose-300" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Card>
-            ))
+                </Card>
+              ))
           )}
         </div>
       </div>
