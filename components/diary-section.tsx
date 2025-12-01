@@ -392,7 +392,7 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-background">
+              <SelectContent className="bg-background border border-border z-50">
                 {moods.map((m) => (
                   <SelectItem key={m} value={m}>
                     {m}
@@ -404,7 +404,7 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-background">
+              <SelectContent className="bg-background border border-border z-50">
                 {weathers.map((w) => (
                   <SelectItem key={w} value={w}>
                     {w}
