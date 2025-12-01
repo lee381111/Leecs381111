@@ -633,7 +633,7 @@ export default function ForestNotePage() {
       <div className="relative z-10 p-6 space-y-6">
         <div className="flex items-center justify-between gap-4">
           <h1 className="text-3xl md:text-4xl font-bold text-emerald-700 whitespace-nowrap flex-1 text-center">
-            🌲 기록의 숲
+            🌲 {getTranslation(language, "title")}
           </h1>
           <div className="flex flex-col gap-2 items-end flex-shrink-0">
             <div className="flex items-center gap-2">
@@ -874,16 +874,7 @@ function LoginForm({
   return (
     <Card className="p-6 w-full max-w-md bg-white/90 backdrop-blur">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-emerald-800">
-          🌲{" "}
-          {language === "ko"
-            ? "기록의 숲"
-            : language === "en"
-              ? "Forest Notes"
-              : language === "zh"
-                ? "记录之森"
-                : "記録の森"}
-        </h2>
+        <h2 className="text-2xl font-bold text-emerald-800">🌲 {getTranslation(language, "title")}</h2>
         <LanguageSelector language={language} onChange={onLanguageChange} />
       </div>
       <h3 className="text-xl font-semibold mb-4">
