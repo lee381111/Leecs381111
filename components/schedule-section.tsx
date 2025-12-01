@@ -529,6 +529,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
           </div>
         )}
         <MediaTools
+          language={language}
           attachments={formData.attachments || []}
           onAttachmentsChange={handleAttachmentsChange}
           onSave={(attachments) => handleSave(attachments)}

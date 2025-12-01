@@ -576,6 +576,7 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
           </div>
 
           <MediaTools
+            language={language}
             attachments={formData.attachments || []}
             onAttachmentsChange={handleAttachmentsChange}
             onSave={(attachments) => handleSaveRecord(attachments)}
@@ -697,6 +698,7 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
           </div>
 
           <MediaTools
+            language={language}
             attachments={medFormData.attachments || []}
             onAttachmentsChange={handleMedAttachmentsChange}
             onSave={handleSaveMedication}

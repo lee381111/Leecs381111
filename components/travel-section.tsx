@@ -461,6 +461,7 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
         />
 
         <MediaTools
+          language={language}
           attachments={formData.attachments || []}
           onAttachmentsChange={handleAttachmentsChange}
           onSave={(attachments) => handleSave(attachments)}

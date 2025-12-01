@@ -261,6 +261,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
             onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
           />
           <MediaTools
+            language={language}
             attachments={attachments}
             onAttachmentsChange={setAttachments}
             onTextFromSpeech={handleTextFromSpeech}
