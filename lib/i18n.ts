@@ -19,6 +19,9 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     back: "뒤로",
     back_to_forest: "숲으로 돌아가기",
 
+    year: "년",
+    month: "월",
+
     steps_unit: "보",
     krw_unit: "원",
 
@@ -406,6 +409,9 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     date: "Date",
     back: "Back",
     back_to_forest: "Back to Forest",
+
+    year: "",
+    month: "",
 
     steps_unit: "steps",
     krw_unit: "$",
@@ -1371,7 +1377,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     weather_status: "天気状況",
     feels_like: "体感温度",
     humidity: "湿度",
-    wind_speed: "風速",
+    wind_speed: "风速",
     air_quality: "大気質",
     pm25: "PM2.5",
     pm10: "PM10",

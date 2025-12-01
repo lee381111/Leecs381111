@@ -314,6 +314,8 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
         ja: "メモ（オプション）",
       },
       krw_unit: { ko: "원", en: "$", zh: "元", ja: "円" },
+      krw: { ko: "원", en: "$", zh: "元", ja: "円" },
+      year: { ko: "년", en: "Year", zh: "年", ja: "年" },
     }
     return translations[key]?.[language] || key
   }
@@ -699,7 +701,7 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
                     >
                       {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map((year) => (
                         <option key={year} value={year}>
-                          {year}
+                          {year} {getText("year")}
                         </option>
                       ))}
                     </select>
@@ -877,8 +879,10 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
                             : "text-rose-600 dark:text-rose-300"
                         }`}
                       >
-                        {transaction.type === "income" ? "+" : "-"}
-                        {transaction.amount.toLocaleString()} {getText("krw_unit")}
+                        <span className="whitespace-nowrap">
+                          {transaction.type === "income" ? "+" : "-"}
+                          {transaction.amount.toLocaleString()} {getText("krw_unit")}
+                        </span>
                       </span>
                       <div className="flex gap-1">
                         <Button onClick={() => handleEdit(transaction)} variant="ghost" size="sm">
