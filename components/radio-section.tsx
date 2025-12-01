@@ -4,9 +4,10 @@ import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { ArrowLeft, Play, Pause, Volume2, Plus, Trash2 } from 'lucide-react'
+import { ArrowLeft, Play, Pause, Volume2, Plus, Trash2 } from "lucide-react"
 import { getTranslation } from "@/lib/i18n"
 import type { Language } from "@/lib/types"
+import { saveData, loadData } from "@/lib/storage"
 
 const defaultRadioStations = [
   { name: "NPR News", url: "https://npr-ice.streamguys1.com/live.mp3" },
@@ -35,6 +36,22 @@ export function RadioSection({ onBack, language }: { onBack: () => void; languag
   const [newStationName, setNewStationName] = useState("")
   const [newStationUrl, setNewStationUrl] = useState("")
   const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  useEffect(() => {
+    const loadRadioStations = async () => {
+      try {
+        const savedStations = await loadData<typeof defaultRadioStations>("radioStations")
+        if (savedStations && savedStations.length > 0) {
+          console.log("[v0] Loaded radio stations:", savedStations.length)
+          setRadioStations(savedStations)
+          setCurrentStation(savedStations[0])
+        }
+      } catch (error) {
+        console.error("[v0] Error loading radio stations:", error)
+      }
+    }
+    loadRadioStations()
+  }, [])
 
   useEffect(() => {
     if (!audioRef.current) {
@@ -89,7 +106,7 @@ export function RadioSection({ onBack, language }: { onBack: () => void; languag
     setIsPlaying(false)
   }
 
-  const addStation = () => {
+  const addStation = async () => {
     if (!newStationName.trim() || !newStationUrl.trim()) {
       const lang = language as Language
       const msg =
@@ -105,7 +122,17 @@ export function RadioSection({ onBack, language }: { onBack: () => void; languag
     }
 
     const newStation = { name: newStationName.trim(), url: newStationUrl.trim() }
-    setRadioStations([...radioStations, newStation])
+    const updatedStations = [...radioStations, newStation]
+    setRadioStations(updatedStations)
+
+    // Save to storage
+    try {
+      await saveData("radioStations", updatedStations)
+      console.log("[v0] Saved radio stations:", updatedStations.length)
+    } catch (error) {
+      console.error("[v0] Error saving radio stations:", error)
+    }
+
     setNewStationName("")
     setNewStationUrl("")
     setIsAdding(false)
@@ -121,7 +148,7 @@ export function RadioSection({ onBack, language }: { onBack: () => void; languag
     alert(msg)
   }
 
-  const deleteStation = (url: string) => {
+  const deleteStation = async (url: string) => {
     if (radioStations.length <= 1) {
       const lang = language as Language
       const msg =
@@ -144,7 +171,16 @@ export function RadioSection({ onBack, language }: { onBack: () => void; languag
       setCurrentStation(radioStations[0])
     }
 
-    setRadioStations(radioStations.filter((station) => station.url !== url))
+    const updatedStations = radioStations.filter((station) => station.url !== url)
+    setRadioStations(updatedStations)
+
+    // Save to storage
+    try {
+      await saveData("radioStations", updatedStations)
+      console.log("[v0] Deleted station, remaining:", updatedStations.length)
+    } catch (error) {
+      console.error("[v0] Error saving radio stations after deletion:", error)
+    }
   }
 
   const lang = language as Language

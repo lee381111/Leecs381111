@@ -1222,3 +1222,31 @@ async function addBudgetTransactionAuto(
     console.warn("[v0] Exception auto-adding budget transaction:", error)
   }
 }
+
+// Generic saveData and loadData functions for miscellaneous data like radio stations
+export async function saveData<T>(key: string, data: T): Promise<void> {
+  try {
+    const jsonData = JSON.stringify(data)
+    localStorage.setItem(`forest_note_${key}`, jsonData)
+    console.log(`[v0] Saved ${key} to localStorage`)
+  } catch (error) {
+    console.error(`[v0] Error saving ${key}:`, error)
+    throw error
+  }
+}
+
+export async function loadData<T>(key: string): Promise<T | null> {
+  try {
+    const jsonData = localStorage.getItem(`forest_note_${key}`)
+    if (!jsonData) {
+      console.log(`[v0] No data found for ${key}`)
+      return null
+    }
+    const data = JSON.parse(jsonData) as T
+    console.log(`[v0] Loaded ${key} from localStorage`)
+    return data
+  } catch (error) {
+    console.error(`[v0] Error loading ${key}:`, error)
+    return null
+  }
+}
