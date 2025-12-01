@@ -117,9 +117,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     no_health_records_message: "건강 기록이 없습니다. 기록을 추가해보세요!",
     medical_and_medication_expenses: "의료비 및 약값",
     total_expense: "총 비용",
-    back: "뒤로",
-    cancel: "취소",
-    title: "건강",
 
     // Schedule Section
     special_days: "특별한 날",
@@ -217,6 +214,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     vehicle_records: "차량 관리",
     vehicle_records_description:
       "차량 정비 이력과 예방 정비 일정을 관리하세요. 정비 비용은 가계부에 자동으로 연동됩니다.",
+    health_records: "건강 기록",
     health_records_description:
       "혈압, 혈당, 체중, 운동량을 기록하고 그래프로 추이를 확인하세요. 복약 일정도 관리할 수 있습니다.",
     budget_description:
@@ -445,9 +443,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     no_health_records_message: "No health records yet. Add one!",
     medical_and_medication_expenses: "Medical & Medicine Expenses",
     total_expense: "Total Expense",
-    back: "Back",
-    cancel: "Cancel",
-    title: "Health",
+    // Removed duplicate "title: Health" that was overriding the app title
 
     // Schedule Section
     special_days: "Special Days",
@@ -776,9 +772,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     no_health_records_message: "暂无健康记录。立即添加！",
     medical_and_medication_expenses: "医疗及药品费用",
     total_expense: "总费用",
-    back: "返回",
-    cancel: "取消",
-    title: "健康",
+    // Removed duplicate "title: 健康" that was overriding the app title
 
     // Schedule Section
     special_days: "特别的日子",
@@ -1100,9 +1094,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     no_health_records_message: "健康記録がありません。記録を追加してください！",
     medical_and_medication_expenses: "医療費および薬代",
     total_expense: "総費用",
-    back: "戻る",
-    cancel: "キャンセル",
-    title: "健康",
+    // Removed duplicate "title: 健康" that was overriding the app title
 
     // Schedule Section
     special_days: "特別な日",
