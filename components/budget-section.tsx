@@ -300,6 +300,18 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
       password: { ko: "비밀번호", en: "Password", zh: "密码", ja: "パスワード" },
       unlock: { ko: "잠금 해제", en: "Unlock", zh: "解锁", ja: "ロック解除" },
       lock_budget: { ko: "가계부 잠그기", en: "Lock Budget", zh: "锁定家庭账本", ja: "家計簿をロック" },
+      select_category: {
+        ko: "선택하세요",
+        en: "Select category",
+        zh: "请选择",
+        ja: "選択してください",
+      },
+      memo_optional: {
+        ko: "메모 (선택사항)",
+        en: "Memo (optional)",
+        zh: "备注（可选）",
+        ja: "メモ（オプション）",
+      },
     }
     return translations[key]?.[language] || key
   }
@@ -483,9 +495,9 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full p-2 border rounded"
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               >
-                <option value="">선택하세요</option>
+                <option value="">{getText("select_category")}</option>
                 {categories.map((cat) => (
                   <option key={cat} value={cat}>
                     {getText(cat)}
@@ -518,7 +530,7 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
               <Input
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="메모 (선택사항)"
+                placeholder={getText("memo_optional")}
               />
             </div>
 
