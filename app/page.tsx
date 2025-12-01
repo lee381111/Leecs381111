@@ -631,11 +631,11 @@ export default function ForestNotePage() {
       </div>
 
       <div className="relative z-10 p-6 space-y-6">
-        <div className="flex items-center justify-between gap-4">
-          <h1 className="text-xl md:text-2xl font-bold text-emerald-700 flex-shrink min-w-0">
+        <div className="space-y-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-emerald-700 text-center">
             🌲 {getTranslation(language, "title")}
           </h1>
-          <div className="flex items-center gap-1.5 flex-shrink-0 flex-nowrap">
+          <div className="flex items-center justify-center gap-2 flex-wrap">
             <NotificationCenter language={language} />
             <LanguageSelector language={language} onChange={setLanguage} />
             <GlobalSearch
@@ -648,7 +648,7 @@ export default function ForestNotePage() {
               variant="outline"
               size="sm"
               onClick={logout}
-              className="text-black flex items-center gap-1 bg-transparent whitespace-nowrap"
+              className="text-black flex items-center gap-1 bg-transparent"
             >
               <LogOut className="h-4 w-4" />
               <span className="text-sm hidden sm:inline">
