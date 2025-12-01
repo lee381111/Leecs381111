@@ -7,7 +7,6 @@ import { Card } from "@/components/ui/card"
 import { Camera, Mic, Video, ImageIcon, Trash2, Save, PenTool, X, MessageSquare, FileImage } from "lucide-react"
 import type { Attachment } from "@/lib/types"
 import { getTranslation } from "@/lib/i18n"
-import { useLanguage } from "@/lib/language-context"
 
 // Using browser-based OCR with Tesseract.js workaround
 declare global {
@@ -22,14 +21,16 @@ interface MediaToolsProps {
   onSave?: (attachments: Attachment[]) => void
   saving?: boolean
   onTextFromSpeech?: (text: string) => void
+  language?: string // Added language prop
 }
 
-export default function MediaTools({
+export function MediaTools({
   attachments = [],
   onAttachmentsChange,
   onSave,
   saving,
   onTextFromSpeech,
+  language = "ko", // Default to Korean
 }: MediaToolsProps) {
   const [isRecordingAudio, setIsRecordingAudio] = useState(false)
   const [isRecordingVideo, setIsRecordingVideo] = useState(false)
@@ -48,7 +49,6 @@ export default function MediaTools({
   const ocrVideoRef = useRef<HTMLVideoElement | null>(null)
   const [isOCRCameraOpen, setIsOCRCameraOpen] = useState(false)
 
-  const { language } = useLanguage()
   const t = (key: string) => getTranslation(language, key)
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -373,7 +373,7 @@ export default function MediaTools({
 
     try {
       const recognition = new SpeechRecognition()
-      recognition.lang = "ko-KR"
+      recognition.lang = language
       recognition.continuous = false
       recognition.interimResults = true
       recognition.maxAlternatives = 1
