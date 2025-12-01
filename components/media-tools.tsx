@@ -751,7 +751,7 @@ export function MediaTools({
               >
                 {t("clear")}
               </Button>
-              <Button onClick={saveDrawing} className="flex-1">
+              <Button onClick={saveDrawing} className="flex-1 bg-blue-500 text-white hover:bg-blue-600">
                 <Save className="h-4 w-4 mr-2" />
                 {t("save")}
               </Button>
