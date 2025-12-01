@@ -723,7 +723,7 @@ export function MediaTools({
       )}
 
       {isDrawing && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black z-50 flex items-center justify-center p-4">
           <Card className="w-full max-w-4xl p-4 space-y-4 bg-background">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold">{t("handwriting")}</h3>
