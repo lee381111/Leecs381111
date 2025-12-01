@@ -337,15 +337,17 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
         </Button>
 
         <Card className="p-4 bg-amber-50">
-          <h2 className="text-xl font-bold mb-4">✨ 특별한 날 일괄 등록</h2>
-          <p className="text-sm text-muted-foreground mb-4">가족 생일, 기념일 등을 한번에 등록하세요</p>
+          <h2 className="text-xl font-bold mb-4">{t("special_days_batch_title")}</h2>
+          <p className="text-sm text-muted-foreground mb-4">{t("special_days_batch_description")}</p>
         </Card>
 
         <div className="space-y-4">
           {batchEvents.map((event, index) => (
             <Card key={index} className="p-4 space-y-3">
               <div className="flex justify-between items-center">
-                <h3 className="font-semibold">일정 {index + 1}</h3>
+                <h3 className="font-semibold">
+                  {t("schedule_number")} {index + 1}
+                </h3>
                 {batchEvents.length > 1 && (
                   <Button
                     variant="ghost"
@@ -441,7 +443,9 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
 
         <Button onClick={handleBatchSave} disabled={saving} className="w-full bg-emerald-600 hover:bg-emerald-700">
           {saving ? <Spinner className="h-4 w-4 mr-2" /> : null}
-          {saving ? "저장 중..." : `${batchEvents.filter((e) => e.name.trim() && e.date).length}개 일정 저장`}
+          {saving
+            ? t("saving")
+            : `${batchEvents.filter((e) => e.name.trim() && e.date).length}${t("save_schedules_count")}`}
         </Button>
       </div>
     )
@@ -489,7 +493,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
         />
         <Card className="p-4 bg-amber-50">
-          <h3 className="font-semibold mb-3">알람 설정</h3>
+          <h3 className="font-semibold mb-3">{t("alarm_settings")}</h3>
           <div className="flex items-center gap-3 mb-3">
             <input
               type="checkbox"
@@ -497,23 +501,23 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
               onChange={(e) => setFormData({ ...formData, alarmEnabled: e.target.checked })}
               className="w-5 h-5"
             />
-            <label className="text-sm">일정 시작 전 알람 받기</label>
+            <label className="text-sm">{t("enable_alarm_before_event")}</label>
           </div>
           {formData.alarmEnabled && (
             <div className="space-y-2">
-              <label className="block text-sm font-medium">알람 시간</label>
+              <label className="block text-sm font-medium">{t("alarm_time")}</label>
               <select
                 value={formData.alarmMinutesBefore}
                 onChange={(e) => setFormData({ ...formData, alarmMinutesBefore: Number(e.target.value) })}
                 className="w-full p-2 border rounded"
               >
-                <option value={5}>5분 전</option>
-                <option value={10}>10분 전</option>
-                <option value={15}>15분 전</option>
-                <option value={30}>30분 전</option>
-                <option value={60}>1시간 전</option>
-                <option value={120}>2시간 전</option>
-                <option value={1440}>하루 전</option>
+                <option value={5}>{t("5_min_before")}</option>
+                <option value={10}>{t("10_min_before")}</option>
+                <option value={15}>{t("15_min_before")}</option>
+                <option value={30}>{t("30_min_before")}</option>
+                <option value={60}>{t("1_hour_before")}</option>
+                <option value={120}>{t("2_hours_before")}</option>
+                <option value={1440}>{t("1_day_before")}</option>
               </select>
             </div>
           )}
@@ -577,7 +581,10 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                         {schedule.date} {schedule.time} • {schedule.category}
                       </p>
                       {schedule.alarmEnabled && (
-                        <p className="text-xs text-amber-600 mt-1">🔔 알람: {schedule.alarmMinutesBefore}분 전</p>
+                        <p className="text-xs text-amber-600 mt-1">
+                          🔔 {t("alarm")} {schedule.alarmMinutesBefore}
+                          {t("minutes_before")}
+                        </p>
                       )}
                       <p className="mt-2">{schedule.description}</p>
                     </div>
@@ -590,7 +597,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                           exportToCalendar(schedule)
                         }}
                         className="p-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md transition-colors flex items-center justify-center"
-                        title="휴대폰 캘린더에 추가"
+                        title={t("add_to_phone_calendar")}
                       >
                         <Download className="h-4 w-4" />
                       </button>
@@ -602,7 +609,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                           handleEdit(schedule)
                         }}
                         className="p-2 hover:bg-gray-100 rounded-md transition-colors flex items-center justify-center"
-                        title="수정"
+                        title={t("edit")}
                       >
                         <Edit className="h-4 w-4" />
                       </button>
@@ -614,7 +621,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                           handleDelete(schedule.id)
                         }}
                         className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors flex items-center justify-center"
-                        title="삭제"
+                        title={t("delete")}
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -622,7 +629,9 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                   </div>
                   {schedule.attachments && schedule.attachments.length > 0 && (
                     <div className="mt-4 space-y-2">
-                      <p className="text-sm font-medium">첨부파일 ({schedule.attachments.length}개)</p>
+                      <p className="text-sm font-medium">
+                        {t("attachments_label")} ({schedule.attachments.length}개)
+                      </p>
                       <div className="grid grid-cols-3 gap-2">
                         {schedule.attachments.map((file: any, idx: number) => {
                           const isImage =
@@ -715,7 +724,10 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                         {schedule.date} {schedule.time} • {schedule.category}
                       </p>
                       {schedule.alarmEnabled && (
-                        <p className="text-xs text-amber-600 mt-1">🔔 알람: {schedule.alarmMinutesBefore}분 전</p>
+                        <p className="text-xs text-amber-600 mt-1">
+                          🔔 {t("alarm")} {schedule.alarmMinutesBefore}
+                          {t("minutes_before")}
+                        </p>
                       )}
                       <p className="mt-2">{schedule.description}</p>
                     </div>
@@ -728,7 +740,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                           exportToCalendar(schedule)
                         }}
                         className="p-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md transition-colors flex items-center justify-center"
-                        title="휴대폰 캘린더에 추가"
+                        title={t("add_to_phone_calendar")}
                       >
                         <Download className="h-4 w-4" />
                       </button>
@@ -740,7 +752,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                           handleEdit(schedule)
                         }}
                         className="p-2 hover:bg-gray-100 rounded-md transition-colors flex items-center justify-center"
-                        title="수정"
+                        title={t("edit")}
                       >
                         <Edit className="h-4 w-4" />
                       </button>
@@ -752,7 +764,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                           handleDelete(schedule.id)
                         }}
                         className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors flex items-center justify-center"
-                        title="삭제"
+                        title={t("delete")}
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -760,7 +772,9 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                   </div>
                   {schedule.attachments && schedule.attachments.length > 0 && (
                     <div className="mt-4 space-y-2">
-                      <p className="text-sm font-medium">첨부파일 ({schedule.attachments.length}개)</p>
+                      <p className="text-sm font-medium">
+                        {t("attachments_label")} ({schedule.attachments.length}개)
+                      </p>
                       <div className="grid grid-cols-3 gap-2">
                         {schedule.attachments.map((file: any, idx: number) => {
                           const isImage =
