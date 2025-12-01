@@ -872,8 +872,8 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
                       )}
                     </div>
                     <div className="flex items-center gap-3">
-                      <span
-                        className={`text-lg font-bold ${
+                      <div
+                        className={`text-lg font-bold flex items-baseline gap-1 ${
                           transaction.type === "income"
                             ? "text-emerald-600 dark:text-emerald-300"
                             : "text-rose-600 dark:text-rose-300"
@@ -881,9 +881,10 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
                       >
                         <span className="whitespace-nowrap">
                           {transaction.type === "income" ? "+" : "-"}
-                          {transaction.amount.toLocaleString()} {getText("krw_unit")}
+                          {transaction.amount.toLocaleString()}
                         </span>
-                      </span>
+                        <span className="whitespace-nowrap">{getText("krw_unit")}</span>
+                      </div>
                       <div className="flex gap-1">
                         <Button onClick={() => handleEdit(transaction)} variant="ghost" size="sm">
                           <Edit2 className="h-4 w-4" />
