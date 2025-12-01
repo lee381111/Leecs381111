@@ -20,21 +20,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const supabase = createClient()
 
   useEffect(() => {
-    console.log("[v0] Auth state:", { loading })
-
     const getInitialSession = async () => {
       try {
         const {
           data: { session },
         } = await supabase.auth.getSession()
         setUser(session?.user ?? null)
-
-        // Refresh session if it exists
-        if (session) {
-          await supabase.auth.refreshSession()
-        }
       } catch (error) {
-        console.error("[v0] Failed to get initial session:", error)
+        console.error("Failed to get initial session:", error)
+        // Don't throw - just set user to null and continue
+        setUser(null)
       } finally {
         setLoading(false)
       }
@@ -45,7 +40,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("[v0] Auth state:", { user: session?.user?.email, loading: false })
       setUser(session?.user ?? null)
     })
 
@@ -53,13 +47,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [supabase])
 
   const login = async (email: string, password: string): Promise<void> => {
-    console.log("[v0] Attempting login...")
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
     if (error) throw error
-    console.log("[v0] Login successful")
   }
 
   const register = async (email: string, password: string): Promise<void> => {
