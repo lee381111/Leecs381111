@@ -33,6 +33,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     speech_to_text: "음성→텍스트",
     speech_recognition: "음성 인식 중",
     stop_recognition: "음성 인식 중지",
+    ocr_capture_and_process: "촬영 및 텍스트 추출",
+    clear: "지우기",
     stop_recording: "녹음 중지",
     audio_recording: "오디오 녹음",
     video_recording: "동영상 녹화",
@@ -426,6 +428,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     speech_to_text: "Speech→Text",
     speech_recognition: "Recognizing Speech",
     stop_recognition: "Stop Recognition",
+    ocr_capture_and_process: "Capture & Extract Text",
+    clear: "Clear",
     stop_recording: "Stop Recording",
     audio_recording: "Audio Recording",
     video_recording: "Video Recording",
@@ -811,16 +815,11 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
 
     speech_recognition: "语音识别中",
     stop_recognition: "停止识别",
-
-    file_upload: "上传文件",
-    take_photo: "拍照",
-    ocr_camera: "拍照→文字",
-    ocr_upload: "图片→文字",
-    handwriting: "手写",
-    speech_to_text: "语音→文字",
+    ocr_capture_and_process: "拍摄并提取文本",
+    clear: "清除",
     stop_recording: "停止录音",
-    audio_recording: "音频录音",
-    video_recording: "录制视频",
+    audio_recording: "音频录制",
+    video_recording: "视频录制",
 
     // Sections
     notes: "笔记",
@@ -1068,7 +1067,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     budget_description: "记录收入和支出，查看月度统计。按类别分析，了解消费模式。",
     business_cards_description: "拍摄名片照片，自动识别并保存信息。轻松管理联系人。",
     weather_description: "查看当前位置的实时天气和空气质量信息。",
-    radio_description: "在写记录时收听世界各地的广播。",
+    radio_description: "在写记录时收听广播。",
     data_backup: "数据备份",
     data_backup_description: "可以将所有记录备份和恢复为JSON文件。建议定期备份。",
 
@@ -1196,16 +1195,11 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
 
     speech_recognition: "音声認識中",
     stop_recognition: "認識停止",
-
-    file_upload: "ファイルアップロード",
-    take_photo: "写真撮影",
-    ocr_camera: "撮影→テキスト",
-    ocr_upload: "画像→テキスト",
-    handwriting: "手書き",
-    speech_to_text: "音声→テキスト",
+    ocr_capture_and_process: "撮影とテキスト抽出",
+    clear: "クリア",
     stop_recording: "録音停止",
-    audio_recording: "音声録音",
-    video_recording: "動画撮影",
+    audio_recording: "オーディオ録音",
+    video_recording: "ビデオ録画",
 
     // Sections
     notes: "ノート",
@@ -1387,7 +1381,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     weather_status: "天気状況",
     feels_like: "体感温度",
     humidity: "湿度",
-    wind_speed: "风速",
+    wind_speed: "風速",
     air_quality: "大気質",
     pm25: "PM2.5",
     pm10: "PM10",
