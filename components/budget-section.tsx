@@ -4,7 +4,19 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { ArrowLeft, Plus, TrendingUp, TrendingDown, Wallet, Trash2, Edit2, PieChart, Lock, Unlock } from "lucide-react"
+import {
+  ArrowLeft,
+  Plus,
+  TrendingUp,
+  TrendingDown,
+  Wallet,
+  Trash2,
+  Edit2,
+  PieChart,
+  Lock,
+  Unlock,
+  Calendar,
+} from "lucide-react"
 import type { Language, BudgetTransaction } from "@/lib/types"
 import { saveBudgetTransactions, loadBudgetTransactions } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
@@ -826,12 +838,21 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
                 {getText("year")} {selectedMonth.split("-")[1]}
                 {getText("month")}
               </span>
-              <input
-                type="month"
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(e.target.value)}
-                className="text-sm border rounded px-2 py-1 dark:bg-gray-700 dark:text-white"
-              />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  const input = document.createElement("input")
+                  input.type = "month"
+                  input.value = selectedMonth
+                  input.onchange = (e) => setSelectedMonth((e.target as HTMLInputElement).value)
+                  input.click()
+                  input.showPicker?.()
+                }}
+                className="h-8 px-2"
+              >
+                <Calendar className="h-4 w-4" />
+              </Button>
             </div>
           </div>
           <div className="grid grid-cols-3 gap-4 mt-4">
