@@ -24,6 +24,7 @@ import {
   X,
   User,
   Wallet,
+  Settings,
 } from "lucide-react"
 import { getTranslation } from "@/lib/i18n"
 import type { Language } from "@/lib/types"
@@ -82,14 +83,14 @@ const StatisticsSection = dynamic(
 const BudgetSection = dynamic(() => import("@/components/budget-section").then((m) => ({ default: m.BudgetSection })), {
   loading: () => <LoadingSection />,
 })
-const SettingsSection = dynamic(
-  () => import("@/components/settings-section").then((m) => ({ default: m.SettingsSection })),
+const BusinessCardSection = dynamic(
+  () => import("@/components/business-card-section").then((m) => ({ default: m.BusinessCardSection })),
   {
     loading: () => <LoadingSection />,
   },
 )
-const BusinessCardSection = dynamic(
-  () => import("@/components/business-card-section").then((m) => ({ default: m.BusinessCardSection })),
+const SettingsSection = dynamic(
+  () => import("@/components/settings-section").then((m) => ({ default: m.SettingsSection })),
   {
     loading: () => <LoadingSection />,
   },
@@ -565,6 +566,7 @@ export default function ForestNotePage() {
     { id: "weather", label: getTranslation(language, "weather"), icon: Cloud, color: "cyan" },
     { id: "radio", label: getTranslation(language, "radio"), icon: Radio, color: "purple" },
     { id: "statistics", label: getTranslation(language, "statistics"), icon: BarChart3, color: "amber" },
+    { id: "settings", label: getTranslation(language, "settings"), icon: Settings, color: "gray" },
   ]
 
   const formatBytes = (bytes: number) => {
