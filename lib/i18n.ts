@@ -817,6 +817,10 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     stop_recognition: "停止识别",
     ocr_capture_and_process: "拍摄并提取文本",
     clear: "清除",
+    take_photo: "拍照", // Added this line
+    ocr_camera: "拍摄→文字", // Modified this line
+    ocr_take_photo: "拍照提取文字", // Added this line
+    camera_permission_required: "需要相机权限", // Added this line
     stop_recording: "停止录音",
     audio_recording: "音频录制",
     video_recording: "视频录制",
@@ -1197,6 +1201,10 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     stop_recognition: "認識停止",
     ocr_capture_and_process: "撮影とテキスト抽出",
     clear: "クリア",
+    take_photo: "写真を撮る", // Added this line
+    ocr_camera: "撮影→テキスト", // Modified this line
+    ocr_take_photo: "撮影してテキスト抽出", // Added this line
+    camera_permission_required: "カメラの許可が必要です", // Added this line
     stop_recording: "録音停止",
     audio_recording: "オーディオ録音",
     video_recording: "ビデオ録画",

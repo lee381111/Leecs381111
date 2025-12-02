@@ -40,7 +40,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
     title: "",
     date: "",
     time: "",
-    category: "회의",
+    category: "meeting",
     description: "",
     attachments: [],
     alarmEnabled: false,
@@ -53,7 +53,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
       category: string
       alarmMinutesBefore: number
     }>
-  >([{ name: "", date: "", category: "생일", alarmMinutesBefore: 1440 }])
+  >([{ name: "", date: "", category: "birthday", alarmMinutesBefore: 1440 }])
 
   const t = (key: string) => getTranslation(language as any, key)
 
@@ -175,7 +175,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
         title: "",
         date: "",
         time: "",
-        category: t("meeting"),
+        category: "meeting",
         description: "",
         attachments: [],
         alarmEnabled: false,
@@ -245,7 +245,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
       window.dispatchEvent(new Event("storage"))
       alert(`${validEvents.length}개의 일정이 등록되었습니다!`)
 
-      setBatchEvents([{ name: "", date: "", category: "생일", alarmMinutesBefore: 1440 }])
+      setBatchEvents([{ name: "", date: "", category: "birthday", alarmMinutesBefore: 1440 }])
       setIsBatchAdding(false)
     } catch (error) {
       console.error("[v0] Error saving batch schedules:", error)
@@ -330,7 +330,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
           variant="ghost"
           onClick={() => {
             setIsBatchAdding(false)
-            setBatchEvents([{ name: "", date: "", category: "생일", alarmMinutesBefore: 1440 }])
+            setBatchEvents([{ name: "", date: "", category: "birthday", alarmMinutesBefore: 1440 }])
           }}
         >
           <ArrowLeft className="mr-2 h-4 w-4" /> {t("cancel")}
@@ -398,12 +398,12 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                     }}
                     className="w-full p-2 border rounded bg-white/50 dark:bg-slate-800/50"
                   >
-                    <option value={t("meeting")}>{t("meeting")}</option>
-                    <option value={t("birthday")}>{t("birthday")}</option>
-                    <option value={t("anniversary")}>{t("anniversary")}</option>
-                    <option value={t("holiday")}>{t("holiday")}</option>
-                    <option value={t("vacation")}>{t("vacation")}</option>
-                    <option value={t("other")}>{t("other")}</option>
+                    <option value="meeting">{t("meeting")}</option>
+                    <option value="birthday">{t("birthday")}</option>
+                    <option value="anniversary">{t("anniversary")}</option>
+                    <option value="holiday">{t("holiday")}</option>
+                    <option value="vacation">{t("vacation")}</option>
+                    <option value="other">{t("other")}</option>
                   </select>
                 </div>
               </div>
@@ -437,7 +437,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
         <Button
           variant="outline"
           onClick={() => {
-            setBatchEvents([...batchEvents, { name: "", date: "", category: "생일", alarmMinutesBefore: 1440 }])
+            setBatchEvents([...batchEvents, { name: "", date: "", category: "birthday", alarmMinutesBefore: 1440 }])
           }}
           className="w-full"
         >
@@ -485,11 +485,23 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
             className="p-2 border rounded"
           />
         </div>
-        <Input
-          placeholder={t("category_label")}
-          value={formData.category}
-          onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-        />
+        <div className="grid grid-cols-1 gap-3">
+          <div>
+            <label className="block text-sm font-medium mb-2">{t("category_label")}</label>
+            <select
+              value={formData.category}
+              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              className="w-full p-2 border rounded bg-white/50 dark:bg-slate-800/50"
+            >
+              <option value="meeting">{t("meeting")}</option>
+              <option value="birthday">{t("birthday")}</option>
+              <option value="anniversary">{t("anniversary")}</option>
+              <option value="holiday">{t("holiday")}</option>
+              <option value="vacation">{t("vacation")}</option>
+              <option value="other">{t("other")}</option>
+            </select>
+          </div>
+        </div>
         <Textarea
           placeholder={t("description_label")}
           value={formData.description}
@@ -583,7 +595,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                     <div className="flex-1">
                       <h3 className="font-semibold">{schedule.title}</h3>
                       <p className="text-sm text-muted-foreground">
-                        {schedule.date} {schedule.time} • {schedule.category}
+                        {schedule.date} {schedule.time} • {t(schedule.category) || schedule.category}
                       </p>
                       {schedule.alarmEnabled && (
                         <p className="text-xs text-amber-600 mt-1">
@@ -726,7 +738,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                     <div className="flex-1">
                       <h3 className="font-semibold">{schedule.title}</h3>
                       <p className="text-sm text-muted-foreground">
-                        {schedule.date} {schedule.time} • {schedule.category}
+                        {schedule.date} {schedule.time} • {t(schedule.category) || schedule.category}
                       </p>
                       {schedule.alarmEnabled && (
                         <p className="text-xs text-amber-600 mt-1">
