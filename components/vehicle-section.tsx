@@ -494,23 +494,33 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
         <div className="flex gap-2 mb-6">
           <Button
             onClick={() => {
+              if (!selectedVehicle) {
+                alert(t("please_select_vehicle"))
+                return
+              }
               console.log("[v0] 🔘 Toggle maintenance form. Current state:", showMaintenanceForm)
               setShowMaintenanceForm(!showMaintenanceForm)
               setShowScheduleForm(false)
             }}
             className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+            disabled={!selectedVehicle}
           >
             <Plus className="mr-2 h-4 w-4" />
             {showMaintenanceForm ? t("cancel") : t("add_maintenance")}
           </Button>
           <Button
             onClick={() => {
+              if (!selectedVehicle) {
+                alert(t("please_select_vehicle"))
+                return
+              }
               console.log("[v0] 🔘 Toggle schedule form. Current state:", showScheduleForm)
               setShowScheduleForm(!showScheduleForm)
               setShowMaintenanceForm(false)
             }}
             variant="outline"
             className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+            disabled={!selectedVehicle}
           >
             <Calendar className="mr-2 h-4 w-4" />
             {showScheduleForm ? t("cancel") : t("preventive_schedule")}
