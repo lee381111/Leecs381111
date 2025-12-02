@@ -268,7 +268,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     connection_status_title: "연결 상태",
     connection_label: "Supabase 연결",
     app_developer: "앱 개발자",
-    developer_info: "경기도 김포시 장기동 이찬세",
+    developer_info: "경기도김포시 장기동 이찬세",
     app_introduction: "앱 소개",
     app_introduction_description: "기록의 숲은 일상의 모든 기록을 한 곳에서 관리할 수 있는 올인원 기록 관리 앱입니다.",
     notes_description: "텍스트, 사진, 동영상, 음성을 자유롭게 기록하세요. 태그로 분류하여 쉽게 검색할 수 있습니다.",
@@ -813,17 +813,33 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     steps_unit: "步",
     krw_unit: "元",
 
+    file_upload: "文件上传",
+    take_photo: "拍照",
+    ocr_camera: "拍摄→文字",
+    ocr_upload: "图片→文字",
+    handwriting: "手写",
+    speech_to_text: "语音→文字",
     speech_recognition: "语音识别中",
     stop_recognition: "停止识别",
     ocr_capture_and_process: "拍摄并提取文本",
+    ocr_take_photo: "拍照提取文字",
+    ocr_processing: "正在处理",
+    ocr_completed: "识别完成",
+    ocr_no_text_found: "未找到文字",
+    ocr_error_occurred: "识别出错",
     clear: "清除",
-    take_photo: "拍照", // Added this line
-    ocr_camera: "拍摄→文字", // Modified this line
-    ocr_take_photo: "拍照提取文字", // Added this line
-    camera_permission_required: "需要相机权限", // Added this line
     stop_recording: "停止录音",
     audio_recording: "音频录制",
     video_recording: "视频录制",
+    attachments: "附件",
+    video_cannot_play: "无法播放视频",
+    audio_cannot_play: "无法播放音频",
+    audio_permission_required: "需要麦克风权限",
+    video_permission_required: "需要摄像头权限",
+    camera_permission_required: "需要相机权限",
+    speech_recognition_not_supported: "浏览器不支持语音识别",
+    mic_permission_required: "需要麦克风权限",
+    speech_recognition_failed: "语音识别失败",
 
     // Sections
     notes: "笔记",
@@ -1197,17 +1213,33 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     steps_unit: "歩",
     krw_unit: "円",
 
+    file_upload: "ファイルアップロード",
+    take_photo: "写真を撮る",
+    ocr_camera: "撮影→テキスト",
+    ocr_upload: "画像→テキスト",
+    handwriting: "手書き",
+    speech_to_text: "音声→テキスト",
     speech_recognition: "音声認識中",
     stop_recognition: "認識停止",
     ocr_capture_and_process: "撮影とテキスト抽出",
+    ocr_take_photo: "撮影してテキスト抽出",
+    ocr_processing: "処理中",
+    ocr_completed: "認識完了",
+    ocr_no_text_found: "テキストが見つかりません",
+    ocr_error_occurred: "認識エラー",
     clear: "クリア",
-    take_photo: "写真を撮る", // Added this line
-    ocr_camera: "撮影→テキスト", // Modified this line
-    ocr_take_photo: "撮影してテキスト抽出", // Added this line
-    camera_permission_required: "カメラの許可が必要です", // Added this line
     stop_recording: "録音停止",
     audio_recording: "オーディオ録音",
     video_recording: "ビデオ録画",
+    attachments: "添付ファイル",
+    video_cannot_play: "動画を再生できません",
+    audio_cannot_play: "音声を再生できません",
+    audio_permission_required: "マイクの許可が必要です",
+    video_permission_required: "カメラの許可が必要です",
+    camera_permission_required: "カメラの許可が必要です",
+    speech_recognition_not_supported: "ブラウザが音声認識をサポートしていません",
+    mic_permission_required: "マイクの許可が必要です",
+    speech_recognition_failed: "音声認識に失敗しました",
 
     // Sections
     notes: "ノート",
