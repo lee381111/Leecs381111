@@ -641,13 +641,19 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm text-gray-600 dark:text-gray-400">{getText("income")}</span>
                     <span className="text-lg font-bold text-emerald-600 dark:text-emerald-300">
-                      +{monthlyIncome.toLocaleString()} {getText("krw_unit")}
+                      <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                        <span>+{monthlyIncome.toLocaleString()}</span>
+                        <span>{getText("krw_unit")}</span>
+                      </span>
                     </span>
                   </div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm text-gray-600 dark:text-gray-400">{getText("expense")}</span>
                     <span className="text-lg font-bold text-rose-600 dark:text-rose-300">
-                      -{monthlyExpense.toLocaleString()} {getText("krw_unit")}
+                      <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                        <span>-{monthlyExpense.toLocaleString()}</span>
+                        <span>{getText("krw_unit")}</span>
+                      </span>
                     </span>
                   </div>
                   <div className="flex items-center justify-between pt-2 border-t dark:border-gray-700">
@@ -655,7 +661,10 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
                     <span
                       className={`text-xl font-bold ${monthlyBalance >= 0 ? "text-emerald-600 dark:text-emerald-300" : "text-rose-600 dark:text-rose-300"}`}
                     >
-                      {monthlyBalance.toLocaleString()} {getText("krw_unit")}
+                      <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                        <span>{monthlyBalance.toLocaleString()}</span>
+                        <span>{getText("krw_unit")}</span>
+                      </span>
                     </span>
                   </div>
                 </Card>
@@ -825,7 +834,10 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
                 <span className="text-xs text-gray-600 dark:text-gray-400">{getText("income")}</span>
               </div>
               <p className="text-lg font-bold text-emerald-600 dark:text-emerald-300">
-                +{monthlyIncome.toLocaleString()} {getText("krw_unit")}
+                <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                  <span>+{monthlyIncome.toLocaleString()}</span>
+                  <span>{getText("krw_unit")}</span>
+                </span>
               </p>
             </div>
             <div className="text-center">
@@ -834,7 +846,10 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
                 <span className="text-xs text-gray-600 dark:text-gray-400">{getText("expense")}</span>
               </div>
               <p className="text-lg font-bold text-rose-600 dark:text-rose-300">
-                -{monthlyExpense.toLocaleString()} {getText("krw_unit")}
+                <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                  <span>-{monthlyExpense.toLocaleString()}</span>
+                  <span>{getText("krw_unit")}</span>
+                </span>
               </p>
             </div>
             <div className="text-center">
@@ -845,7 +860,10 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
               <p
                 className={`text-lg font-bold ${monthlyBalance >= 0 ? "text-emerald-600 dark:text-emerald-300" : "text-rose-600 dark:text-rose-300"}`}
               >
-                {monthlyBalance.toLocaleString()} {getText("krw_unit")}
+                <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                  <span>{monthlyBalance.toLocaleString()}</span>
+                  <span>{getText("krw_unit")}</span>
+                </span>
               </p>
             </div>
           </div>
