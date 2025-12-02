@@ -354,6 +354,8 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
     return t(labelKeys[type] || "other")
   }
 
+  const selectedVehicle = vehicles.find((v) => v.id === selectedVehicleId)
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -417,7 +419,6 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
   }
 
   if (screen === "vehicle-detail" && selectedVehicleId) {
-    const selectedVehicle = vehicles.find((v) => v.id === selectedVehicleId)
     const vehicleRecords = maintenanceRecords.filter((r) => r.vehicleId === selectedVehicleId)
     const vehicleSchedules = preventiveSchedules.filter((s) => s.vehicleId === selectedVehicleId)
 
@@ -439,59 +440,58 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
           <ArrowLeft className="mr-2 h-4 w-4" /> {t("vehicle_list")}
         </Button>
 
-        <Card className="p-4 bg-emerald-50">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <h2 className="text-xl font-bold flex items-center gap-2">
-                <Car className="h-5 w-5" />
-                {selectedVehicle.name}
-              </h2>
-              <p className="text-sm text-muted-foreground mt-1">{selectedVehicle.licensePlate}</p>
-              <div className="mt-2 space-y-1 text-sm">
-                {selectedVehicle.model && (
-                  <p>
-                    {t("vehicle_type")}: {selectedVehicle.model}
-                  </p>
-                )}
-                {selectedVehicle.year && (
-                  <p>
-                    {t("vehicle_model")}: {selectedVehicle.year}
-                  </p>
-                )}
-                {selectedVehicle.purchaseYear && (
-                  <p>
-                    {t("purchase_year")}: {selectedVehicle.purchaseYear}
-                  </p>
-                )}
-                {selectedVehicle.insurance && (
-                  <p>
-                    {t("insurance")}: {selectedVehicle.insurance}
-                  </p>
-                )}
+        {selectedVehicle && (
+          <Card className="mb-4">
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                <h3 className="font-semibold text-lg">{selectedVehicle.name}</h3>
+                <p className="text-sm text-muted-foreground">{selectedVehicle.licensePlate}</p>
+                <div className="mt-2 space-y-1 text-sm">
+                  {selectedVehicle.model && (
+                    <p>
+                      {t("vehicle_type")}: {selectedVehicle.model}
+                    </p>
+                  )}
+                  {selectedVehicle.year && (
+                    <p>
+                      {t("vehicle_model")}: {selectedVehicle.year}
+                    </p>
+                  )}
+                  {selectedVehicle.purchaseYear && (
+                    <p>
+                      {t("purchase_year")}: {selectedVehicle.purchaseYear}
+                    </p>
+                  )}
+                  {selectedVehicle.insurance && (
+                    <p>
+                      {t("insurance")}: {selectedVehicle.insurance}
+                    </p>
+                  )}
+                </div>
               </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  setVehicleForm({
+                    name: selectedVehicle.name,
+                    licensePlate: selectedVehicle.licensePlate,
+                    model: selectedVehicle.model,
+                    year: selectedVehicle.year,
+                    purchaseYear: selectedVehicle.purchaseYear || "",
+                    insurance: selectedVehicle.insurance || "",
+                  })
+                  setEditingVehicleId(selectedVehicle.id)
+                  setScreen("add-vehicle")
+                }}
+              >
+                <Pencil className="w-4 h-4" />
+              </Button>
             </div>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => {
-                setVehicleForm({
-                  name: selectedVehicle.name,
-                  licensePlate: selectedVehicle.licensePlate,
-                  model: selectedVehicle.model,
-                  year: selectedVehicle.year,
-                  purchaseYear: selectedVehicle.purchaseYear || "",
-                  insurance: selectedVehicle.insurance || "",
-                })
-                setEditingVehicleId(selectedVehicle.id)
-                setScreen("add-vehicle")
-              }}
-            >
-              <Pencil className="w-4 h-4" />
-            </Button>
-          </div>
-        </Card>
+          </Card>
+        )}
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 mb-6">
           <Button
             onClick={() => {
               console.log("[v0] 🔘 Toggle maintenance form. Current state:", showMaintenanceForm)

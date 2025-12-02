@@ -18,7 +18,6 @@ import {
   Car,
   Heart,
   BarChart3,
-  Settings,
   LogOut,
   ChevronDown,
   Search,
@@ -544,15 +543,13 @@ export default function ForestNotePage() {
     )
   }
 
-  const menuItems = [
-    { id: "schedule", label: getTranslation(language, "schedule"), icon: CalendarIcon, color: "teal" },
-    { id: "notes", label: getTranslation(language, "notes"), icon: FileText, color: "emerald" },
+  const sections: { id: Section; label: string; icon: any; color: string }[] = [
+    { id: "notes", label: getTranslation(language, "notes"), icon: FileText, color: "amber" },
+    { id: "schedule", label: getTranslation(language, "schedule"), icon: CalendarIcon, color: "red" },
     { id: "diary", label: getTranslation(language, "diary"), icon: BookOpen, color: "green" },
     { id: "travel", label: getTranslation(language, "travel"), icon: Plane, color: "blue" },
     { id: "vehicle", label: getTranslation(language, "vehicle"), icon: Car, color: "indigo" },
     { id: "health", label: getTranslation(language, "health"), icon: Heart, color: "rose" },
-    { id: "weather", label: getTranslation(language, "weather"), icon: Cloud, color: "cyan" },
-    { id: "radio", label: getTranslation(language, "radio"), icon: Radio, color: "purple" },
     {
       id: "budget",
       label: language === "ko" ? "가계부" : language === "en" ? "Budget" : language === "zh" ? "家庭账本" : "家計簿",
@@ -565,6 +562,8 @@ export default function ForestNotePage() {
       icon: User,
       color: "violet",
     },
+    { id: "weather", label: getTranslation(language, "weather"), icon: Cloud, color: "cyan" },
+    { id: "radio", label: getTranslation(language, "radio"), icon: Radio, color: "purple" },
     { id: "statistics", label: getTranslation(language, "statistics"), icon: BarChart3, color: "amber" },
   ]
 
@@ -709,7 +708,7 @@ export default function ForestNotePage() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {menuItems.map((item) => {
+          {sections.map((item) => {
             const lightBg =
               item.color === "teal"
                 ? "bg-teal-50"
@@ -768,16 +767,6 @@ export default function ForestNotePage() {
               </Card>
             )
           })}
-
-          <Card
-            className="p-6 cursor-pointer hover:scale-105 transition-transform bg-gray-50 flex flex-col items-center justify-center shadow-md hover:shadow-lg"
-            onClick={() => setCurrentSection("settings")}
-          >
-            <Settings className="h-8 w-8 text-gray-700 mb-4" />
-            <h3 className="font-semibold text-lg text-center text-gray-900">
-              {language === "ko" ? "설정" : language === "en" ? "Settings" : language === "zh" ? "设置" : "設定"}
-            </h3>
-          </Card>
         </div>
 
         <div className="text-center text-sm text-gray-700">
