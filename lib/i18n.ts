@@ -809,6 +809,9 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     steps_unit: "步",
     krw_unit: "元",
 
+    speech_recognition: "语音识别中",
+    stop_recognition: "停止识别",
+
     file_upload: "上传文件",
     take_photo: "拍照",
     ocr_camera: "拍照→文字",
@@ -1190,6 +1193,9 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
 
     steps_unit: "歩",
     krw_unit: "円",
+
+    speech_recognition: "音声認識中",
+    stop_recognition: "認識停止",
 
     file_upload: "ファイルアップロード",
     take_photo: "写真撮影",
