@@ -820,12 +820,19 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
         <Card className="p-4 mb-4 dark:bg-card">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-gray-600 dark:text-gray-400">{getText("monthlyTotal")}</span>
-            <input
-              type="month"
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(e.target.value)}
-              className="text-sm border rounded px-2 py-1 dark:bg-gray-700 dark:text-white"
-            />
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium dark:text-white">
+                {selectedMonth.split("-")[0]}
+                {getText("year")} {selectedMonth.split("-")[1]}
+                {getText("month")}
+              </span>
+              <input
+                type="month"
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                className="text-sm border rounded px-2 py-1 dark:bg-gray-700 dark:text-white"
+              />
+            </div>
           </div>
           <div className="grid grid-cols-3 gap-4 mt-4">
             <div className="text-center">
