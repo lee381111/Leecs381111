@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { ArrowLeft, Plus, Download, Edit, Trash2, Calendar } from "lucide-react"
-import { saveSchedules, loadSchedules } from "@/lib/storage"
+import { saveSchedules, loadSchedules, deleteSchedule } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import type { ScheduleEvent, Attachment } from "@/lib/types"
 import { MediaTools } from "@/components/media-tools"
@@ -17,9 +17,10 @@ import { notificationManager } from "@/lib/notification-manager"
 interface ScheduleSectionProps {
   onBack: () => void
   language: string
+  onSchedulesChange?: () => void
 }
 
-export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
+export function ScheduleSection({ onBack, language, onSchedulesChange }: ScheduleSectionProps) {
   const { user } = useAuth()
   const [schedules, setSchedules] = useState<ScheduleEvent[]>([])
   const [loading, setLoading] = useState(true)
@@ -91,33 +92,29 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
   }
 
   const handleDelete = async (id: string) => {
-    if (!user?.id) {
-      alert("로그인이 필요합니다")
+    if (!user) {
+      alert(t("login_required"))
       return
     }
-
-    if (!confirm(getTranslation(language as any, "confirmDelete") || "정말 삭제하시겠습니까?")) return
+    if (!confirm(t("confirmDelete"))) return
 
     try {
-      const updated = schedules.filter((s) => s.id !== id)
-      setSchedules(updated)
-      await saveSchedules(updated, user.id)
-      notificationManager.cancelAlarm(`schedule_${id}`)
-      alert(getTranslation(language as any, "deleteSuccess") || "삭제되었습니다!")
+      await deleteSchedule(id, user.id)
+      setSchedules(schedules.filter((s) => s.id !== id))
+      alert(t("delete_success"))
+      if (onSchedulesChange) onSchedulesChange()
     } catch (error) {
-      console.error("[v0] Error deleting schedule:", error)
-      alert("삭제 실패: " + error)
+      alert(t("delete_failed") + error)
     }
   }
 
   const handleSave = async (attachments: Attachment[]) => {
-    if (!user?.id) {
-      alert("로그인이 필요합니다")
+    if (!user) {
+      alert(t("login_required"))
       return
     }
-
     if (!formData.title.trim()) {
-      alert("제목을 입력해주세요")
+      alert(t("title_required"))
       return
     }
 
@@ -169,7 +166,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
 
       console.log("[v0] Schedule saved successfully")
       window.dispatchEvent(new Event("storage"))
-      alert("일정이 저장되었습니다! 메인 화면 캘린더에 표시됩니다.")
+      alert(t("schedule_saved"))
 
       setFormData({
         title: "",
@@ -185,22 +182,22 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
       setIsAdding(false)
     } catch (error) {
       console.error("[v0] Error saving schedule:", error)
-      alert("저장 실패: " + error)
+      alert(t("save_failed") + error)
     } finally {
       setSaving(false)
     }
   }
 
   const handleBatchSave = async () => {
-    if (!user?.id) {
-      alert("로그인이 필요합니다")
+    if (!user) {
+      alert(t("login_required"))
       return
     }
 
     const validEvents = batchEvents.filter((e) => e.name.trim() && e.date)
 
     if (validEvents.length === 0) {
-      alert("최소 1개 이상의 일정을 입력해주세요")
+      alert(t("at_least_one_schedule"))
       return
     }
 
@@ -216,7 +213,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
           notificationManager.scheduleAlarm({
             id: `schedule_${scheduleId}`,
             title: `${event.category}: ${event.name}`,
-            message: getTranslation(language as any, "special_day_coming") || "곧 특별한 날입니다!",
+            message: t("special_day_coming") || "곧 특별한 날입니다!",
             scheduleTime: alarmTime,
             type: "schedule",
           })
@@ -243,19 +240,19 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
       await saveSchedules(updated, user.id)
 
       window.dispatchEvent(new Event("storage"))
-      alert(`${validEvents.length}개의 일정이 등록되었습니다!`)
+      alert(`${validEvents.length}${t("schedules_saved")}`)
 
       setBatchEvents([{ name: "", date: "", category: "birthday", alarmMinutesBefore: 1440 }])
       setIsBatchAdding(false)
     } catch (error) {
       console.error("[v0] Error saving batch schedules:", error)
-      alert("저장 실패: " + error)
+      alert(t("save_failed") + error)
     } finally {
       setSaving(false)
     }
   }
 
-  const exportToCalendar = (schedule: ScheduleEvent) => {
+  const exportToICS = (schedule: ScheduleEvent) => {
     console.log("[v0] Export button clicked for:", schedule.title)
 
     try {
@@ -296,12 +293,10 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
       document.body.removeChild(link)
       URL.revokeObjectURL(url)
 
-      alert(
-        "✅ 일정 다운로드 완료!\n\n다운로드한 .ics 파일을:\n1. 다운로드 폴더에서 찾아 캘린더 앱으로 열기\n2. 또는 캘린더 앱에서 '가져오기' 선택",
-      )
+      alert(t("ics_download_success"))
     } catch (error) {
       console.error("[v0] Export error:", error)
-      alert("❌ 다운로드 실패\n\n오류: " + error)
+      alert(t("ics_download_failed") + error)
     }
   }
 
@@ -611,7 +606,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                         onClick={(e) => {
                           e.preventDefault()
                           e.stopPropagation()
-                          exportToCalendar(schedule)
+                          exportToICS(schedule)
                         }}
                         className="p-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md transition-colors flex items-center justify-center"
                         title={t("add_to_phone_calendar")}
@@ -754,7 +749,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                         onClick={(e) => {
                           e.preventDefault()
                           e.stopPropagation()
-                          exportToCalendar(schedule)
+                          exportToICS(schedule)
                         }}
                         className="p-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md transition-colors flex items-center justify-center"
                         title={t("add_to_phone_calendar")}

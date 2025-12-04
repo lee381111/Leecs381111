@@ -379,6 +379,14 @@ export async function loadSchedules(userId: string): Promise<ScheduleEvent[]> {
   })
 }
 
+export async function deleteSchedule(scheduleId: string, userId: string) {
+  const supabase = createClient()
+
+  const { error } = await supabase.from("schedules").delete().eq("id", scheduleId).eq("user_id", userId)
+
+  if (error) throw error
+}
+
 // Travel Records
 export async function saveTravelRecords(travels: TravelRecord[], userId: string) {
   const supabase = createClient()
