@@ -2,239 +2,308 @@
 
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Plus, Trash2, Play, Pause, Volume2 } from "lucide-react"
-import { Slider } from "@/components/ui/slider"
-import type { RadioStation } from "./personal-organizer-app"
-import { useLanguage } from "@/lib/language-context"
+import { ArrowLeft, Play, Pause, Volume2, Plus, Trash2 } from "lucide-react"
+import { getTranslation } from "@/lib/i18n"
+import type { Language } from "@/lib/types"
+import { saveData, loadData } from "@/lib/storage"
 
-type RadioSectionProps = {
-  radioStations: RadioStation[]
-  setRadioStations: (stations: RadioStation[]) => void
-  userId?: string // Added userId prop for authentication
-}
+const defaultRadioStations = [
+  { name: "NPR News", url: "https://npr-ice.streamguys1.com/live.mp3" },
+  { name: "KCRW (Santa Monica)", url: "https://kcrw.streamguys1.com/kcrw_192k_mp3_on_air" },
+  { name: "WNYC (New York)", url: "https://fm939.wnyc.org/wnycfm" },
+  { name: "Classical KING FM", url: "https://classicalking.streamguys1.com/king-aac-64k" },
+  { name: "Jazz24", url: "https://live.wostreaming.net/direct/ppm-jazz24aac-ibc1" },
+  { name: "KEXP (Seattle)", url: "https://kexp-mp3-128.streamguys1.com/kexp128.mp3" },
+  { name: "WBGO Jazz (Newark)", url: "https://wbgo.streamguys1.com/wbgo128" },
+  { name: "KPCC (Los Angeles)", url: "https://streaming.kpcc.org/kpcc-2" },
+  { name: "WXPN (Philadelphia)", url: "https://wxpn.xpn.org/xpnhi" },
+  { name: "KUTX (Austin)", url: "https://kut.streamguys1.com/kutx-hd1" },
+  { name: "The Current (Minneapolis)", url: "https://current.stream.publicradio.org/current.mp3" },
+  { name: "KCMP Radio K", url: "https://radiok.stream.publicradio.org/radiok.mp3" },
+  { name: "SomaFM Groove Salad", url: "https://ice1.somafm.com/groovesalad-128-mp3" },
+  { name: "SomaFM Drone Zone", url: "https://ice1.somafm.com/dronezone-128-mp3" },
+  { name: "Radio Paradise", url: "https://stream.radioparadise.com/aac-320" },
+]
 
-export function RadioSection({ radioStations, setRadioStations, userId }: RadioSectionProps) {
-  const [isAdding, setIsAdding] = useState(false)
-  const [newStation, setNewStation] = useState({
-    name: "",
-    url: "",
-    region: "",
-  })
-  const [currentStation, setCurrentStation] = useState<RadioStation | null>(null)
+export function RadioSection({ onBack, language }: { onBack: () => void; language: string }) {
   const [isPlaying, setIsPlaying] = useState(false)
-  const [volume, setVolume] = useState([70])
+  const [radioStations, setRadioStations] = useState(defaultRadioStations)
+  const [currentStation, setCurrentStation] = useState(radioStations[0])
+  const [volume, setVolume] = useState(70)
+  const [isAdding, setIsAdding] = useState(false)
+  const [newStationName, setNewStationName] = useState("")
+  const [newStationUrl, setNewStationUrl] = useState("")
   const audioRef = useRef<HTMLAudioElement | null>(null)
-  const { t, language } = useLanguage()
+
+  useEffect(() => {
+    const loadRadioStations = async () => {
+      try {
+        const savedStations = await loadData<typeof defaultRadioStations>("radioStations")
+        if (savedStations && savedStations.length > 0) {
+          console.log("[v0] Loaded radio stations:", savedStations.length)
+          setRadioStations(savedStations)
+          setCurrentStation(savedStations[0])
+        }
+      } catch (error) {
+        console.error("[v0] Error loading radio stations:", error)
+      }
+    }
+    loadRadioStations()
+  }, [])
+
+  useEffect(() => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio()
+      audioRef.current.volume = volume / 100
+    }
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current.src = ""
+      }
+    }
+  }, [])
 
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.volume = volume[0] / 100
+      audioRef.current.volume = volume / 100
     }
   }, [volume])
 
-  const handleAddStation = async () => {
-    if (newStation.name && newStation.url) {
-      const station: RadioStation = {
-        id: Date.now().toString(),
-        name: newStation.name,
-        url: newStation.url,
-        region: newStation.region || "기타",
-        user_id: userId || null,
-      }
-      setRadioStations([...radioStations, station])
-      setNewStation({ name: "", url: "", region: "" })
-      setIsAdding(false)
-    }
-  }
+  const togglePlay = () => {
+    if (!audioRef.current) return
 
-  const handleDelete = async (id: string) => {
-    setRadioStations(radioStations.filter((s) => s.id !== id))
-    if (currentStation?.id === id) {
-      handleStop()
-    }
-  }
-
-  const handlePlay = (station: RadioStation) => {
-    if (currentStation?.id === station.id && isPlaying) {
-      audioRef.current?.pause()
+    if (isPlaying) {
+      audioRef.current.pause()
       setIsPlaying(false)
     } else {
-      if (audioRef.current) {
-        audioRef.current.src = station.url
-        audioRef.current.load()
-        audioRef.current.play().catch((error) => {
-          console.error("[v0] Audio play error:", error)
-          const messages = {
-            ko: "라디오 재생에 실패했습니다. 스트리밍 URL이 유효하지 않거나 CORS 정책으로 인해 차단되었을 수 있습니다. 다른 URL을 시도해보세요.",
-            en: "Failed to play radio. The streaming URL may be invalid or blocked by CORS policy. Please try a different URL.",
-            zh: "无法播放广播。流媒体URL可能无效或被CORS策略阻止。请尝试其他URL。",
-            ja: "ラジオの再生に失敗しました。ストリーミングURLが無効であるか、CORSポリシーによってブロックされている可能性があります。別のURLを試してください。",
-          }
-          alert(messages[language])
-          setIsPlaying(false)
-          setCurrentStation(null)
-        })
-      }
-      setCurrentStation(station)
+      audioRef.current.src = currentStation.url
+      audioRef.current.play().catch((error) => {
+        console.error("[v0] Radio play error:", error)
+        const lang = language as Language
+        const errorMsg =
+          lang === "ko"
+            ? "라디오 재생에 실패했습니다. 다른 방송국을 선택해주세요."
+            : lang === "en"
+              ? "Radio playback failed. Please select another station."
+              : lang === "zh"
+                ? "电台播放失败。请选择其他电台。"
+                : "ラジオ再生に失敗しました。他の放送局を選択してください。"
+        alert(errorMsg)
+      })
       setIsPlaying(true)
     }
   }
 
-  const handleStop = () => {
+  const selectStation = (station: (typeof radioStations)[0]) => {
     if (audioRef.current) {
       audioRef.current.pause()
-      audioRef.current.src = ""
     }
+    setCurrentStation(station)
     setIsPlaying(false)
-    setCurrentStation(null)
   }
 
+  const addStation = async () => {
+    if (!newStationName.trim() || !newStationUrl.trim()) {
+      const lang = language as Language
+      const msg =
+        lang === "ko"
+          ? "방송국 이름과 URL을 모두 입력해주세요."
+          : lang === "en"
+            ? "Please enter both station name and URL."
+            : lang === "zh"
+              ? "请输入电台名称和URL。"
+              : "放送局名とURLを入力してください。"
+      alert(msg)
+      return
+    }
+
+    const newStation = { name: newStationName.trim(), url: newStationUrl.trim() }
+    const updatedStations = [...radioStations, newStation]
+    setRadioStations(updatedStations)
+
+    // Save to storage
+    try {
+      await saveData("radioStations", updatedStations)
+      console.log("[v0] Saved radio stations:", updatedStations.length)
+    } catch (error) {
+      console.error("[v0] Error saving radio stations:", error)
+    }
+
+    setNewStationName("")
+    setNewStationUrl("")
+    setIsAdding(false)
+    const lang = language as Language
+    const msg =
+      lang === "ko"
+        ? `"${newStation.name}" 방송국이 추가되었습니다.`
+        : lang === "en"
+          ? `"${newStation.name}" station has been added.`
+          : lang === "zh"
+            ? `"${newStation.name}" 电台已添加。`
+            : `"${newStation.name}" 放送局が追加されました。`
+    alert(msg)
+  }
+
+  const deleteStation = async (url: string) => {
+    if (radioStations.length <= 1) {
+      const lang = language as Language
+      const msg =
+        lang === "ko"
+          ? "마지막 방송국은 삭제할 수 없습니다."
+          : lang === "en"
+            ? "Cannot delete the last station."
+            : lang === "zh"
+              ? "无法删除最后一个电台。"
+              : "最後の放送局は削除できません。"
+      alert(msg)
+      return
+    }
+
+    if (currentStation.url === url) {
+      setIsPlaying(false)
+      if (audioRef.current) {
+        audioRef.current.pause()
+      }
+      setCurrentStation(radioStations[0])
+    }
+
+    const updatedStations = radioStations.filter((station) => station.url !== url)
+    setRadioStations(updatedStations)
+
+    // Save to storage
+    try {
+      await saveData("radioStations", updatedStations)
+      console.log("[v0] Deleted station, remaining:", updatedStations.length)
+    } catch (error) {
+      console.error("[v0] Error saving radio stations after deletion:", error)
+    }
+  }
+
+  const lang = language as Language
+  const playingText =
+    lang === "ko" ? "🔴 방송 중" : lang === "en" ? "🔴 On Air" : lang === "zh" ? "🔴 播放中" : "🔴 放送中"
+  const pausedText = lang === "ko" ? "⏸️ 일시정지" : lang === "en" ? "⏸️ Paused" : lang === "zh" ? "⏸️ 暂停" : "⏸️ 一時停止"
+  const stationSelectText =
+    lang === "ko" ? "방송국 선택" : lang === "en" ? "Select Station" : lang === "zh" ? "选择电台" : "放送局選択"
+  const addText = lang === "ko" ? "추가" : lang === "en" ? "Add" : lang === "zh" ? "添加" : "追加"
+  const stationNamePlaceholder =
+    lang === "ko"
+      ? "방송국 이름 (예: Jazz FM)"
+      : lang === "en"
+        ? "Station name (e.g. Jazz FM)"
+        : lang === "zh"
+          ? "电台名称 (例: Jazz FM)"
+          : "放送局名 (例: Jazz FM)"
+  const urlPlaceholder =
+    lang === "ko"
+      ? "스트리밍 URL (예: https://...)"
+      : lang === "en"
+        ? "Streaming URL (e.g. https://...)"
+        : lang === "zh"
+          ? "流媒体URL (例: https://...)"
+          : "ストリーミングURL (例: https://...)"
+
   return (
-    <div className="rounded-lg border bg-card p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">{t("radioTitle")}</h2>
-        <Button onClick={() => setIsAdding(!isAdding)} size="sm">
-          <Plus className="mr-2 h-4 w-4" />
-          {t("addStation")}
-        </Button>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
+      <Button variant="ghost" onClick={onBack}>
+        <ArrowLeft className="mr-2 h-4 w-4" /> {getTranslation(lang, "back_to_forest")}
+      </Button>
 
-      {isAdding && (
-        <div className="mb-6 space-y-4 rounded-lg border bg-muted/50 p-4">
-          <div className="rounded-lg bg-blue-50 dark:bg-blue-950 p-3 text-sm">
-            <p className="font-medium mb-2">
-              {language === "ko"
-                ? "작동하는 스트리밍 URL 예시:"
-                : language === "en"
-                  ? "Working streaming URL examples:"
-                  : language === "zh"
-                    ? "可用的流媒体URL示例："
-                    : "動作するストリーミングURLの例："}
-            </p>
-            <ul className="space-y-1 text-xs text-muted-foreground">
-              <li>• SomaFM: https://ice1.somafm.com/groovesalad-128-mp3</li>
-              <li>• Radio Paradise: https://stream.radioparadise.com/aac-320</li>
-              <li>• KEXP: https://kexp-mp3-128.streamguys1.com/kexp128.mp3</li>
-            </ul>
-            <p className="mt-2 text-xs text-muted-foreground">
-              {language === "ko"
-                ? "⚠️ 일부 스트리밍 URL은 CORS 정책으로 인해 작동하지 않을 수 있습니다."
-                : language === "en"
-                  ? "⚠️ Some streaming URLs may not work due to CORS policy."
-                  : language === "zh"
-                    ? "⚠️ 由于CORS策略，某些流媒体URL可能无法使用。"
-                    : "⚠️ CORS ポリシーにより、一部のストリーミング URL が機能しない場合があります。"}
-            </p>
+      <Card className="p-6 bg-gradient-to-br from-purple-50 to-pink-50">
+        <h2 className="text-2xl font-bold mb-6 text-center">📻 {getTranslation(lang, "radio")}</h2>
+
+        <div className="flex flex-col items-center space-y-6">
+          <div className="text-center">
+            <div className="text-xl font-semibold text-purple-700 mb-2">{currentStation.name}</div>
+            <div className="text-sm text-muted-foreground">{isPlaying ? playingText : pausedText}</div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="station-name">{t("stationName")}</Label>
-            <Input
-              id="station-name"
-              value={newStation.name}
-              onChange={(e) => setNewStation({ ...newStation, name: e.target.value })}
-              placeholder={t("stationName")}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="station-url">{t("streamUrl")}</Label>
-            <Input
-              id="station-url"
-              value={newStation.url}
-              onChange={(e) => setNewStation({ ...newStation, url: e.target.value })}
-              placeholder="https://example.com/stream.mp3"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="station-region">{t("region")}</Label>
-            <Input
-              id="station-region"
-              value={newStation.region}
-              onChange={(e) => setNewStation({ ...newStation, region: e.target.value })}
-              placeholder={t("region")}
-            />
-          </div>
-          <div className="flex gap-2">
-            <Button onClick={handleAddStation}>{t("save")}</Button>
-            <Button variant="outline" onClick={() => setIsAdding(false)}>
-              {t("cancel")}
-            </Button>
+          <Button
+            onClick={togglePlay}
+            size="lg"
+            className={`w-24 h-24 rounded-full text-white ${
+              isPlaying ? "bg-red-500 hover:bg-red-600" : "bg-purple-500 hover:bg-purple-600"
+            }`}
+          >
+            {isPlaying ? <Pause className="h-12 w-12" /> : <Play className="h-12 w-12 ml-1" />}
+          </Button>
+
+          <div className="w-full space-y-2">
+            <div className="flex items-center gap-3">
+              <Volume2 className="h-5 w-5 text-purple-600" />
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={volume}
+                onChange={(e) => setVolume(Number(e.target.value))}
+                className="flex-1 h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
+              />
+              <span className="text-sm font-medium w-12 text-center">{volume}%</span>
+            </div>
           </div>
         </div>
-      )}
+      </Card>
 
-      {currentStation && (
-        <div className="mb-6 rounded-lg border bg-primary/10 p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <div>
-              <h3 className="font-semibold">{currentStation.name}</h3>
-              <p className="text-sm text-muted-foreground">{currentStation.region}</p>
-            </div>
-            <Button variant="outline" size="sm" onClick={() => handlePlay(currentStation)}>
-              {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-            </Button>
-          </div>
-          <div className="flex items-center gap-3">
-            <Volume2 className="h-4 w-4" />
-            <Slider value={volume} onValueChange={setVolume} max={100} step={1} className="flex-1" />
-            <span className="text-sm">{volume[0]}%</span>
-          </div>
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-lg">{stationSelectText}</h3>
+          <Button variant="outline" size="sm" onClick={() => setIsAdding(!isAdding)}>
+            <Plus className="h-4 w-4 mr-1" />
+            {addText}
+          </Button>
         </div>
-      )}
 
-      <div className="space-y-3">
-        <h3 className="font-medium">
-          {language === "ko"
-            ? "방송국 목록"
-            : language === "en"
-              ? "Station List"
-              : language === "zh"
-                ? "电台列表"
-                : "放送局一覧"}
-        </h3>
-        {radioStations.length === 0 ? (
-          <p className="text-center text-muted-foreground">
-            {language === "ko"
-              ? "등록된 방송국이 없습니다"
-              : language === "en"
-                ? "No radio stations"
-                : language === "zh"
-                  ? "没有电台"
-                  : "放送局がありません"}
-          </p>
-        ) : (
-          radioStations.map((station) => (
-            <div
-              key={station.id}
-              className={`flex items-center justify-between gap-3 rounded-lg border p-4 ${
-                currentStation?.id === station.id && isPlaying ? "border-primary bg-primary/5" : "bg-card"
-              }`}
-            >
-              <div className="min-w-0 flex-1">
-                <h4 className="font-medium">{station.name}</h4>
-                <p className="text-sm text-muted-foreground">{station.region}</p>
-                <p className="mt-1 truncate text-xs text-muted-foreground">{station.url}</p>
-              </div>
-              <div className="flex flex-shrink-0 gap-2">
-                <Button variant="outline" size="sm" onClick={() => handlePlay(station)}>
-                  {currentStation?.id === station.id && isPlaying ? (
-                    <Pause className="h-4 w-4" />
-                  ) : (
-                    <Play className="h-4 w-4" />
-                  )}
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => handleDelete(station.id)}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
+        {isAdding && (
+          <Card className="p-4 space-y-3 border-purple-200">
+            <Input
+              placeholder={stationNamePlaceholder}
+              value={newStationName}
+              onChange={(e) => setNewStationName(e.target.value)}
+            />
+            <Input
+              placeholder={urlPlaceholder}
+              value={newStationUrl}
+              onChange={(e) => setNewStationUrl(e.target.value)}
+            />
+            <div className="flex gap-2">
+              <Button onClick={addStation} className="flex-1">
+                {getTranslation(lang, "save")}
+              </Button>
+              <Button variant="outline" onClick={() => setIsAdding(false)} className="flex-1">
+                {getTranslation(lang, "cancel")}
+              </Button>
             </div>
-          ))
+          </Card>
         )}
-      </div>
 
-      <audio ref={audioRef} crossOrigin="anonymous" />
+        <div className="grid gap-2">
+          {radioStations.map((station) => (
+            <div key={station.url} className="flex items-center gap-2">
+              <Button
+                variant={currentStation.url === station.url ? "default" : "outline"}
+                onClick={() => selectStation(station)}
+                className="justify-start flex-1"
+              >
+                <span className="mr-2">{currentStation.url === station.url && isPlaying ? "🔴" : "📻"}</span>
+                {station.name}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => deleteStation(station.url)}
+                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }
