@@ -258,6 +258,11 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
   const exportToCalendar = (schedule: ScheduleEvent) => {
     console.log("[v0] Export button clicked for:", schedule.title)
 
+    if (!confirm("📅 이 일정을 캘린더 파일로 다운로드하시겠습니까?")) {
+      console.log("[v0] ICS export cancelled by user")
+      return
+    }
+
     try {
       const startDate = new Date(`${schedule.date}T${schedule.time || "00:00"}`)
       const endDate = new Date(startDate.getTime() + 60 * 60 * 1000)
