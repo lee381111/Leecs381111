@@ -140,6 +140,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     alarm_time: "알람 시간",
     alarm_settings: "알람 설정",
     enable_alarm_before_event: "일정 전 알람 활성화",
+    minutes_before: "분 전",
+    // </CHANGE>
     "5_min_before": "5분 전",
     "10_min_before": "10분 전",
     "15_min_before": "15분 전",
@@ -164,6 +166,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     "2_days_before": "2일 전",
     "1_week_before": "1주일 전",
     add_schedule: "일정 추가",
+    download_ics_description: "ICS 파일로 다운로드하여 휴대폰 캘린더에 추가",
+    // </CHANGE>
     title_label: "제목",
     category_label: "분류",
     description_label: "설명",
@@ -536,6 +540,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     alarm_time: "Alarm Time",
     alarm_settings: "Alarm Settings",
     enable_alarm_before_event: "Enable alarm before event",
+    minutes_before: " minutes before",
+    // </CHANGE>
     "5_min_before": "5 minutes before",
     "10_min_before": "10 minutes before",
     "15_min_before": "15 minutes before",
@@ -560,6 +566,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     "2_days_before": "2 days before",
     "1_week_before": "1 week before",
     add_schedule: "Add Schedule",
+    download_ics_description: "Download as ICS file to add to phone calendar",
+    // </CHANGE>
     title_label: "Title",
     category_label: "Category",
     description_label: "Description",
@@ -945,6 +953,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     alarm_time: "提醒时间",
     alarm_settings: "提醒设置",
     enable_alarm_before_event: "事件前启用提醒",
+    minutes_before: "分钟前",
+    // </CHANGE>
     "5_min_before": "提前5分钟",
     "10_min_before": "提前10分钟",
     "15_min_before": "提前15分钟",
@@ -969,6 +979,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     "2_days_before": "提前2天",
     "1_week_before": "提前1周",
     add_schedule: "添加日程",
+    download_ics_description: "下载ICS文件以添加到手机日历",
+    // </CHANGE>
     title_label: "标题",
     category_label: "分类",
     description_label: "说明",
@@ -1346,6 +1358,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     alarm_time: "アラーム時間",
     alarm_settings: "アラーム設定",
     enable_alarm_before_event: "イベント前にアラームを有効にする",
+    minutes_before: "分前",
+    // </CHANGE>
     "5_min_before": "5分前",
     "10_min_before": "10分前",
     "15_min_before": "15分前",
@@ -1370,6 +1384,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     "2_days_before": "2日前",
     "1_week_before": "1週間前",
     add_schedule: "スケジュール追加",
+    download_ics_description: "ICSファイルとしてダウンロードして携帯カレンダーに追加",
+    // </CHANGE>
     title_label: "タイトル",
     category_label: "分類",
     description_label: "説明",
