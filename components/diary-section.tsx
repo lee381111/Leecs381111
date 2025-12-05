@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Plus, Edit, Trash2, Lock, Unlock, X } from "lucide-react"
+import { ArrowLeft, Plus, Edit, Trash2, Lock, Unlock, X, Sparkles } from "lucide-react"
 import { saveDiaries, loadDiaries } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import type { DiaryEntry, Attachment } from "@/lib/types"
@@ -51,7 +51,15 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
   const [isSettingPassword, setIsSettingPassword] = useState(false)
   const [confirmPassword, setConfirmPassword] = useState("")
 
-  const t = (key: string) => getTranslation(language as any, key)
+  const [emotionAnalysis, setEmotionAnalysis] = useState<{
+    emotion: string
+    score: number
+    mainEmotions: string[]
+    advice: string
+  } | null>(null)
+  const [analyzingEmotion, setAnalyzingEmotion] = useState(false)
+
+  const t = (key: string) => getTranslation(language, key)
 
   useEffect(() => {
     const savedPasswordHash = localStorage.getItem("diary_password_hash")
@@ -276,6 +284,35 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
     setFormData({ ...formData, content: formData.content + text })
   }
 
+  const handleAnalyzeEmotion = async () => {
+    if (!formData.content || formData.content.trim().length < 20) {
+      alert(t("diary_too_short_for_analysis"))
+      return
+    }
+
+    try {
+      setAnalyzingEmotion(true)
+      const response = await fetch("/api/analyze-diary-emotion", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: formData.content,
+          language,
+        }),
+      })
+
+      if (!response.ok) throw new Error("Analysis failed")
+
+      const analysis = await response.json()
+      setEmotionAnalysis(analysis)
+    } catch (error) {
+      console.error("[v0] Emotion analysis error:", error)
+      alert(t("emotion_analysis_failed"))
+    } finally {
+      setAnalyzingEmotion(false)
+    }
+  }
+
   if (isSettingPassword) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 flex items-center justify-center">
@@ -317,6 +354,53 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
               </Button>
             </div>
           </div>
+          <MediaTools
+            language={language}
+            attachments={formData.attachments || []}
+            onAttachmentsChange={handleAttachmentsChange}
+            onSave={(attachments) => handleSave(attachments)}
+            saving={saving}
+            onTextFromSpeech={handleTranscriptReceived}
+          />
+          {formData.content && formData.content.trim().length >= 20 && (
+            <Button
+              onClick={handleAnalyzeEmotion}
+              disabled={analyzingEmotion}
+              variant="outline"
+              className="w-full border-purple-300 dark:border-purple-700 hover:bg-purple-50 dark:hover:bg-purple-950 bg-transparent"
+            >
+              <Sparkles className="mr-2 h-4 w-4" />
+              {analyzingEmotion ? t("analyzing_emotion") : t("analyze_emotion")}
+            </Button>
+          )}
+          {emotionAnalysis && (
+            <Card className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 border-purple-200 dark:border-purple-800">
+              <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-purple-600" />
+                {t("emotion_analysis_result")}
+              </h3>
+              <div className="space-y-2 text-sm">
+                <p>
+                  <span className="font-medium">{t("emotion_positive")}:</span>{" "}
+                  {emotionAnalysis.emotion === "긍정적" || emotionAnalysis.emotion === "positive"
+                    ? t("emotion_positive")
+                    : emotionAnalysis.emotion === "부정적" || emotionAnalysis.emotion === "negative"
+                      ? t("emotion_negative")
+                      : t("emotion_neutral")}
+                </p>
+                <p>
+                  <span className="font-medium">{t("emotion_score")}:</span> {emotionAnalysis.score}/10
+                </p>
+                <p>
+                  <span className="font-medium">{t("main_emotions")}:</span> {emotionAnalysis.mainEmotions.join(", ")}
+                </p>
+                <div className="mt-3 p-3 bg-white/50 dark:bg-slate-900/50 rounded">
+                  <p className="font-medium mb-1">{t("ai_advice")}:</p>
+                  <p className="text-muted-foreground">{emotionAnalysis.advice}</p>
+                </div>
+              </div>
+            </Card>
+          )}
         </Card>
       </div>
     )
@@ -453,6 +537,45 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
             saving={saving}
             onTextFromSpeech={handleTranscriptReceived}
           />
+          {formData.content && formData.content.trim().length >= 20 && (
+            <Button
+              onClick={handleAnalyzeEmotion}
+              disabled={analyzingEmotion}
+              variant="outline"
+              className="w-full border-purple-300 dark:border-purple-700 hover:bg-purple-50 dark:hover:bg-purple-950 bg-transparent"
+            >
+              <Sparkles className="mr-2 h-4 w-4" />
+              {analyzingEmotion ? t("analyzing_emotion") : t("analyze_emotion")}
+            </Button>
+          )}
+          {emotionAnalysis && (
+            <Card className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 border-purple-200 dark:border-purple-800">
+              <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-purple-600" />
+                {t("emotion_analysis_result")}
+              </h3>
+              <div className="space-y-2 text-sm">
+                <p>
+                  <span className="font-medium">{t("emotion_positive")}:</span>{" "}
+                  {emotionAnalysis.emotion === "긍정적" || emotionAnalysis.emotion === "positive"
+                    ? t("emotion_positive")
+                    : emotionAnalysis.emotion === "부정적" || emotionAnalysis.emotion === "negative"
+                      ? t("emotion_negative")
+                      : t("emotion_neutral")}
+                </p>
+                <p>
+                  <span className="font-medium">{t("emotion_score")}:</span> {emotionAnalysis.score}/10
+                </p>
+                <p>
+                  <span className="font-medium">{t("main_emotions")}:</span> {emotionAnalysis.mainEmotions.join(", ")}
+                </p>
+                <div className="mt-3 p-3 bg-white/50 dark:bg-slate-900/50 rounded">
+                  <p className="font-medium mb-1">{t("ai_advice")}:</p>
+                  <p className="text-muted-foreground">{emotionAnalysis.advice}</p>
+                </div>
+              </div>
+            </Card>
+          )}
         </div>
       </div>
     )
