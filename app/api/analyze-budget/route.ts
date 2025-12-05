@@ -46,32 +46,29 @@ export async function POST(request: NextRequest) {
         ja: "日本語で回答してください。",
       }[language] || "반드시 한국어로 응답해주세요."
 
-    const prompt = `당신은 재정 전문가입니다. 다음 ${month} 가계부 데이터를 분석하고 절약 팁을 제공해주세요.
+    const prompt = `당신은 재정 전문가입니다. 다음 ${month}의 가계부 데이터를 분석하고 절약 팁을 제공해주세요.
 ${languageInstruction}
 
-**수입**: ${totalIncome.toLocaleString()}원
-**지출**: ${totalExpense.toLocaleString()}원
-**잔액**: ${(totalIncome - totalExpense).toLocaleString()}원
+**이번 달 수입**: ${totalIncome.toLocaleString()}원
+**이번 달 지출**: ${totalExpense.toLocaleString()}원
+**이번 달 잔액**: ${(totalIncome - totalExpense).toLocaleString()}원
 
-**카테고리별 지출**:
+**이번 달 카테고리별 지출**:
 ${categoryBreakdown}
 
-중요: 위의 카테고리별 지출 데이터를 정확히 확인하고, 실제로 가장 많은 금액이 지출된 카테고리를 highestCategory로 응답하세요.
+중요: 위의 카테고리별 지출 데이터를 정확히 확인하고, ${month}에 실제로 가장 많은 금액이 지출된 카테고리를 highestCategory로 응답하세요.
 
 다음 형식으로 JSON 응답해주세요:
 {
-  "summary": "전체적인 지출 패턴 요약 (1-2문장, ${language === "ko" ? "한국어" : language === "en" ? "English" : language === "zh" ? "中文" : "日本語"})",
-  "highestCategory": "실제로 가장 많이 지출한 카테고리 이름",
+  "summary": "${month}의 지출 패턴 요약 (1-2문장, ${language === "ko" ? "한국어" : language === "en" ? "English" : language === "zh" ? "中文" : "日本語"})",
+  "highestCategory": "${month}에 실제로 가장 많이 지출한 카테고리 이름",
   "savingTips": [
     "구체적인 절약 팁 1 (${language === "ko" ? "한국어" : language === "en" ? "English" : language === "zh" ? "中文" : "日本語"})",
     "구체적인 절약 팁 2",
     "구체적인 절약 팁 3"
   ],
   "monthlyGoal": "다음 달 목표 (구체적인 금액 포함, ${language === "ko" ? "한국어" : language === "en" ? "English" : language === "zh" ? "中文" : "日本語"})"
-}
-
-반드시 JSON 형식으로만 응답하고, 마크다운이나 다른 텍스트를 포함하지 마세요.
-${languageInstruction}`
+}`
 
     const { text } = await generateText({
       model: groq("llama-3.3-70b-versatile"),

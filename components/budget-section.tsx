@@ -361,6 +361,12 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
       },
       saving_tips: { ko: " 저축 팁", en: "Saving Tips", zh: "储蓄小贴士", ja: "貯蓄のヒント" },
       monthly_goal: { ko: "월별 목표", en: "Monthly Goal", zh: "月度目标", ja: "月別目標" },
+      no_transactions_for_month: {
+        ko: "선택된 월에 거래 내역이 없습니다",
+        en: "No transactions for the selected month",
+        zh: "没有为所选月份的交易记录",
+        ja: "選択された月の取引履歴がありません",
+      },
     }
     return translations[key]?.[language] || key
   }
@@ -375,13 +381,25 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
     try {
       setAnalyzingBudget(true)
 
+      const monthlyTransactions = transactions.filter((t) => {
+        const txDate = new Date(t.date)
+        const txMonth = `${txDate.getFullYear()}-${String(txDate.getMonth() + 1).padStart(2, "0")}`
+        return txMonth === selectedMonth
+      })
+
+      if (monthlyTransactions.length === 0) {
+        alert(getText("no_transactions_for_month") || "선택된 월에 거래 내역이 없습니다")
+        setAnalyzingBudget(false)
+        return
+      }
+
       const response = await fetch("/api/analyze-budget", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          transactions: transactions,
+          transactions: monthlyTransactions,
           month: selectedMonth,
           language: language,
         }),
@@ -529,9 +547,12 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
     )
   }
 
-  const monthlyTransactions = transactions.filter((t) => t.date.startsWith(selectedMonth))
-  const monthlyIncome = monthlyTransactions.filter((t) => t.type === "income").reduce((sum, t) => sum + t.amount, 0)
-  const monthlyExpense = monthlyTransactions.filter((t) => t.type === "expense").reduce((sum, t) => sum + t.amount, 0)
+  const monthlyIncome = transactions
+    .filter((t) => t.date.startsWith(selectedMonth) && t.type === "income")
+    .reduce((sum, t) => sum + t.amount, 0)
+  const monthlyExpense = transactions
+    .filter((t) => t.date.startsWith(selectedMonth) && t.type === "expense")
+    .reduce((sum, t) => sum + t.amount, 0)
   const monthlyBalance = monthlyIncome - monthlyExpense
 
   const getMonthlyData = () => {
@@ -677,8 +698,8 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
     const categoryExpenses = expenseCategories
       .map((cat) => ({
         category: cat,
-        amount: monthlyTransactions
-          .filter((t) => t.type === "expense" && t.category === cat)
+        amount: transactions
+          .filter((t) => t.type === "expense" && t.category === cat && t.date.startsWith(selectedMonth))
           .reduce((sum, t) => sum + t.amount, 0),
       }))
       .filter((c) => c.amount > 0)
@@ -963,12 +984,13 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
         </Card>
 
         <div className="space-y-2">
-          {monthlyTransactions.length === 0 ? (
+          {transactions.length === 0 ? (
             <Card className="p-8 text-center dark:bg-card">
               <p className="text-muted-foreground dark:text-gray-400">{getText("noTransactions")}</p>
             </Card>
           ) : (
-            monthlyTransactions
+            transactions
+              .filter((t) => t.date.startsWith(selectedMonth))
               .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
               .map((transaction) => (
                 <Card key={transaction.id} className="p-4 dark:bg-card">
@@ -1013,7 +1035,7 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
 
         <Button
           onClick={handleAnalyzeBudget}
-          disabled={analyzingBudget || monthlyTransactions.length === 0}
+          disabled={analyzingBudget || transactions.length === 0}
           className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
         >
           {analyzingBudget ? getText("analyzing_budget") : getText("analyze_budget")}
