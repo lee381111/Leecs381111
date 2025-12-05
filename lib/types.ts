@@ -196,3 +196,14 @@ export interface Notification {
   createdAt: string
   user_id: string
 }
+
+export interface MedicalContact {
+  id: string
+  name: string
+  type: "hospital" | "clinic" | "pharmacy"
+  phone: string
+  address?: string
+  notes?: string
+  createdAt: string
+  user_id?: string
+}

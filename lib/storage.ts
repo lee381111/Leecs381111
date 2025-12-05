@@ -11,6 +11,7 @@ import type {
   VehicleMaintenanceRecord,
   BusinessCard,
   BudgetTransaction,
+  MedicalContact,
 } from "./types"
 
 async function uploadAttachment(attachment: any, userId: string, bucket = "attachments"): Promise<string> {
@@ -1249,4 +1250,54 @@ export async function loadData<T>(key: string): Promise<T | null> {
     console.error(`[v0] Error loading ${key}:`, error)
     return null
   }
+}
+
+// Medical Contacts
+export async function saveMedicalContacts(contacts: MedicalContact[], userId: string) {
+  const supabase = createClient()
+
+  await supabase.from("medical_contacts").delete().eq("user_id", userId)
+
+  if (contacts.length > 0) {
+    const dbContacts = contacts.map((contact) => ({
+      id: contact.id,
+      user_id: userId,
+      name: contact.name,
+      type: contact.type,
+      phone: contact.phone,
+      address: contact.address || null,
+      notes: contact.notes || null,
+      created_at: contact.createdAt || new Date().toISOString(),
+    }))
+
+    const { error } = await supabase.from("medical_contacts").insert(dbContacts)
+    if (error) {
+      console.error("[v0] 의료 연락처 저장 에러:", error)
+      throw error
+    }
+  }
+}
+
+export async function loadMedicalContacts(userId: string): Promise<MedicalContact[]> {
+  const supabase = createClient()
+
+  const { data, error } = await supabase
+    .from("medical_contacts")
+    .select("*")
+    .eq("user_id", userId)
+    .order("type", { ascending: true })
+    .order("name", { ascending: true })
+
+  if (error) throw error
+
+  return (data || []).map((row) => ({
+    id: row.id,
+    name: row.name,
+    type: row.type,
+    phone: row.phone,
+    address: row.address || undefined,
+    notes: row.notes || undefined,
+    createdAt: row.created_at,
+    user_id: row.user_id,
+  }))
 }
