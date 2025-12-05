@@ -258,7 +258,7 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
               </Button>
 
               {showExportMenu && (
-                <div className="absolute top-full mt-1 w-full bg-card border rounded-lg shadow-lg py-1 z-10">
+                <div className="absolute top-full mt-1 w-full bg-background opacity-100 border rounded-lg shadow-lg py-1 z-10">
                   <button
                     onClick={() => {
                       handleExport()
