@@ -13,11 +13,10 @@ import type { DiaryEntry, Attachment } from "@/lib/types"
 import { MediaTools } from "@/components/media-tools"
 import { Spinner } from "@/components/ui/spinner"
 import { getTranslation } from "@/lib/i18n"
-import type { Language } from "@/lib/types"
 
 interface DiarySectionProps {
   onBack: () => void
-  language: Language
+  language: string
 }
 
 const moods = ["😊 좋음", "😐 보통", "😢 나쁨", "😍 최고", "😤 화남"]
@@ -31,7 +30,7 @@ async function hashPassword(password: string): Promise<string> {
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
 }
 
-export default function DiarySection({ onBack, language }: DiarySectionProps) {
+export function DiarySection({ onBack, language }: DiarySectionProps) {
   const { user } = useAuth()
   const [diaries, setDiaries] = useState<DiaryEntry[]>([])
   const [loading, setLoading] = useState(true)
