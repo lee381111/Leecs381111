@@ -147,7 +147,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     alarm_settings: "알람 설정",
     enable_alarm_before_event: "일정 전 알람 활성화",
     minutes_before: "분 전",
-    // </CHANGE>
     "5_min_before": "5분 전",
     "10_min_before": "10분 전",
     "15_min_before": "15분 전",
@@ -173,7 +172,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     "1_week_before": "1주일 전",
     add_schedule: "일정 추가",
     download_ics_description: "ICS 파일로 다운로드하여 휴대폰 캘린더에 추가",
-    // </CHANGE>
     title_label: "제목",
     category_label: "분류",
     description_label: "설명",
@@ -407,6 +405,13 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     alarm_notification: "알림",
     maintenance_alarm_title: "정비 알림",
     maintenance_alarm_message: "예정된 정비 일정",
+
+    // Emotion Analysis
+    analyze_emotion: "감정 분석",
+    analyzing_emotion: "감정 분석 중...",
+    emotion_analysis_result: "감정 분석 결과",
+    emotion_analysis_failed: "감정 분석에 실패했습니다. 다시 시도해주세요.",
+    diary_too_short_for_analysis: "일기 내용이 너무 짧습니다. 최소 10자 이상 작성해주세요.",
   },
 
   en: {
@@ -547,7 +552,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     alarm_settings: "Alarm Settings",
     enable_alarm_before_event: "Enable alarm before event",
     minutes_before: " minutes before",
-    // </CHANGE>
     "5_min_before": "5 minutes before",
     "10_min_before": "10 minutes before",
     "15_min_before": "15 minutes before",
@@ -573,7 +577,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     "1_week_before": "1 week before",
     add_schedule: "Add Schedule",
     download_ics_description: "Download as ICS file to add to phone calendar",
-    // </CHANGE>
     title_label: "Title",
     category_label: "Category",
     description_label: "Description",
@@ -809,6 +812,13 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     alarm_notification: "Alarm",
     maintenance_alarm_title: "Maintenance Alarm",
     maintenance_alarm_message: "Scheduled maintenance",
+
+    // Emotion Analysis
+    analyze_emotion: "Analyze Emotion",
+    analyzing_emotion: "Analyzing emotion...",
+    emotion_analysis_result: "Emotion Analysis Result",
+    emotion_analysis_failed: "Failed to analyze emotion. Please try again.",
+    diary_too_short_for_analysis: "Diary content is too short. Please write at least 10 characters.",
   },
 
   zh: {
@@ -960,7 +970,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     alarm_settings: "提醒设置",
     enable_alarm_before_event: "事件前启用提醒",
     minutes_before: "分钟前",
-    // </CHANGE>
     "5_min_before": "提前5分钟",
     "10_min_before": "提前10分钟",
     "15_min_before": "提前15分钟",
@@ -986,7 +995,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     "1_week_before": "提前1周",
     add_schedule: "添加日程",
     download_ics_description: "下载ICS文件以添加到手机日历",
-    // </CHANGE>
     title_label: "标题",
     category_label: "分类",
     description_label: "说明",
@@ -1214,6 +1222,13 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     alarm_notification: "提醒",
     maintenance_alarm_title: "维修提醒",
     maintenance_alarm_message: "计划维修",
+
+    // Emotion Analysis
+    analyze_emotion: "情绪分析",
+    analyzing_emotion: "正在分析情绪...",
+    emotion_analysis_result: "情绪分析结果",
+    emotion_analysis_failed: "情绪分析失败。请重试。",
+    diary_too_short_for_analysis: "日记内容太短。请至少写10个字符。",
   },
 
   ja: {
@@ -1365,7 +1380,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     alarm_settings: "アラーム設定",
     enable_alarm_before_event: "イベント前にアラームを有効にする",
     minutes_before: "分前",
-    // </CHANGE>
     "5_min_before": "5分前",
     "10_min_before": "10分前",
     "15_min_before": "15分前",
@@ -1391,7 +1405,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     "1_week_before": "1週間前",
     add_schedule: "スケジュール追加",
     download_ics_description: "ICSファイルとしてダウンロードして携帯カレンダーに追加",
-    // </CHANGE>
     title_label: "タイトル",
     category_label: "分類",
     description_label: "説明",
@@ -1602,6 +1615,13 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     alarm_notification: "アラーム",
     maintenance_alarm_title: "整備アラーム",
     maintenance_alarm_message: "予定された整備",
+
+    // Emotion Analysis
+    analyze_emotion: "感情分析",
+    analyzing_emotion: "感情を分析中...",
+    emotion_analysis_result: "感情分析結果",
+    emotion_analysis_failed: "感情分析に失敗しました。もう一度お試しください。",
+    diary_too_short_for_analysis: "日記の内容が短すぎます。最低10文字以上書いてください。",
   },
 }
 
