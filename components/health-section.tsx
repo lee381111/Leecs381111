@@ -4,8 +4,10 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, Plus, Trash2, TrendingUp, Pill, Bell, Pencil } from "lucide-react"
+import { ArrowLeft, Plus, Trash2, TrendingUp, Pill, Bell, Pencil, Save, Phone, Edit2 } from "lucide-react"
 import { saveHealthRecords, loadHealthRecords, saveMedications, loadMedications } from "@/lib/storage"
+import { saveMedicalContacts, loadMedicalContacts, deleteMedicalContact } from "@/lib/storage"
+import type { MedicalContact } from "@/lib/types"
 import { useAuth } from "@/lib/auth-context"
 import type { HealthRecord, Medication, Attachment } from "@/lib/types"
 import { MediaTools } from "@/components/media-tools"
@@ -24,17 +26,19 @@ interface HealthSectionProps {
   language: string
 }
 
-type ViewMode = "list" | "add_record" | "medications" | "add_medication" | "charts"
+type ViewMode = "list" | "add_record" | "medications" | "add_medication" | "charts" | "add_contact"
 
 export function HealthSection({ onBack, language }: HealthSectionProps) {
   const { user } = useAuth()
   const [records, setRecords] = useState<HealthRecord[]>([])
   const [medications, setMedications] = useState<Medication[]>([])
+  const [medicalContacts, setMedicalContacts] = useState<MedicalContact[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>("list")
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingMedId, setEditingMedId] = useState<string | null>(null)
+  const [editingContactId, setEditingContactId] = useState<string | null>(null)
   const [medicationCompletions, setMedicationCompletions] = useState<Record<string, string[]>>({})
 
   const [formData, setFormData] = useState<{
@@ -79,27 +83,45 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
     attachments: [] as Attachment[],
   })
 
+  const [contactFormData, setContactFormData] = useState({
+    name: "",
+    type: "hospital" as "hospital" | "clinic" | "pharmacy",
+    phone: "",
+    address: "",
+    notes: "",
+  })
+
+  // Modifying useEffect for loading data
   useEffect(() => {
-    loadData()
-  }, [user])
+    const fetchData = async () => {
+      if (!user?.id) {
+        setLoading(false)
+        return
+      }
+      try {
+        setLoading(true)
+        console.log("[v0] 건강 섹션: 데이터 로드 시작")
+        const [healthData, medData, contactData] = await Promise.all([
+          loadHealthRecords(user.id),
+          loadMedications(user.id),
+          loadMedicalContacts(user.id),
+        ])
+        console.log("[v0] 건강 기록 로드됨:", healthData.length, "개")
+        console.log("[v0] 복약 기록 로드됨:", medData.length, "개")
+        console.log("[v0] 의료 연락처 로드됨:", contactData.length, "개")
+        setRecords(healthData)
+        setMedications(medData)
+        setMedicalContacts(contactData)
 
-  const loadData = async () => {
-    if (!user?.id) return
-
-    try {
-      setLoading(true)
-      console.log("[v0] 건강 섹션: 데이터 로드 시작")
-      const [healthData, medData] = await Promise.all([loadHealthRecords(user.id), loadMedications(user.id)])
-      console.log("[v0] 건강 기록 로드됨:", healthData.length, "개")
-      console.log("[v0] 복약 기록 로드됨:", medData.length, "개")
-      setRecords(healthData)
-      setMedications(medData)
-
-      setupMedicationAlarms(medData)
-    } finally {
-      setLoading(false)
+        setupMedicationAlarms(medData)
+      } catch (error) {
+        console.error("[v0] 건강 데이터 로드 에러:", error)
+      } finally {
+        setLoading(false)
+      }
     }
-  }
+    fetchData()
+  }, [user])
 
   const handleSaveRecord = async (attachments: Attachment[]) => {
     if (!user?.id) {
@@ -264,6 +286,63 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
     }
   }
 
+  const handleSaveContact = async () => {
+    if (!user?.id) {
+      alert("로그인이 필요합니다.")
+      return
+    }
+    if (!contactFormData.name.trim() || !contactFormData.phone.trim()) {
+      alert(t("fill_required_fields"))
+      return
+    }
+
+    setSaving(true)
+    try {
+      const newContact: MedicalContact = {
+        id: editingContactId || crypto.randomUUID(),
+        ...contactFormData,
+        userId: user.id, // Use actual user ID
+        createdAt: new Date().toISOString(),
+      }
+
+      const updatedContacts = editingContactId
+        ? medicalContacts.map((c) => (c.id === editingContactId ? newContact : c))
+        : [...medicalContacts, newContact]
+
+      await saveMedicalContacts(updatedContacts, user.id)
+      setMedicalContacts(updatedContacts)
+      setViewMode("list")
+      resetContactForm()
+      setEditingContactId(null)
+      alert(t("save_success"))
+    } catch (error) {
+      console.error("[v0] Error saving contact:", error)
+      alert(t("save_failed"))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDeleteContact = async (id: string) => {
+    if (!user?.id) {
+      alert("로그인이 필요합니다.")
+      return
+    }
+    if (!confirm(t("confirm_delete"))) return
+
+    setSaving(true)
+    try {
+      await deleteMedicalContact(id, user.id)
+      setMedicalContacts(medicalContacts.filter((c) => c.id !== id))
+      alert(t("delete_success"))
+    } catch (error) {
+      console.error("[v0] Error deleting contact:", error)
+      alert(t("delete_failed"))
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const handleDeleteRecord = async (id: string) => {
     if (!user?.id) {
       alert("로그인이 필요합니다")
@@ -339,6 +418,17 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
       notes: "",
       alarmEnabled: true,
       attachments: [],
+    })
+  }
+
+  // Adding contact form reset handler
+  const resetContactForm = () => {
+    setContactFormData({
+      name: "",
+      type: "hospital",
+      phone: "",
+      address: "",
+      notes: "",
     })
   }
 
@@ -724,6 +814,81 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
     )
   }
 
+  // Adding add_contact view
+  if (viewMode === "add_contact") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
+        <Button
+          variant="ghost"
+          onClick={() => {
+            setViewMode("list")
+            resetContactForm()
+            setEditingContactId(null)
+          }}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" /> {t("cancel")}
+        </Button>
+        <h2 className="text-xl font-bold">{editingContactId ? t("edit_medical_contact") : t("add_medical_contact")}</h2>
+
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium">{t("contact_name")}</label>
+            <Input
+              placeholder={t("contact_name_placeholder")}
+              value={contactFormData.name}
+              onChange={(e) => setContactFormData({ ...contactFormData, name: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">{t("contact_type")}</label>
+            <select
+              value={contactFormData.type}
+              onChange={(e) => setContactFormData({ ...contactFormData, type: e.target.value as any })}
+              className="w-full p-2 border rounded bg-white/50 dark:bg-slate-800/50"
+            >
+              <option value="hospital">{t("hospital")}</option>
+              <option value="clinic">{t("clinic")}</option>
+              <option value="pharmacy">{t("pharmacy")}</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">{t("contact_phone")}</label>
+            <Input
+              placeholder={t("contact_phone_placeholder")}
+              value={contactFormData.phone}
+              onChange={(e) => setContactFormData({ ...contactFormData, phone: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">{t("contact_address")}</label>
+            <Input
+              placeholder={t("contact_address_placeholder")}
+              value={contactFormData.address}
+              onChange={(e) => setContactFormData({ ...contactFormData, address: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">{t("notes")}</label>
+            <Input
+              placeholder={t("contact_notes_placeholder")}
+              value={contactFormData.notes}
+              onChange={(e) => setContactFormData({ ...contactFormData, notes: e.target.value })}
+            />
+          </div>
+
+          <Button onClick={handleSaveContact} disabled={saving} className="w-full">
+            {saving ? <Spinner className="mr-2" /> : <Save className="mr-2 h-4 w-4" />}
+            {editingContactId ? t("update") : t("save")}
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   if (viewMode === "medications") {
     const today = new Date().toISOString().split("T")[0]
 
@@ -1014,6 +1179,17 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
         >
           <TrendingUp className="mr-2 h-5 w-5" /> {t("view_graph")}
         </Button>
+        {/* Adding button for medical contacts */}
+        <Button
+          onClick={() => {
+            resetContactForm()
+            setEditingContactId(null)
+            setViewMode("add_contact")
+          }}
+          className="h-20 col-span-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+        >
+          <Phone className="mr-2 h-5 w-5" /> {t("manage_medical_contacts")}
+        </Button>
       </div>
 
       <h2 className="text-lg font-bold mt-6">{t("recent_records")}</h2>
@@ -1138,6 +1314,72 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
           </Card>
         ))}
       </div>
+
+      <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
+        <div className="p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold flex items-center gap-2">
+              <Phone className="h-5 w-5 text-emerald-600" />
+              {t("medical_contacts")}
+            </h3>
+            <Button
+              onClick={() => {
+                resetContactForm()
+                setEditingContactId(null)
+                setViewMode("add_contact")
+              }}
+              size="sm"
+              variant="outline"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              {t("add_contact")}
+            </Button>
+          </div>
+
+          {medicalContacts.length === 0 ? (
+            <p className="text-muted-foreground text-sm text-center py-4">{t("no_medical_contacts")}</p>
+          ) : (
+            <div className="space-y-2">
+              {medicalContacts.map((contact) => (
+                <div
+                  key={contact.id}
+                  className="flex items-center justify-between p-3 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-slate-700 dark:to-slate-600 rounded-lg"
+                >
+                  <div className="flex-1">
+                    <div className="font-semibold">{contact.name}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {t(contact.type)} • {contact.phone}
+                    </div>
+                    {contact.address && <div className="text-xs text-muted-foreground mt-1">{contact.address}</div>}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setContactFormData({
+                          name: contact.name,
+                          type: contact.type,
+                          phone: contact.phone,
+                          address: contact.address || "",
+                          notes: contact.notes || "",
+                        })
+                        setEditingContactId(contact.id)
+                        setViewMode("add_contact")
+                      }}
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => handleDeleteContact(contact.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </Card>
     </div>
   )
 }

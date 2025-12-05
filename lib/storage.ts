@@ -1301,3 +1301,14 @@ export async function loadMedicalContacts(userId: string): Promise<MedicalContac
     user_id: row.user_id,
   }))
 }
+
+export async function deleteMedicalContact(id: string, userId: string) {
+  const supabase = createClient()
+
+  const { error } = await supabase.from("medical_contacts").delete().eq("id", id).eq("user_id", userId)
+
+  if (error) {
+    console.error("[v0] 의료 연락처 삭제 에러:", error)
+    throw error
+  }
+}
