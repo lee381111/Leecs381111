@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, Plus, Search, Trash2, Edit2, Save, Tag, Eye, Share2 } from "lucide-react"
+import { ArrowLeft, Plus, Search, Trash2, Edit2, Save, Tag, Eye, Share2, FileText } from "lucide-react"
 import { saveNotes, loadNotes } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import { getTranslation } from "@/lib/i18n"
@@ -33,6 +33,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
   const [viewingAttachment, setViewingAttachment] = useState<{ url: string; name: string } | null>(null)
   const [imageLoadErrors, setImageLoadErrors] = useState<Set<string>>(new Set())
   const [isOrganizing, setIsOrganizing] = useState(false)
+  const [isSummarizing, setIsSummarizing] = useState(false)
 
   const t = (key: string) => getTranslation(language, key)
 
@@ -203,6 +204,45 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
     }
   }
 
+  const handleSummarizeNote = async () => {
+    if (!formData.content.trim()) {
+      alert(t("content_required_for_summary"))
+      return
+    }
+
+    try {
+      setIsSummarizing(true)
+      console.log("[v0] Summarizing note...")
+
+      const response = await fetch("/api/summarize-note", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: formData.content,
+          language,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to summarize note")
+      }
+
+      const { summary } = await response.json()
+
+      setFormData({
+        ...formData,
+        content: summary,
+      })
+
+      alert(t("note_summarized_success"))
+    } catch (error) {
+      console.error("[v0] Error summarizing note:", error)
+      alert(t("note_summary_failed"))
+    } finally {
+      setIsSummarizing(false)
+    }
+  }
+
   const searchImageOnBing = (imageUrl: string) => {
     const bingSearchUrl = `https://www.bing.com/images/search?view=detailv2&iss=sbi&form=SBIHMP&sbisrc=UrlPaste&q=imgurl:${encodeURIComponent(imageUrl)}`
     window.open(bingSearchUrl, "_blank")
@@ -314,6 +354,25 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
               <>
                 <Tag className="mr-2 h-4 w-4" />
                 {t("organize_meeting_minutes")}
+              </>
+            )}
+          </Button>
+
+          <Button
+            onClick={handleSummarizeNote}
+            disabled={isSummarizing || !formData.content.trim()}
+            variant="outline"
+            className="w-full bg-transparent"
+          >
+            {isSummarizing ? (
+              <>
+                <Spinner className="mr-2 h-4 w-4" />
+                {t("summarizing_note")}
+              </>
+            ) : (
+              <>
+                <FileText className="mr-2 h-4 w-4" />
+                {t("summarize_note")}
               </>
             )}
           </Button>

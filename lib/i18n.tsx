@@ -74,12 +74,18 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     tags_placeholder: "태그 (쉼표로 구분)",
     attached_files: "첨부파일",
     filter_by_tag: "태그로 필터",
+
     organize_meeting_minutes: "AI 회의록 정리",
     organizing_meeting: "정리 중...",
     content_required_for_organize: "회의록 내용을 입력해주세요",
     confirm_organize_meeting: "AI가 회의록을 정리합니다. 계속하시겠습니까?",
     meeting_organized_success: "회의록이 정리되었습니다!",
     meeting_organize_failed: "회의록 정리에 실패했습니다",
+    summarize_note: "AI 노트 요약",
+    summarizing_note: "요약 중...",
+    content_required_for_summary: "요약할 내용을 입력해주세요",
+    note_summarized_success: "노트가 요약되었습니다!",
+    note_summary_failed: "노트 요약에 실패했습니다",
 
     analyze_emotion: "AI 감정 분석",
     analyzing_emotion: "분석 중...",
@@ -527,6 +533,11 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     confirm_organize_meeting: "AI will organize the meeting minutes. Continue?",
     meeting_organized_success: "Meeting minutes have been organized!",
     meeting_organize_failed: "Failed to organize meeting minutes",
+    summarize_note: "AI Note Summary",
+    summarizing_note: "Summarizing...",
+    content_required_for_summary: "Please enter content to summarize",
+    note_summarized_success: "Note has been summarized!",
+    note_summary_failed: "Failed to summarize note",
 
     analyze_emotion: "AI Emotion Analysis",
     analyzing_emotion: "Analyzing...",
@@ -962,6 +973,11 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     confirm_organize_meeting: "AI将整理会议录。继续吗？",
     meeting_organized_success: "会议录已整理！",
     meeting_organize_failed: "会议录整理失败",
+    summarize_note: "AI笔记摘要",
+    summarizing_note: "摘要中...",
+    content_required_for_summary: "请输入要摘要的内容",
+    note_summarized_success: "笔记已摘要！",
+    note_summary_failed: "笔记摘要失败",
 
     analyze_emotion: "AI情感分析",
     analyzing_emotion: "分析中...",
@@ -1312,17 +1328,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     alarm_notification: "提醒",
     maintenance_alarm_title: "维修提醒",
     maintenance_alarm_message: "计划维修",
-
-    // Budget Section
-    analyze_budget: "지출 분석",
-    analyzing_budget: "분석 중...",
-    budget_analysis_result: "지출 분석 결과",
-    no_transactions_for_analysis: "분석할 거래 내역이 없습니다.",
-    budget_analysis_failed: "지출 분석에 실패했습니다.",
-    budget_summary: "지출 요약",
-    highest_spending_category: "최다 지출 카테고리",
-    saving_tips: "절약 팁",
-    monthly_goal: "다음 달 목표",
   },
 
   ja: {
@@ -1400,6 +1405,11 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     confirm_organize_meeting: "AIが議事録を整理します。続行しますか？",
     meeting_organized_success: "議事録が整理されました！",
     meeting_organize_failed: "議事録の整理に失敗しました",
+    summarize_note: "AIノート要約",
+    summarizing_note: "要約中...",
+    content_required_for_summary: "要約する内容を入力してください",
+    note_summarized_success: "ノートが要約されました！",
+    note_summary_failed: "ノート要約に失敗しました",
 
     analyze_emotion: "AI感情分析",
     analyzing_emotion: "分析中...",
