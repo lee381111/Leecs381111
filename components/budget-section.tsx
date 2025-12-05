@@ -374,14 +374,25 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
 
     try {
       setAnalyzingBudget(true)
-      // Placeholder for budget analysis logic
-      const analysis = {
-        summary: "This is a summary",
-        highestCategory: "Shopping",
-        savingTips: ["Tip 1", "Tip 2"],
-        monthlyGoal: "Goal for the month",
+
+      const response = await fetch("/api/analyze-budget", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          transactions: transactions,
+          month: selectedMonth,
+          language: language,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to analyze budget")
       }
-      setBudgetAnalysis(analysis)
+
+      const data = await response.json()
+      setBudgetAnalysis(data.analysis)
     } catch (error) {
       console.error("[v0] Failed to analyze budget:", error)
       alert(getText("budget_analysis_failed") || "예산 분석에 실패했습니다")
@@ -1020,19 +1031,19 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
               </div>
               <div>
                 <h4 className="font-semibold text-emerald-800 mb-2">{getText("highest_spending_category")}</h4>
-                <p className="text-emerald-700">{budgetAnalysis.highestCategory}</p>
+                <p className="text-emerald-700">{getText(budgetAnalysis.highestCategory)}</p>
               </div>
               <div>
                 <h4 className="font-semibold text-emerald-800 mb-2">{getText("saving_tips")}</h4>
                 <ul className="list-disc list-inside space-y-1 text-emerald-700">
                   {budgetAnalysis.savingTips.map((tip: string, index: number) => (
-                    <li key={index}>{tip}</li>
+                    <li key={index}>{getText(tip)}</li>
                   ))}
                 </ul>
               </div>
               <div>
                 <h4 className="font-semibold text-emerald-800 mb-2">{getText("monthly_goal")}</h4>
-                <p className="text-emerald-700">{budgetAnalysis.monthlyGoal}</p>
+                <p className="text-emerald-700">{getText(budgetAnalysis.monthlyGoal)}</p>
               </div>
             </CardContent>
           </Card>
