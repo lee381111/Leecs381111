@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowLeft, Plus, Edit, Trash2, Lock, Unlock, X } from "lucide-react"
@@ -51,10 +51,6 @@ export default function DiarySection({ onBack, language }: DiarySectionProps) {
   const [password, setPassword] = useState("")
   const [isSettingPassword, setIsSettingPassword] = useState(false)
   const [confirmPassword, setConfirmPassword] = useState("")
-
-  const [analyzingEmotion, setAnalyzingEmotion] = useState(false)
-  const [emotionAnalysis, setEmotionAnalysis] = useState<string | null>(null)
-  const [showAnalysis, setShowAnalysis] = useState(false)
 
   const t = (key: string) => getTranslation(language as any, key)
 
@@ -263,8 +259,6 @@ export default function DiarySection({ onBack, language }: DiarySectionProps) {
       })
       setEditingId(null)
       setIsAdding(false)
-      setShowAnalysis(false)
-      setEmotionAnalysis(null)
     } catch (error) {
       console.error("[v0] Error saving diary:", error)
       alert("저장 실패: " + error)
@@ -281,39 +275,6 @@ export default function DiarySection({ onBack, language }: DiarySectionProps) {
 
   const handleTranscriptReceived = (text: string) => {
     setFormData({ ...formData, content: formData.content + text })
-  }
-
-  const handleAnalyzeEmotion = async () => {
-    if (!formData.content || formData.content.trim().length < 10) {
-      alert(t("diary_too_short_for_analysis"))
-      return
-    }
-
-    setAnalyzingEmotion(true)
-    setShowAnalysis(true)
-    setEmotionAnalysis(null)
-
-    try {
-      const response = await fetch("/api/analyze-diary-emotion", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          content: formData.content,
-          language,
-        }),
-      })
-
-      if (!response.ok) throw new Error("Failed to analyze emotion")
-
-      const data = await response.json()
-      setEmotionAnalysis(data.analysis)
-    } catch (error) {
-      console.error("Error analyzing emotion:", error)
-      alert(t("emotion_analysis_failed"))
-      setShowAnalysis(false)
-    } finally {
-      setAnalyzingEmotion(false)
-    }
   }
 
   if (isSettingPassword) {
@@ -416,8 +377,6 @@ export default function DiarySection({ onBack, language }: DiarySectionProps) {
           onClick={() => {
             setIsAdding(false)
             setEditingId(null)
-            setShowAnalysis(false)
-            setEmotionAnalysis(null)
           }}
         >
           <ArrowLeft className="mr-2 h-4 w-4" /> {t("cancel")}
@@ -477,38 +436,6 @@ export default function DiarySection({ onBack, language }: DiarySectionProps) {
             onChange={(e) => setFormData({ ...formData, content: e.target.value })}
             rows={10}
           />
-          <div className="flex gap-2">
-            <Button
-              onClick={handleAnalyzeEmotion}
-              disabled={analyzingEmotion || !formData.content || formData.content.trim().length < 10}
-              variant="outline"
-              className="flex-1 bg-transparent"
-            >
-              {analyzingEmotion ? t("analyzing_emotion") : t("analyze_emotion")}
-            </Button>
-          </div>
-
-          {showAnalysis && (
-            <Card className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200 dark:border-purple-800">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <span>💭</span>
-                  {t("emotion_analysis_result")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {analyzingEmotion ? (
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600"></div>
-                    {t("analyzing_emotion")}
-                  </div>
-                ) : emotionAnalysis ? (
-                  <div className="whitespace-pre-wrap text-sm leading-relaxed">{emotionAnalysis}</div>
-                ) : null}
-              </CardContent>
-            </Card>
-          )}
-
           {formData.attachments && formData.attachments.length > 0 && (
             <div className="space-y-2">
               <p className="text-sm font-medium">첨부파일:</p>
