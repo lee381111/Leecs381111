@@ -55,7 +55,7 @@ ${content}`,
     const prompt = prompts[language as keyof typeof prompts] || prompts.en
 
     const { text } = await generateText({
-      model: groq("mixtral-8x7b-32768"), // Use Groq provider directly instead of string model name
+      model: groq("llama-3.3-70b-versatile"), // Updated to supported Groq model (Llama 3.3 70B)
       prompt,
       maxOutputTokens: 2000,
     })
