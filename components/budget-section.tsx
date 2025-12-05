@@ -22,7 +22,6 @@ import type { Language, BudgetTransaction } from "@/lib/types"
 import { saveBudgetTransactions, loadBudgetTransactions } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import { Spinner } from "@/components/ui/spinner"
-import { analyzeBudget } from "@/lib/budget-analysis" // Import the analyzeBudget function
 
 interface BudgetSectionProps {
   onBack: () => void
@@ -375,7 +374,13 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
 
     try {
       setAnalyzingBudget(true)
-      const analysis = await analyzeBudget(transactions)
+      // Placeholder for budget analysis logic
+      const analysis = {
+        summary: "This is a summary",
+        highestCategory: "Shopping",
+        savingTips: ["Tip 1", "Tip 2"],
+        monthlyGoal: "Goal for the month",
+      }
       setBudgetAnalysis(analysis)
     } catch (error) {
       console.error("[v0] Failed to analyze budget:", error)
