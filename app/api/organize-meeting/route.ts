@@ -50,9 +50,9 @@ ${content}`,
     const prompt = prompts[language as keyof typeof prompts] || prompts.en
 
     const { text } = await generateText({
-      model: "openai/gpt-4o-mini",
+      model: "groq/mixtral-8x7b-32768",
       prompt,
-      maxTokens: 2000,
+      maxOutputTokens: 2000,
     })
 
     return Response.json({ organizedContent: text })
