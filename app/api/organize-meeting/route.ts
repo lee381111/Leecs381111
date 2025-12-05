@@ -1,4 +1,9 @@
 import { generateText } from "ai"
+import { createGroq } from "@ai-sdk/groq" // Import Groq provider to use Groq API directly
+
+const groq = createGroq({
+  apiKey: process.env.GROQ_API_KEY,
+})
 
 export async function POST(req: Request) {
   try {
@@ -50,7 +55,7 @@ ${content}`,
     const prompt = prompts[language as keyof typeof prompts] || prompts.en
 
     const { text } = await generateText({
-      model: "groq/mixtral-8x7b-32768",
+      model: groq("mixtral-8x7b-32768"), // Use Groq provider directly instead of string model name
       prompt,
       maxOutputTokens: 2000,
     })
