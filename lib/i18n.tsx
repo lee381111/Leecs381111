@@ -60,6 +60,12 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     tags_placeholder: "태그 (쉼표로 구분)",
     attached_files: "첨부파일",
     filter_by_tag: "태그로 필터",
+    organize_meeting_minutes: "AI 회의록 정리",
+    organizing_meeting: "정리 중...",
+    content_required_for_organize: "회의록 내용을 입력해주세요",
+    confirm_organize_meeting: "AI가 회의록을 정리합니다. 계속하시겠습니까?",
+    meeting_organized_success: "회의록이 정리되었습니다!",
+    meeting_organize_failed: "회의록 정리에 실패했습니다",
 
     // Health Section
     health_record: "건강 기록",

@@ -32,6 +32,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
   const [selectedImage, setSelectedImage] = useState<{ url: string; name: string } | null>(null)
   const [viewingAttachment, setViewingAttachment] = useState<{ url: string; name: string } | null>(null)
   const [imageLoadErrors, setImageLoadErrors] = useState<Set<string>>(new Set())
+  const [isOrganizing, setIsOrganizing] = useState(false)
 
   const t = (key: string) => getTranslation(language, key)
 
@@ -160,6 +161,48 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
     setIsAdding(true)
   }
 
+  const handleOrganizeMeeting = async () => {
+    if (!formData.content.trim()) {
+      alert(t("content_required_for_organize"))
+      return
+    }
+
+    const confirmed = confirm(t("confirm_organize_meeting"))
+    if (!confirmed) return
+
+    try {
+      setIsOrganizing(true)
+      console.log("[v0] Organizing meeting minutes...")
+
+      const response = await fetch("/api/organize-meeting", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: formData.content,
+          language,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to organize meeting")
+      }
+
+      const { organizedContent } = await response.json()
+
+      setFormData({
+        ...formData,
+        content: organizedContent,
+      })
+
+      alert(t("meeting_organized_success"))
+    } catch (error) {
+      console.error("[v0] Error organizing meeting:", error)
+      alert(t("meeting_organize_failed"))
+    } finally {
+      setIsOrganizing(false)
+    }
+  }
+
   const searchImageOnBing = (imageUrl: string) => {
     const bingSearchUrl = `https://www.bing.com/images/search?view=detailv2&iss=sbi&form=SBIHMP&sbisrc=UrlPaste&q=imgurl:${encodeURIComponent(imageUrl)}`
     window.open(bingSearchUrl, "_blank")
@@ -255,6 +298,26 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
             onChange={(e) => setFormData({ ...formData, content: e.target.value })}
             rows={10}
           />
+
+          <Button
+            onClick={handleOrganizeMeeting}
+            disabled={isOrganizing || !formData.content.trim()}
+            variant="outline"
+            className="w-full bg-transparent"
+          >
+            {isOrganizing ? (
+              <>
+                <Spinner className="mr-2 h-4 w-4" />
+                {t("organizing_meeting")}
+              </>
+            ) : (
+              <>
+                <Tag className="mr-2 h-4 w-4" />
+                {t("organize_meeting_minutes")}
+              </>
+            )}
+          </Button>
+
           <Input
             placeholder={t("tags_placeholder")}
             value={formData.tags}
