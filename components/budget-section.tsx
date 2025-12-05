@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import {
   ArrowLeft,
   Plus,
@@ -21,6 +22,7 @@ import type { Language, BudgetTransaction } from "@/lib/types"
 import { saveBudgetTransactions, loadBudgetTransactions } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import { Spinner } from "@/components/ui/spinner"
+import { analyzeBudget } from "@/lib/budget-analysis" // Import the analyzeBudget function
 
 interface BudgetSectionProps {
   onBack: () => void
@@ -75,6 +77,9 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
 
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7))
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
+
+  const [budgetAnalysis, setBudgetAnalysis] = useState<any>(null)
+  const [analyzingBudget, setAnalyzingBudget] = useState(false)
 
   useEffect(() => {
     const savedPasswordSkipped = localStorage.getItem("budget_password_skipped")
@@ -328,12 +333,56 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
       krw_unit: { ko: "원", en: "$", zh: "元", ja: "円" },
       krw: { ko: "원", en: "$", zh: "元", ja: "円" },
       year: { ko: "년", en: "", zh: "年", ja: "年" },
+      no_transactions_for_analysis: {
+        ko: "분석할 거래 내역이 없습니다",
+        en: "No transactions to analyze",
+        zh: "无交易记录可分析",
+        ja: "分析する取引履歴なし",
+      },
+      analyzing_budget: { ko: "분석 중...", en: "Analyzing budget...", zh: "分析中...", ja: "予算を分析しています..." },
+      analyze_budget: { ko: "예산 분석", en: "Analyze Budget", zh: "分析预算", ja: "予算分析" },
+      budget_analysis_failed: {
+        ko: "예산 분석에 실패했습니다",
+        en: "Budget analysis failed",
+        zh: "预算分析失败",
+        ja: "予算分析に失敗しました",
+      },
+      budget_analysis_result: {
+        ko: "예산 분석 결과",
+        en: "Budget Analysis Result",
+        zh: "预算分析结果",
+        ja: "予算分析結果",
+      },
+      budget_summary: { ko: "예산 요약", en: "Budget Summary", zh: "预算总结", ja: "予算概要" },
+      highest_spending_category: {
+        ko: "가장 높은 지출 카테고리",
+        en: "Highest Spending Category",
+        zh: "最高支出类别",
+        ja: "最高支出カテゴリ",
+      },
+      saving_tips: { ko: " 저축 팁", en: "Saving Tips", zh: "储蓄小贴士", ja: "貯蓄のヒント" },
+      monthly_goal: { ko: "월별 목표", en: "Monthly Goal", zh: "月度目标", ja: "月別目標" },
     }
     return translations[key]?.[language] || key
   }
 
   const saveData = (key: string, value: boolean) => {
     localStorage.setItem(key, value.toString())
+  }
+
+  const handleAnalyzeBudget = async () => {
+    if (!user || analyzingBudget || transactions.length === 0) return
+
+    try {
+      setAnalyzingBudget(true)
+      const analysis = await analyzeBudget(transactions)
+      setBudgetAnalysis(analysis)
+    } catch (error) {
+      console.error("[v0] Failed to analyze budget:", error)
+      alert(getText("budget_analysis_failed") || "예산 분석에 실패했습니다")
+    } finally {
+      setAnalyzingBudget(false)
+    }
   }
 
   if (!passwordSet && view === "main") {
@@ -945,6 +994,44 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
               ))
           )}
         </div>
+
+        <Button
+          onClick={handleAnalyzeBudget}
+          disabled={analyzingBudget || monthlyTransactions.length === 0}
+          className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
+        >
+          {analyzingBudget ? getText("analyzing_budget") : getText("analyze_budget")}
+        </Button>
+
+        {budgetAnalysis && (
+          <Card className="bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200">
+            <CardHeader>
+              <CardTitle className="text-emerald-700">{getText("budget_analysis_result")}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h4 className="font-semibold text-emerald-800 mb-2">{getText("budget_summary")}</h4>
+                <p className="text-emerald-700">{budgetAnalysis.summary}</p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-emerald-800 mb-2">{getText("highest_spending_category")}</h4>
+                <p className="text-emerald-700">{budgetAnalysis.highestCategory}</p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-emerald-800 mb-2">{getText("saving_tips")}</h4>
+                <ul className="list-disc list-inside space-y-1 text-emerald-700">
+                  {budgetAnalysis.savingTips.map((tip: string, index: number) => (
+                    <li key={index}>{tip}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold text-emerald-800 mb-2">{getText("monthly_goal")}</h4>
+                <p className="text-emerald-700">{budgetAnalysis.monthlyGoal}</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   )

@@ -436,6 +436,17 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     alarm_notification: "알림",
     maintenance_alarm_title: "정비 알림",
     maintenance_alarm_message: "예정된 정비 일정",
+
+    // Budget Section
+    analyze_budget: "지출 분석",
+    analyzing_budget: "분석 중...",
+    budget_analysis_result: "지출 분석 결과",
+    no_transactions_for_analysis: "분석할 거래 내역이 없습니다.",
+    budget_analysis_failed: "지출 분석에 실패했습니다.",
+    budget_summary: "지출 요약",
+    highest_spending_category: "최다 지출 카테고리",
+    saving_tips: "절약 팁",
+    monthly_goal: "다음 달 목표",
   },
 
   en: {
@@ -1301,6 +1312,17 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     alarm_notification: "提醒",
     maintenance_alarm_title: "维修提醒",
     maintenance_alarm_message: "计划维修",
+
+    // Budget Section
+    analyze_budget: "지출 분석",
+    analyzing_budget: "분석 중...",
+    budget_analysis_result: "지출 분석 결과",
+    no_transactions_for_analysis: "분석할 거래 내역이 없습니다.",
+    budget_analysis_failed: "지출 분석에 실패했습니다.",
+    budget_summary: "지출 요약",
+    highest_spending_category: "최다 지출 카테고리",
+    saving_tips: "절약 팁",
+    monthly_goal: "다음 달 목표",
   },
 
   ja: {
