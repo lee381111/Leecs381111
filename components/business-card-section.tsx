@@ -6,7 +6,21 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { ArrowLeft, Plus, Camera, Trash2, Pencil, User, Building, Briefcase, Phone, Mail, MapPin, ArrowUpDown, RotateCw } from 'lucide-react'
+import {
+  ArrowLeft,
+  Plus,
+  Camera,
+  Trash2,
+  Pencil,
+  User,
+  Building,
+  Briefcase,
+  Phone,
+  Mail,
+  MapPin,
+  ArrowUpDown,
+  RotateCw,
+} from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { saveBusinessCards, loadBusinessCards } from "@/lib/storage"
 import type { Language, BusinessCard } from "@/lib/types"
@@ -17,6 +31,7 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
   const [sortBy, setSortBy] = useState<"name" | "company" | "date">("date")
   const [showAddCard, setShowAddCard] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [extractingCard, setExtractingCard] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
     company: "",
@@ -35,19 +50,19 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
   useEffect(() => {
     if (user) {
       loadBusinessCards(user.id)
-        .then(cards => {
-          console.log('[v0] Loaded business cards:', cards.length)
+        .then((cards) => {
+          console.log("[v0] Loaded business cards:", cards.length)
           setBusinessCards(cards)
           const rotations: Record<string, number> = {}
-          cards.forEach(card => {
+          cards.forEach((card) => {
             if (card.rotation !== undefined) {
               rotations[card.id] = card.rotation
             }
           })
           setImageRotations(rotations)
         })
-        .catch(error => {
-          console.warn('[v0] Failed to load business cards:', error)
+        .catch((error) => {
+          console.warn("[v0] Failed to load business cards:", error)
           setBusinessCards([])
         })
     }
@@ -55,7 +70,7 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
 
   const handleSave = async () => {
     if (!user) return
-    
+
     if (!formData.name && !formData.company && !formData.phone && !formData.email && attachments.length === 0) {
       alert(getText("requireInfo"))
       return
@@ -72,15 +87,15 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
     }
 
     const updatedCards = editingId
-      ? businessCards.map(card => card.id === editingId ? newCard : card)
+      ? businessCards.map((card) => (card.id === editingId ? newCard : card))
       : [...businessCards, newCard]
 
     setBusinessCards(updatedCards)
-    
+
     try {
       await saveBusinessCards(updatedCards, user.id)
     } catch (error) {
-      console.error('[v0] Failed to save business card:', error)
+      console.error("[v0] Failed to save business card:", error)
     }
 
     setFormData({
@@ -114,17 +129,17 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
 
   const handleDelete = async (id: string) => {
     if (!user || !confirm(language === "ko" ? "삭제하시겠습니까?" : "Delete this card?")) return
-    
-    const updatedCards = businessCards.filter(card => card.id !== id)
+
+    const updatedCards = businessCards.filter((card) => card.id !== id)
     setBusinessCards(updatedCards)
-    
+
     try {
       await saveBusinessCards(updatedCards, user.id)
       const newRotations = { ...imageRotations }
       delete newRotations[id]
       setImageRotations(newRotations)
     } catch (error) {
-      console.error('[v0] Failed to delete business card:', error)
+      console.error("[v0] Failed to delete business card:", error)
     }
   }
 
@@ -148,12 +163,47 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
       editCard: { ko: "명함 수정", en: "Edit Card", zh: "编辑名片", ja: "名刺編集" },
       captureCard: { ko: "명함 촬영", en: "Capture Card", zh: "拍摄名片", ja: "名刺撮影" },
       takePhoto: { ko: "촬영", en: "Capture", zh: "拍摄", ja: "撮影" },
-      positionCard: { ko: "명함을 화면에 맞춰주세요", en: "Position the card in frame", zh: "将名片对准画面", ja: "名刺をフレームに合わせてください" },
+      positionCard: {
+        ko: "명함을 화면에 맞춰주세요",
+        en: "Position the card in frame",
+        zh: "将名片对准画面",
+        ja: "名刺をフレームに合わせてください",
+      },
       sort: { ko: "정렬", en: "Sort", zh: "排序", ja: "並べ替え" },
       sortByName: { ko: "이름순", en: "By Name", zh: "按姓名", ja: "名前順" },
       sortByCompany: { ko: "회사순", en: "By Company", zh: "按公司", ja: "会社順" },
       sortByDate: { ko: "최신순", en: "By Date", zh: "按日期", ja: "日付順" },
-      requireInfo: { ko: "최소 한 가지 정보를 입력하거나 사진을 추가해주세요", en: "Please add at least one field or photo", zh: "请至少添加一个信息或照片", ja: "少なくとも1つの情報または写真を追加してください" },
+      requireInfo: {
+        ko: "최소 한 가지 정보를 입력하거나 사진을 추가해주세요",
+        en: "Please add at least one field or photo",
+        zh: "请至少添加一个信息或照片",
+        ja: "少なくとも1つの情報または写真を追加してください",
+      },
+      please_add_card_photo_first: {
+        ko: "먼저 명함 사진을 추가해주세요",
+        en: "Please add a card photo first",
+        zh: "请先添加名片照片",
+        ja: "まず名刺の写真を追加してください",
+      },
+      card_info_extracted: {
+        ko: "명함 정보가 추출되었습니다",
+        en: "Card information extracted",
+        zh: "名片信息已提取",
+        ja: "名刺の情報が抽出されました",
+      },
+      card_extraction_failed: {
+        ko: "명함 정보 추출에 실패했습니다",
+        en: "Failed to extract card information",
+        zh: "名片信息提取失败",
+        ja: "名刺の情報抽出に失敗しました",
+      },
+      extracting_card_info: {
+        ko: "명함 정보 추출 중...",
+        en: "Extracting card information...",
+        zh: "正在提取名片信息...",
+        ja: "名刺の情報を抽出しています...",
+      },
+      ai_auto_fill: { ko: "AI로 자동 채우기", en: "AI Auto Fill", zh: "AI自动填充", ja: "AI自動入力" },
     }
     return translations[key]?.[language] || key
   }
@@ -173,60 +223,60 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
 
   const startCameraPreview = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
           facingMode: "environment",
-          aspectRatio: { ideal: 16/9 },
+          aspectRatio: { ideal: 16 / 9 },
           width: { ideal: 1920 },
-          height: { ideal: 1080 }
-        } 
+          height: { ideal: 1080 },
+        },
       })
       streamRef.current = stream
       setShowCameraPreview(true)
-      
-      await new Promise(resolve => setTimeout(resolve, 100))
-      
+
+      await new Promise((resolve) => setTimeout(resolve, 100))
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream
         await videoRef.current.play()
       }
     } catch (error) {
-      console.error('[v0] Camera error:', error)
+      console.error("[v0] Camera error:", error)
       alert("카메라 권한이 필요합니다")
     }
   }
 
   const capturePhoto = () => {
     if (!videoRef.current || !streamRef.current) return
-    
+
     const video = videoRef.current
     const canvas = document.createElement("canvas")
-    
+
     canvas.width = video.videoWidth
     canvas.height = video.videoHeight
-    
+
     const ctx = canvas.getContext("2d")
-    
+
     if (ctx) {
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
     }
 
     const dataUrl = canvas.toDataURL("image/jpeg", 0.95)
-    
+
     const newAttachment = {
       type: "image",
       name: `card_${Date.now()}.jpg`,
       data: dataUrl,
       url: dataUrl,
     }
-    
+
     setAttachments([...attachments, newAttachment])
     closeCameraPreview()
   }
 
   const closeCameraPreview = () => {
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop())
+      streamRef.current.getTracks().forEach((track) => track.stop())
       streamRef.current = null
     }
     if (videoRef.current) {
@@ -235,25 +285,65 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
     setShowCameraPreview(false)
   }
 
+  const handleAIAutoFill = async () => {
+    if (attachments.length === 0) {
+      alert(getText("please_add_card_photo_first"))
+      return
+    }
+
+    setExtractingCard(true)
+
+    try {
+      const imageData = attachments[0].url || attachments[0].data
+
+      const response = await fetch("/api/extract-business-card", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageData }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to extract card information")
+      }
+
+      const { data } = await response.json()
+
+      setFormData({
+        name: data.name || formData.name,
+        company: data.company || formData.company,
+        position: data.position || formData.position,
+        phone: data.phone || formData.phone,
+        email: data.email || formData.email,
+        address: data.address || formData.address,
+        notes: data.notes || formData.notes,
+      })
+
+      alert(getText("card_info_extracted"))
+    } catch (error) {
+      console.error("Card extraction error:", error)
+      alert(getText("card_extraction_failed"))
+    } finally {
+      setExtractingCard(false)
+    }
+  }
+
   const rotateImage = async (cardId: string) => {
     if (!user) return
-    
+
     const newRotation = ((imageRotations[cardId] || 0) + 90) % 360
-    
-    setImageRotations(prev => ({
+
+    setImageRotations((prev) => ({
       ...prev,
-      [cardId]: newRotation
+      [cardId]: newRotation,
     }))
-    
-    const updatedCards = businessCards.map(card => 
-      card.id === cardId ? { ...card, rotation: newRotation } : card
-    )
+
+    const updatedCards = businessCards.map((card) => (card.id === cardId ? { ...card, rotation: newRotation } : card))
     setBusinessCards(updatedCards)
-    
+
     try {
       await saveBusinessCards(updatedCards, user.id)
     } catch (error) {
-      console.error('[v0] Failed to save rotation:', error)
+      console.error("[v0] Failed to save rotation:", error)
     }
   }
 
@@ -261,20 +351,23 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6">
         <div className="max-w-2xl mx-auto space-y-4">
-          <Button variant="ghost" onClick={() => {
-            setShowAddCard(false)
-            setEditingId(null)
-            setFormData({
-              name: "",
-              company: "",
-              position: "",
-              phone: "",
-              email: "",
-              address: "",
-              notes: "",
-            })
-            setAttachments([])
-          }}>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setShowAddCard(false)
+              setEditingId(null)
+              setFormData({
+                name: "",
+                company: "",
+                position: "",
+                phone: "",
+                email: "",
+                address: "",
+                notes: "",
+              })
+              setAttachments([])
+            }}
+          >
             <ArrowLeft className="mr-2 h-4 w-4" />
             {getText("cancel")}
           </Button>
@@ -288,19 +381,19 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
                     className="w-full rounded-lg"
                     playsInline
                     autoPlay
-                    style={{ aspectRatio: '16/9' }}
+                    style={{ aspectRatio: "16/9" }}
                   />
                 </div>
               </div>
               <div className="bg-black/90 p-6 flex gap-4 justify-center">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={closeCameraPreview}
                   className="px-8 py-6 text-lg bg-gray-800 text-white border-gray-600 hover:bg-gray-700"
                 >
                   {getText("cancel")}
                 </Button>
-                <Button 
+                <Button
                   onClick={capturePhoto}
                   className="px-8 py-6 text-lg bg-emerald-600 hover:bg-emerald-700 text-white"
                 >
@@ -320,23 +413,29 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
               <div>
                 <Label>{getText("scanCard")}</Label>
                 <div className="space-y-2">
-                  <Button 
-                    onClick={startCameraPreview}
-                    variant="outline"
-                    className="w-full"
-                  >
+                  <Button onClick={startCameraPreview} variant="outline" className="w-full bg-transparent">
                     <Camera className="mr-2 h-4 w-4" />
                     {getText("captureCard")}
                   </Button>
-                  
+
+                  {attachments.length > 0 && (
+                    <Button
+                      onClick={handleAIAutoFill}
+                      disabled={extractingCard}
+                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                    >
+                      {extractingCard ? getText("extracting_card_info") : getText("ai_auto_fill")}
+                    </Button>
+                  )}
+
                   {attachments.length > 0 && (
                     <div className="grid grid-cols-2 gap-2">
                       {attachments.map((file, idx) => (
                         <div key={idx} className="relative group border rounded overflow-hidden">
-                          <img 
-                            src={file.url || file.data} 
-                            alt={file.name} 
-                            className="w-full h-32 object-contain bg-muted dark:bg-muted" 
+                          <img
+                            src={file.url || file.data}
+                            alt={file.name}
+                            className="w-full h-32 object-contain bg-muted dark:bg-muted"
                           />
                           <Button
                             variant="destructive"
@@ -355,10 +454,7 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
 
               <div>
                 <Label>{getText("name")}</Label>
-                <Input
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
+                <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
               </div>
 
               <div>
@@ -412,10 +508,7 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
                 />
               </div>
 
-              <Button 
-                onClick={handleSave} 
-                className="w-full bg-green-600 hover:bg-green-700"
-              >
+              <Button onClick={handleSave} className="w-full bg-green-600 hover:bg-green-700">
                 {getText("save")}
               </Button>
             </div>
@@ -445,24 +538,24 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
             <ArrowUpDown className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{getText("sort")}:</span>
             <div className="flex gap-2">
-              <Button 
-                variant={sortBy === "date" ? "default" : "outline"} 
+              <Button
+                variant={sortBy === "date" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setSortBy("date")}
                 className={sortBy === "date" ? "bg-emerald-600 hover:bg-emerald-700" : ""}
               >
                 {getText("sortByDate")}
               </Button>
-              <Button 
-                variant={sortBy === "name" ? "default" : "outline"} 
+              <Button
+                variant={sortBy === "name" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setSortBy("name")}
                 className={sortBy === "name" ? "bg-emerald-600 hover:bg-emerald-700" : ""}
               >
                 {getText("sortByName")}
               </Button>
-              <Button 
-                variant={sortBy === "company" ? "default" : "outline"} 
+              <Button
+                variant={sortBy === "company" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setSortBy("company")}
                 className={sortBy === "company" ? "bg-emerald-600 hover:bg-emerald-700" : ""}
@@ -477,29 +570,29 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
           {getSortedCards().map((card) => {
             const rotation = imageRotations[card.id] || card.rotation || 0
             const isRotated = rotation === 90 || rotation === 270
-            
+
             return (
               <Card key={card.id} className="p-4 bg-card dark:bg-card hover:shadow-lg transition-shadow">
                 {card.imageUrl && (
                   <div className="relative mb-3 flex items-center justify-center overflow-hidden">
-                    <div 
+                    <div
                       className="relative flex items-center justify-center"
                       style={{
-                        width: isRotated ? '160px' : '100%',
-                        height: isRotated ? '100%' : '160px',
+                        width: isRotated ? "160px" : "100%",
+                        height: isRotated ? "100%" : "160px",
                       }}
                     >
-                      <img 
-                        src={card.imageUrl || "/placeholder.svg"} 
-                        alt={card.name} 
+                      <img
+                        src={card.imageUrl || "/placeholder.svg"}
+                        alt={card.name}
                         className="max-w-full max-h-full object-contain bg-muted dark:bg-muted rounded border transition-transform duration-300"
-                        style={{ 
+                        style={{
                           transform: `rotate(${rotation}deg)`,
-                          width: isRotated ? 'auto' : '100%',
-                          height: isRotated ? '160px' : 'auto',
+                          width: isRotated ? "auto" : "100%",
+                          height: isRotated ? "160px" : "auto",
                         }}
                         onError={(e) => {
-                          console.warn('[v0] Failed to load card image:', card.id)
+                          console.warn("[v0] Failed to load card image:", card.id)
                           e.currentTarget.src = "/placeholder.svg"
                         }}
                       />
@@ -514,50 +607,56 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
                     </div>
                   </div>
                 )}
-                
+
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                     <h3 className="font-bold text-lg">{card.name}</h3>
                   </div>
-                  
+
                   {card.company && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Building className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
                       <span>{card.company}</span>
                     </div>
                   )}
-                  
+
                   {card.position && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Briefcase className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
                       <span>{card.position}</span>
                     </div>
                   )}
-                  
+
                   {card.phone && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Phone className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
-                      <a href={`tel:${card.phone}`} className="hover:underline">{card.phone}</a>
+                      <a href={`tel:${card.phone}`} className="hover:underline">
+                        {card.phone}
+                      </a>
                     </div>
                   )}
-                  
+
                   {card.email && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Mail className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
-                      <a href={`mailto:${card.email}`} className="hover:underline truncate">{card.email}</a>
+                      <a href={`mailto:${card.email}`} className="hover:underline truncate">
+                        {card.email}
+                      </a>
                     </div>
                   )}
-                  
+
                   {card.address && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <MapPin className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
                       <span className="text-xs">{card.address}</span>
                     </div>
                   )}
-                  
+
                   {card.notes && (
-                    <p className="text-sm text-muted-foreground mt-2 pt-2 border-t dark:border-gray-700">{card.notes}</p>
+                    <p className="text-sm text-muted-foreground mt-2 pt-2 border-t dark:border-gray-700">
+                      {card.notes}
+                    </p>
                   )}
                 </div>
 
@@ -566,7 +665,12 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
                     <Pencil className="h-4 w-4 mr-1" />
                     {getText("edit")}
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleDelete(card.id)} className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDelete(card.id)}
+                    className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950"
+                  >
                     <Trash2 className="h-4 w-4 mr-1" />
                     {getText("delete")}
                   </Button>
@@ -580,13 +684,13 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
           <Card className="p-12 text-center bg-card dark:bg-card">
             <Camera className="h-16 w-16 text-emerald-300 dark:text-emerald-600 mx-auto mb-4" />
             <p className="text-muted-foreground">
-              {language === "ko" 
-                ? "명함을 추가해보세요" 
-                : language === "en" 
-                ? "Add your first business card" 
-                : language === "zh"
-                ? "添加您的第一张名片"
-                : "最初の名刺を追加"}
+              {language === "ko"
+                ? "명함을 추가해보세요"
+                : language === "en"
+                  ? "Add your first business card"
+                  : language === "zh"
+                    ? "添加您的第一张名片"
+                    : "最初の名刺を追加"}
             </p>
           </Card>
         )}
