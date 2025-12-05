@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, Plus, Search, Trash2, Edit2, Save, Tag, Eye, Share2, FileText } from "lucide-react"
+import { ArrowLeft, Plus, Search, Trash2, Edit2, Save, Tag, Eye, Share2, Sparkles } from "lucide-react"
 import { saveNotes, loadNotes } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import { getTranslation } from "@/lib/i18n"
@@ -34,6 +34,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
   const [imageLoadErrors, setImageLoadErrors] = useState<Set<string>>(new Set())
   const [isOrganizing, setIsOrganizing] = useState(false)
   const [isSummarizing, setIsSummarizing] = useState(false)
+  const [noteSummary, setNoteSummary] = useState<string | null>(null)
 
   const t = (key: string) => getTranslation(language, key)
 
@@ -229,18 +230,27 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
 
       const { summary } = await response.json()
 
-      setFormData({
-        ...formData,
-        content: summary,
-      })
-
-      alert(t("note_summarized_success"))
+      setNoteSummary(summary)
     } catch (error) {
       console.error("[v0] Error summarizing note:", error)
       alert(t("note_summary_failed"))
     } finally {
       setIsSummarizing(false)
     }
+  }
+
+  const handleApplySummary = (option: "replace" | "append") => {
+    if (!noteSummary) return
+
+    if (option === "replace") {
+      setFormData({ ...formData, content: noteSummary })
+    } else {
+      setFormData({
+        ...formData,
+        content: `${formData.content}\n\n--- ${t("summary")} ---\n\n${noteSummary}`,
+      })
+    }
+    setNoteSummary(null)
   }
 
   const searchImageOnBing = (imageUrl: string) => {
@@ -367,11 +377,11 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
             {isSummarizing ? (
               <>
                 <Spinner className="mr-2 h-4 w-4" />
-                {t("summarizing_note")}
+                {t("summarizing")}
               </>
             ) : (
               <>
-                <FileText className="mr-2 h-4 w-4" />
+                <Sparkles className="mr-2 h-4 w-4" />
                 {t("summarize_note")}
               </>
             )}
@@ -431,6 +441,33 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
                     </div>
                   )
                 })}
+              </div>
+            </div>
+          )}
+
+          {noteSummary && (
+            <div className="rounded-lg border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-4 dark:from-blue-950/30 dark:to-indigo-950/30">
+              <div className="mb-2 flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <h4 className="font-medium text-blue-900 dark:text-blue-100">{t("summary_result")}</h4>
+              </div>
+              <p className="mb-3 whitespace-pre-wrap text-sm text-blue-800 dark:text-blue-200">{noteSummary}</p>
+              <div className="flex gap-2">
+                <Button type="button" size="sm" onClick={() => handleApplySummary("replace")} className="gap-1">
+                  {t("replace_with_summary")}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleApplySummary("append")}
+                  className="gap-1"
+                >
+                  {t("add_summary_below")}
+                </Button>
+                <Button type="button" size="sm" variant="ghost" onClick={() => setNoteSummary(null)}>
+                  {t("cancel")}
+                </Button>
               </div>
             </div>
           )}
