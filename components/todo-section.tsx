@@ -269,23 +269,20 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
     if (!user?.id) return
 
     try {
+      const updatedTodos = todos.map((todo) => (todo.id === id ? { ...todo, completed: !todo.completed } : todo))
+
+      // Cancel alarm if completed
       const todo = todos.find((t) => t.id === id)
-      if (!todo) return
-
-      const updated = await saveTodoItems([
-        {
-          ...todo,
-          completed: !todo.completed,
-        },
-      ])
-
-      if (!todo.completed) {
+      if (todo && !todo.completed) {
         notificationManager.cancelAlarm(`todo_${id}`)
       }
 
-      await loadData()
+      // Save the full array
+      await saveTodoItems(updatedTodos)
+      setTodos(updatedTodos)
     } catch (error) {
       console.error("[v0] Failed to toggle todo:", error)
+      alert(t("update_failed") || "업데이트에 실패했습니다.")
     }
   }
 
