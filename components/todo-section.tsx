@@ -15,16 +15,14 @@ import {
   Mic,
   MicOff,
   Calendar,
-  Bell,
   Repeat,
   Filter,
 } from "lucide-react"
-import { saveTodoItems, loadTodoItems, deleteTodoItem } from "@/lib/storage"
+import { saveTodoItems, loadTodoItems } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import type { TodoItem } from "@/lib/types"
 import { Spinner } from "@/components/ui/spinner"
 import { getTranslation } from "@/lib/i18n"
-import { notificationManager } from "@/lib/notification-manager"
 
 interface TodoSectionProps {
   onBack: () => void
@@ -48,16 +46,12 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
     priority: "low" | "medium" | "high"
     dueDate: string
     repeatType: "none" | "daily" | "weekly" | "monthly"
-    alarmEnabled: boolean
-    alarmTime: string
   }>({
     title: "",
     description: "",
     priority: "medium",
     dueDate: "",
     repeatType: "none",
-    alarmEnabled: false,
-    alarmTime: "",
   })
 
   const t = (key: string) => getTranslation(language as any, key)
@@ -67,8 +61,6 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
   }
 
   useEffect(() => {
-    notificationManager.requestPermission()
-    notificationManager.restoreAlarms()
     loadData()
   }, [user])
 
@@ -78,37 +70,8 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
     try {
       const data = await loadTodoItems(user.id)
       setTodos(data)
-
-      // Restore alarms for incomplete todos
-      const todosWithAlarms = data.filter((todo) => !todo.completed && todo.alarmEnabled && todo.alarmTime)
-
-      console.log(
-        "[v0] Loaded todos with alarms:",
-        todosWithAlarms.map((t) => ({ title: t.title, alarmTime: t.alarmTime })),
-      )
-
-      todosWithAlarms.forEach((todo) => {
-        if (todo.alarmTime) {
-          // Parse datetime-local format (YYYY-MM-DDTHH:mm)
-          const [datePart, timePart] = todo.alarmTime.split("T")
-          const [year, month, day] = datePart.split("-").map(Number)
-          const [hours, minutes] = timePart.split(":").map(Number)
-          const alarmDateTime = new Date(year, month - 1, day, hours, minutes)
-
-          if (!isNaN(alarmDateTime.getTime()) && alarmDateTime.getTime() > Date.now()) {
-            notificationManager.scheduleAlarm({
-              id: `todo_${todo.id}`,
-              title: t("todo_alarm_notification"),
-              message: todo.title,
-              scheduleTime: alarmDateTime,
-              type: "schedule",
-            })
-          }
-        }
-      })
     } catch (error) {
-      console.error("[v0] To-Do 로드 에러:", error)
-      setTodos([])
+      console.error("Error loading todos:", error)
     } finally {
       setLoading(false)
     }
@@ -134,13 +97,10 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
   }
 
   const handleSave = async () => {
-    if (!user?.id || !formData.title.trim()) return
+    if (!formData.title.trim() || !user?.id) return
 
     setSaving(true)
     try {
-      // Keep alarm time in datetime-local format (YYYY-MM-DDTHH:mm)
-      const processedAlarmTime = formData.alarmEnabled && formData.alarmTime ? formData.alarmTime : undefined
-
       let updatedTodos: TodoItem[]
 
       if (editingId) {
@@ -153,32 +113,11 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
                 priority: formData.priority,
                 dueDate: formData.dueDate || undefined,
                 repeatType: formData.repeatType,
-                alarmEnabled: formData.alarmEnabled,
-                alarmTime: processedAlarmTime,
+                alarmEnabled: false,
+                alarmTime: undefined,
               }
             : todo,
         )
-
-        // Schedule alarm if enabled
-        if (formData.alarmEnabled && processedAlarmTime) {
-          const [datePart, timePart] = processedAlarmTime.split("T")
-          const [year, month, day] = datePart.split("-").map(Number)
-          const [hours, minutes] = timePart.split(":").map(Number)
-          const alarmDateTime = new Date(year, month - 1, day, hours, minutes)
-
-          if (!isNaN(alarmDateTime.getTime()) && alarmDateTime.getTime() > Date.now()) {
-            notificationManager.cancelAlarm(`todo_${editingId}`)
-            notificationManager.scheduleAlarm({
-              id: `todo_${editingId}`,
-              title: t("todo_alarm_notification"),
-              message: formData.title,
-              scheduleTime: alarmDateTime,
-              type: "schedule",
-            })
-          }
-        } else {
-          notificationManager.cancelAlarm(`todo_${editingId}`)
-        }
       } else {
         const newTodo: TodoItem = {
           id: crypto.randomUUID(),
@@ -188,47 +127,26 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
           priority: formData.priority,
           dueDate: formData.dueDate || undefined,
           repeatType: formData.repeatType,
-          alarmEnabled: formData.alarmEnabled,
-          alarmTime: processedAlarmTime,
+          alarmEnabled: false,
+          alarmTime: undefined,
           createdAt: new Date().toISOString(),
         }
         updatedTodos = [newTodo, ...todos]
-
-        // Schedule alarm if enabled
-        if (formData.alarmEnabled && processedAlarmTime) {
-          const [datePart, timePart] = processedAlarmTime.split("T")
-          const [year, month, day] = datePart.split("-").map(Number)
-          const [hours, minutes] = timePart.split(":").map(Number)
-          const alarmDateTime = new Date(year, month - 1, day, hours, minutes)
-
-          if (!isNaN(alarmDateTime.getTime()) && alarmDateTime.getTime() > Date.now()) {
-            notificationManager.scheduleAlarm({
-              id: `todo_${newTodo.id}`,
-              title: t("todo_alarm_notification"),
-              message: formData.title,
-              scheduleTime: alarmDateTime,
-              type: "schedule",
-            })
-          }
-        }
       }
 
       await saveTodoItems(updatedTodos, user.id)
       setTodos(updatedTodos)
-      setIsAdding(false)
-      setEditingId(null)
       setFormData({
         title: "",
         description: "",
         priority: "medium",
         dueDate: "",
         repeatType: "none",
-        alarmEnabled: false,
-        alarmTime: "",
       })
+      setEditingId(null)
     } catch (error) {
-      console.error("[v0] To-Do 저장 에러:", error)
-      alert(t("save_failed") || "저장에 실패했습니다. 다시 시도해주세요.")
+      console.error("Error saving todo:", error)
+      alert(t("save_failed"))
     } finally {
       setSaving(false)
     }
@@ -236,34 +154,22 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
 
   const handleEdit = (todo: TodoItem) => {
     setEditingId(todo.id)
-    setIsAdding(true)
-
-    // alarmTime is already in datetime-local format (YYYY-MM-DDTHH:mm)
     setFormData({
       title: todo.title,
       description: todo.description || "",
       priority: todo.priority,
       dueDate: todo.dueDate || "",
-      repeatType: todo.repeatType,
-      alarmEnabled: todo.alarmEnabled,
-      alarmTime: todo.alarmTime || "",
+      repeatType: todo.repeatType || "none",
     })
   }
 
   const handleDelete = async (id: string) => {
     if (!user?.id) return
+    if (!confirm(t("confirm_delete"))) return
 
-    if (!confirm(t("confirm_delete") || "정말 삭제하시겠습니까?")) return
-
-    try {
-      notificationManager.cancelAlarm(`todo_${id}`)
-
-      await deleteTodoItem(id)
-      await loadData()
-    } catch (error) {
-      console.error("[v0] Failed to delete todo:", error)
-      alert(t("delete_failed"))
-    }
+    const updatedTodos = todos.filter((todo) => todo.id !== id)
+    await saveTodoItems(updatedTodos, user.id)
+    setTodos(updatedTodos)
   }
 
   const filteredTodos = todos.filter((todo) => {
@@ -413,26 +319,20 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2 flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  {t("todo_due_date")}
-                </label>
-                <Input
-                  type="datetime-local"
-                  value={formData.dueDate}
-                  onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2 flex items-center gap-2">
+                <label htmlFor="repeat" className="text-sm font-medium block mb-2 flex items-center gap-2">
                   <Repeat className="h-4 w-4" />
                   {t("todo_repeat")}
                 </label>
                 <select
+                  id="repeat"
                   value={formData.repeatType}
-                  onChange={(e) => setFormData({ ...formData, repeatType: e.target.value as any })}
-                  className="w-full px-3 py-2 border rounded-md"
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      repeatType: e.target.value as "none" | "daily" | "weekly" | "monthly",
+                    })
+                  }
+                  className="w-full p-2 border rounded-lg"
                 >
                   <option value="none">{t("repeat_none")}</option>
                   <option value="daily">{t("repeat_daily")}</option>
@@ -440,30 +340,6 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
                   <option value="monthly">{t("repeat_monthly")}</option>
                 </select>
               </div>
-
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="alarm"
-                  checked={formData.alarmEnabled}
-                  onChange={(e) => setFormData({ ...formData, alarmEnabled: e.target.checked })}
-                  className="w-4 h-4"
-                />
-                <label htmlFor="alarm" className="text-sm font-medium flex items-center gap-2">
-                  <Bell className="h-4 w-4" />
-                  {t("todo_alarm")}
-                </label>
-              </div>
-
-              {formData.alarmEnabled && (
-                <div>
-                  <Input
-                    type="datetime-local"
-                    value={formData.alarmTime}
-                    onChange={(e) => setFormData({ ...formData, alarmTime: e.target.value })}
-                  />
-                </div>
-              )}
 
               <div className="flex gap-2">
                 <Button onClick={handleSave} disabled={saving} className="flex-1">
@@ -480,8 +356,6 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
                       priority: "medium",
                       dueDate: "",
                       repeatType: "none",
-                      alarmEnabled: false,
-                      alarmTime: "",
                     })
                   }}
                 >
@@ -539,13 +413,6 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
                         <span className="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-700 border border-purple-300 flex items-center gap-1">
                           <Repeat className="h-3 w-3" />
                           {t(`repeat_${todo.repeatType}`)}
-                        </span>
-                      )}
-
-                      {todo.alarmEnabled && (
-                        <span className="text-xs px-2 py-1 rounded-full bg-orange-100 text-orange-700 border border-orange-300 flex items-center gap-1">
-                          <Bell className="h-3 w-3" />
-                          {t("todo_alarm")}
                         </span>
                       )}
 
