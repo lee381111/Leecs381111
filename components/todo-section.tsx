@@ -105,16 +105,31 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
     if (todos.length === 0) return
 
     const checkAlarms = () => {
+      console.log("[v0] Checking alarms, todos count:", todos.length)
       const now = new Date()
 
       todos.forEach((todo) => {
-        if (!todo.alarmEnabled || !todo.alarmTime || todo.completed) return
+        if (!todo.alarmEnabled || !todo.alarmTime || todo.completed) {
+          console.log(
+            "[v0] Skipping todo:",
+            todo.title,
+            "alarmEnabled:",
+            todo.alarmEnabled,
+            "alarmTime:",
+            todo.alarmTime,
+            "completed:",
+            todo.completed,
+          )
+          return
+        }
 
         const alarmTime = new Date(todo.alarmTime)
         const timeDiff = alarmTime.getTime() - now.getTime()
 
-        // Trigger alarm if within 1 minute (60000ms)
+        console.log("[v0] Todo:", todo.title, "alarm in:", Math.round(timeDiff / 1000), "seconds")
+
         if (timeDiff > 0 && timeDiff <= 60000) {
+          console.log("[v0] Triggering alarm for:", todo.title)
           if ("Notification" in window && Notification.permission === "granted") {
             new Notification(t("todo_alarm_notification") || "할일 알림", {
               body: todo.title,
@@ -136,7 +151,7 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
     checkAlarms()
 
     return () => clearInterval(interval)
-  }, [todos])
+  }, [todos]) // Removed t as dependency to include language changes
 
   const loadData = async () => {
     if (!user?.id) return
