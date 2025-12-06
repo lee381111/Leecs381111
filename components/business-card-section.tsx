@@ -226,9 +226,8 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: "environment",
-          aspectRatio: { ideal: 16 / 9 },
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
+          width: { ideal: 1920, min: 1280 },
+          height: { ideal: 1080, min: 720 },
         },
       })
       streamRef.current = stream
@@ -261,7 +260,7 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
     }
 
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.95)
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.98)
 
     const newAttachment = {
       type: "image",
@@ -375,14 +374,8 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
           {showCameraPreview && (
             <div className="fixed inset-0 bg-black z-50 flex flex-col">
               <div className="flex-1 flex items-center justify-center bg-black overflow-hidden">
-                <div className="relative w-full max-w-4xl mx-auto">
-                  <video
-                    ref={videoRef}
-                    className="w-full rounded-lg"
-                    playsInline
-                    autoPlay
-                    style={{ aspectRatio: "16/9" }}
-                  />
+                <div className="relative w-full h-full max-w-screen-xl mx-auto flex items-center justify-center">
+                  <video ref={videoRef} className="max-w-full max-h-full object-contain" playsInline autoPlay />
                 </div>
               </div>
               <div className="bg-black/90 p-6 flex gap-4 justify-center">

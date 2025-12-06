@@ -474,7 +474,11 @@ export function MediaTools({
   const openOCRCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
+        video: {
+          facingMode: "environment",
+          width: { ideal: 1920, min: 1280 },
+          height: { ideal: 1080, min: 720 },
+        },
       })
       setIsOCRCameraOpen(true)
 
@@ -501,17 +505,31 @@ export function MediaTools({
 
     if (ctx) {
       ctx.drawImage(video, 0, 0)
+
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+      const data = imageData.data
+
+      for (let i = 0; i < data.length; i += 4) {
+        const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114
+
+        const contrast = 1.2
+        const adjusted = (gray - 128) * contrast + 128
+
+        data[i] = adjusted // red
+        data[i + 1] = adjusted // green
+        data[i + 2] = adjusted // blue
+      }
+
+      ctx.putImageData(imageData, 0, 0)
     }
 
-    // Stop camera
     const stream = video.srcObject as MediaStream
     if (stream) {
       stream.getTracks().forEach((track) => track.stop())
     }
     setIsOCRCameraOpen(false)
 
-    // Process OCR
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.9)
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.98)
     await performSimpleOCR(dataUrl)
   }
 
@@ -533,13 +551,11 @@ export function MediaTools({
       console.log("[v0] OCR processing started")
       setOcrProgress(20)
 
-      // Dynamic import of Tesseract.js
       const Tesseract = await import("tesseract.js")
 
       setOcrProgress(30)
       console.log("[v0] Tesseract loaded")
 
-      // Create worker with Korean and English language support
       const worker = await Tesseract.createWorker("kor+eng", 1, {
         logger: (m: any) => {
           if (m.status === "recognizing text") {
@@ -551,10 +567,11 @@ export function MediaTools({
 
       console.log("[v0] Worker created, processing image...")
 
-      // Recognize text from image
       const {
         data: { text },
-      } = await worker.recognize(imageData)
+      } = await worker.recognize(imageData, {
+        tessedit_pageseg_mode: Tesseract.PSM.AUTO,
+      })
 
       console.log("[v0] OCR completed, text length:", text.length)
 
