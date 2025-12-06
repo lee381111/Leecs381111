@@ -113,8 +113,6 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
                 priority: formData.priority,
                 dueDate: formData.dueDate || undefined,
                 repeatType: formData.repeatType,
-                alarmEnabled: false,
-                alarmTime: undefined,
               }
             : todo,
         )
@@ -127,8 +125,6 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
           priority: formData.priority,
           dueDate: formData.dueDate || undefined,
           repeatType: formData.repeatType,
-          alarmEnabled: false,
-          alarmTime: undefined,
           createdAt: new Date().toISOString(),
         }
         updatedTodos = [newTodo, ...todos]
