@@ -75,6 +75,38 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
       setLoading(true)
       const data = await loadTodoItems(user.id)
       setTodos(data)
+
+      console.log(
+        "[v0] Loaded todos with alarms:",
+        data.filter((t) => t.alarmEnabled),
+      )
+      data.forEach((todo) => {
+        if (todo.alarmEnabled && todo.alarmTime && !todo.completed) {
+          const alarmDateTime = new Date(todo.alarmTime)
+          if (!isNaN(alarmDateTime.getTime()) && alarmDateTime.getTime() > Date.now()) {
+            console.log("[v0] Restoring todo alarm:", {
+              id: todo.id,
+              title: todo.title,
+              alarmTime: todo.alarmTime,
+              alarmDateTime: alarmDateTime.toISOString(),
+            })
+            notificationManager.scheduleAlarm({
+              id: `todo_${todo.id}`,
+              title: t("todo_alarm_notification"),
+              message: todo.title,
+              scheduleTime: alarmDateTime,
+              type: "schedule",
+            })
+          } else {
+            console.log("[v0] Todo alarm time has passed or invalid:", {
+              id: todo.id,
+              alarmTime: todo.alarmTime,
+              isValid: !isNaN(alarmDateTime.getTime()),
+              isPast: alarmDateTime.getTime() <= Date.now(),
+            })
+          }
+        }
+      })
     } catch (error) {
       console.error("[v0] To-Do 로드 에러:", error)
       // If table doesn't exist yet, just show empty list
@@ -110,7 +142,7 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
     }
 
     if (!formData.title.trim()) {
-      alert(t("todo_title_required") || "할 일을 입력해주세요")
+      alert(t("please_enter_title"))
       return
     }
 
@@ -126,9 +158,7 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
     try {
       let updatedTodos: TodoItem[]
 
-      const processedAlarmTime = formData.alarmTime
-        ? `${formData.alarmTime}:00` // Add seconds to make it a complete timestamp
-        : undefined
+      const processedAlarmTime = formData.alarmTime || undefined
 
       if (editingId) {
         updatedTodos = todos.map((todo) =>
@@ -148,6 +178,14 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
 
         if (formData.alarmEnabled && processedAlarmTime) {
           const alarmDateTime = new Date(processedAlarmTime)
+          console.log("[v0] Scheduling alarm for edited todo:", {
+            id: editingId,
+            alarmTime: processedAlarmTime,
+            alarmDateTime: alarmDateTime.toISOString(),
+            isValid: !isNaN(alarmDateTime.getTime()),
+            isPast: alarmDateTime.getTime() <= Date.now(),
+          })
+
           if (!isNaN(alarmDateTime.getTime()) && alarmDateTime.getTime() > Date.now()) {
             notificationManager.cancelAlarm(`todo_${editingId}`)
             notificationManager.scheduleAlarm({
@@ -178,6 +216,13 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
 
         if (formData.alarmEnabled && processedAlarmTime) {
           const alarmDateTime = new Date(processedAlarmTime)
+          console.log("[v0] Scheduling alarm for new todo:", {
+            id: newTodo.id,
+            alarmTime: processedAlarmTime,
+            alarmDateTime: alarmDateTime.toISOString(),
+            isValid: !isNaN(alarmDateTime.getTime()),
+            isPast: alarmDateTime.getTime() <= Date.now(),
+          })
 
           if (!isNaN(alarmDateTime.getTime()) && alarmDateTime.getTime() > Date.now()) {
             notificationManager.scheduleAlarm({
@@ -238,48 +283,19 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
 
   const handleEdit = (todo: TodoItem) => {
     setEditingId(todo.id)
-
-    let formattedDueDate = ""
-    if (todo.dueDate) {
-      try {
-        const dateStr = todo.dueDate
-        if (dateStr.includes("T")) {
-          formattedDueDate = dateStr.slice(0, 16) // Extract YYYY-MM-DDTHH:mm
-        } else {
-          const date = new Date(dateStr)
-          if (!isNaN(date.getTime())) {
-            const year = date.getFullYear()
-            const month = String(date.getMonth() + 1).padStart(2, "0")
-            const day = String(date.getDate()).padStart(2, "0")
-            const hours = String(date.getHours()).padStart(2, "0")
-            const minutes = String(date.getMinutes()).padStart(2, "0")
-            formattedDueDate = `${year}-${month}-${day}T${hours}:${minutes}`
-          }
-        }
-      } catch (e) {
-        console.error("[v0] Error parsing dueDate:", e)
-      }
-    }
+    setIsAdding(true)
 
     let formattedAlarmTime = ""
     if (todo.alarmTime) {
-      try {
-        const timeStr = todo.alarmTime
-        if (timeStr.includes("T")) {
-          formattedAlarmTime = timeStr.slice(0, 16) // Extract YYYY-MM-DDTHH:mm
-        } else {
-          const date = new Date(timeStr)
-          if (!isNaN(date.getTime())) {
-            const year = date.getFullYear()
-            const month = String(date.getMonth() + 1).padStart(2, "0")
-            const day = String(date.getDate()).padStart(2, "0")
-            const hours = String(date.getHours()).padStart(2, "0")
-            const minutes = String(date.getMinutes()).padStart(2, "0")
-            formattedAlarmTime = `${year}-${month}-${day}T${hours}:${minutes}`
-          }
-        }
-      } catch (e) {
-        console.error("[v0] Error parsing alarmTime:", e)
+      const date = new Date(todo.alarmTime)
+      if (!isNaN(date.getTime())) {
+        // Format as YYYY-MM-DDTHH:mm (local time)
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, "0")
+        const day = String(date.getDate()).padStart(2, "0")
+        const hours = String(date.getHours()).padStart(2, "0")
+        const minutes = String(date.getMinutes()).padStart(2, "0")
+        formattedAlarmTime = `${year}-${month}-${day}T${hours}:${minutes}`
       }
     }
 
@@ -287,12 +303,11 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
       title: todo.title,
       description: todo.description || "",
       priority: todo.priority,
-      dueDate: formattedDueDate,
+      dueDate: todo.dueDate || "",
       repeatType: todo.repeatType,
       alarmEnabled: todo.alarmEnabled,
       alarmTime: formattedAlarmTime,
     })
-    setIsAdding(true)
   }
 
   const handleDelete = async (id: string) => {
