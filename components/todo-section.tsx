@@ -265,17 +265,17 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-3 gap-4 mb-6">
-          <Card className="p-4 bg-white/80 backdrop-blur">
-            <div className="text-sm text-gray-600">{t("total_todos")}</div>
-            <div className="text-2xl font-bold text-emerald-600">{stats.total}</div>
+          <Card className="p-4 bg-gradient-to-br from-emerald-100 to-emerald-50 dark:from-emerald-900/50 dark:to-emerald-800/30 backdrop-blur border-emerald-200">
+            <div className="text-sm text-emerald-700 dark:text-emerald-300 font-medium">{t("total_todos")}</div>
+            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{stats.total}</div>
           </Card>
-          <Card className="p-4 bg-white/80 backdrop-blur">
-            <div className="text-sm text-gray-600">{t("completed_todos")}</div>
-            <div className="text-2xl font-bold text-green-600">{stats.completed}</div>
+          <Card className="p-4 bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/50 dark:to-blue-800/30 backdrop-blur border-blue-200">
+            <div className="text-sm text-blue-700 dark:text-blue-300 font-medium">{t("completed_todos")}</div>
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.completed}</div>
           </Card>
-          <Card className="p-4 bg-white/80 backdrop-blur">
-            <div className="text-sm text-gray-600">{t("pending_todos")}</div>
-            <div className="text-2xl font-bold text-orange-600">{stats.pending}</div>
+          <Card className="p-4 bg-gradient-to-br from-orange-100 to-orange-50 dark:from-orange-900/50 dark:to-orange-800/30 backdrop-blur border-orange-200">
+            <div className="text-sm text-orange-700 dark:text-orange-300 font-medium">{t("pending_todos")}</div>
+            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{stats.pending}</div>
           </Card>
         </div>
 
