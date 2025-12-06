@@ -64,6 +64,62 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
     loadData()
   }, [user])
 
+  useEffect(() => {
+    const checkAndUpdateRepeatTodos = async () => {
+      if (!user?.id) return
+
+      const today = new Date().toISOString().split("T")[0]
+      let updated = false
+
+      const updatedTodos = todos.map((todo) => {
+        // Skip if not repeating, no due date, or not completed
+        if (todo.repeatType === "none" || !todo.dueDate || !todo.completed) {
+          return todo
+        }
+
+        const dueDate = new Date(todo.dueDate)
+        const todayDate = new Date(today)
+
+        // Check if due date has passed and todo is completed
+        if (dueDate < todayDate) {
+          const newDueDate = new Date(dueDate)
+
+          switch (todo.repeatType) {
+            case "daily":
+              newDueDate.setDate(newDueDate.getDate() + 1)
+              break
+            case "weekly":
+              newDueDate.setDate(newDueDate.getDate() + 7)
+              break
+            case "monthly":
+              newDueDate.setMonth(newDueDate.getMonth() + 1)
+              break
+          }
+
+          updated = true
+          return {
+            ...todo,
+            dueDate: newDueDate.toISOString().split("T")[0],
+            completed: false, // Reset completion status for next occurrence
+          }
+        }
+
+        return todo
+      })
+
+      if (updated) {
+        await saveTodoItems(updatedTodos, user.id)
+        setTodos(updatedTodos)
+      }
+    }
+
+    // Check immediately and then every hour
+    checkAndUpdateRepeatTodos()
+    const interval = setInterval(checkAndUpdateRepeatTodos, 60 * 60 * 1000)
+
+    return () => clearInterval(interval)
+  }, [todos, user])
+
   const loadData = async () => {
     if (!user?.id) return
     setLoading(true)
@@ -353,7 +409,7 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
               </div>
 
               <div className="flex gap-2">
-                <Button onClick={handleSave} disabled={saving} className="flex-1">
+                <Button onClick={handleSave} disabled={saving} className="flex-1 bg-green-600 hover:bg-green-700">
                   {saving ? <Spinner /> : t("save")}
                 </Button>
                 <Button
@@ -369,6 +425,7 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
                       repeatType: "none",
                     })
                   }}
+                  className="flex-1"
                 >
                   {t("cancel")}
                 </Button>
