@@ -24,6 +24,7 @@ import { useAuth } from "@/lib/auth-context"
 import type { TodoItem } from "@/lib/types"
 import { Spinner } from "@/components/ui/spinner"
 import { getTranslation } from "@/lib/i18n"
+import { notificationManager } from "@/lib/notification-manager"
 
 interface TodoSectionProps {
   onBack: () => void
@@ -62,77 +63,10 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
   const t = (key: string) => getTranslation(language as any, key)
 
   useEffect(() => {
+    notificationManager.requestPermission()
+    notificationManager.restoreAlarms()
     loadData()
-
-    if ("Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission().then((permission) => {
-        console.log("[v0] Notification permission:", permission)
-      })
-    }
-  }, [user, language])
-
-  useEffect(() => {
-    if (todos.length === 0) return
-
-    const checkAlarms = () => {
-      console.log("[v0] Checking alarms, todos count:", todos.length)
-      const now = new Date()
-
-      todos.forEach((todo) => {
-        if (!todo.alarmEnabled || !todo.alarmTime || todo.completed) {
-          return
-        }
-
-        const alarmTime = new Date(todo.alarmTime)
-
-        if (isNaN(alarmTime.getTime())) {
-          console.error("[v0] Invalid alarm time for todo:", todo.title, todo.alarmTime)
-          return
-        }
-
-        const timeDiff = alarmTime.getTime() - now.getTime()
-
-        console.log(
-          "[v0] Todo:",
-          todo.title,
-          "alarm at:",
-          alarmTime.toLocaleString(),
-          "now:",
-          now.toLocaleString(),
-          "time diff (seconds):",
-          Math.round(timeDiff / 1000),
-        )
-
-        if (timeDiff > -60000 && timeDiff <= 120000) {
-          const alarmKey = `alarm_${todo.id}_${alarmTime.getTime()}`
-
-          if (sessionStorage.getItem(alarmKey)) {
-            return
-          }
-
-          console.log("[v0] Triggering alarm for:", todo.title)
-
-          sessionStorage.setItem(alarmKey, "shown")
-
-          if ("Notification" in window && Notification.permission === "granted") {
-            new Notification(getTranslation(language as any, "todo_alarm_notification"), {
-              body: todo.title,
-              icon: "/favicon.ico",
-              tag: todo.id,
-              requireInteraction: true, // Keep notification until user interacts
-            })
-          } else {
-            alert(`${getTranslation(language as any, "todo_alarm_notification")}: ${todo.title}`)
-          }
-        }
-      })
-    }
-
-    checkAlarms()
-    const interval = setInterval(checkAlarms, 15000)
-
-    return () => clearInterval(interval)
-  }, [todos, language]) // Added language to dependency array so alarm uses correct language
+  }, [user])
 
   const loadData = async () => {
     if (!user?.id) return
@@ -222,6 +156,22 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
           createdAt: new Date().toISOString(),
         }
         updatedTodos = [newTodo, ...todos]
+
+        if (formData.alarmEnabled && formData.alarmTime) {
+          const alarmDateTime = new Date(formData.alarmTime)
+
+          if (!isNaN(alarmDateTime.getTime()) && alarmDateTime.getTime() > Date.now()) {
+            notificationManager.scheduleAlarm({
+              id: `todo_${newTodo.id}`,
+              title: t("todo_alarm_notification"),
+              message: formData.title,
+              scheduleTime: alarmDateTime,
+              type: "schedule",
+            })
+          }
+        } else {
+          notificationManager.cancelAlarm(`todo_${newTodo.id}`)
+        }
       }
 
       await saveTodoItems(updatedTodos, user.id)
@@ -249,12 +199,23 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
     if (!user?.id) return
 
     try {
-      const updatedTodos = todos.map((todo) => (todo.id === id ? { ...todo, completed: !todo.completed } : todo))
+      const todo = todos.find((t) => t.id === id)
+      if (!todo) return
 
-      await saveTodoItems(updatedTodos, user.id)
-      setTodos(updatedTodos)
+      const updated = await saveTodoItems([
+        {
+          ...todo,
+          completed: !todo.completed,
+        },
+      ])
+
+      if (!todo.completed) {
+        notificationManager.cancelAlarm(`todo_${id}`)
+      }
+
+      await loadData()
     } catch (error) {
-      console.error("[v0] To-Do 완료 상태 변경 에러:", error)
+      console.error("[v0] Failed to toggle todo:", error)
     }
   }
 
@@ -318,12 +279,13 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
     if (!confirm(t("confirm_delete") || "정말 삭제하시겠습니까?")) return
 
     try {
-      await deleteTodoItem(id, user.id)
-      const updatedTodos = todos.filter((todo) => todo.id !== id)
-      setTodos(updatedTodos)
+      notificationManager.cancelAlarm(`todo_${id}`)
+
+      await deleteTodoItem(id)
+      await loadData()
     } catch (error) {
-      console.error("[v0] To-Do 삭제 에러:", error)
-      alert(t("delete_failed") || "삭제에 실패했습니다.")
+      console.error("[v0] Failed to delete todo:", error)
+      alert(t("delete_failed"))
     }
   }
 
