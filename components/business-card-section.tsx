@@ -24,7 +24,6 @@ import {
 import { useAuth } from "@/lib/auth-context"
 import { saveBusinessCards, loadBusinessCards } from "@/lib/storage"
 import type { Language, BusinessCard } from "@/lib/types"
-import Tesseract from "tesseract.js"
 
 export default function BusinessCardSection({ language }: { language: Language }) {
   const { user } = useAuth()
@@ -319,15 +318,10 @@ export default function BusinessCardSection({ language }: { language: Language }
 
     try {
       const imageData = attachments[0].url || attachments[0].data
-      const {
-        data: { text: ocrText },
-      } = await Tesseract.recognize(imageData, ["eng", "kor", "chi_sim", "jpn"])
-      console.log("[v0] OCR extracted text:", ocrText)
-
       const response = await fetch("/api/extract-business-card", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ocrText }),
+        body: JSON.stringify({ imageData }),
       })
 
       if (!response.ok) {
