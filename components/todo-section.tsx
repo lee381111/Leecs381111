@@ -262,13 +262,18 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
     console.log("[v0] Editing todo:", todo)
     setEditingId(todo.id)
 
-    // Format date for datetime-local input (YYYY-MM-DDTHH:mm)
     let formattedDueDate = ""
     if (todo.dueDate) {
       try {
         const date = new Date(todo.dueDate)
         if (!isNaN(date.getTime())) {
-          formattedDueDate = date.toISOString().slice(0, 16)
+          // Use local time instead of UTC to prevent timezone shift
+          const year = date.getFullYear()
+          const month = String(date.getMonth() + 1).padStart(2, "0")
+          const day = String(date.getDate()).padStart(2, "0")
+          const hours = String(date.getHours()).padStart(2, "0")
+          const minutes = String(date.getMinutes()).padStart(2, "0")
+          formattedDueDate = `${year}-${month}-${day}T${hours}:${minutes}`
         }
       } catch (e) {
         console.error("[v0] Error parsing dueDate:", e)
@@ -280,7 +285,13 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
       try {
         const date = new Date(todo.alarmTime)
         if (!isNaN(date.getTime())) {
-          formattedAlarmTime = date.toISOString().slice(0, 16)
+          // Use local time instead of UTC to prevent timezone shift
+          const year = date.getFullYear()
+          const month = String(date.getMonth() + 1).padStart(2, "0")
+          const day = String(date.getDate()).padStart(2, "0")
+          const hours = String(date.getHours()).padStart(2, "0")
+          const minutes = String(date.getMinutes()).padStart(2, "0")
+          formattedAlarmTime = `${year}-${month}-${day}T${hours}:${minutes}`
         }
       } catch (e) {
         console.error("[v0] Error parsing alarmTime:", e)
