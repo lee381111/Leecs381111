@@ -64,6 +64,11 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
   useEffect(() => {
     loadData()
 
+    // Request notification permission
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission()
+    }
+
     // Initialize speech recognition
     if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
       const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition
@@ -95,6 +100,43 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
       }
     }
   }, [user, language])
+
+  useEffect(() => {
+    if (todos.length === 0) return
+
+    const checkAlarms = () => {
+      const now = new Date()
+
+      todos.forEach((todo) => {
+        if (!todo.alarmEnabled || !todo.alarmTime || todo.completed) return
+
+        const alarmTime = new Date(todo.alarmTime)
+        const timeDiff = alarmTime.getTime() - now.getTime()
+
+        // Trigger alarm if within 1 minute (60000ms)
+        if (timeDiff > 0 && timeDiff <= 60000) {
+          if ("Notification" in window && Notification.permission === "granted") {
+            new Notification(t("todo_alarm_notification") || "할일 알림", {
+              body: todo.title,
+              icon: "/favicon.ico",
+              tag: todo.id,
+            })
+          } else {
+            // Fallback to alert if notification not available
+            alert(`${t("todo_alarm_notification") || "할일 알림"}: ${todo.title}`)
+          }
+        }
+      })
+    }
+
+    // Check alarms every 30 seconds
+    const interval = setInterval(checkAlarms, 30000)
+
+    // Check immediately on mount
+    checkAlarms()
+
+    return () => clearInterval(interval)
+  }, [todos])
 
   const loadData = async () => {
     if (!user?.id) return
@@ -165,7 +207,7 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
         const newTodo: TodoItem = {
           id: crypto.randomUUID(),
           title: formData.title,
-          description: formData.description,
+          description: formData.description || "",
           completed: false,
           priority: formData.priority,
           dueDate: formData.dueDate || undefined,
