@@ -33,6 +33,7 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
   const [showAddCard, setShowAddCard] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [extractingCard, setExtractingCard] = useState(false)
+  const [saving, setSaving] = useState(false) // Added saving state for save button loading indication
   const [formData, setFormData] = useState({
     name: "",
     company: "",
@@ -77,6 +78,8 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
       return
     }
 
+    setSaving(true) // Set saving state to true when save starts
+
     const newCard: BusinessCard = {
       id: editingId || crypto.randomUUID(),
       ...formData,
@@ -98,6 +101,8 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
     } catch (error) {
       console.error("[v0] Failed to save business card:", error)
     }
+
+    setSaving(false) // Reset saving state after save completes
 
     setFormData({
       name: "",
@@ -215,6 +220,12 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
         en: "AI Auto Fill",
         zh: "AI自动填充",
         ja: "AI自動入力",
+      },
+      saving: {
+        ko: "저장 중...",
+        en: "Saving...",
+        zh: "保存中...",
+        ja: "保存中...",
       },
     }
     return translations[key]?.[language] || key
@@ -529,8 +540,8 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
                 />
               </div>
 
-              <Button onClick={handleSave} className="w-full bg-green-600 hover:bg-green-700">
-                {getText("save")}
+              <Button onClick={handleSave} className="w-full bg-green-600 hover:bg-green-700" disabled={saving}>
+                {saving ? getText("saving") : getText("save")}
               </Button>
             </div>
           </Card>
