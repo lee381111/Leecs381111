@@ -110,48 +110,42 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
 
       todos.forEach((todo) => {
         if (!todo.alarmEnabled || !todo.alarmTime || todo.completed) {
-          console.log(
-            "[v0] Skipping todo:",
-            todo.title,
-            "alarmEnabled:",
-            todo.alarmEnabled,
-            "alarmTime:",
-            todo.alarmTime,
-            "completed:",
-            todo.completed,
-          )
           return
         }
 
         const alarmTime = new Date(todo.alarmTime)
         const timeDiff = alarmTime.getTime() - now.getTime()
 
-        console.log("[v0] Todo:", todo.title, "alarm in:", Math.round(timeDiff / 1000), "seconds")
+        console.log(
+          "[v0] Todo:",
+          todo.title,
+          "alarm at:",
+          alarmTime.toLocaleString(),
+          "time diff (seconds):",
+          Math.round(timeDiff / 1000),
+        )
 
+        // Trigger alarm if within 1 minute
         if (timeDiff > 0 && timeDiff <= 60000) {
           console.log("[v0] Triggering alarm for:", todo.title)
           if ("Notification" in window && Notification.permission === "granted") {
-            new Notification(t("todo_alarm_notification") || "할일 알림", {
+            new Notification(t("todo_alarm_notification"), {
               body: todo.title,
               icon: "/favicon.ico",
               tag: todo.id,
             })
           } else {
-            // Fallback to alert if notification not available
-            alert(`${t("todo_alarm_notification") || "할일 알림"}: ${todo.title}`)
+            alert(`${t("todo_alarm_notification")}: ${todo.title}`)
           }
         }
       })
     }
 
-    // Check alarms every 30 seconds
+    checkAlarms()
     const interval = setInterval(checkAlarms, 30000)
 
-    // Check immediately on mount
-    checkAlarms()
-
     return () => clearInterval(interval)
-  }, [todos]) // Removed t as dependency to include language changes
+  }, [todos]) // Removed t from dependencies
 
   const loadData = async () => {
     if (!user?.id) return
