@@ -843,17 +843,22 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <Button variant="ghost" onClick={onBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> {t("title")}
-        </Button>
-        <div className="flex gap-2">
-          <Button onClick={() => setIsBatchAdding(true)} className="bg-green-500 hover:bg-green-600 text-white">
-            <Calendar className="mr-2 h-4 w-4" /> {t("special_days")}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Button variant="ghost" onClick={onBack}>
+            <ArrowLeft className="mr-2 h-4 w-4" /> {t("title")}
           </Button>
-          <Button onClick={() => setIsAdding(true)} className="bg-emerald-600 hover:bg-emerald-700">
-            <Plus className="mr-2 h-4 w-4" /> {t("add")} {t("schedule")}
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => setIsBatchAdding(true)} className="bg-green-500 hover:bg-green-600 text-white">
+              <Calendar className="mr-2 h-4 w-4" /> {t("special_days")}
+            </Button>
+            <Button onClick={() => setIsAdding(true)} className="bg-emerald-600 hover:bg-emerald-700">
+              <Plus className="mr-2 h-4 w-4" /> {t("add")} {t("schedule")}
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex justify-end">
           <Button onClick={() => setIsOptimizingTravel(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
             🤖 {t("ai_travel_optimizer")}
           </Button>
