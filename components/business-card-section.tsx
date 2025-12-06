@@ -326,22 +326,14 @@ export default function BusinessCardSection({ language }: BusinessCardSectionPro
 
     setExtractingCard(true)
     try {
-      const Tesseract = (await import("tesseract.js")).default
+      const imageData = attachments[0]?.url || attachments[0]?.data
 
-      const imageSource = attachments[0]?.url || attachments[0]?.data || attachments[0]
-      console.log("[v0] Starting OCR on business card image")
-
-      const result = await Tesseract.recognize(imageSource, "kor+eng+chi_sim+jpn", {
-        logger: (m) => console.log("[v0] OCR progress:", m),
-      })
-
-      const extractedText = result.data.text
-      console.log("[v0] Extracted text:", extractedText)
+      console.log("[v0] Sending image to business card extraction API")
 
       const response = await fetch("/api/extract-business-card", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ocrText: extractedText }),
+        body: JSON.stringify({ imageData }),
       })
 
       if (!response.ok) {
