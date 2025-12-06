@@ -103,6 +103,8 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
       })
     } catch (error) {
       console.error("[v0] Failed to load todos:", error)
+    } finally {
+      setLoading(false)
     }
   }
 
