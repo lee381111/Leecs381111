@@ -2,12 +2,13 @@ import type { Language } from "./types"
 
 type TranslationKey = string
 
-const translations: Record<Language, Record<TranslationKey, string>> = {
+export const translations = {
   ko: {
     // Common
     title: "기록의 숲",
     loading: "로딩 중...",
     saving: "저장 중...",
+    save_failed: "저장에 실패했습니다",
     save: "저장",
     cancel: "취소",
     delete: "삭제",
@@ -388,6 +389,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     extracting_card_info: "명함 정보 추출 중...",
     card_info_extracted: "명함 정보가 자동으로 입력되었습니다",
     card_extraction_failed: "명함 정보 추출에 실패했습니다",
+    extraction_failed: "자동 입력에 실패했습니다",
     please_add_card_photo_first: "먼저 명함 사진을 추가해주세요",
     weather_description: "현재 위치의 실시간 날씨와 대기질 정보를 확인하세요.",
     radio_description: "세계 각지의 라디오 방송을 들으며 기록을 작성하세요.",
@@ -514,6 +516,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     title: "Forest of Records",
     loading: "Loading...",
     saving: "Saving...",
+    save_failed: "Failed to save",
     save: "Save",
     cancel: "Cancel",
     delete: "Delete",
@@ -895,6 +898,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     extracting_card_info: "Extracting card information...",
     card_info_extracted: "Card information has been automatically filled",
     card_extraction_failed: "Failed to extract card information",
+    extraction_failed: "Auto-fill failed",
     please_add_card_photo_first: "Please add a card photo first",
     weather_description: "Check real-time weather and air quality information for your current location.",
     radio_description: "Listen to radio broadcasts from around the world while writing records.",
@@ -1022,6 +1026,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     title: "记录之森",
     loading: "加载中...",
     saving: "保存中...",
+    save_failed: "保存失败",
     save: "保存",
     cancel: "取消",
     delete: "删除",
@@ -1393,6 +1398,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     extracting_card_info: "正在提取名片信息...",
     card_info_extracted: "名片信息已自动填充",
     card_extraction_failed: "提取名片信息失败",
+    extraction_failed: "自动填充失败",
     please_add_card_photo_first: "请先添加名片照片",
     weather_description: "查看当前位置的实时天气和空气质量信息。",
     radio_description: "在写记录时收听广播。",
@@ -1519,6 +1525,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     title: "記録の森",
     loading: "読み込み中...",
     saving: "保存中...",
+    save_failed: "保存に失敗しました",
     save: "保存",
     cancel: "キャンセル",
     delete: "削除",
@@ -1899,6 +1906,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     extracting_card_info: "名刺情報を抽出中...",
     card_info_extracted: "名刺情報が自動的に入力されました",
     card_extraction_failed: "名刺情報の抽出に失敗しました",
+    extraction_failed: "自動入力に失敗しました",
     please_add_card_photo_first: "まず名刺の写真を追加してください",
     weather_description: "現在地のリアルタイム天気と大気質情報を確認してください。",
     radio_description: "ラジオ放送を聴きながら記録を作成してください。",
