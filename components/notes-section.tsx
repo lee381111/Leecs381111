@@ -35,6 +35,9 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
   const [isOrganizing, setIsOrganizing] = useState(false)
   const [isSummarizing, setIsSummarizing] = useState(false)
   const [noteSummary, setNoteSummary] = useState<string | null>(null)
+  const [isTranslating, setIsTranslating] = useState(false)
+  const [noteTranslation, setNoteTranslation] = useState<string | null>(null)
+  const [showLanguageSelect, setShowLanguageSelect] = useState(false)
 
   const t = (key: string) => getTranslation(language, key)
 
@@ -245,11 +248,9 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
     if (option === "replace") {
       setFormData({ ...formData, content: noteSummary })
     } else {
-      setFormData({
-        ...formData,
-        content: `${formData.content}\n\n--- ${t("summary")} ---\n\n${noteSummary}`,
-      })
+      setFormData({ ...formData, content: formData.content + "\n\n---\n\n" + noteSummary })
     }
+
     setNoteSummary(null)
   }
 
@@ -299,6 +300,53 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
         console.error("[v0] Clipboard copy failed:", err)
         alert(language === "ko" ? "복사 실패" : "Copy failed")
       })
+  }
+
+  const handleTranslateNote = async (targetLanguage: Language) => {
+    if (!formData.content.trim()) {
+      alert(t("content_required_for_translation"))
+      return
+    }
+
+    try {
+      setIsTranslating(true)
+      setShowLanguageSelect(false)
+      console.log("[v0] Translating note to", targetLanguage)
+
+      const response = await fetch("/api/translate-note", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: formData.content,
+          sourceLanguage: language,
+          targetLanguage,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to translate note")
+      }
+
+      const { translatedContent } = await response.json()
+      setNoteTranslation(translatedContent)
+    } catch (error) {
+      console.error("[v0] Error translating note:", error)
+      alert(t("translation_failed"))
+    } finally {
+      setIsTranslating(false)
+    }
+  }
+
+  const handleApplyTranslation = (option: "replace" | "append") => {
+    if (!noteTranslation) return
+
+    if (option === "replace") {
+      setFormData({ ...formData, content: noteTranslation })
+    } else {
+      setFormData({ ...formData, content: formData.content + "\n\n---\n\n" + noteTranslation })
+    }
+
+    setNoteTranslation(null)
   }
 
   const allTags = Array.from(new Set(notes.flatMap((note) => note.tags))).sort()
@@ -386,6 +434,76 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
               </>
             )}
           </Button>
+
+          <Button
+            onClick={() => setShowLanguageSelect(!showLanguageSelect)}
+            disabled={isTranslating || !formData.content.trim()}
+            variant="outline"
+            className="w-full bg-transparent"
+          >
+            {isTranslating ? (
+              <>
+                <Spinner className="mr-2 h-4 w-4" />
+                {t("translating")}
+              </>
+            ) : (
+              <>
+                <Share2 className="mr-2 h-4 w-4" />
+                {t("translate_note")}
+              </>
+            )}
+          </Button>
+
+          {showLanguageSelect && (
+            <Card className="p-4 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 border-indigo-200">
+              <p className="text-sm font-medium text-indigo-900 mb-3">{t("select_target_language")}</p>
+              <div className="space-y-2">
+                {language !== "ko" && (
+                  <Button onClick={() => handleTranslateNote("ko")} variant="outline" className="w-full bg-white/80">
+                    {t("translate_to_korean")}
+                  </Button>
+                )}
+                {language !== "en" && (
+                  <Button onClick={() => handleTranslateNote("en")} variant="outline" className="w-full bg-white/80">
+                    {t("translate_to_english")}
+                  </Button>
+                )}
+                {language !== "zh" && (
+                  <Button onClick={() => handleTranslateNote("zh")} variant="outline" className="w-full bg-white/80">
+                    {t("translate_to_chinese")}
+                  </Button>
+                )}
+                {language !== "ja" && (
+                  <Button onClick={() => handleTranslateNote("ja")} variant="outline" className="w-full bg-white/80">
+                    {t("translate_to_japanese")}
+                  </Button>
+                )}
+              </div>
+            </Card>
+          )}
+
+          {noteTranslation && (
+            <Card className="p-4 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 border-indigo-200">
+              <h4 className="font-semibold text-indigo-900 mb-2">{t("translation_result")}</h4>
+              <p className="text-sm text-indigo-800 whitespace-pre-wrap mb-4">{noteTranslation}</p>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => handleApplyTranslation("replace")}
+                  variant="outline"
+                  className="flex-1 bg-white/80"
+                >
+                  {t("replace_with_translation")}
+                </Button>
+                <Button
+                  onClick={() => handleApplyTranslation("append")}
+                  variant="outline"
+                  className="flex-1 bg-white/80"
+                >
+                  {t("add_translation_below")}
+                </Button>
+              </div>
+            </Card>
+          )}
 
           <Input
             placeholder={t("tags_placeholder")}
