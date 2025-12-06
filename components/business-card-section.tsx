@@ -6,7 +6,6 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { MediaTools } from "@/components/media-tools"
 import {
   ArrowLeft,
   Plus,
@@ -25,12 +24,9 @@ import {
 import { useAuth } from "@/lib/auth-context"
 import { saveBusinessCards, loadBusinessCards } from "@/lib/storage"
 import type { Language, BusinessCard } from "@/lib/types"
+import Tesseract from "tesseract.js"
 
-interface BusinessCardSectionProps {
-  language: Language
-}
-
-export default function BusinessCardSection({ language }: BusinessCardSectionProps) {
+export function BusinessCardSection({ onBack, language }: { onBack: () => void; language: Language }) {
   const { user } = useAuth()
   const [businessCards, setBusinessCards] = useState<BusinessCard[]>([])
   const [sortBy, setSortBy] = useState<"name" | "company" | "date">("date")
@@ -51,8 +47,6 @@ export default function BusinessCardSection({ language }: BusinessCardSectionPro
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const [imageRotations, setImageRotations] = useState<Record<string, number>>({})
-  const [extracting, setExtracting] = useState(false)
-  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -83,8 +77,6 @@ export default function BusinessCardSection({ language }: BusinessCardSectionPro
       return
     }
 
-    setSaving(true)
-
     const newCard: BusinessCard = {
       id: editingId || crypto.randomUUID(),
       ...formData,
@@ -105,9 +97,6 @@ export default function BusinessCardSection({ language }: BusinessCardSectionPro
       await saveBusinessCards(updatedCards, user.id)
     } catch (error) {
       console.error("[v0] Failed to save business card:", error)
-      alert(getText("save_failed") || "저장에 실패했습니다")
-    } finally {
-      setSaving(false)
     }
 
     setFormData({
@@ -227,15 +216,6 @@ export default function BusinessCardSection({ language }: BusinessCardSectionPro
         zh: "AI自动填充",
         ja: "AI自動入力",
       },
-      image: { ko: "사진", en: "Image", zh: "图片", ja: "画像" },
-      saving: { ko: "저장 중...", en: "Saving...", zh: "保存中...", ja: "保存中..." },
-      save_failed: { ko: "저장에 실패했습니다", en: "Save failed", zh: "保存失败", ja: "保存に失敗しました" },
-      extraction_failed: {
-        ko: "자동 입력에 실패했습니다",
-        en: "Auto-fill failed",
-        zh: "自动填充失败",
-        ja: "自動入力に失敗しました",
-      },
     }
     return translations[key]?.[language] || key
   }
@@ -318,22 +298,25 @@ export default function BusinessCardSection({ language }: BusinessCardSectionPro
     setShowCameraPreview(false)
   }
 
-  const handleAutoFill = async () => {
-    if (!attachments.length) {
+  const handleAIAutoFill = async () => {
+    if (attachments.length === 0) {
       alert(getText("please_add_card_photo_first"))
       return
     }
 
     setExtractingCard(true)
-    try {
-      const imageData = attachments[0]?.url || attachments[0]?.data
 
-      console.log("[v0] Sending image to business card extraction API")
+    try {
+      const imageData = attachments[0].url || attachments[0].data
+      const {
+        data: { text: ocrText },
+      } = await Tesseract.recognize(imageData, ["eng", "kor", "chi_sim", "jpn"])
+      console.log("[v0] OCR extracted text:", ocrText)
 
       const response = await fetch("/api/extract-business-card", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageData }),
+        body: JSON.stringify({ ocrText }),
       })
 
       if (!response.ok) {
@@ -354,8 +337,8 @@ export default function BusinessCardSection({ language }: BusinessCardSectionPro
 
       alert(getText("card_info_extracted_successfully") || "명함 정보가 자동으로 입력되었습니다!")
     } catch (error) {
-      console.error("[v0] Auto-fill failed:", error)
-      alert(getText("extraction_failed") || "자동 입력에 실패했습니다")
+      console.error("[v0] AI auto-fill error:", error)
+      alert(getText("failed_to_extract_card_info") || "명함 정보 추출에 실패했습니다. 다시 시도해주세요.")
     } finally {
       setExtractingCard(false)
     }
@@ -458,7 +441,7 @@ export default function BusinessCardSection({ language }: BusinessCardSectionPro
 
                   {attachments.length > 0 && (
                     <Button
-                      onClick={handleAutoFill}
+                      onClick={handleAIAutoFill}
                       disabled={extractingCard}
                       className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
                     >
@@ -546,39 +529,9 @@ export default function BusinessCardSection({ language }: BusinessCardSectionPro
                 />
               </div>
 
-              <div>
-                <Label>{getText("image")}</Label>
-                <MediaTools
-                  attachments={attachments}
-                  onAttachmentsChange={setAttachments}
-                  language={language}
-                  maxFiles={1}
-                  acceptedFileTypes="image/*"
-                />
-                {attachments.map((file, idx) => (
-                  <div key={idx} className="relative group border rounded overflow-hidden">
-                    <img
-                      src={file.url || file.data}
-                      alt={file.name}
-                      className="w-full aspect-video object-cover bg-muted dark:bg-muted rounded-lg"
-                    />
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => setAttachments(attachments.filter((_, i) => i !== idx))}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <Button onClick={handleSave} className="w-full bg-green-600 hover:bg-green-700" disabled={saving}>
-                  {saving ? getText("saving") || "저장 중..." : getText("save")}
-                </Button>
-              </div>
+              <Button onClick={handleSave} className="w-full bg-green-600 hover:bg-green-700">
+                {getText("save")}
+              </Button>
             </div>
           </Card>
         </div>
@@ -590,7 +543,7 @@ export default function BusinessCardSection({ language }: BusinessCardSectionPro
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6">
       <div className="max-w-4xl mx-auto space-y-4">
         <div className="flex items-center justify-between">
-          <Button variant="ghost" onClick={() => setShowAddCard(false)}>
+          <Button variant="ghost" onClick={onBack}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             {getText("back")}
           </Button>
