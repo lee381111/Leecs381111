@@ -204,6 +204,18 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
         zh: "将名片对准画面",
         ja: "名刺をフレーム内に合わせてください",
       },
+      extracting_card_info: {
+        ko: "명함 정보 추출 중...",
+        en: "Extracting card info...",
+        zh: "正在提取名片信息...",
+        ja: "名刺の情報を抽出中...",
+      },
+      ai_auto_fill: {
+        ko: "명함 정보 자동 입력",
+        en: "AI Auto Fill",
+        zh: "AI自动填充",
+        ja: "AI自動入力",
+      },
     }
     return translations[key]?.[language] || key
   }
@@ -438,13 +450,13 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
                   )}
 
                   {attachments.length > 0 && (
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 gap-2">
                       {attachments.map((file, idx) => (
                         <div key={idx} className="relative group border rounded overflow-hidden">
                           <img
                             src={file.url || file.data}
                             alt={file.name}
-                            className="w-full h-32 object-contain bg-muted dark:bg-muted"
+                            className="w-full aspect-[16/9] object-contain bg-muted dark:bg-muted"
                           />
                           <Button
                             variant="destructive"
