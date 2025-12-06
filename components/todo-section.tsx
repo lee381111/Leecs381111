@@ -62,6 +62,10 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
 
   const t = (key: string) => getTranslation(language as any, key)
 
+  const handleToggleComplete = (id: string) => {
+    setTodos((prevTodos) => prevTodos.map((todo) => (todo.id === id ? { ...todo, completed: !todo.completed } : todo)))
+  }
+
   useEffect(() => {
     notificationManager.requestPermission()
     notificationManager.restoreAlarms()
@@ -70,26 +74,28 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
 
   const loadData = async () => {
     if (!user?.id) return
-
+    setLoading(true)
     try {
-      setLoading(true)
       const data = await loadTodoItems(user.id)
       setTodos(data)
 
+      // Restore alarms for incomplete todos
+      const todosWithAlarms = data.filter((todo) => !todo.completed && todo.alarmEnabled && todo.alarmTime)
+
       console.log(
         "[v0] Loaded todos with alarms:",
-        data.filter((t) => t.alarmEnabled),
+        todosWithAlarms.map((t) => ({ title: t.title, alarmTime: t.alarmTime })),
       )
-      data.forEach((todo) => {
-        if (todo.alarmEnabled && todo.alarmTime && !todo.completed) {
-          const alarmDateTime = new Date(todo.alarmTime)
+
+      todosWithAlarms.forEach((todo) => {
+        if (todo.alarmTime) {
+          // Parse datetime-local format (YYYY-MM-DDTHH:mm)
+          const [datePart, timePart] = todo.alarmTime.split("T")
+          const [year, month, day] = datePart.split("-").map(Number)
+          const [hours, minutes] = timePart.split(":").map(Number)
+          const alarmDateTime = new Date(year, month - 1, day, hours, minutes)
+
           if (!isNaN(alarmDateTime.getTime()) && alarmDateTime.getTime() > Date.now()) {
-            console.log("[v0] Restoring todo alarm:", {
-              id: todo.id,
-              title: todo.title,
-              alarmTime: todo.alarmTime,
-              alarmDateTime: alarmDateTime.toISOString(),
-            })
             notificationManager.scheduleAlarm({
               id: `todo_${todo.id}`,
               title: t("todo_alarm_notification"),
@@ -97,19 +103,11 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
               scheduleTime: alarmDateTime,
               type: "schedule",
             })
-          } else {
-            console.log("[v0] Todo alarm time has passed or invalid:", {
-              id: todo.id,
-              alarmTime: todo.alarmTime,
-              isValid: !isNaN(alarmDateTime.getTime()),
-              isPast: alarmDateTime.getTime() <= Date.now(),
-            })
           }
         }
       })
     } catch (error) {
       console.error("[v0] To-Do 로드 에러:", error)
-      // If table doesn't exist yet, just show empty list
       setTodos([])
     } finally {
       setLoading(false)
@@ -136,29 +134,14 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
   }
 
   const handleSave = async () => {
-    if (!user?.id) {
-      alert(t("login_required") || "로그인이 필요합니다")
-      return
-    }
-
-    if (!formData.title.trim()) {
-      alert(t("please_enter_title"))
-      return
-    }
-
-    if (formData.alarmEnabled && formData.alarmTime) {
-      const testDate = new Date(formData.alarmTime)
-      if (isNaN(testDate.getTime())) {
-        alert(t("invalid_alarm_time") || "알람 시간이 올바르지 않습니다")
-        return
-      }
-    }
+    if (!user?.id || !formData.title.trim()) return
 
     setSaving(true)
     try {
-      let updatedTodos: TodoItem[]
+      // Keep alarm time in datetime-local format (YYYY-MM-DDTHH:mm)
+      const processedAlarmTime = formData.alarmEnabled && formData.alarmTime ? formData.alarmTime : undefined
 
-      const processedAlarmTime = formData.alarmTime || undefined
+      let updatedTodos: TodoItem[]
 
       if (editingId) {
         updatedTodos = todos.map((todo) =>
@@ -176,15 +159,12 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
             : todo,
         )
 
+        // Schedule alarm if enabled
         if (formData.alarmEnabled && processedAlarmTime) {
-          const alarmDateTime = new Date(processedAlarmTime)
-          console.log("[v0] Scheduling alarm for edited todo:", {
-            id: editingId,
-            alarmTime: processedAlarmTime,
-            alarmDateTime: alarmDateTime.toISOString(),
-            isValid: !isNaN(alarmDateTime.getTime()),
-            isPast: alarmDateTime.getTime() <= Date.now(),
-          })
+          const [datePart, timePart] = processedAlarmTime.split("T")
+          const [year, month, day] = datePart.split("-").map(Number)
+          const [hours, minutes] = timePart.split(":").map(Number)
+          const alarmDateTime = new Date(year, month - 1, day, hours, minutes)
 
           if (!isNaN(alarmDateTime.getTime()) && alarmDateTime.getTime() > Date.now()) {
             notificationManager.cancelAlarm(`todo_${editingId}`)
@@ -214,15 +194,12 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
         }
         updatedTodos = [newTodo, ...todos]
 
+        // Schedule alarm if enabled
         if (formData.alarmEnabled && processedAlarmTime) {
-          const alarmDateTime = new Date(processedAlarmTime)
-          console.log("[v0] Scheduling alarm for new todo:", {
-            id: newTodo.id,
-            alarmTime: processedAlarmTime,
-            alarmDateTime: alarmDateTime.toISOString(),
-            isValid: !isNaN(alarmDateTime.getTime()),
-            isPast: alarmDateTime.getTime() <= Date.now(),
-          })
+          const [datePart, timePart] = processedAlarmTime.split("T")
+          const [year, month, day] = datePart.split("-").map(Number)
+          const [hours, minutes] = timePart.split(":").map(Number)
+          const alarmDateTime = new Date(year, month - 1, day, hours, minutes)
 
           if (!isNaN(alarmDateTime.getTime()) && alarmDateTime.getTime() > Date.now()) {
             notificationManager.scheduleAlarm({
@@ -257,48 +234,11 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
     }
   }
 
-  const handleToggleComplete = async (id: string) => {
-    if (!user?.id) return
-
-    try {
-      const todo = todos.find((t) => t.id === id)
-      if (!todo) return
-
-      const updated = await saveTodoItems([
-        {
-          ...todo,
-          completed: !todo.completed,
-        },
-      ])
-
-      if (!todo.completed) {
-        notificationManager.cancelAlarm(`todo_${id}`)
-      }
-
-      await loadData()
-    } catch (error) {
-      console.error("[v0] Failed to toggle todo:", error)
-    }
-  }
-
   const handleEdit = (todo: TodoItem) => {
     setEditingId(todo.id)
     setIsAdding(true)
 
-    let formattedAlarmTime = ""
-    if (todo.alarmTime) {
-      const date = new Date(todo.alarmTime)
-      if (!isNaN(date.getTime())) {
-        // Format as YYYY-MM-DDTHH:mm (local time)
-        const year = date.getFullYear()
-        const month = String(date.getMonth() + 1).padStart(2, "0")
-        const day = String(date.getDate()).padStart(2, "0")
-        const hours = String(date.getHours()).padStart(2, "0")
-        const minutes = String(date.getMinutes()).padStart(2, "0")
-        formattedAlarmTime = `${year}-${month}-${day}T${hours}:${minutes}`
-      }
-    }
-
+    // alarmTime is already in datetime-local format (YYYY-MM-DDTHH:mm)
     setFormData({
       title: todo.title,
       description: todo.description || "",
@@ -306,7 +246,7 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
       dueDate: todo.dueDate || "",
       repeatType: todo.repeatType,
       alarmEnabled: todo.alarmEnabled,
-      alarmTime: formattedAlarmTime,
+      alarmTime: todo.alarmTime || "",
     })
   }
 
