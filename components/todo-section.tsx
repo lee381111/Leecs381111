@@ -103,8 +103,6 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
       })
     } catch (error) {
       console.error("[v0] Failed to load todos:", error)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -244,7 +242,7 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
         }
       }
 
-      await saveTodoItems(updatedTodos, user.id)
+      await saveTodoItems(updatedTodos)
       setTodos(updatedTodos)
       setIsAdding(false)
       setEditingId(null)
@@ -269,17 +267,23 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
     if (!user?.id) return
 
     try {
-      const updatedTodos = todos.map((todo) => (todo.id === id ? { ...todo, completed: !todo.completed } : todo))
+      const todo = todos.find((t) => t.id === id)
+      if (!todo) return
 
-      await saveTodoItems(updatedTodos, user.id)
-      setTodos(updatedTodos)
+      const updated = await saveTodoItems([
+        {
+          ...todo,
+          completed: !todo.completed,
+        },
+      ])
 
-      if (!todos.find((t) => t.id === id)?.completed) {
+      if (!todo.completed) {
         notificationManager.cancelAlarm(`todo_${id}`)
       }
+
+      await loadData()
     } catch (error) {
-      console.error("[v0] To-Do 완료 상태 변경 에러:", error)
-      alert(t("save_failed") || "저장에 실패했습니다. 다시 시도해주세요.")
+      console.error("[v0] Failed to toggle todo:", error)
     }
   }
 
