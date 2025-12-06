@@ -149,6 +149,7 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
   }
 
   const handleEdit = (todo: TodoItem) => {
+    setIsAdding(true) // Added setIsAdding(true) to show the form when editing
     setEditingId(todo.id)
     setFormData({
       title: todo.title,
@@ -312,6 +313,20 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
                   <option value="medium">{t("priority_medium")}</option>
                   <option value="high">{t("priority_high")}</option>
                 </select>
+              </div>
+
+              <div>
+                <label htmlFor="dueDate" className="text-sm font-medium block mb-2 flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  {t("todo_due_date")}
+                </label>
+                <Input
+                  id="dueDate"
+                  type="date"
+                  value={formData.dueDate}
+                  onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+                  className="w-full"
+                />
               </div>
 
               <div>
