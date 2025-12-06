@@ -132,7 +132,7 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
     const interval = setInterval(checkAlarms, 15000)
 
     return () => clearInterval(interval)
-  }, [todos])
+  }, [todos, language]) // Added language to dependency array so alarm uses correct language
 
   const loadData = async () => {
     if (!user?.id) return
@@ -405,7 +405,7 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
         {!isAdding && (
           <Button
             onClick={() => setIsAdding(true)}
-            className="w-full mb-6 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600"
+            className="w-full mb-6 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-500"
           >
             <Plus className="h-5 w-5 mr-2" />
             {t("add_todo")}

@@ -214,6 +214,11 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     total_todos: "전체 할일",
     completed_todos: "완료된 할일",
     pending_todos: "미완료 할일",
+    filter_all: "전체",
+    filter_active: "진행중",
+    filter_completed: "완료",
+    confirm_delete: "정말 삭제하시겠습니까?",
+    delete_failed: "삭제 실패",
 
     // Schedule Section
     special_days: "특별한 날",
