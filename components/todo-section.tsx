@@ -269,15 +269,44 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
   }
 
   const handleEdit = (todo: TodoItem) => {
+    console.log("[v0] Editing todo:", todo)
     setEditingId(todo.id)
+
+    // Format date for datetime-local input (YYYY-MM-DDTHH:mm)
+    let formattedDueDate = ""
+    if (todo.dueDate) {
+      try {
+        const date = new Date(todo.dueDate)
+        if (!isNaN(date.getTime())) {
+          formattedDueDate = date.toISOString().slice(0, 16)
+        }
+      } catch (e) {
+        console.error("[v0] Error parsing dueDate:", e)
+      }
+    }
+
+    let formattedAlarmTime = ""
+    if (todo.alarmTime) {
+      try {
+        const date = new Date(todo.alarmTime)
+        if (!isNaN(date.getTime())) {
+          formattedAlarmTime = date.toISOString().slice(0, 16)
+        }
+      } catch (e) {
+        console.error("[v0] Error parsing alarmTime:", e)
+      }
+    }
+
+    console.log("[v0] Formatted dueDate:", formattedDueDate, "alarmTime:", formattedAlarmTime)
+
     setFormData({
       title: todo.title,
       description: todo.description || "",
       priority: todo.priority,
-      dueDate: todo.dueDate || "",
+      dueDate: formattedDueDate,
       repeatType: todo.repeatType,
       alarmEnabled: todo.alarmEnabled,
-      alarmTime: todo.alarmTime || "",
+      alarmTime: formattedAlarmTime,
     })
     setIsAdding(true)
   }
