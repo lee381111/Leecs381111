@@ -21,7 +21,7 @@ import {
 } from "lucide-react"
 import { saveTodoItems, loadTodoItems, deleteTodoItem } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
-import type { TodoItem } from "@/lib/types"
+import type { TodoItem, Attachment } from "@/lib/types"
 import { Spinner } from "@/components/ui/spinner"
 import { getTranslation } from "@/lib/i18n"
 import { notificationManager } from "@/lib/notification-manager"
@@ -103,7 +103,7 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
     }
   }
 
-  const handleSave = async () => {
+  const handleSave = async (attachments: Attachment[]) => {
     if (!user?.id) {
       alert(t("login_required") || "로그인이 필요합니다")
       return
@@ -115,8 +115,9 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
     }
 
     if (formData.alarmEnabled && formData.alarmTime) {
-      const testDate = new Date(formData.alarmTime)
-      if (isNaN(testDate.getTime())) {
+      // Parse the datetime-local input (YYYY-MM-DDTHH:mm)
+      const [datePart, timePart] = formData.alarmTime.split("T")
+      if (!datePart || !timePart) {
         alert(t("invalid_alarm_time") || "알람 시간이 올바르지 않습니다")
         return
       }
@@ -126,9 +127,7 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
     try {
       let updatedTodos: TodoItem[]
 
-      const processedAlarmTime = formData.alarmTime
-        ? `${formData.alarmTime}:00` // Add seconds to make it a complete timestamp
-        : undefined
+      const processedAlarmTime = formData.alarmTime || undefined
 
       if (editingId) {
         updatedTodos = todos.map((todo) =>
@@ -146,20 +145,34 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
             : todo,
         )
 
+        notificationManager.cancelAlarm(`todo_${editingId}`)
+
         if (formData.alarmEnabled && processedAlarmTime) {
-          const alarmDateTime = new Date(processedAlarmTime)
+          // Parse datetime-local format properly (YYYY-MM-DDTHH:mm)
+          const [datePart, timePart] = processedAlarmTime.split("T")
+          const [year, month, day] = datePart.split("-").map(Number)
+          const [hours, minutes] = timePart.split(":").map(Number)
+
+          // Create date using local timezone
+          const alarmDateTime = new Date(year, month - 1, day, hours, minutes)
+
+          console.log("[v0] Todo alarm scheduled:", {
+            id: `todo_${editingId}`,
+            alarmTime: processedAlarmTime,
+            alarmDateTime: alarmDateTime.toISOString(),
+            now: new Date().toISOString(),
+            isFuture: alarmDateTime.getTime() > Date.now(),
+          })
+
           if (!isNaN(alarmDateTime.getTime()) && alarmDateTime.getTime() > Date.now()) {
-            notificationManager.cancelAlarm(`todo_${editingId}`)
             notificationManager.scheduleAlarm({
               id: `todo_${editingId}`,
-              title: t("todo_alarm_notification"),
+              title: t("todo_alarm_notification") || "할일 알림",
               message: formData.title,
               scheduleTime: alarmDateTime,
               type: "schedule",
             })
           }
-        } else {
-          notificationManager.cancelAlarm(`todo_${editingId}`)
         }
       } else {
         const newTodo: TodoItem = {
@@ -173,16 +186,32 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
           alarmEnabled: formData.alarmEnabled,
           alarmTime: processedAlarmTime,
           createdAt: new Date().toISOString(),
+          user_id: user.id,
         }
-        updatedTodos = [newTodo, ...todos]
+
+        updatedTodos = [...todos, newTodo]
 
         if (formData.alarmEnabled && processedAlarmTime) {
-          const alarmDateTime = new Date(processedAlarmTime)
+          // Parse datetime-local format properly (YYYY-MM-DDTHH:mm)
+          const [datePart, timePart] = processedAlarmTime.split("T")
+          const [year, month, day] = datePart.split("-").map(Number)
+          const [hours, minutes] = timePart.split(":").map(Number)
+
+          // Create date using local timezone
+          const alarmDateTime = new Date(year, month - 1, day, hours, minutes)
+
+          console.log("[v0] New todo alarm scheduled:", {
+            id: `todo_${newTodo.id}`,
+            alarmTime: processedAlarmTime,
+            alarmDateTime: alarmDateTime.toISOString(),
+            now: new Date().toISOString(),
+            isFuture: alarmDateTime.getTime() > Date.now(),
+          })
 
           if (!isNaN(alarmDateTime.getTime()) && alarmDateTime.getTime() > Date.now()) {
             notificationManager.scheduleAlarm({
               id: `todo_${newTodo.id}`,
-              title: t("todo_alarm_notification"),
+              title: t("todo_alarm_notification") || "할일 알림",
               message: formData.title,
               scheduleTime: alarmDateTime,
               type: "schedule",
@@ -243,18 +272,9 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
     if (todo.dueDate) {
       try {
         const dateStr = todo.dueDate
-        if (dateStr.includes("T")) {
-          formattedDueDate = dateStr.slice(0, 16) // Extract YYYY-MM-DDTHH:mm
-        } else {
-          const date = new Date(dateStr)
-          if (!isNaN(date.getTime())) {
-            const year = date.getFullYear()
-            const month = String(date.getMonth() + 1).padStart(2, "0")
-            const day = String(date.getDate()).padStart(2, "0")
-            const hours = String(date.getHours()).padStart(2, "0")
-            const minutes = String(date.getMinutes()).padStart(2, "0")
-            formattedDueDate = `${year}-${month}-${day}T${hours}:${minutes}`
-          }
+        // If it's already in datetime-local format, use it directly
+        if (dateStr.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/)) {
+          formattedDueDate = dateStr.slice(0, 16)
         }
       } catch (e) {
         console.error("[v0] Error parsing dueDate:", e)
@@ -265,18 +285,9 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
     if (todo.alarmTime) {
       try {
         const timeStr = todo.alarmTime
-        if (timeStr.includes("T")) {
-          formattedAlarmTime = timeStr.slice(0, 16) // Extract YYYY-MM-DDTHH:mm
-        } else {
-          const date = new Date(timeStr)
-          if (!isNaN(date.getTime())) {
-            const year = date.getFullYear()
-            const month = String(date.getMonth() + 1).padStart(2, "0")
-            const day = String(date.getDate()).padStart(2, "0")
-            const hours = String(date.getHours()).padStart(2, "0")
-            const minutes = String(date.getMinutes()).padStart(2, "0")
-            formattedAlarmTime = `${year}-${month}-${day}T${hours}:${minutes}`
-          }
+        // If it's already in datetime-local format, use it directly
+        if (timeStr.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/)) {
+          formattedAlarmTime = timeStr.slice(0, 16)
         }
       } catch (e) {
         console.error("[v0] Error parsing alarmTime:", e)
@@ -511,7 +522,7 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
               )}
 
               <div className="flex gap-2">
-                <Button onClick={handleSave} disabled={saving} className="flex-1">
+                <Button onClick={() => handleSave([])} disabled={saving} className="flex-1">
                   {saving ? <Spinner /> : t("save")}
                 </Button>
                 <Button
