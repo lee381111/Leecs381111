@@ -26,12 +26,17 @@ import { saveBusinessCards, loadBusinessCards } from "@/lib/storage"
 import type { Language, BusinessCard } from "@/lib/types"
 import Tesseract from "tesseract.js"
 
-export function BusinessCardSection({ onBack, language }: { onBack: () => void; language: Language }) {
+export default function BusinessCardSection({ language }: { language: Language }) {
   const { user } = useAuth()
   const [businessCards, setBusinessCards] = useState<BusinessCard[]>([])
-  const [sortBy, setSortBy] = useState<"name" | "company" | "date">("date")
   const [showAddCard, setShowAddCard] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [sortBy, setSortBy] = useState<"date" | "name" | "company">("date")
+  const [imageRotations, setImageRotations] = useState<Record<string, number>>({})
+  const [showCameraPreview, setShowCameraPreview] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const streamRef = useRef<MediaStream | null>(null)
   const [extractingCard, setExtractingCard] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
@@ -43,10 +48,6 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
     notes: "",
   })
   const [attachments, setAttachments] = useState<any[]>([])
-  const [showCameraPreview, setShowCameraPreview] = useState(false)
-  const videoRef = useRef<HTMLVideoElement | null>(null)
-  const streamRef = useRef<MediaStream | null>(null)
-  const [imageRotations, setImageRotations] = useState<Record<string, number>>({})
 
   useEffect(() => {
     if (user) {
@@ -77,6 +78,8 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
       return
     }
 
+    setSaving(true)
+
     const newCard: BusinessCard = {
       id: editingId || crypto.randomUUID(),
       ...formData,
@@ -98,6 +101,8 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
     } catch (error) {
       console.error("[v0] Failed to save business card:", error)
     }
+
+    setSaving(false)
 
     setFormData({
       name: "",
@@ -215,6 +220,12 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
         en: "AI Auto Fill",
         zh: "AI自动填充",
         ja: "AI自動入力",
+      },
+      saving: {
+        ko: "저장 중...",
+        en: "Saving...",
+        zh: "保存中...",
+        ja: "保存中...",
       },
     }
     return translations[key]?.[language] || key
@@ -529,8 +540,8 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
                 />
               </div>
 
-              <Button onClick={handleSave} className="w-full bg-green-600 hover:bg-green-700">
-                {getText("save")}
+              <Button onClick={handleSave} disabled={saving} className="w-full bg-green-600 hover:bg-green-700">
+                {saving ? getText("saving") : getText("save")}
               </Button>
             </div>
           </Card>
@@ -543,7 +554,7 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6">
       <div className="max-w-4xl mx-auto space-y-4">
         <div className="flex items-center justify-between">
-          <Button variant="ghost" onClick={onBack}>
+          <Button variant="ghost" onClick={() => setShowAddCard(false)}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             {getText("back")}
           </Button>
