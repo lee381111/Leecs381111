@@ -244,7 +244,7 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
         }
       }
 
-      await saveTodoItems(updatedTodos)
+      await saveTodoItems(updatedTodos, user.id)
       setTodos(updatedTodos)
       setIsAdding(false)
       setEditingId(null)
@@ -271,18 +271,15 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
     try {
       const updatedTodos = todos.map((todo) => (todo.id === id ? { ...todo, completed: !todo.completed } : todo))
 
-      // Cancel alarm if completed
-      const todo = todos.find((t) => t.id === id)
-      if (todo && !todo.completed) {
+      await saveTodoItems(updatedTodos, user.id)
+      setTodos(updatedTodos)
+
+      if (!todos.find((t) => t.id === id)?.completed) {
         notificationManager.cancelAlarm(`todo_${id}`)
       }
-
-      // Save the full array
-      await saveTodoItems(updatedTodos)
-      setTodos(updatedTodos)
     } catch (error) {
-      console.error("[v0] Failed to toggle todo:", error)
-      alert(t("update_failed") || "업데이트에 실패했습니다.")
+      console.error("[v0] To-Do 완료 상태 변경 에러:", error)
+      alert(t("save_failed") || "저장에 실패했습니다. 다시 시도해주세요.")
     }
   }
 
