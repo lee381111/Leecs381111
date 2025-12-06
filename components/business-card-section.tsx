@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { MediaTools } from "@/components/media-tools"
 import {
   ArrowLeft,
   Plus,
@@ -26,7 +27,11 @@ import { saveBusinessCards, loadBusinessCards } from "@/lib/storage"
 import type { Language, BusinessCard } from "@/lib/types"
 import Tesseract from "tesseract.js"
 
-export function BusinessCardSection({ onBack, language }: { onBack: () => void; language: Language }) {
+interface BusinessCardSectionProps {
+  language: Language
+}
+
+export default function BusinessCardSection({ language }: BusinessCardSectionProps) {
   const { user } = useAuth()
   const [businessCards, setBusinessCards] = useState<BusinessCard[]>([])
   const [sortBy, setSortBy] = useState<"name" | "company" | "date">("date")
@@ -47,6 +52,8 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const [imageRotations, setImageRotations] = useState<Record<string, number>>({})
+  const [extracting, setExtracting] = useState(false)
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -77,6 +84,8 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
       return
     }
 
+    setSaving(true)
+
     const newCard: BusinessCard = {
       id: editingId || crypto.randomUUID(),
       ...formData,
@@ -97,6 +106,9 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
       await saveBusinessCards(updatedCards, user.id)
     } catch (error) {
       console.error("[v0] Failed to save business card:", error)
+      alert(getText("save_failed") || "저장에 실패했습니다")
+    } finally {
+      setSaving(false)
     }
 
     setFormData({
@@ -216,6 +228,9 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
         zh: "AI自动填充",
         ja: "AI自動入力",
       },
+      image: { ko: "사진", en: "Image", zh: "图片", ja: "画像" },
+      saving: { ko: "저장 중...", en: "Saving...", zh: "保存中...", ja: "保存中..." },
+      save_failed: { ko: "저장에 실패했습니다", en: "Save failed", zh: "保存失败", ja: "保存に失敗しました" },
     }
     return translations[key]?.[language] || key
   }
@@ -529,9 +544,39 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
                 />
               </div>
 
-              <Button onClick={handleSave} className="w-full bg-green-600 hover:bg-green-700">
-                {getText("save")}
-              </Button>
+              <div>
+                <Label>{getText("image")}</Label>
+                <MediaTools
+                  attachments={attachments}
+                  onAttachmentsChange={setAttachments}
+                  language={language}
+                  maxFiles={1}
+                  acceptedFileTypes="image/*"
+                />
+                {attachments.map((file, idx) => (
+                  <div key={idx} className="relative group border rounded overflow-hidden">
+                    <img
+                      src={file.url || file.data}
+                      alt={file.name}
+                      className="w-full aspect-video object-cover bg-muted dark:bg-muted rounded-lg"
+                    />
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => setAttachments(attachments.filter((_, i) => i !== idx))}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button onClick={handleSave} className="w-full bg-green-600 hover:bg-green-700" disabled={saving}>
+                  {saving ? getText("saving") || "저장 중..." : getText("save")}
+                </Button>
+              </div>
             </div>
           </Card>
         </div>
@@ -543,7 +588,7 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6">
       <div className="max-w-4xl mx-auto space-y-4">
         <div className="flex items-center justify-between">
-          <Button variant="ghost" onClick={onBack}>
+          <Button variant="ghost" onClick={() => setShowAddCard(false)}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             {getText("back")}
           </Button>
