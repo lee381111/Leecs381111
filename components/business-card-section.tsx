@@ -230,6 +230,12 @@ export default function BusinessCardSection({ language }: BusinessCardSectionPro
       image: { ko: "사진", en: "Image", zh: "图片", ja: "画像" },
       saving: { ko: "저장 중...", en: "Saving...", zh: "保存中...", ja: "保存中..." },
       save_failed: { ko: "저장에 실패했습니다", en: "Save failed", zh: "保存失败", ja: "保存に失敗しました" },
+      extraction_failed: {
+        ko: "자동 입력에 실패했습니다",
+        en: "Auto-fill failed",
+        zh: "自动填充失败",
+        ja: "自動入力に失敗しました",
+      },
     }
     return translations[key]?.[language] || key
   }
@@ -313,16 +319,19 @@ export default function BusinessCardSection({ language }: BusinessCardSectionPro
   }
 
   const handleAutoFill = async () => {
-    if (!attachments.length) return
+    if (!attachments.length) {
+      alert(getText("please_add_card_photo_first"))
+      return
+    }
 
     setExtractingCard(true)
     try {
       const Tesseract = (await import("tesseract.js")).default
 
-      const image = attachments[0]
+      const imageSource = attachments[0]?.url || attachments[0]?.data || attachments[0]
       console.log("[v0] Starting OCR on business card image")
 
-      const result = await Tesseract.recognize(image, "kor+eng+chi_sim+jpn", {
+      const result = await Tesseract.recognize(imageSource, "kor+eng+chi_sim+jpn", {
         logger: (m) => console.log("[v0] OCR progress:", m),
       })
 
@@ -354,7 +363,7 @@ export default function BusinessCardSection({ language }: BusinessCardSectionPro
       alert(getText("card_info_extracted_successfully") || "명함 정보가 자동으로 입력되었습니다!")
     } catch (error) {
       console.error("[v0] Auto-fill failed:", error)
-      alert(getText("ai_auto_fill") + " failed")
+      alert(getText("extraction_failed") || "자동 입력에 실패했습니다")
     } finally {
       setExtractingCard(false)
     }
