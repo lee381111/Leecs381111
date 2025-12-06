@@ -848,15 +848,14 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
           <ArrowLeft className="mr-2 h-4 w-4" /> {t("title")}
         </Button>
         <div className="flex gap-2">
-          <Button onClick={() => setIsOptimizingTravel(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
-            🤖 {t("ai_travel_optimizer")}
-          </Button>
-          {/* </CHANGE> */}
           <Button onClick={() => setIsBatchAdding(true)} className="bg-green-500 hover:bg-green-600 text-white">
             <Calendar className="mr-2 h-4 w-4" /> {t("special_days")}
           </Button>
           <Button onClick={() => setIsAdding(true)} className="bg-emerald-600 hover:bg-emerald-700">
             <Plus className="mr-2 h-4 w-4" /> {t("add")} {t("schedule")}
+          </Button>
+          <Button onClick={() => setIsOptimizingTravel(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
+            🤖 {t("ai_travel_optimizer")}
           </Button>
         </div>
       </div>
