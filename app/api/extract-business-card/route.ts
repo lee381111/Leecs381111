@@ -3,10 +3,10 @@ import { generateText } from "ai"
 
 export async function POST(request: Request) {
   try {
-    const { imageData } = await request.json()
+    const { ocrText } = await request.json()
 
-    if (!imageData) {
-      return Response.json({ error: "No image data provided" }, { status: 400 })
+    if (!ocrText) {
+      return Response.json({ error: "No OCR text provided" }, { status: 400 })
     }
 
     const groq = createGroq({
@@ -15,34 +15,34 @@ export async function POST(request: Request) {
 
     const { text } = await generateText({
       model: groq("llama-3.3-70b-versatile"),
-      prompt: `You are an expert OCR system for business cards. Extract ALL text from this business card image and organize it into the following JSON fields. Be accurate and extract exactly what you see:
+      prompt: `You are an expert at organizing business card information. I have extracted the following text from a business card using OCR. Please organize it into a structured JSON format.
 
+OCR Text:
+${ocrText}
+
+Organize this into the following JSON format:
 {
   "name": "full name of the person",
   "company": "company name",
   "position": "job title or position",
-  "phone": "phone number (keep original format)",
+  "phone": "phone number (keep original format with dashes/spaces)",
   "email": "email address",
   "address": "full address if available",
-  "notes": "any additional information like website, fax, social media, or other details"
+  "notes": "any additional information like website, fax, social media"
 }
 
-Important:
-- Extract text EXACTLY as it appears on the card
-- If a field is not found, leave it as empty string ""
-- For Korean cards, extract Korean text
-- For English cards, extract English text
-- Phone numbers: keep original format (with dashes, spaces, etc.)
-- Notes field: include any extra information like website URL, LinkedIn, WeChat, etc.
-- Return ONLY the JSON object, no other text
+Rules:
+- Extract information accurately from the OCR text
+- If a field cannot be determined, use empty string ""
+- Preserve original formatting for phone numbers
+- Handle Korean, English, Chinese, and Japanese text
+- Return ONLY valid JSON, no other text
 
-Business Card Image Data: ${imageData}`,
+JSON:`,
     })
 
-    // Parse the AI response
     let extractedData
     try {
-      // Try to extract JSON from the response
       const jsonMatch = text.match(/\{[\s\S]*\}/)
       if (jsonMatch) {
         extractedData = JSON.parse(jsonMatch[0])
@@ -50,13 +50,13 @@ Business Card Image Data: ${imageData}`,
         extractedData = JSON.parse(text)
       }
     } catch (e) {
-      console.error("Failed to parse AI response:", text)
+      console.error("[v0] Failed to parse AI response:", text)
       return Response.json({ error: "Failed to extract card information" }, { status: 500 })
     }
 
     return Response.json({ data: extractedData })
   } catch (error: any) {
-    console.error("Business card extraction error:", error)
+    console.error("[v0] Business card extraction error:", error)
     return Response.json({ error: error.message || "Failed to extract card information" }, { status: 500 })
   }
 }

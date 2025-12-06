@@ -24,6 +24,7 @@ import {
 import { useAuth } from "@/lib/auth-context"
 import { saveBusinessCards, loadBusinessCards } from "@/lib/storage"
 import type { Language, BusinessCard } from "@/lib/types"
+import Tesseract from "tesseract.js"
 
 export function BusinessCardSection({ onBack, language }: { onBack: () => void; language: Language }) {
   const { user } = useAuth()
@@ -185,25 +186,24 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
         zh: "请先添加名片照片",
         ja: "まず名刺の写真を追加してください",
       },
-      card_info_extracted: {
-        ko: "명함 정보가 추출되었습니다",
-        en: "Card information extracted",
-        zh: "名片信息已提取",
-        ja: "名刺の情報が抽出されました",
+      card_info_extracted_successfully: {
+        ko: "명함 정보가 자동으로 입력되었습니다!",
+        en: "Card information has been automatically filled!",
+        zh: "名片信息已自动填充!",
+        ja: "名刺の情報が自動で入力されました!",
       },
-      card_extraction_failed: {
-        ko: "명함 정보 추출에 실패했습니다",
-        en: "Failed to extract card information",
-        zh: "名片信息提取失败",
-        ja: "名刺の情報抽出に失敗しました",
+      failed_to_extract_card_info: {
+        ko: "명함 정보 추출에 실패했습니다. 다시 시도해주세요.",
+        en: "Failed to extract card information. Please try again.",
+        zh: "名片信息提取失败。请再试一次。",
+        ja: "名刺の情報抽出に失敗しました。もう一度お試しください。",
       },
-      extracting_card_info: {
-        ko: "명함 정보 추출 중...",
-        en: "Extracting card information...",
-        zh: "正在提取名片信息...",
-        ja: "名刺の情報を抽出しています...",
+      align_card_in_frame: {
+        ko: "프레임 안에 명함을 맞춰주세요",
+        en: "Align the card within the frame",
+        zh: "将名片对准画面",
+        ja: "名刺をフレーム内に合わせてください",
       },
-      ai_auto_fill: { ko: "AI로 자동 채우기", en: "AI Auto Fill", zh: "AI自动填充", ja: "AI自動入力" },
     }
     return translations[key]?.[language] || key
   }
@@ -226,8 +226,9 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: "environment",
-          width: { ideal: 1920, min: 1280 },
-          height: { ideal: 1080, min: 720 },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+          aspectRatio: { ideal: 16 / 9 },
         },
       })
       streamRef.current = stream
@@ -257,10 +258,11 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
     const ctx = canvas.getContext("2d")
 
     if (ctx) {
+      ctx.filter = "contrast(1.2) brightness(1.1)"
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
     }
 
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.98)
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.95)
 
     const newAttachment = {
       type: "image",
@@ -294,11 +296,15 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
 
     try {
       const imageData = attachments[0].url || attachments[0].data
+      const {
+        data: { text: ocrText },
+      } = await Tesseract.recognize(imageData, ["eng", "kor", "chi_sim", "jpn"])
+      console.log("[v0] OCR extracted text:", ocrText)
 
       const response = await fetch("/api/extract-business-card", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageData }),
+        body: JSON.stringify({ ocrText }),
       })
 
       if (!response.ok) {
@@ -308,19 +314,19 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
       const { data } = await response.json()
 
       setFormData({
-        name: data.name || formData.name,
-        company: data.company || formData.company,
-        position: data.position || formData.position,
-        phone: data.phone || formData.phone,
-        email: data.email || formData.email,
-        address: data.address || formData.address,
-        notes: data.notes || formData.notes,
+        name: data.name || "",
+        company: data.company || "",
+        position: data.position || "",
+        phone: data.phone || "",
+        email: data.email || "",
+        address: data.address || "",
+        notes: data.notes || "",
       })
 
-      alert(getText("card_info_extracted"))
+      alert(getText("card_info_extracted_successfully") || "명함 정보가 자동으로 입력되었습니다!")
     } catch (error) {
-      console.error("Card extraction error:", error)
-      alert(getText("card_extraction_failed"))
+      console.error("[v0] AI auto-fill error:", error)
+      alert(getText("failed_to_extract_card_info") || "명함 정보 추출에 실패했습니다. 다시 시도해주세요.")
     } finally {
       setExtractingCard(false)
     }
@@ -373,9 +379,19 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
 
           {showCameraPreview && (
             <div className="fixed inset-0 bg-black z-50 flex flex-col">
-              <div className="flex-1 flex items-center justify-center bg-black overflow-hidden">
-                <div className="relative w-full h-full max-w-screen-xl mx-auto flex items-center justify-center">
-                  <video ref={videoRef} className="max-w-full max-h-full object-contain" playsInline autoPlay />
+              <div className="flex-1 flex items-center justify-center bg-black p-4">
+                <div className="relative w-full max-w-4xl" style={{ aspectRatio: "16/9" }}>
+                  <video
+                    ref={videoRef}
+                    className="w-full h-full object-cover rounded-lg border-4 border-emerald-500"
+                    playsInline
+                    autoPlay
+                  />
+                  <div className="absolute inset-4 border-2 border-dashed border-white/50 rounded-lg pointer-events-none flex items-center justify-center">
+                    <p className="text-white text-sm bg-black/50 px-4 py-2 rounded">
+                      {getText("align_card_in_frame") || "프레임 안에 명함을 맞춰주세요"}
+                    </p>
+                  </div>
                 </div>
               </div>
               <div className="bg-black/90 p-6 flex gap-4 justify-center">
