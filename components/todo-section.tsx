@@ -285,7 +285,11 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
             variant={filter === "all" ? "default" : "outline"}
             size="sm"
             onClick={() => setFilter("all")}
-            className="flex items-center gap-2"
+            className={`flex items-center gap-2 ${
+              filter === "all"
+                ? "bg-emerald-600 hover:bg-emerald-700"
+                : "hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300"
+            }`}
           >
             <Filter className="h-4 w-4" />
             {t("filter_all")}
@@ -294,7 +298,11 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
             variant={filter === "active" ? "default" : "outline"}
             size="sm"
             onClick={() => setFilter("active")}
-            className="flex items-center gap-2"
+            className={`flex items-center gap-2 ${
+              filter === "active"
+                ? "bg-orange-600 hover:bg-orange-700"
+                : "hover:bg-orange-50 hover:text-orange-700 hover:border-orange-300"
+            }`}
           >
             <Circle className="h-4 w-4" />
             {t("filter_active")}
@@ -303,7 +311,11 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
             variant={filter === "completed" ? "default" : "outline"}
             size="sm"
             onClick={() => setFilter("completed")}
-            className="flex items-center gap-2"
+            className={`flex items-center gap-2 ${
+              filter === "completed"
+                ? "bg-blue-600 hover:bg-blue-700"
+                : "hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300"
+            }`}
           >
             <CheckCircle2 className="h-4 w-4" />
             {t("filter_completed")}
