@@ -203,6 +203,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     repeat_monthly: "매월",
     todo_alarm: "알람",
     todo_alarm_notification: "할일 알림",
+    invalid_alarm_time: "알람 시간이 올바르지 않습니다",
     todo_completed: "완료됨",
     todo_incomplete: "미완료",
     mark_as_completed: "완료로 표시",
@@ -213,11 +214,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     total_todos: "전체 할일",
     completed_todos: "완료된 할일",
     pending_todos: "미완료 할일",
-    filter_all: "전체",
-    filter_active: "진행중",
-    filter_completed: "완료",
-    confirm_delete: "정말 삭제하시겠습니까?",
-    delete_failed: "삭제에 실패했습니다",
 
     // Schedule Section
     special_days: "특별한 날",
@@ -696,7 +692,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     todo_list: "To-Do List",
     add_todo: "Add To-Do",
     todo_title: "To-Do Item",
-    todo_title_required: "Please enter a to-do title", // Added for consistency with Korean
+    todo_title_required: "Please enter a to-do title",
     todo_description: "Description",
     todo_priority: "Priority",
     priority_low: "Low",
@@ -710,21 +706,22 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     repeat_monthly: "Monthly",
     todo_alarm: "Alarm",
     todo_alarm_notification: "To-Do Reminder",
+    invalid_alarm_time: "Invalid alarm time",
     todo_completed: "Completed",
     todo_incomplete: "Incomplete",
     mark_as_completed: "Mark as Completed",
     mark_as_incomplete: "Mark as Incomplete",
     no_todos_message: "No to-dos yet. Add a new one to get started!",
     voice_input_todo: "Add by Voice",
-    voice_input_active: "Voice recognition active...", // Shortened for consistency
-    total_todos: "Total To-Dos", // Changed for clarity
-    completed_todos: "Completed To-Dos", // Changed for clarity
-    pending_todos: "Pending To-Dos", // Changed for clarity
+    voice_input_active: "Voice recognition active...",
+    total_todos: "Total To-Dos",
+    completed_todos: "Completed To-Dos",
+    pending_todos: "Pending To-Dos",
     filter_all: "All",
     filter_active: "Active",
     filter_completed: "Completed",
-    confirm_delete: "Are you sure you want to delete?", // Standardized confirmation
-    delete_failed: "Deletion failed", // Standardized error message
+    confirm_delete: "Are you sure you want to delete?",
+    delete_failed: "Deletion failed",
 
     // Schedule Section
     special_days: "Special Days",
@@ -1203,7 +1200,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     todo_list: "待办事项列表",
     add_todo: "添加待办事项",
     todo_title: "待办事项",
-    todo_title_required: "请填写待办事项标题", // Added for consistency with Korean
+    todo_title_required: "请填写待办事项标题",
     todo_description: "描述",
     todo_priority: "优先级",
     priority_low: "低",
@@ -1217,21 +1214,22 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     repeat_monthly: "每月",
     todo_alarm: "提醒",
     todo_alarm_notification: "待办提醒",
+    invalid_alarm_time: "无效的提醒时间",
     todo_completed: "已完成",
     todo_incomplete: "未完成",
     mark_as_completed: "标记为已完成",
     mark_as_incomplete: "标记为未完成",
     no_todos_message: "暂无待办事项。添加一个新的开始吧！",
     voice_input_todo: "语音添加",
-    voice_input_active: "语音识别中...", // Shortened for consistency
-    total_todos: "总待办事项", // Changed for clarity
-    completed_todos: "已完成待办事项", // Changed for clarity
-    pending_todos: "待处理待办事项", // Changed for clarity
+    voice_input_active: "语音识别中...",
+    total_todos: "总待办事项",
+    completed_todos: "已完成待办事项",
+    pending_todos: "待处理待办事项",
     filter_all: "全部",
     filter_active: "进行中",
     filter_completed: "已完成",
-    confirm_delete: "确定要删除吗？", // Standardized confirmation
-    delete_failed: "删除失败", // Standardized error message
+    confirm_delete: "确定要删除吗？",
+    delete_failed: "删除失败",
 
     // Schedule Section
     special_days: "特别的日子",
@@ -1705,7 +1703,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     todo_list: "やることリスト",
     add_todo: "やることを追加",
     todo_title: "やること",
-    todo_title_required: "やることのタイトルを入力してください", // Added for consistency with Korean
+    todo_title_required: "やることのタイトルを入力してください",
     todo_description: "説明",
     todo_priority: "優先度",
     priority_low: "低",
@@ -1719,21 +1717,22 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     repeat_monthly: "毎月",
     todo_alarm: "アラーム",
     todo_alarm_notification: "やることリマインダー",
+    invalid_alarm_time: "無効なアラーム時間",
     todo_completed: "完了",
     todo_incomplete: "未完了",
     mark_as_completed: "完了にする",
     mark_as_incomplete: "未完了にする",
     no_todos_message: "やることがありません。新しいものを追加してください！",
     voice_input_todo: "音声で追加",
-    voice_input_active: "音声認識中...", // Shortened for consistency
-    total_todos: "合計やること", // Changed for clarity
-    completed_todos: "完了したやること", // Changed for clarity
-    pending_todos: "保留中のやること", // Changed for clarity
+    voice_input_active: "音声認識中...",
+    total_todos: "合計やること",
+    completed_todos: "完了したやること",
+    pending_todos: "保留中のやること",
     filter_all: "すべて",
     filter_active: "進行中",
     filter_completed: "完了",
-    confirm_delete: "本当に削除しますか？", // Standardized confirmation
-    delete_failed: "削除に失敗しました", // Standardized error message
+    confirm_delete: "本当に削除しますか？",
+    delete_failed: "削除に失敗しました",
 
     // Schedule Section
     special_days: "特別な日",

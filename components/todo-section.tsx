@@ -64,40 +64,10 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
   useEffect(() => {
     loadData()
 
-    // Request notification permission
     if ("Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission()
-    }
-
-    // Initialize speech recognition
-    if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
-      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition
-      recognitionRef.current = new SpeechRecognition()
-      recognitionRef.current.continuous = false
-      recognitionRef.current.interimResults = false
-      recognitionRef.current.lang =
-        language === "ko" ? "ko-KR" : language === "zh" ? "zh-CN" : language === "ja" ? "ja-JP" : "en-US"
-
-      recognitionRef.current.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript
-        setFormData((prev) => ({ ...prev, title: transcript }))
-        setIsListening(false)
-      }
-
-      recognitionRef.current.onerror = () => {
-        setIsListening(false)
-        alert(t("speech_recognition_failed"))
-      }
-
-      recognitionRef.current.onend = () => {
-        setIsListening(false)
-      }
-    }
-
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop()
-      }
+      Notification.requestPermission().then((permission) => {
+        console.log("[v0] Notification permission:", permission)
+      })
     }
   }, [user, language])
 
@@ -114,6 +84,12 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
         }
 
         const alarmTime = new Date(todo.alarmTime)
+
+        if (isNaN(alarmTime.getTime())) {
+          console.error("[v0] Invalid alarm time for todo:", todo.title, todo.alarmTime)
+          return
+        }
+
         const timeDiff = alarmTime.getTime() - now.getTime()
 
         console.log(
@@ -121,31 +97,42 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
           todo.title,
           "alarm at:",
           alarmTime.toLocaleString(),
+          "now:",
+          now.toLocaleString(),
           "time diff (seconds):",
           Math.round(timeDiff / 1000),
         )
 
-        // Trigger alarm if within 1 minute
-        if (timeDiff > 0 && timeDiff <= 60000) {
+        if (timeDiff > -60000 && timeDiff <= 120000) {
+          const alarmKey = `alarm_${todo.id}_${alarmTime.getTime()}`
+
+          if (sessionStorage.getItem(alarmKey)) {
+            return
+          }
+
           console.log("[v0] Triggering alarm for:", todo.title)
+
+          sessionStorage.setItem(alarmKey, "shown")
+
           if ("Notification" in window && Notification.permission === "granted") {
-            new Notification(t("todo_alarm_notification"), {
+            new Notification(getTranslation(language as any, "todo_alarm_notification"), {
               body: todo.title,
               icon: "/favicon.ico",
               tag: todo.id,
+              requireInteraction: true, // Keep notification until user interacts
             })
           } else {
-            alert(`${t("todo_alarm_notification")}: ${todo.title}`)
+            alert(`${getTranslation(language as any, "todo_alarm_notification")}: ${todo.title}`)
           }
         }
       })
     }
 
     checkAlarms()
-    const interval = setInterval(checkAlarms, 30000)
+    const interval = setInterval(checkAlarms, 15000)
 
     return () => clearInterval(interval)
-  }, [todos]) // Removed t from dependencies
+  }, [todos])
 
   const loadData = async () => {
     if (!user?.id) return
@@ -191,6 +178,15 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
     if (!formData.title.trim()) {
       alert(t("todo_title_required") || "할 일을 입력해주세요")
       return
+    }
+
+    if (formData.alarmEnabled && formData.alarmTime) {
+      const testDate = new Date(formData.alarmTime)
+      if (isNaN(testDate.getTime())) {
+        alert(t("invalid_alarm_time") || "알람 시간이 올바르지 않습니다")
+        return
+      }
+      console.log("[v0] Saving alarm time:", formData.alarmTime, "as Date:", testDate.toLocaleString())
     }
 
     setSaving(true)
