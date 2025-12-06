@@ -26,6 +26,17 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
   const [saving, setSaving] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
   const [isBatchAdding, setIsBatchAdding] = useState(false)
+  const [isOptimizingTravel, setIsOptimizingTravel] = useState(false)
+  const [optimizing, setOptimizing] = useState(false)
+  const [travelOptimizeData, setTravelOptimizeData] = useState({
+    destination: "",
+    startDate: "",
+    endDate: "",
+    budget: "",
+    style: "",
+  })
+  const [optimizedItinerary, setOptimizedItinerary] = useState<any>(null)
+  // </CHANGE>
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState<{
     title: string
@@ -255,6 +266,59 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
     }
   }
 
+  const handleOptimizeTravel = async () => {
+    if (!travelOptimizeData.destination.trim() || !travelOptimizeData.startDate || !travelOptimizeData.endDate) {
+      alert(t("please_fill_required_fields"))
+      return
+    }
+
+    setOptimizing(true)
+    try {
+      const response = await fetch("/api/optimize-travel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...travelOptimizeData,
+          language,
+        }),
+      })
+
+      if (!response.ok) throw new Error("Failed to optimize travel")
+
+      const { itinerary } = await response.json()
+      setOptimizedItinerary(itinerary)
+    } catch (error) {
+      console.error("Travel optimization error:", error)
+      alert(t("optimization_failed"))
+    } finally {
+      setOptimizing(false)
+    }
+  }
+
+  const handleApplyItinerary = () => {
+    if (!optimizedItinerary || !optimizedItinerary.dailyPlan) return
+
+    const newSchedules = optimizedItinerary.dailyPlan.map((day: any) => ({
+      id: crypto.randomUUID(),
+      title: day.title,
+      date: day.date,
+      time: "09:00",
+      category: "vacation",
+      description: day.activities.join("\n"),
+      attachments: [],
+      alarmEnabled: true,
+      alarmMinutesBefore: 1440,
+      isSpecialEvent: true,
+    }))
+
+    setSchedules([...schedules, ...newSchedules])
+    saveSchedules([...schedules, ...newSchedules], user!.id)
+    setOptimizedItinerary(null)
+    setIsOptimizingTravel(false)
+    alert(t("itinerary_applied"))
+  }
+  // </CHANGE>
+
   const exportToCalendar = (schedule: ScheduleEvent) => {
     console.log("[v0] Export button clicked for:", schedule.title)
 
@@ -327,6 +391,217 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
       </div>
     )
   }
+
+  if (isOptimizingTravel) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
+        <Button
+          variant="ghost"
+          onClick={() => {
+            setIsOptimizingTravel(false)
+            setOptimizedItinerary(null)
+            setTravelOptimizeData({
+              destination: "",
+              startDate: "",
+              endDate: "",
+              budget: "",
+              style: "",
+            })
+          }}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" /> {t("cancel")}
+        </Button>
+
+        <Card className="p-6 bg-gradient-to-br from-blue-50 to-cyan-50">
+          <h2 className="text-2xl font-bold mb-2">🤖 {t("ai_travel_optimizer")}</h2>
+          <p className="text-sm text-muted-foreground">{t("ai_travel_optimizer_description")}</p>
+        </Card>
+
+        {!optimizedItinerary ? (
+          <Card className="p-6 space-y-4">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium">{t("destination_label")}</label>
+              <Input
+                placeholder={t("destination_placeholder")}
+                value={travelOptimizeData.destination}
+                onChange={(e) => setTravelOptimizeData({ ...travelOptimizeData, destination: e.target.value })}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium">{t("start_date_label")}</label>
+                <input
+                  type="date"
+                  value={travelOptimizeData.startDate}
+                  onChange={(e) => setTravelOptimizeData({ ...travelOptimizeData, startDate: e.target.value })}
+                  className="w-full p-2 border rounded bg-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium">{t("end_date_label")}</label>
+                <input
+                  type="date"
+                  value={travelOptimizeData.endDate}
+                  onChange={(e) => setTravelOptimizeData({ ...travelOptimizeData, endDate: e.target.value })}
+                  className="w-full p-2 border rounded bg-white"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium">{t("budget_label")}</label>
+              <Input
+                type="number"
+                placeholder={t("budget_placeholder")}
+                value={travelOptimizeData.budget}
+                onChange={(e) => setTravelOptimizeData({ ...travelOptimizeData, budget: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium">{t("travel_style_label")}</label>
+              <select
+                value={travelOptimizeData.style}
+                onChange={(e) => setTravelOptimizeData({ ...travelOptimizeData, style: e.target.value })}
+                className="w-full p-2 border rounded bg-white"
+              >
+                <option value="">{t("select_style")}</option>
+                <option value={t("sightseeing")}>{t("sightseeing")}</option>
+                <option value={t("relaxation")}>{t("relaxation")}</option>
+                <option value={t("food_tour")}>{t("food_tour")}</option>
+                <option value={t("adventure")}>{t("adventure")}</option>
+                <option value={t("cultural")}>{t("cultural")}</option>
+              </select>
+            </div>
+
+            <Button
+              onClick={handleOptimizeTravel}
+              disabled={optimizing}
+              className="w-full bg-blue-600 hover:bg-blue-700"
+            >
+              {optimizing ? <Spinner className="h-4 w-4 mr-2" /> : null}
+              {optimizing ? t("optimizing") : t("generate_itinerary")}
+            </Button>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            <Card className="p-6 bg-green-50">
+              <h3 className="font-semibold text-lg mb-2">{t("trip_summary")}</h3>
+              <p>{optimizedItinerary.summary}</p>
+            </Card>
+
+            {optimizedItinerary.dailyPlan?.map((day: any, index: number) => (
+              <Card key={index} className="p-6">
+                <h3 className="font-bold text-lg mb-3">
+                  {t("day")} {day.day}: {day.title}
+                </h3>
+                <p className="text-sm text-muted-foreground mb-3">{day.date}</p>
+                <ul className="space-y-2">
+                  {day.activities.map((activity: string, idx: number) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <span className="text-blue-600">•</span>
+                      <span>{activity}</span>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            ))}
+
+            {optimizedItinerary.recommendations && (
+              <Card className="p-6">
+                <h3 className="font-bold text-lg mb-3">{t("recommendations")}</h3>
+                <div className="space-y-3">
+                  {optimizedItinerary.recommendations.restaurants && (
+                    <div>
+                      <h4 className="font-semibold text-sm mb-2">🍽️ {t("recommended_restaurants")}</h4>
+                      <ul className="space-y-1">
+                        {optimizedItinerary.recommendations.restaurants.map((restaurant: string, idx: number) => (
+                          <li key={idx} className="text-sm">
+                            • {restaurant}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {optimizedItinerary.recommendations.attractions && (
+                    <div>
+                      <h4 className="font-semibold text-sm mb-2">🏛️ {t("recommended_attractions")}</h4>
+                      <ul className="space-y-1">
+                        {optimizedItinerary.recommendations.attractions.map((attraction: string, idx: number) => (
+                          <li key={idx} className="text-sm">
+                            • {attraction}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {optimizedItinerary.recommendations.tips && (
+                    <div>
+                      <h4 className="font-semibold text-sm mb-2">💡 {t("travel_tips")}</h4>
+                      <ul className="space-y-1">
+                        {optimizedItinerary.recommendations.tips.map((tip: string, idx: number) => (
+                          <li key={idx} className="text-sm">
+                            • {tip}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            )}
+
+            {optimizedItinerary.budgetBreakdown && (
+              <Card className="p-6 bg-yellow-50">
+                <h3 className="font-bold text-lg mb-3">💰 {t("budget_breakdown")}</h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span>{t("accommodation")}</span>
+                    <span className="font-semibold">
+                      {optimizedItinerary.budgetBreakdown.accommodation?.toLocaleString()}원
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>{t("food")}</span>
+                    <span className="font-semibold">{optimizedItinerary.budgetBreakdown.food?.toLocaleString()}원</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>{t("transportation")}</span>
+                    <span className="font-semibold">
+                      {optimizedItinerary.budgetBreakdown.transportation?.toLocaleString()}원
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>{t("activities")}</span>
+                    <span className="font-semibold">
+                      {optimizedItinerary.budgetBreakdown.activities?.toLocaleString()}원
+                    </span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t-2 border-yellow-300">
+                    <span className="font-bold">{t("total")}</span>
+                    <span className="font-bold text-lg">
+                      {optimizedItinerary.budgetBreakdown.total?.toLocaleString()}원
+                    </span>
+                  </div>
+                </div>
+              </Card>
+            )}
+
+            <div className="flex gap-3">
+              <Button onClick={handleApplyItinerary} className="flex-1 bg-green-600 hover:bg-green-700">
+                {t("apply_to_schedule")}
+              </Button>
+              <Button onClick={() => setOptimizedItinerary(null)} variant="outline" className="flex-1">
+                {t("regenerate")}
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+  // </CHANGE>
 
   if (isBatchAdding) {
     return (
@@ -573,6 +848,10 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
           <ArrowLeft className="mr-2 h-4 w-4" /> {t("title")}
         </Button>
         <div className="flex gap-2">
+          <Button onClick={() => setIsOptimizingTravel(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
+            🤖 {t("ai_travel_optimizer")}
+          </Button>
+          {/* </CHANGE> */}
           <Button onClick={() => setIsBatchAdding(true)} className="bg-green-500 hover:bg-green-600 text-white">
             <Calendar className="mr-2 h-4 w-4" /> {t("special_days")}
           </Button>
