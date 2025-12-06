@@ -25,7 +25,6 @@ import {
 import { useAuth } from "@/lib/auth-context"
 import { saveBusinessCards, loadBusinessCards } from "@/lib/storage"
 import type { Language, BusinessCard } from "@/lib/types"
-import Tesseract from "tesseract.js"
 
 interface BusinessCardSectionProps {
   language: Language
@@ -313,25 +312,27 @@ export default function BusinessCardSection({ language }: BusinessCardSectionPro
     setShowCameraPreview(false)
   }
 
-  const handleAIAutoFill = async () => {
-    if (attachments.length === 0) {
-      alert(getText("please_add_card_photo_first"))
-      return
-    }
+  const handleAutoFill = async () => {
+    if (!attachments.length) return
 
     setExtractingCard(true)
-
     try {
-      const imageData = attachments[0].url || attachments[0].data
-      const {
-        data: { text: ocrText },
-      } = await Tesseract.recognize(imageData, ["eng", "kor", "chi_sim", "jpn"])
-      console.log("[v0] OCR extracted text:", ocrText)
+      const Tesseract = (await import("tesseract.js")).default
+
+      const image = attachments[0]
+      console.log("[v0] Starting OCR on business card image")
+
+      const result = await Tesseract.recognize(image, "kor+eng+chi_sim+jpn", {
+        logger: (m) => console.log("[v0] OCR progress:", m),
+      })
+
+      const extractedText = result.data.text
+      console.log("[v0] Extracted text:", extractedText)
 
       const response = await fetch("/api/extract-business-card", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ocrText }),
+        body: JSON.stringify({ ocrText: extractedText }),
       })
 
       if (!response.ok) {
@@ -352,8 +353,8 @@ export default function BusinessCardSection({ language }: BusinessCardSectionPro
 
       alert(getText("card_info_extracted_successfully") || "명함 정보가 자동으로 입력되었습니다!")
     } catch (error) {
-      console.error("[v0] AI auto-fill error:", error)
-      alert(getText("failed_to_extract_card_info") || "명함 정보 추출에 실패했습니다. 다시 시도해주세요.")
+      console.error("[v0] Auto-fill failed:", error)
+      alert(getText("ai_auto_fill") + " failed")
     } finally {
       setExtractingCard(false)
     }
@@ -456,7 +457,7 @@ export default function BusinessCardSection({ language }: BusinessCardSectionPro
 
                   {attachments.length > 0 && (
                     <Button
-                      onClick={handleAIAutoFill}
+                      onClick={handleAutoFill}
                       disabled={extractingCard}
                       className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
                     >
