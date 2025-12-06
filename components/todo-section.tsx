@@ -64,23 +64,45 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
 
   useEffect(() => {
     notificationManager.requestPermission()
-    notificationManager.restoreAlarms()
     loadData()
   }, [user])
 
   const loadData = async () => {
-    if (!user?.id) return
-
     try {
-      setLoading(true)
-      const data = await loadTodoItems(user.id)
-      setTodos(data)
+      const items = await loadTodoItems()
+      setTodos(items)
+
+      items.forEach((todo) => {
+        if (todo.alarmEnabled && todo.alarmTime && !todo.completed) {
+          const [datePart, timePart] = todo.alarmTime.split("T")
+          if (datePart && timePart) {
+            const [year, month, day] = datePart.split("-").map(Number)
+            const [hours, minutes] = timePart.split(":").map(Number)
+            const alarmDateTime = new Date(year, month - 1, day, hours, minutes)
+
+            console.log("[v0] Restoring todo alarm:", {
+              id: `todo_${todo.id}`,
+              title: todo.title,
+              alarmTime: todo.alarmTime,
+              alarmDateTime: alarmDateTime.toISOString(),
+              now: new Date().toISOString(),
+              isFuture: alarmDateTime.getTime() > Date.now(),
+            })
+
+            if (!isNaN(alarmDateTime.getTime()) && alarmDateTime.getTime() > Date.now()) {
+              notificationManager.scheduleAlarm({
+                id: `todo_${todo.id}`,
+                title: t("todo_alarm_notification") || "할일 알림",
+                message: todo.title,
+                scheduleTime: alarmDateTime,
+                type: "schedule",
+              })
+            }
+          }
+        }
+      })
     } catch (error) {
-      console.error("[v0] To-Do 로드 에러:", error)
-      // If table doesn't exist yet, just show empty list
-      setTodos([])
-    } finally {
-      setLoading(false)
+      console.error("[v0] Failed to load todos:", error)
     }
   }
 
@@ -220,7 +242,7 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
         }
       }
 
-      await saveTodoItems(updatedTodos, user.id)
+      await saveTodoItems(updatedTodos)
       setTodos(updatedTodos)
       setIsAdding(false)
       setEditingId(null)
