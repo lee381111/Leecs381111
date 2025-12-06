@@ -120,12 +120,15 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
         alert(t("invalid_alarm_time") || "알람 시간이 올바르지 않습니다")
         return
       }
-      console.log("[v0] Saving alarm time:", formData.alarmTime, "as Date:", testDate.toLocaleString())
     }
 
     setSaving(true)
     try {
       let updatedTodos: TodoItem[]
+
+      const processedAlarmTime = formData.alarmTime
+        ? `${formData.alarmTime}:00` // Add seconds to make it a complete timestamp
+        : undefined
 
       if (editingId) {
         updatedTodos = todos.map((todo) =>
@@ -138,10 +141,26 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
                 dueDate: formData.dueDate || undefined,
                 repeatType: formData.repeatType,
                 alarmEnabled: formData.alarmEnabled,
-                alarmTime: formData.alarmTime || undefined,
+                alarmTime: processedAlarmTime,
               }
             : todo,
         )
+
+        if (formData.alarmEnabled && processedAlarmTime) {
+          const alarmDateTime = new Date(processedAlarmTime)
+          if (!isNaN(alarmDateTime.getTime()) && alarmDateTime.getTime() > Date.now()) {
+            notificationManager.cancelAlarm(`todo_${editingId}`)
+            notificationManager.scheduleAlarm({
+              id: `todo_${editingId}`,
+              title: t("todo_alarm_notification"),
+              message: formData.title,
+              scheduleTime: alarmDateTime,
+              type: "schedule",
+            })
+          }
+        } else {
+          notificationManager.cancelAlarm(`todo_${editingId}`)
+        }
       } else {
         const newTodo: TodoItem = {
           id: crypto.randomUUID(),
@@ -152,13 +171,13 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
           dueDate: formData.dueDate || undefined,
           repeatType: formData.repeatType,
           alarmEnabled: formData.alarmEnabled,
-          alarmTime: formData.alarmTime || undefined,
+          alarmTime: processedAlarmTime,
           createdAt: new Date().toISOString(),
         }
         updatedTodos = [newTodo, ...todos]
 
-        if (formData.alarmEnabled && formData.alarmTime) {
-          const alarmDateTime = new Date(formData.alarmTime)
+        if (formData.alarmEnabled && processedAlarmTime) {
+          const alarmDateTime = new Date(processedAlarmTime)
 
           if (!isNaN(alarmDateTime.getTime()) && alarmDateTime.getTime() > Date.now()) {
             notificationManager.scheduleAlarm({
@@ -169,8 +188,6 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
               type: "schedule",
             })
           }
-        } else {
-          notificationManager.cancelAlarm(`todo_${newTodo.id}`)
         }
       }
 
@@ -220,21 +237,24 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
   }
 
   const handleEdit = (todo: TodoItem) => {
-    console.log("[v0] Editing todo:", todo)
     setEditingId(todo.id)
 
     let formattedDueDate = ""
     if (todo.dueDate) {
       try {
-        const date = new Date(todo.dueDate)
-        if (!isNaN(date.getTime())) {
-          // Use local time instead of UTC to prevent timezone shift
-          const year = date.getFullYear()
-          const month = String(date.getMonth() + 1).padStart(2, "0")
-          const day = String(date.getDate()).padStart(2, "0")
-          const hours = String(date.getHours()).padStart(2, "0")
-          const minutes = String(date.getMinutes()).padStart(2, "0")
-          formattedDueDate = `${year}-${month}-${day}T${hours}:${minutes}`
+        const dateStr = todo.dueDate
+        if (dateStr.includes("T")) {
+          formattedDueDate = dateStr.slice(0, 16) // Extract YYYY-MM-DDTHH:mm
+        } else {
+          const date = new Date(dateStr)
+          if (!isNaN(date.getTime())) {
+            const year = date.getFullYear()
+            const month = String(date.getMonth() + 1).padStart(2, "0")
+            const day = String(date.getDate()).padStart(2, "0")
+            const hours = String(date.getHours()).padStart(2, "0")
+            const minutes = String(date.getMinutes()).padStart(2, "0")
+            formattedDueDate = `${year}-${month}-${day}T${hours}:${minutes}`
+          }
         }
       } catch (e) {
         console.error("[v0] Error parsing dueDate:", e)
@@ -244,22 +264,24 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
     let formattedAlarmTime = ""
     if (todo.alarmTime) {
       try {
-        const date = new Date(todo.alarmTime)
-        if (!isNaN(date.getTime())) {
-          // Use local time instead of UTC to prevent timezone shift
-          const year = date.getFullYear()
-          const month = String(date.getMonth() + 1).padStart(2, "0")
-          const day = String(date.getDate()).padStart(2, "0")
-          const hours = String(date.getHours()).padStart(2, "0")
-          const minutes = String(date.getMinutes()).padStart(2, "0")
-          formattedAlarmTime = `${year}-${month}-${day}T${hours}:${minutes}`
+        const timeStr = todo.alarmTime
+        if (timeStr.includes("T")) {
+          formattedAlarmTime = timeStr.slice(0, 16) // Extract YYYY-MM-DDTHH:mm
+        } else {
+          const date = new Date(timeStr)
+          if (!isNaN(date.getTime())) {
+            const year = date.getFullYear()
+            const month = String(date.getMonth() + 1).padStart(2, "0")
+            const day = String(date.getDate()).padStart(2, "0")
+            const hours = String(date.getHours()).padStart(2, "0")
+            const minutes = String(date.getMinutes()).padStart(2, "0")
+            formattedAlarmTime = `${year}-${month}-${day}T${hours}:${minutes}`
+          }
         }
       } catch (e) {
         console.error("[v0] Error parsing alarmTime:", e)
       }
     }
-
-    console.log("[v0] Formatted dueDate:", formattedDueDate, "alarmTime:", formattedAlarmTime)
 
     setFormData({
       title: todo.title,
