@@ -207,3 +207,17 @@ export interface MedicalContact {
   createdAt: string
   user_id?: string
 }
+
+export interface TodoItem {
+  id: string
+  title: string
+  description?: string
+  completed: boolean
+  priority: "low" | "medium" | "high"
+  dueDate?: string
+  repeatType: "none" | "daily" | "weekly" | "monthly"
+  alarmEnabled: boolean
+  alarmTime?: string
+  createdAt: string
+  user_id?: string
+}

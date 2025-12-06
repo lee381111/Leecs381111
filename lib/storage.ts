@@ -11,6 +11,7 @@ import type {
   VehicleMaintenanceRecord,
   BusinessCard,
   BudgetTransaction,
+  TodoItem,
   MedicalContact,
 } from "./types"
 
@@ -805,6 +806,133 @@ export async function loadMedications(userId: string): Promise<Medication[]> {
   })
 }
 
+export async function deleteMedicalContact(id: string, userId: string) {
+  const supabase = createClient()
+
+  const { error } = await supabase.from("medical_contacts").delete().eq("id", id).eq("user_id", userId)
+
+  if (error) {
+    console.error("[v0] 의료 연락처 삭제 에러:", error)
+    throw error
+  }
+}
+
+export async function saveMedicalContacts(contacts: MedicalContact[], userId: string) {
+  const supabase = createClient()
+
+  await supabase.from("medical_contacts").delete().eq("user_id", userId)
+
+  if (contacts.length > 0) {
+    const dbContacts = contacts.map((contact) => ({
+      id: contact.id,
+      user_id: userId,
+      name: contact.name,
+      type: contact.type,
+      phone: contact.phone,
+      address: contact.address || null,
+      notes: contact.notes || null,
+      created_at: contact.createdAt || new Date().toISOString(),
+    }))
+
+    const { error } = await supabase.from("medical_contacts").insert(dbContacts)
+    if (error) {
+      console.error("[v0] 의료 연락처 저장 에러:", error)
+      throw error
+    }
+  }
+}
+
+export async function loadMedicalContacts(userId: string): Promise<MedicalContact[]> {
+  const supabase = createClient()
+
+  const { data, error } = await supabase
+    .from("medical_contacts")
+    .select("*")
+    .eq("user_id", userId)
+    .order("type", { ascending: true })
+    .order("name", { ascending: true })
+
+  if (error) throw error
+
+  return (data || []).map((row) => ({
+    id: row.id,
+    name: row.name,
+    type: row.type,
+    phone: row.phone,
+    address: row.address || undefined,
+    notes: row.notes || undefined,
+    createdAt: row.created_at,
+    user_id: row.user_id,
+  }))
+}
+
+// To-Do List
+export async function saveTodoItems(items: TodoItem[], userId: string) {
+  const supabase = createClient()
+
+  await supabase.from("todo_items").delete().eq("user_id", userId)
+
+  if (items.length > 0) {
+    const dbItems = items.map((item) => ({
+      id: item.id,
+      user_id: userId,
+      title: item.title,
+      description: item.description || null,
+      completed: item.completed,
+      priority: item.priority,
+      due_date: item.dueDate || null,
+      repeat_type: item.repeatType,
+      alarm_enabled: item.alarmEnabled,
+      alarm_time: item.alarmTime || null,
+      created_at: item.createdAt || new Date().toISOString(),
+    }))
+
+    const { error } = await supabase.from("todo_items").insert(dbItems)
+    if (error) {
+      console.error("[v0] To-Do 저장 에러:", error)
+      throw error
+    }
+  }
+}
+
+export async function loadTodoItems(userId: string): Promise<TodoItem[]> {
+  const supabase = createClient()
+
+  const { data, error } = await supabase
+    .from("todo_items")
+    .select("*")
+    .eq("user_id", userId)
+    .order("completed", { ascending: true })
+    .order("due_date", { ascending: true })
+
+  if (error) throw error
+
+  return (data || []).map((row) => ({
+    id: row.id,
+    title: row.title,
+    description: row.description || undefined,
+    completed: row.completed,
+    priority: row.priority,
+    dueDate: row.due_date || undefined,
+    repeatType: row.repeat_type,
+    alarmEnabled: row.alarm_enabled,
+    alarmTime: row.alarm_time || undefined,
+    createdAt: row.created_at,
+    user_id: row.user_id,
+  }))
+}
+
+export async function deleteTodoItem(id: string, userId: string) {
+  const supabase = createClient()
+
+  const { error } = await supabase.from("todo_items").delete().eq("id", id).eq("user_id", userId)
+
+  if (error) {
+    console.error("[v0] To-Do 삭제 에러:", error)
+    throw error
+  }
+}
+
 // Vehicles
 export async function saveVehicles(vehicles: Vehicle[], userId: string) {
   const supabase = createClient()
@@ -1120,6 +1248,8 @@ export async function exportAllData(userId: string) {
     vehicleMaintenance,
     businessCards,
     budgetTransactions,
+    todoItems,
+    medicalContacts,
   ] = await Promise.all([
     loadNotes(userId),
     loadDiaries(userId),
@@ -1131,6 +1261,8 @@ export async function exportAllData(userId: string) {
     loadVehicleMaintenanceRecords(userId),
     loadBusinessCards(userId),
     loadBudgetTransactions(userId),
+    loadTodoItems(userId),
+    loadMedicalContacts(userId),
   ])
 
   const exportData = {
@@ -1144,6 +1276,8 @@ export async function exportAllData(userId: string) {
     vehicleMaintenance,
     businessCards,
     budgetTransactions,
+    todoItems,
+    medicalContacts,
     exportedAt: new Date().toISOString(),
   }
 
@@ -1176,6 +1310,8 @@ export async function importAllData(file: File, userId: string) {
           data.vehicleMaintenance && saveVehicleMaintenanceRecords(data.vehicleMaintenance, userId),
           data.businessCards && saveBusinessCards(data.businessCards, userId),
           data.budgetTransactions && saveBudgetTransactions(data.budgetTransactions, userId),
+          data.todoItems && saveTodoItems(data.todoItems, userId),
+          data.medicalContacts && saveMedicalContacts(data.medicalContacts, userId),
         ])
 
         resolve()
@@ -1249,66 +1385,5 @@ export async function loadData<T>(key: string): Promise<T | null> {
   } catch (error) {
     console.error(`[v0] Error loading ${key}:`, error)
     return null
-  }
-}
-
-// Medical Contacts
-export async function saveMedicalContacts(contacts: MedicalContact[], userId: string) {
-  const supabase = createClient()
-
-  await supabase.from("medical_contacts").delete().eq("user_id", userId)
-
-  if (contacts.length > 0) {
-    const dbContacts = contacts.map((contact) => ({
-      id: contact.id,
-      user_id: userId,
-      name: contact.name,
-      type: contact.type,
-      phone: contact.phone,
-      address: contact.address || null,
-      notes: contact.notes || null,
-      created_at: contact.createdAt || new Date().toISOString(),
-    }))
-
-    const { error } = await supabase.from("medical_contacts").insert(dbContacts)
-    if (error) {
-      console.error("[v0] 의료 연락처 저장 에러:", error)
-      throw error
-    }
-  }
-}
-
-export async function loadMedicalContacts(userId: string): Promise<MedicalContact[]> {
-  const supabase = createClient()
-
-  const { data, error } = await supabase
-    .from("medical_contacts")
-    .select("*")
-    .eq("user_id", userId)
-    .order("type", { ascending: true })
-    .order("name", { ascending: true })
-
-  if (error) throw error
-
-  return (data || []).map((row) => ({
-    id: row.id,
-    name: row.name,
-    type: row.type,
-    phone: row.phone,
-    address: row.address || undefined,
-    notes: row.notes || undefined,
-    createdAt: row.created_at,
-    user_id: row.user_id,
-  }))
-}
-
-export async function deleteMedicalContact(id: string, userId: string) {
-  const supabase = createClient()
-
-  const { error } = await supabase.from("medical_contacts").delete().eq("id", id).eq("user_id", userId)
-
-  if (error) {
-    console.error("[v0] 의료 연락처 삭제 에러:", error)
-    throw error
   }
 }

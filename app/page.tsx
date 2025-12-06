@@ -25,6 +25,7 @@ import {
   User,
   Wallet,
   Settings,
+  CheckSquare,
 } from "lucide-react"
 import { getTranslation } from "@/lib/i18n"
 import type { Language } from "@/lib/types"
@@ -53,6 +54,9 @@ const ScheduleSection = dynamic(
     loading: () => <LoadingSection />,
   },
 )
+const TodoSection = dynamic(() => import("@/components/todo-section").then((m) => ({ default: m.TodoSection })), {
+  loading: () => <LoadingSection />,
+})
 const WeatherSection = dynamic(
   () => import("@/components/weather-section").then((m) => ({ default: m.WeatherSection })),
   {
@@ -118,6 +122,7 @@ type Section =
   | "notes"
   | "diary"
   | "schedule"
+  | "todo"
   | "weather"
   | "radio"
   | "travel"
@@ -547,6 +552,7 @@ export default function ForestNotePage() {
   const sections: { id: Section; label: string; icon: any; color: string }[] = [
     { id: "notes", label: getTranslation(language, "notes"), icon: FileText, color: "amber" },
     { id: "schedule", label: getTranslation(language, "schedule"), icon: CalendarIcon, color: "red" },
+    { id: "todo", label: getTranslation(language, "todo"), icon: CheckSquare, color: "purple" },
     { id: "diary", label: getTranslation(language, "diary"), icon: BookOpen, color: "green" },
     { id: "travel", label: getTranslation(language, "travel"), icon: Plane, color: "blue" },
     { id: "vehicle", label: getTranslation(language, "vehicle"), icon: Car, color: "indigo" },
@@ -587,6 +593,10 @@ export default function ForestNotePage() {
 
   if (currentSection === "schedule") {
     return <ScheduleSection onBack={() => setCurrentSection("home")} language={language} />
+  }
+
+  if (currentSection === "todo") {
+    return <TodoSection onBack={() => setCurrentSection("home")} language={language} />
   }
 
   if (currentSection === "weather") {
