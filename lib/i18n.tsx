@@ -511,10 +511,10 @@ type TranslationKey =
   | "privacy_supabase_desc"
   | "privacy_section4_title"
   | "privacy_retention_desc"
-  | "privacy_section5_title"
   | "privacy_right1"
   | "privacy_right2"
   | "privacy_right3"
+  | "privacy_section5_title"
   | "privacy_section6_title"
   | "terms_section1_title"
   | "terms_section1_desc"
@@ -533,7 +533,6 @@ type TranslationKey =
   | "terms_section5_title"
   | "terms_section5_desc"
   | "terms_section6_title"
-  | "terms_section6_desc"
   | "danger_zone"
   | "delete_account"
   | "delete_account_title"
@@ -1135,7 +1134,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     // Privacy Policy - 간소화
     privacy_policy: "개인정보 처리방침",
     terms_of_service: "이용약관",
-    privacy_last_updated: "최종 수정일: 2024년 12월",
+    privacy_last_updated: "최종 수정일: 2025년 12월",
     privacy_section1_title: "1. 수집하는 정보",
     privacy_section1_intro: "서비스 제공을 위해 다음 정보를 수집합니다:",
     privacy_purpose1: "이메일 주소 (로그인 및 계정 관리)",
@@ -1157,10 +1156,10 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     privacy_section6_title: "문의처",
 
     // Terms of Service - 간소화
-    terms_last_updated: "최종 수정일: 2024년 12월",
+    terms_last_updated: "최종 수정일: 2025년 12월",
     terms_section1_title: "1. 서비스 소개",
     terms_section1_desc:
-      "이 앱은 개인 생활 관리를 위한 무료 서비스입니다. 할일, 일정, 예산, 건강, 여행, 차량, 메모, 일기 등을 기록하고 관리할 수 있습니다.",
+      "이 앱은 개인 생활 관리를 위한 무료 및 유료 서비스입니다. 할일, 일정, 예산, 건강, 여행, 차량, 메모, 일기 등을 기록하고 관리할 수 있습니다.",
     terms_section2_title: "2. 가입",
     terms_section2_desc:
       "누구나 이메일 주소로 자유롭게 가입할 수 있습니다. 제약 사항은 없으며, 이메일 인증만 필요합니다.",
@@ -1177,8 +1176,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     terms_section5_title: "5. 서비스 변경 및 공지",
     terms_section5_desc:
       "서비스 개선, 점검, 오류 수정 등을 위해 서비스를 일시 중단하거나 변경할 수 있습니다. 중요한 변경사항은 앱 상단 배너를 통해 사전 공지합니다.",
-    terms_section6_title: "6. 문의",
-    terms_section6_desc: "서비스 이용 중 문의사항이 있으면 lee381111@gmail.com으로 연락주세요.",
   },
 
   en: {
@@ -1736,7 +1733,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     // Privacy Policy - Simplified
     privacy_policy: "Privacy Policy",
     terms_of_service: "Terms of Service",
-    privacy_last_updated: "Last Updated: December 2024",
+    privacy_last_updated: "Last Updated: December 2025",
     privacy_section1_title: "1. Information We Collect",
     privacy_section1_intro: "We collect the following information to provide our service:",
     privacy_purpose1: "Email address (for login and account management)",
@@ -1751,35 +1748,33 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     privacy_supabase_desc: "When using AI features, text is sent to Groq API but not stored.",
     privacy_section4_title: "4. Your Rights",
     privacy_retention_desc: "You can exercise the following rights at any time:",
-    privacy_right1: "View and edit personal information (Settings > Personal Info)",
+    privacy_right1: "View and edit personal information (Settings > Personal Information)",
     privacy_right2: "Download data (Settings > Backup/Restore)",
-    privacy_right3: "Delete account (Settings > Danger Zone) - All data immediately deleted",
+    privacy_right3: "Delete account (Settings > Danger Zone) - All data deleted immediately",
     privacy_section5_title: "5. Contact",
     privacy_section6_title: "Contact Information",
 
     // Terms of Service - Simplified
-    terms_last_updated: "Last Updated: December 2024",
-    terms_section1_title: "1. Service Overview",
+    terms_last_updated: "Last Updated: December 2025",
+    terms_section1_title: "1. Service Introduction",
     terms_section1_desc:
-      "This app is a free personal life management service. You can record and manage todos, schedules, budget, health, travel, vehicles, notes, and diaries.",
+      "This app is a free and paid service for personal life management. You can record and manage tasks, schedules, budgets, health, travel, vehicles, notes, diaries, and more.",
     terms_section2_title: "2. Registration",
     terms_section2_desc:
-      "Anyone can freely register with an email address. There are no restrictions, only email verification is required.",
+      "Anyone can freely sign up with an email address. There are no restrictions, only email verification is required.",
     terms_section3_title: "3. Features",
-    terms_service1: "Todo/Schedule management, Budget tracking",
-    terms_service2: "Health records, Medication management",
-    terms_service3: "Travel/Vehicle management",
-    terms_service4: "Notes/Diary with AI summary/translation",
-    terms_service5: "Business card recognition, Radio streaming",
+    terms_service1: "Task/schedule management, budget tracking",
+    terms_service2: "Health records, medication management",
+    terms_service3: "Travel/vehicle management",
+    terms_service4: "Note/diary writing, AI summary/translation",
+    terms_service5: "Business card recognition, radio listening",
     terms_section4_title: "4. Usage Rules",
     terms_obligation1: "You must keep your account information secure",
     terms_obligation2: "You cannot use the service for illegal purposes",
     terms_obligation3: "You cannot collect or use others' information without permission",
-    terms_section5_title: "5. Service Changes and Notices",
+    terms_section5_title: "5. Service Changes and Notifications",
     terms_section5_desc:
-      "We may temporarily suspend or modify the service for improvements, maintenance, or bug fixes. Important changes will be announced via the banner at the top of the app.",
-    terms_section6_title: "6. Contact",
-    terms_section6_desc: "If you have any questions about the service, please contact lee381111@gmail.com.",
+      "We may temporarily suspend or change the service for improvements, maintenance, or bug fixes. Important changes will be announced in advance through the app banner.",
   },
 
   zh: {
@@ -2308,24 +2303,24 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     maintenance_alarm_message: "计划维修",
 
     // Budget Section
-    analyze_budget: "AI 예산 분석",
+    analyze_budget: "AI预算分析",
     analyzing_budget: "分析中...",
-    budget_analysis_result: "예산 분석 결과",
-    no_transactions_for_analysis: "分析할 거래 내역이 없습니다",
-    budget_analysis_failed: "예산 분석에 실패했습니다",
-    budget_summary: "예산 요약",
-    highest_spending_category: "지출이 가장 많은 카테고리",
-    saving_tips: "절약 팁",
-    monthly_goal: "월간 목표",
+    budget_analysis_result: "预算分析结果",
+    no_transactions_for_analysis: "没有可供分析的交易记录",
+    budget_analysis_failed: "预算分析失败",
+    budget_summary: "预算摘要",
+    highest_spending_category: "支出最多的类别",
+    saving_tips: "储蓄技巧",
+    monthly_goal: "月度目标",
 
-    customer_support: "고객 지원",
-    customer_support_description: "문의사항이 있으시면 아래 이메일로 연락주세요.",
-    support_email: "지원 이메일",
-    legal_information: "법적 정보",
+    customer_support: "客户支持",
+    customer_support_description: "如有疑问，请随时通过以下电子邮件与我们联系。",
+    support_email: "支持邮箱",
+    legal_information: "法律信息",
     // Privacy Policy - Simplified
     privacy_policy: "隐私政策",
     terms_of_service: "服务条款",
-    privacy_last_updated: "最后更新: 2024年12月",
+    privacy_last_updated: "最后更新：2025年12月",
     privacy_section1_title: "1. 收集的信息",
     privacy_section1_intro: "为提供服务，我们收集以下信息：",
     privacy_purpose1: "电子邮件地址（用于登录和账户管理）",
@@ -2337,36 +2332,33 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     privacy_section3_title: "3. 信息使用方式",
     privacy_storage_desc: "收集的信息仅用于提供服务（数据存储、AI分析），绝不出售或共享给第三方。",
     privacy_supabase_desc: "使用AI功能时，文本会发送到Groq API，但不会存储。",
-    privacy_section4_title: "4. 您的权利",
+    privacy_section4_title: "4. 用户权利",
     privacy_retention_desc: "您可以随时行使以下权利：",
-    privacy_right1: "查看和编辑个人信息（设置 > 个人信息管理）",
+    privacy_right1: "查看和修改个人信息（设置 > 个人信息管理）",
     privacy_right2: "下载数据（设置 > 备份/恢复）",
     privacy_right3: "删除账户（设置 > 危险区域）- 立即删除所有数据",
     privacy_section5_title: "5. 联系方式",
     privacy_section6_title: "联系信息",
 
     // Terms of Service - Simplified
-    terms_last_updated: "最后更新: 2024年12月",
+    terms_last_updated: "最后更新：2025年12月",
     terms_section1_title: "1. 服务介绍",
     terms_section1_desc:
-      "本应用是免费的个人生活管理服务。您可以记录和管理待办事项、日程、预算、健康、旅行、车辆、笔记和日记。",
+      "本应用是用于个人生活管理的免费和付费服务。可以记录和管理待办事项、日程、预算、健康、旅行、车辆、笔记、日记等。",
     terms_section2_title: "2. 注册",
-    terms_section2_desc: "任何人都可以使用电子邮件地址自由注册。没有限制，只需验证电子邮件。",
+    terms_section2_desc: "任何人都可以使用电子邮件地址自由注册。没有限制，只需要电子邮件验证。",
     terms_section3_title: "3. 功能",
-    terms_service1: "待办事项/日程管理、预算跟踪",
+    terms_service1: "任务/日程管理、预算跟踪",
     terms_service2: "健康记录、用药管理",
     terms_service3: "旅行/车辆管理",
-    terms_service4: "笔记/日记与AI摘要/翻译",
-    terms_service5: "名片识别、广播收听",
+    terms_service4: "笔记/日记写作、AI摘要/翻译",
+    terms_service5: "名片识别、收音机收听",
     terms_section4_title: "4. 使用规则",
-    terms_obligation1: "您必须妥善保管账户信息",
-    terms_obligation2: "不得将服务用于非法目的",
-    terms_obligation3: "未经许可不得收集或使用他人信息",
+    terms_obligation1: "您必须安全保管您的账户信息",
+    terms_obligation2: "您不能将服务用于非法目的",
+    terms_obligation3: "您不能未经许可收集或使用他人信息",
     terms_section5_title: "5. 服务变更和通知",
-    terms_section5_desc:
-      "我们可能会暂时中断或修改服务以进行改进、维护或错误修复。重要变更将通过应用顶部的横幅提前通知。",
-    terms_section6_title: "6. 联系方式",
-    terms_section6_desc: "如有任何问题，请联系 lee381111@gmail.com。",
+    terms_section5_desc: "为了改进、维护或修复错误，我们可能会暂时中断或更改服务。重要变更将通过应用横幅提前通知。",
   },
 
   ja: {
@@ -2905,20 +2897,24 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     maintenance_alarm_message: "予定された整備",
 
     // Budget Section
-    analyze_budget: "AI 예산 분석",
+    analyze_budget: "AI予算分析",
     analyzing_budget: "分析中...",
-    budget_analysis_result: "예산 분석 결과",
-    no_transactions_for_analysis: "分析할 거래 내역이 없습니다",
-    budget_analysis_failed: "예산 분석에 실패했습니다",
-    budget_summary: "예산 요약",
-    highest_spending_category: "지출이 가장 많은 카테고리",
-    saving_tips: "절약 팁",
-    monthly_goal: "월간 목표",
+    budget_analysis_result: "予算分析結果",
+    no_transactions_for_analysis: "分析する取引記録がありません",
+    budget_analysis_failed: "予算分析に失敗しました",
+    budget_summary: "予算概要",
+    highest_spending_category: "支出が最も多いカテゴリ",
+    saving_tips: "節約のヒント",
+    monthly_goal: "月間目標",
 
-    // Legal Information
+    customer_support: "カスタマーサポート",
+    customer_support_description: "サービス利用中にご不明な点や問題がございましたら、いつでもお問い合わせください。",
+    support_email: "サポートメール",
+    legal_information: "法的情報",
+    // Privacy Policy - Simplified
     privacy_policy: "プライバシーポリシー",
     terms_of_service: "利用規約",
-    privacy_last_updated: "最終更新: 2024年12月",
+    privacy_last_updated: "最終更新: 2025年12月",
     privacy_section1_title: "1. 収集する情報",
     privacy_section1_intro: "サービス提供のため、以下の情報を収集します：",
     privacy_purpose1: "メールアドレス（ログインとアカウント管理用）",
@@ -2931,7 +2927,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     privacy_storage_desc:
       "収集した情報はサービス提供（データ保存、AI分析）のみに使用され、第三者に販売または共有することはありません。",
     privacy_supabase_desc: "AI機能使用時、テキストはGroq APIに送信されますが保存されません。",
-    privacy_section4_title: "4. あなたの権利",
+    privacy_section4_title: "4. ユーザーの権利",
     privacy_retention_desc: "いつでも以下の権利を行使できます：",
     privacy_right1: "個人情報の閲覧と編集（設定 > 個人情報管理）",
     privacy_right2: "データのダウンロード（設定 > バックアップ/復元）",
@@ -2939,27 +2935,26 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     privacy_section5_title: "5. お問い合わせ",
     privacy_section6_title: "連絡先",
 
-    terms_last_updated: "最終更新: 2024年12月",
+    // Terms of Service - Simplified
+    terms_last_updated: "最終更新: 2025年12月",
     terms_section1_title: "1. サービス概要",
     terms_section1_desc:
-      "このアプリは無料の個人生活管理サービスです。ToDo、予定、予算、健康、旅行、車両、メモ、日記を記録・管理できます。",
+      "このアプリは個人の生活管理のための無料および有料サービスです。タスク、スケジュール、予算、健康、旅行、車両、メモ、日記などを記録・管理できます。",
     terms_section2_title: "2. 登録",
     terms_section2_desc: "誰でもメールアドレスで自由に登録できます。制限はなく、メール認証のみが必要です。",
     terms_section3_title: "3. 機能",
-    terms_service1: "ToDo/予定管理、予算追跡",
+    terms_service1: "タスク/スケジュール管理、予算追跡",
     terms_service2: "健康記録、服薬管理",
     terms_service3: "旅行/車両管理",
-    terms_service4: "メモ/日記とAI要約/翻訳",
+    terms_service4: "メモ/日記作成、AI要約/翻訳",
     terms_service5: "名刺認識、ラジオ視聴",
     terms_section4_title: "4. 利用規則",
     terms_obligation1: "アカウント情報を安全に管理する必要があります",
     terms_obligation2: "違法な目的でサービスを使用できません",
-    terms_obligation3: "許可なく他人の情報を収集または使用できません",
+    terms_obligation3: "他人の情報を無断で収集・使用できません",
     terms_section5_title: "5. サービス変更と通知",
     terms_section5_desc:
-      "改善、メンテナンス、バグ修正のためにサービスを一時停止または変更する場合があります。重要な変更はアプリ上部のバナーで事前にお知らせします。",
-    terms_section6_title: "6. お問い合わせ",
-    terms_section6_desc: "サービスに関するご質問は lee381111@gmail.com までご連絡ください。",
+      "サービス改善、メンテナンス、エラー修正のため、サービスを一時的に中断または変更することがあります。重要な変更はアプリバナーで事前に通知します。",
   },
 }
 
