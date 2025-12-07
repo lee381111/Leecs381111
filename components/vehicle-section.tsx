@@ -502,7 +502,7 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
               setShowMaintenanceForm(!showMaintenanceForm)
               setShowScheduleForm(false)
             }}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+            className="flex-1 bg-green-600 hover:bg-green-700 text-white"
             disabled={!selectedVehicle}
           >
             <Plus className="mr-2 h-4 w-4" />
@@ -519,7 +519,7 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
               setShowMaintenanceForm(false)
             }}
             variant="outline"
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+            className="flex-1 bg-green-600 hover:bg-green-700 text-white"
             disabled={!selectedVehicle}
           >
             <Calendar className="mr-2 h-4 w-4" />
@@ -849,7 +849,7 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
         <Button variant="ghost" onClick={onBack}>
           <ArrowLeft className="mr-2 h-4 w-4" /> {t("title")}
         </Button>
-        <Button onClick={() => setScreen("add-vehicle")} className="bg-blue-600 hover:bg-blue-700 text-white">
+        <Button onClick={() => setScreen("add-vehicle")} className="bg-green-600 hover:bg-green-700 text-white">
           <Plus className="mr-2 h-4 w-4" /> {t("add_vehicle")}
         </Button>
       </div>
@@ -940,7 +940,7 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
           <div className="text-center py-12">
             <Car className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
             <p className="text-muted-foreground mb-4">{t("no_vehicles")}</p>
-            <Button onClick={() => setScreen("add-vehicle")}>
+            <Button onClick={() => setScreen("add-vehicle")} className="bg-green-600 hover:bg-green-700 text-white">
               <Plus className="mr-2 h-4 w-4" /> {t("first_vehicle")}
             </Button>
           </div>
