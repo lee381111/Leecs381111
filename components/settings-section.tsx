@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-import { useAuth } from "@/lib/auth-context"
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -20,9 +19,16 @@ import { exportAllData, importAllData, loadAllAnnouncements, saveAnnouncement, d
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { getTranslation } from "@/lib/i18n"
 import type { Language, Announcement } from "@/lib/types"
+import { createClient } from "@/lib/supabase/client"
+import { loadUserConsents } from "@/lib/storage"
 
-export function SettingsSection({ onBack, language }: { onBack: () => void; language: string }) {
-  const { user } = useAuth()
+type SettingsSectionProps = {
+  user: any
+  language: string
+  onLogout: () => void
+}
+
+export default function SettingsSection({ user, language, onLogout }: SettingsSectionProps) {
   const [importing, setImporting] = useState(false)
   const [showGuide, setShowGuide] = useState(false)
   const [showExportMenu, setShowExportMenu] = useState(false)
@@ -43,6 +49,9 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
     expiresAt: "",
   })
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isDarkMode, setIsDarkMode] = useState(false)
+  const [consentLogs, setConsentLogs] = useState<any[]>([])
+  const [loadingConsents, setLoadingConsents] = useState(false)
 
   const handleExport = async () => {
     if (!user?.id) {
@@ -264,7 +273,6 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
 
     setIsDeleting(true)
     try {
-      const { createClient } = await import("@/lib/supabase")
       const supabase = createClient()
 
       await Promise.all([
@@ -305,7 +313,6 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
 
     setIsUpdating(true)
     try {
-      const { createClient } = await import("@/lib/supabase")
       const supabase = createClient()
 
       const { error } = await supabase.auth.updateUser({
@@ -338,7 +345,6 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
 
     setIsUpdating(true)
     try {
-      const { createClient } = await import("@/lib/supabase")
       const supabase = createClient()
 
       const { error } = await supabase.auth.updateUser({
@@ -367,6 +373,15 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
       loadAllAnnouncements(user.id).then(setAnnouncements)
     }
   }, [user, showAnnouncementPanel])
+
+  useEffect(() => {
+    if (user && showPersonalInfo) {
+      setLoadingConsents(true)
+      loadUserConsents(user.id)
+        .then(setConsentLogs)
+        .finally(() => setLoadingConsents(false))
+    }
+  }, [user, showPersonalInfo])
 
   const handleSaveAnnouncement = async () => {
     if (!user || !announcementForm.message.trim()) return
@@ -433,7 +448,7 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
-      <Button variant="ghost" onClick={onBack}>
+      <Button variant="ghost" onClick={onLogout}>
         <ArrowLeft className="mr-2 h-4 w-4" /> {getTranslation(language, "back_to_forest")}
       </Button>
 
@@ -579,6 +594,33 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
               <p className="text-xs text-muted-foreground">
                 {getTranslation(language, "view_data")}: {getTranslation(language, "data_export_description")}
               </p>
+            </div>
+
+            <div className="space-y-2 pt-4 border-t">
+              <h3 className="font-semibold text-sm">{getTranslation(language, "consent_history")}</h3>
+              <p className="text-xs text-muted-foreground">{getTranslation(language, "consent_history_description")}</p>
+
+              {loadingConsents ? (
+                <p className="text-sm text-muted-foreground">{getTranslation(language, "loading")}</p>
+              ) : consentLogs.length === 0 ? (
+                <p className="text-sm text-muted-foreground">{getTranslation(language, "no_consent_logs")}</p>
+              ) : (
+                <div className="space-y-2">
+                  {consentLogs.map((log, index) => (
+                    <div key={index} className="bg-muted p-3 rounded-lg text-sm space-y-1">
+                      <p className="font-medium">
+                        {getTranslation(language, "agreed_on")}: {new Date(log.agreed_at).toLocaleString()}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {getTranslation(language, "terms_agreed")}: {log.terms_version}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {getTranslation(language, "privacy_agreed")}: {log.privacy_version}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
