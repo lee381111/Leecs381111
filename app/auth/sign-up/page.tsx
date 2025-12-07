@@ -1,33 +1,29 @@
-"use client"
+"use client";
 
-import type React from "react"
-
-import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import { TermsModal } from "@/components/terms-modal"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import Link from "next/link";
+import { useRouter } from 'next/navigation';
+import { useState } from "react";
 
 export default function Page() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [repeatPassword, setRepeatPassword] = useState("")
-  const [displayName, setDisplayName] = useState("")
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [language, setLanguage] = useState<"ko" | "en" | "zh" | "ja">("ko")
-
-  const [agreedToTerms, setAgreedToTerms] = useState(false)
-  const [agreedToPrivacy, setAgreedToPrivacy] = useState(false)
-  const [showTermsModal, setShowTermsModal] = useState(false)
-  const [showPrivacyModal, setShowPrivacyModal] = useState(false)
-
-  const router = useRouter()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [language, setLanguage] = useState<"ko" | "en" | "zh" | "ja">("ko");
+  const router = useRouter();
 
   const t = {
     ko: {
@@ -46,10 +42,6 @@ export default function Page() {
       haveAccount: "이미 계정이 있으신가요?",
       login: "로그인",
       emailVerification: "회원가입이 완료되었습니다. 이메일을 확인해주세요.",
-      agreeTerms: "이용약관에 동의합니다 (필수)",
-      agreePrivacy: "개인정보처리방침에 동의합니다 (필수)",
-      viewTerms: "전문보기",
-      mustAgree: "약관에 동의해야 회원가입이 가능합니다",
     },
     en: {
       signUp: "Sign Up",
@@ -67,10 +59,6 @@ export default function Page() {
       haveAccount: "Already have an account?",
       login: "Login",
       emailVerification: "Sign up complete. Please check your email.",
-      agreeTerms: "I agree to the Terms of Service (Required)",
-      agreePrivacy: "I agree to the Privacy Policy (Required)",
-      viewTerms: "View",
-      mustAgree: "You must agree to the terms to sign up",
     },
     zh: {
       signUp: "注册",
@@ -88,10 +76,6 @@ export default function Page() {
       haveAccount: "已有帐户？",
       login: "登录",
       emailVerification: "注册完成。请检查您的电子邮件。",
-      agreeTerms: "我同意服务条款（必需）",
-      agreePrivacy: "我同意隐私政策（必需）",
-      viewTerms: "查看",
-      mustAgree: "您必须同意条款才能注册",
     },
     ja: {
       signUp: "新規登録",
@@ -109,207 +93,126 @@ export default function Page() {
       haveAccount: "すでにアカウントをお持ちですか？",
       login: "ログイン",
       emailVerification: "登録完了。メールを確認してください。",
-      agreeTerms: "利用規約に同意します（必須）",
-      agreePrivacy: "プライバシーポリシーに同意します（必須）",
-      viewTerms: "表示",
-      mustAgree: "登録するには規約に同意する必要があります",
     },
   }
 
   const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const supabase = createClient()
-    setIsLoading(true)
-    setError(null)
-
-    if (!agreedToTerms || !agreedToPrivacy) {
-      setError(t[language].mustAgree)
-      setIsLoading(false)
-      return
-    }
+    e.preventDefault();
+    const supabase = createClient();
+    setIsLoading(true);
+    setError(null);
 
     if (password !== repeatPassword) {
-      setError(t[language].passwordMismatch)
-      setIsLoading(false)
-      return
+      setError(t[language].passwordMismatch);
+      setIsLoading(false);
+      return;
     }
 
     if (password.length < 6) {
-      setError(language === "ko" ? "비밀번호는 최소 6자 이상이어야 합니다" : "Password must be at least 6 characters")
-      setIsLoading(false)
-      return
+      setError(language === "ko" ? "비밀번호는 최소 6자 이상이어야 합니다" : "Password must be at least 6 characters");
+      setIsLoading(false);
+      return;
     }
 
     try {
-      const { data: authData, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}`,
+          emailRedirectTo:
+            process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
+            `${window.location.origin}`,
           data: {
             display_name: displayName,
-          },
+          }
         },
-      })
-      if (error) throw error
-
-      if (authData.user) {
-        await supabase.from("user_consents").insert({
-          user_id: authData.user.id,
-          terms_version: "v1.0_2025-12",
-          privacy_version: "v1.0_2025-12",
-          ip_address: null, // 클라이언트에서는 IP를 얻기 어려움
-          user_agent: navigator.userAgent,
-        })
-      }
-
-      alert(t[language].emailVerification)
-      router.push("/auth/sign-up-success")
+      });
+      if (error) throw error;
+      
+      alert(t[language].emailVerification);
+      router.push("/auth/sign-up-success");
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : t[language].signUpError)
+      setError(error instanceof Error ? error.message : t[language].signUpError);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
-    <>
-      <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50">
-        <div className="w-full max-w-sm">
-          <div className="flex flex-col gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-2xl">{t[language].signUp}</CardTitle>
-                <CardDescription>{t[language].createAccount}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSignUp}>
-                  <div className="flex flex-col gap-6">
-                    <div className="grid gap-2">
-                      <Label htmlFor="display-name">{t[language].name}</Label>
-                      <Input
-                        id="display-name"
-                        type="text"
-                        placeholder={t[language].namePlaceholder}
-                        required
-                        value={displayName}
-                        onChange={(e) => setDisplayName(e.target.value)}
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="email">{t[language].email}</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder={t[language].emailPlaceholder}
-                        required
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="password">{t[language].password}</Label>
-                      <Input
-                        id="password"
-                        type="password"
-                        required
-                        minLength={6}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="repeat-password">{t[language].confirmPassword}</Label>
-                      <Input
-                        id="repeat-password"
-                        type="password"
-                        required
-                        minLength={6}
-                        value={repeatPassword}
-                        onChange={(e) => setRepeatPassword(e.target.value)}
-                      />
-                    </div>
-
-                    <div className="space-y-3 border-t pt-4">
-                      <div className="flex items-start space-x-2">
-                        <Checkbox
-                          id="terms"
-                          checked={agreedToTerms}
-                          onCheckedChange={(checked) => setAgreedToTerms(checked === true)}
-                        />
-                        <div className="grid gap-1.5 leading-none">
-                          <label
-                            htmlFor="terms"
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                          >
-                            {t[language].agreeTerms}
-                          </label>
-                          <button
-                            type="button"
-                            onClick={() => setShowTermsModal(true)}
-                            className="text-xs text-emerald-600 hover:underline text-left"
-                          >
-                            {t[language].viewTerms}
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start space-x-2">
-                        <Checkbox
-                          id="privacy"
-                          checked={agreedToPrivacy}
-                          onCheckedChange={(checked) => setAgreedToPrivacy(checked === true)}
-                        />
-                        <div className="grid gap-1.5 leading-none">
-                          <label
-                            htmlFor="privacy"
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                          >
-                            {t[language].agreePrivacy}
-                          </label>
-                          <button
-                            type="button"
-                            onClick={() => setShowPrivacyModal(true)}
-                            className="text-xs text-emerald-600 hover:underline text-left"
-                          >
-                            {t[language].viewTerms}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    {error && <p className="text-sm text-red-500">{error}</p>}
-                    <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={isLoading}>
-                      {isLoading ? t[language].creating : t[language].signUpButton}
-                    </Button>
+    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50">
+      <div className="w-full max-w-sm">
+        <div className="flex flex-col gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl">{t[language].signUp}</CardTitle>
+              <CardDescription>{t[language].createAccount}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSignUp}>
+                <div className="flex flex-col gap-6">
+                  <div className="grid gap-2">
+                    <Label htmlFor="display-name">{t[language].name}</Label>
+                    <Input
+                      id="display-name"
+                      type="text"
+                      placeholder={t[language].namePlaceholder}
+                      required
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                    />
                   </div>
-                  <div className="mt-4 text-center text-sm">
-                    {t[language].haveAccount}{" "}
-                    <Link href="/auth/login" className="underline underline-offset-4">
-                      {t[language].login}
-                    </Link>
+                  <div className="grid gap-2">
+                    <Label htmlFor="email">{t[language].email}</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder={t[language].emailPlaceholder}
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
                   </div>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="password">{t[language].password}</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      required
+                      minLength={6}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="repeat-password">{t[language].confirmPassword}</Label>
+                    <Input
+                      id="repeat-password"
+                      type="password"
+                      required
+                      minLength={6}
+                      value={repeatPassword}
+                      onChange={(e) => setRepeatPassword(e.target.value)}
+                    />
+                  </div>
+                  {error && <p className="text-sm text-red-500">{error}</p>}
+                  <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={isLoading}>
+                    {isLoading ? t[language].creating : t[language].signUpButton}
+                  </Button>
+                </div>
+                <div className="mt-4 text-center text-sm">
+                  {t[language].haveAccount}{" "}
+                  <Link
+                    href="/auth/login"
+                    className="underline underline-offset-4"
+                  >
+                    {t[language].login}
+                  </Link>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
         </div>
       </div>
-
-      <TermsModal
-        open={showTermsModal}
-        onOpenChange={setShowTermsModal}
-        onAgree={() => setAgreedToTerms(true)}
-        type="terms"
-        language={language}
-      />
-      <TermsModal
-        open={showPrivacyModal}
-        onOpenChange={setShowPrivacyModal}
-        onAgree={() => setAgreedToPrivacy(true)}
-        type="privacy"
-        language={language}
-      />
-    </>
-  )
+    </div>
+  );
 }

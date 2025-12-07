@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import { useAuth } from "@/lib/auth-context"
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -14,43 +15,26 @@ import {
   FileSpreadsheet,
   FileText,
   ChevronDown,
-  FileBarChart,
 } from "lucide-react"
-import {
-  exportAllData,
-  importAllData,
-  loadAllAnnouncements,
-  saveAnnouncement,
-  deleteAnnouncement,
-  generateDataDeletionReport,
-} from "@/lib/storage"
+import { exportAllData, importAllData, loadAllAnnouncements, saveAnnouncement, deleteAnnouncement } from "@/lib/storage"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { getTranslation } from "@/lib/i18n"
-import type { Language, Announcement, User } from "@/lib/types"
+import type { Language, Announcement } from "@/lib/types"
 
-type SettingsSectionProps = {
-  onBack: () => void
-  language: string
-  user: User | null
-}
-
-export default function SettingsSection({ onBack, language, user }: SettingsSectionProps) {
+export function SettingsSection({ onBack, language }: { onBack: () => void; language: string }) {
+  const { user } = useAuth()
   const [importing, setImporting] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const [showGuide, setShowGuide] = useState(false)
   const [showExportMenu, setShowExportMenu] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [deleteConfirmText, setDeleteConfirmText] = useState("")
   const [isDeleting, setIsDeleting] = useState(false)
-  const [isGeneratingReport, setIsGeneratingReport] = useState(false)
-
   const [showPersonalInfo, setShowPersonalInfo] = useState(false)
-  const [showEmailUpdate, setShowEmailUpdate] = useState(false)
+  const [editingEmail, setEditingEmail] = useState(false)
   const [newEmail, setNewEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [isUpdatingEmail, setIsUpdatingEmail] = useState(false)
-
-  const [showAnnouncements, setShowAnnouncements] = useState(false)
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [showAnnouncementPanel, setShowAnnouncementPanel] = useState(false)
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null)
   const [announcementForm, setAnnouncementForm] = useState({
@@ -58,6 +42,7 @@ export default function SettingsSection({ onBack, language, user }: SettingsSect
     type: "info" as "info" | "warning" | "success",
     expiresAt: "",
   })
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleExport = async () => {
     if (!user?.id) {
@@ -318,7 +303,7 @@ export default function SettingsSection({ onBack, language, user }: SettingsSect
       return
     }
 
-    setIsUpdatingEmail(true)
+    setIsUpdating(true)
     try {
       const { createClient } = await import("@/lib/supabase")
       const supabase = createClient()
@@ -332,7 +317,7 @@ export default function SettingsSection({ onBack, language, user }: SettingsSect
 
       const lang = language as Language
       alert(getTranslation(lang, "email_updated_success"))
-      setShowEmailUpdate(false)
+      setEditingEmail(false)
       setNewEmail("")
       setPassword("")
     } catch (err) {
@@ -340,18 +325,48 @@ export default function SettingsSection({ onBack, language, user }: SettingsSect
       const lang = language as Language
       alert(getTranslation(lang, "email_update_error"))
     } finally {
-      setIsUpdatingEmail(false)
+      setIsUpdating(false)
     }
   }
 
-  const handleEditAnnouncement = (announcement: Announcement) => {
-    setEditingAnnouncement(announcement)
-    setAnnouncementForm({
-      message: announcement.message,
-      type: announcement.type,
-      expiresAt: announcement.expiresAt || "",
-    })
+  const handleEmailChange = async () => {
+    if (!user?.id || !newEmail || !password) {
+      const lang = language as Language
+      alert(getTranslation(lang, "fill_all_fields"))
+      return
+    }
+
+    setIsUpdating(true)
+    try {
+      const { createClient } = await import("@/lib/supabase")
+      const supabase = createClient()
+
+      const { error } = await supabase.auth.updateUser({
+        email: newEmail,
+        password: password,
+      })
+
+      if (error) throw error
+
+      const lang = language as Language
+      alert(getTranslation(lang, "email_updated_success"))
+      setEditingEmail(false)
+      setNewEmail("")
+      setPassword("")
+    } catch (err) {
+      console.error("[v0] Email update error:", err)
+      const lang = language as Language
+      alert(getTranslation(lang, "email_update_error"))
+    } finally {
+      setIsUpdating(false)
+    }
   }
+
+  useEffect(() => {
+    if (user && showAnnouncementPanel) {
+      loadAllAnnouncements(user.id).then(setAnnouncements)
+    }
+  }, [user, showAnnouncementPanel])
 
   const handleSaveAnnouncement = async () => {
     if (!user || !announcementForm.message.trim()) return
@@ -393,120 +408,14 @@ export default function SettingsSection({ onBack, language, user }: SettingsSect
     }
   }
 
-  const handleGenerateDeletionReport = async () => {
-    if (!user?.id) {
-      const lang = language as Language
-      alert(getTranslation(lang, "not_logged_in"))
-      return
-    }
-
-    setIsGeneratingReport(true)
-    try {
-      const report = await generateDataDeletionReport(user.id)
-
-      // Generate PDF-like text report
-      const reportText = `
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-           개인정보 파기 대장
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-생성일시: ${new Date(report.generated_at).toLocaleString("ko-KR")}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-           데이터 현황
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-전체 사용자 수: ${report.total_users}명
-전체 레코드 수: ${report.total_records}건
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-           테이블별 데이터 현황
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-${report.tables
-  .map((table) => {
-    const tableName =
-      {
-        profiles: "사용자 프로필",
-        notes: "노트",
-        diary_entries: "일기",
-        schedules: "일정",
-        todo_items: "할일",
-        health_records: "건강 기록",
-        budget_transactions: "예산 거래",
-        travel_records: "여행 기록",
-        vehicles: "차량",
-        vehicle_maintenance: "차량 정비",
-        business_cards: "명함",
-        medications: "복약",
-        medical_contacts: "의료 연락처",
-        radio_stations: "라디오",
-        user_settings: "설정",
-      }[table.name] || table.name
-
-    return `${tableName}: ${table.count}건`
-  })
-  .join("\n")}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-           파기 계획
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-파기 방법: Supabase 프로젝트 완전 삭제
-파기 시점: 서비스 종료 공지 후 30일
-파기 책임자: 김포시 장기동 이찬세
-보관 기간: 본 대장은 3년간 보관
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-           법적 근거
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-- 개인정보보호법 제21조 (개인정보의 파기)
-- 전자상거래법 제6조 (거래기록의 보존)
-- 통신비밀보호법
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-           증빙 자료
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-1. 서비스 종료 공지문 (스크린샷)
-2. Supabase 프로젝트 삭제 증명 (스크린샷)
-3. 사용자 데이터 내보내기 기능 제공 증명
-4. 본 개인정보 파기 대장
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-작성자: 김포시 장기동 이찬세
-작성일: ${new Date().toLocaleDateString("ko-KR")}
-      `
-
-      // Download as text file
-      const blob = new Blob([reportText], { type: "text/plain;charset=utf-8" })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = `개인정보파기대장-${new Date().toISOString().split("T")[0]}.txt`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-
-      const lang = language as Language
-      alert(getTranslation(lang, "report_generated"))
-    } catch (err) {
-      console.error("[v0] Report generation error:", err)
-      const lang = language as Language
-      alert(getTranslation(lang, "report_generation_failed"))
-    } finally {
-      setIsGeneratingReport(false)
-    }
+  const handleEditAnnouncement = (announcement: Announcement) => {
+    setEditingAnnouncement(announcement)
+    setAnnouncementForm({
+      message: announcement.message,
+      type: announcement.type,
+      expiresAt: announcement.expiresAt || "",
+    })
   }
-
-  useEffect(() => {
-    if (user && showAnnouncements) {
-      loadAllAnnouncements(user.id).then(setAnnouncements)
-    }
-  }, [user, showAnnouncements])
 
   const backupRestoreTitle = getTranslation(language, "backup_restore_title")
   const backupDescription = getTranslation(language, "backup_description")
@@ -593,25 +502,6 @@ ${report.tables
         </div>
       </Card>
 
-      <Card className="p-6 space-y-4 bg-card">
-        <h2 className="text-xl font-bold">{getTranslation(language, "data_deletion_report")}</h2>
-
-        <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">{getTranslation(language, "deletion_report_description")}</p>
-
-          <Button
-            onClick={handleGenerateDeletionReport}
-            disabled={isGeneratingReport}
-            className="gap-2 w-full bg-blue-600 hover:bg-blue-700"
-          >
-            <FileBarChart className="h-4 w-4" />
-            {isGeneratingReport
-              ? getTranslation(language, "generating_report")
-              : getTranslation(language, "generate_deletion_report")}
-          </Button>
-        </div>
-      </Card>
-
       <Card className="p-6 space-y-4 bg-card border-2 hover:border-emerald-500/50 transition-colors">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold">{getTranslation(language, "personal_information")}</h2>
@@ -642,8 +532,8 @@ ${report.tables
 
             <div className="space-y-2">
               <h3 className="font-semibold text-sm">{getTranslation(language, "change_email")}</h3>
-              {!showEmailUpdate ? (
-                <Button onClick={() => setShowEmailUpdate(true)} variant="outline" size="sm">
+              {!editingEmail ? (
+                <Button onClick={() => setEditingEmail(true)} variant="outline" size="sm">
                   {getTranslation(language, "update_email")}
                 </Button>
               ) : (
@@ -663,12 +553,12 @@ ${report.tables
                     className="w-full px-3 py-2 border rounded-lg text-sm"
                   />
                   <div className="flex gap-2">
-                    <Button onClick={handleUpdateEmail} disabled={isUpdatingEmail} size="sm" className="flex-1">
-                      {isUpdatingEmail ? getTranslation(language, "updating") : getTranslation(language, "save")}
+                    <Button onClick={handleEmailChange} disabled={isUpdating} size="sm" className="flex-1">
+                      {isUpdating ? getTranslation(language, "updating") : getTranslation(language, "save")}
                     </Button>
                     <Button
                       onClick={() => {
-                        setShowEmailUpdate(false)
+                        setEditingEmail(false)
                         setNewEmail("")
                         setPassword("")
                       }}
@@ -747,47 +637,29 @@ ${report.tables
 
       <Card className="p-6 space-y-4 bg-card border-red-200 dark:border-red-900">
         <h2 className="text-xl font-bold text-red-600 dark:text-red-400">{getTranslation(language, "danger_zone")}</h2>
-        <div className="space-y-4">
-          <div className="space-y-2 pb-4 border-b">
-            <h3 className="font-semibold text-sm">{getTranslation(language, "data_deletion_report")}</h3>
-            <p className="text-sm text-muted-foreground">{getTranslation(language, "deletion_report_description")}</p>
-            <Button
-              onClick={handleGenerateDeletionReport}
-              variant="outline"
-              className="w-full bg-transparent"
-              disabled={isGeneratingReport}
-            >
-              <FileBarChart className="mr-2 h-4 w-4" />
-              {isGeneratingReport
-                ? getTranslation(language, "generating_report")
-                : getTranslation(language, "generate_deletion_report")}
-            </Button>
-          </div>
-
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">{getTranslation(language, "account_deletion_warning")}</p>
-            <Button
-              onClick={() => setShowDeleteDialog(true)}
-              variant="destructive"
-              className="w-full bg-red-600 hover:bg-red-700 text-white"
-            >
-              {getTranslation(language, "delete_account")}
-            </Button>
-          </div>
+        <div className="space-y-2">
+          <p className="text-sm text-muted-foreground">{getTranslation(language, "account_deletion_warning")}</p>
+          <Button
+            onClick={() => setShowDeleteDialog(true)}
+            variant="destructive"
+            className="w-full bg-red-600 hover:bg-red-700 text-white"
+          >
+            {getTranslation(language, "delete_account")}
+          </Button>
         </div>
       </Card>
 
       <Card>
         <CardContent className="p-6">
           <button
-            onClick={() => setShowAnnouncements(!showAnnouncements)}
+            onClick={() => setShowAnnouncementPanel(!showAnnouncementPanel)}
             className="w-full flex items-center justify-between text-left"
           >
             <h3 className="text-lg font-semibold">{getTranslation(language, "announcement_management")}</h3>
-            <ChevronDown className={`h-5 w-5 transition-transform ${showAnnouncements ? "rotate-180" : ""}`} />
+            <ChevronDown className={`h-5 w-5 transition-transform ${showAnnouncementPanel ? "rotate-180" : ""}`} />
           </button>
 
-          {showAnnouncements && (
+          {showAnnouncementPanel && (
             <div className="mt-4 space-y-4">
               <div className="space-y-3 border rounded-lg p-4 bg-muted/30">
                 <h4 className="font-medium">

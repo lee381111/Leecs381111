@@ -590,20 +590,6 @@ type TranslationKey =
   | "fill_all_fields"
   | "email_updated_success"
   | "email_update_error"
-  | "announcement_expires"
-  | "announcement_active"
-  | "announcement_save"
-  | "announcement_delete"
-  | "announcement_info"
-  | "announcement_warning"
-  | "announcement_success"
-  | "save_error"
-  | "data_deletion_report"
-  | "generate_deletion_report"
-  | "deletion_report_description"
-  | "generating_report"
-  | "report_generated"
-  | "report_generation_failed"
 
 const translations: Record<Language, Record<TranslationKey, string>> = {
   ko: {
@@ -1008,40 +994,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     connection_status_title: "연결 상태",
     connection_label: "Supabase 연결",
 
-    // Announcement Management
-    announcement_management: "공지사항 관리",
-    new_announcement: "새 공지사항",
-    edit_announcement: "공지사항 수정",
-    announcement_message: "공지 내용",
-    announcement_message_placeholder: "사용자에게 표시할 공지사항을 입력하세요",
-    announcement_type: "유형",
-    type_info: "정보",
-    type_warning: "경고",
-    type_success: "성공",
-    expires_at: "만료일",
-    active_announcements: "활성 공지사항",
-    no_announcements: "활성 공지사항이 없습니다",
-    expires: "만료",
-    announcement_expires: "만료일",
-    announcement_active: "활성",
-    announcement_save: "공지 저장",
-    announcement_delete: "공지 삭제",
-    announcement_info: "정보",
-    announcement_warning: "경고",
-    announcement_success: "성공",
-    save_success: "저장되었습니다",
-    delete_success: "삭제되었습니다",
-    save_error: "저장 중 오류가 발생했습니다",
-    delete_error: "삭제 중 오류가 발생했습니다",
-
-    // Data Deletion Report
-    data_deletion_report: "개인정보 파기 대장",
-    generate_deletion_report: "파기 대장 생성",
-    deletion_report_description: "서비스 종료 시 개인정보 파기를 증명하는 문서를 생성합니다.",
-    generating_report: "생성 중...",
-    report_generated: "파기 대장이 생성되었습니다",
-    report_generation_failed: "파기 대장 생성 중 오류가 발생했습니다",
-
     // Privacy Policy - Korean translations
     privacy_policy: "개인정보 처리방침",
     privacy_last_updated: "최종 수정일: 2025년 12월",
@@ -1065,9 +1017,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     privacy_right2: "데이터 다운로드 (설정 > 백업/복원)",
     privacy_right3: "계정 삭제 (설정 > 위험 구역) - 모든 데이터 즉시 삭제",
     privacy_section6_title: "6. 보호책임자",
-    privacy_section7_title: "7. 서비스 종료 시 개인정보 처리",
-    privacy_termination_desc: "서비스 종료 시 사용자에게 30일 전 공지하며, 데이터 내보내기 기간을 제공합니다.",
-    privacy_data_deletion: "서비스 종료 후 30일 이내에 모든 개인정보를 Supabase 데이터베이스에서 완전히 삭제합니다.",
 
     // Terms of Service - Simplified Korean translations
     terms_of_service: "이용약관",
@@ -1094,6 +1043,9 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     terms_termination2: "서비스 종료 시 최소 30일 전 앱 상단 배너로 공지합니다",
     terms_termination3: "종료 공지 후 30일간 데이터 내보내기 기능을 제공합니다",
     terms_termination4: "무료 서비스이므로 서비스 중단으로 인한 손해배상 책임은 제한됩니다",
+    privacy_section7_title: "7. 서비스 종료 시 개인정보 처리",
+    privacy_termination_desc: "서비스 종료 시 사용자에게 30일 전 공지하며, 데이터 내보내기 기간을 제공합니다.",
+    privacy_data_deletion: "서비스 종료 후 30일 이내에 모든 개인정보를 Supabase 데이터베이스에서 완전히 삭제합니다.",
 
     // Settings section - Personal Information translations for Korean
     personal_information: "개인정보 관리",
@@ -1132,37 +1084,50 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     deleting: "삭제 중...",
     delete_permanently: "영구 삭제",
 
-    // App Developer and Introduction
+    // Announcement Management
+    announcement_management: "공지사항 관리",
+    new_announcement: "새 공지사항",
+    edit_announcement: "공지사항 수정",
+    announcement_message: "공지사항 메시지",
+    announcement_message_placeholder: "사용자에게 표시할 공지사항을 입력하세요",
+    announcement_type: "공지 유형",
+    type_info: "정보",
+    type_warning: "경고",
+    type_success: "성공",
+    expires_at: "만료일",
+    active_announcements: "활성 공지사항",
+    no_announcements: "활성 공지사항이 없습니다",
+    expires: "만료",
+    save_success: "저장되었습니다!",
+    save_failed: "저장 실패",
+    update: "업데이트",
     app_developer: "앱 개발자",
     developer_info: "김포시 장기동 이찬세",
+    back_to_forest: "숲으로 돌아가기",
+    customer_support: "고객 지원",
+    customer_support_description: "문의사항이 있으시면 아래 이메일로 연락해주세요.",
+    support_email: "지원 이메일",
     app_introduction: "앱 소개",
-    app_introduction_description: "개인 생활을 체계적으로 관리할 수 있는 올인원 생활관리 앱입니다.",
+    app_introduction_description:
+      "이 앱은 일정, 할일, 예산, 건강, 여행, 차량 등 일상 생활의 모든 기록을 한 곳에서 관리할 수 있는 통합 생활 관리 도구입니다.",
     notes_description: "메모, 회의록, 아이디어 등을 기록하고 AI로 요약 및 번역할 수 있습니다.",
-    diaries_description: "하루의 기억을 기록하고 기분, 날씨와 함께 저장할 수 있습니다.",
-    diaries: "일기",
-    schedules: "일정",
-    schedules_description: "중요한 일정을 관리하고 알림을 설정할 수 있습니다.",
-    travel_records: "여행 기록",
-    travel_records_description: "여행지, 날짜, 사진을 기록하고 지도에서 확인할 수 있습니다.",
-    travel_records: "여행 기록",
-    vehicle_records: "차량 관리",
-    vehicle_records_description: "차량 정보와 정비 이력을 관리할 수 있습니다.",
-    health_records: "건강 기록",
-    health_records_description: "혈압, 혈당, 체중 등 건강 지표를 기록하고 추적할 수 있습니다.",
+    diaries_description: "매일의 일기를 작성하고 비밀번호로 보호할 수 있습니다.",
+    schedules_description: "일정을 캘린더 형식으로 관리하고 알림을 설정할 수 있습니다.",
+    travel_records_description: "여행 계획을 세우고 AI로 일정을 최적화할 수 있습니다.",
+    vehicle_records_description: "차량 정비 기록과 예방 정비 일정을 관리할 수 있습니다.",
+    health_records_description: "건강 데이터, 복약 일정, 의료 연락처를 관리할 수 있습니다.",
     budget_description: "수입과 지출을 기록하고 AI로 예산을 분석할 수 있습니다.",
     business_cards_description: "명함을 촬영하여 자동으로 정보를 추출하고 관리할 수 있습니다.",
     weather_description: "현재 날씨와 예보를 확인할 수 있습니다.",
     radio_description: "다양한 라디오 채널을 들을 수 있습니다.",
     data_backup: "데이터 백업",
     data_backup_description: "모든 데이터를 JSON, CSV, Excel 형식으로 내보내거나 가져올 수 있습니다.",
-
-    // Legal Information
+    diaries: "일기",
+    schedules: "일정",
+    travel_records: "여행 기록",
+    vehicle_records: "차량 기록",
+    health_records: "건강 기록",
     legal_information: "법적 정보",
-
-    // Customer Support
-    customer_support: "고객 지원",
-    customer_support_description: "문의사항이 있으시면 아래 이메일로 연락해주세요.",
-    support_email: "지원 이메일",
   },
 
   en: {
@@ -1567,40 +1532,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     connection_status_title: "Connection Status",
     connection_label: "Supabase Connection",
 
-    // Announcement Management
-    announcement_management: "Announcement Management",
-    new_announcement: "New Announcement",
-    edit_announcement: "Edit Announcement",
-    announcement_message: "Announcement Message",
-    announcement_message_placeholder: "Enter the announcement to display to users",
-    announcement_type: "Type",
-    type_info: "Info",
-    type_warning: "Warning",
-    type_success: "Success",
-    expires_at: "Expires At",
-    active_announcements: "Active Announcements",
-    no_announcements: "No active announcements",
-    expires: "Expires",
-    announcement_expires: "Expires At",
-    announcement_active: "Active",
-    announcement_save: "Save Announcement",
-    announcement_delete: "Delete Announcement",
-    announcement_info: "Info",
-    announcement_warning: "Warning",
-    announcement_success: "Success",
-    save_success: "Saved successfully!",
-    delete_success: "Deleted successfully!",
-    save_error: "Error saving.",
-    delete_error: "Error deleting.",
-
-    // Data Deletion Report
-    data_deletion_report: "Data Deletion Report",
-    generate_deletion_report: "Generate Report",
-    deletion_report_description: "Generate a document certifying personal data deletion upon service termination.",
-    generating_report: "Generating...",
-    report_generated: "Deletion report generated.",
-    report_generation_failed: "Error generating deletion report.",
-
     // Privacy Policy - English translations
     privacy_policy: "Privacy Policy",
     privacy_last_updated: "Last Updated: December 2025",
@@ -1694,37 +1625,50 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     deleting: "Deleting...",
     delete_permanently: "Delete Permanently",
 
-    // App Developer and Introduction
+    // Announcement Management
+    announcement_management: "Announcement Management",
+    new_announcement: "New Announcement",
+    edit_announcement: "Edit Announcement",
+    announcement_message: "Announcement Message",
+    announcement_message_placeholder: "Enter the announcement to display to users",
+    announcement_type: "Announcement Type",
+    type_info: "Info",
+    type_warning: "Warning",
+    type_success: "Success",
+    expires_at: "Expires At",
+    active_announcements: "Active Announcements",
+    no_announcements: "No active announcements",
+    expires: "Expires",
+    save_success: "Saved successfully!",
+    save_failed: "Save failed",
+    update: "Update",
     app_developer: "App Developer",
     developer_info: "Built with Vercel",
+    back_to_forest: "Back to Forest",
+    customer_support: "Customer Support",
+    customer_support_description: "If you have any questions, please contact us via email below.",
+    support_email: "Support Email",
     app_introduction: "App Introduction",
     app_introduction_description:
       "This app is an integrated life management tool that allows you to manage all your daily life records, including schedules, to-dos, budgets, health, travel, and vehicles, in one place.",
     notes_description: "Record notes, meeting minutes, ideas, and summarize/translate them with AI.",
     diaries_description: "Write daily diaries and protect them with a password.",
-    diaries: "Diaries",
-    schedules: "Schedules",
     schedules_description: "Manage your schedule in a calendar format and set reminders.",
-    travel_records: "Travel Records",
     travel_records_description: "Plan your trips and optimize your itinerary with AI.",
-    vehicle_records: "Vehicle Management",
-    vehicle_records_description: "Manage vehicle information and maintenance history.",
-    health_records: "Health Records",
-    health_records_description: "Record and track health indicators such as blood pressure, blood sugar, and weight.",
+    vehicle_records_description: "Manage vehicle maintenance records and preventive maintenance schedules.",
+    health_records_description: "Manage your health data, medication schedules, and medical contacts.",
     budget_description: "Record income and expenses and analyze your budget with AI.",
     business_cards_description: "Scan business cards to automatically extract and manage information.",
     weather_description: "Check current weather and forecasts.",
     radio_description: "Listen to various radio channels.",
     data_backup: "Data Backup",
     data_backup_description: "Export or import all your data in JSON, CSV, or Excel format.",
-
-    // Legal Information
+    diaries: "Diaries",
+    schedules: "Schedules",
+    travel_records: "Travel Records",
+    vehicle_records: "Vehicle Records",
+    health_records: "Health Records",
     legal_information: "Legal Information",
-
-    // Customer Support
-    customer_support: "Customer Support",
-    customer_support_description: "If you have any questions, please contact us via email below.",
-    support_email: "Support Email",
   },
 
   zh: {
@@ -2125,40 +2069,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     connection_status_title: "连接状态",
     connection_label: "Supabase连接",
 
-    // Announcement Management
-    announcement_management: "公告管理",
-    new_announcement: "新公告",
-    edit_announcement: "编辑公告",
-    announcement_message: "公告内容",
-    announcement_message_placeholder: "请输入要显示给用户的公告",
-    announcement_type: "类型",
-    type_info: "信息",
-    type_warning: "警告",
-    type_success: "成功",
-    expires_at: "到期日期",
-    active_announcements: "活跃公告",
-    no_announcements: "没有活跃公告",
-    expires: "到期",
-    announcement_expires: "到期日期",
-    announcement_active: "活跃",
-    announcement_save: "公告保存",
-    announcement_delete: "公告删除",
-    announcement_info: "信息",
-    announcement_warning: "警告",
-    announcement_success: "成功",
-    save_success: "已保存",
-    delete_success: "已删除",
-    save_error: "保存时出错。",
-    delete_error: "删除时出错。",
-
-    // Data Deletion Report
-    data_deletion_report: "个人信息销毁记录",
-    generate_deletion_report: "生成销毁记录",
-    deletion_report_description: "服务终止时生成证明个人信息销毁的文件。",
-    generating_report: "生成中...",
-    report_generated: "销毁记录已生成",
-    report_generation_failed: "生成销毁记录时出错。",
-
     // Privacy Policy - Chinese translations
     privacy_policy: "隐私政策",
     privacy_last_updated: "最后更新：2025年12月",
@@ -2246,36 +2156,50 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     deleting: "删除中...",
     delete_permanently: "永久删除",
 
-    // App Developer and Introduction
+    // Announcement Management
+    announcement_management: "公告管理",
+    new_announcement: "新公告",
+    edit_announcement: "编辑公告",
+    announcement_message: "公告消息",
+    announcement_message_placeholder: "请输入要显示给用户的公告",
+    announcement_type: "公告类型",
+    type_info: "信息",
+    type_warning: "警告",
+    type_success: "成功",
+    expires_at: "到期日期",
+    active_announcements: "活跃公告",
+    no_announcements: "没有活跃公告",
+    expires: "到期",
+    save_success: "已保存！",
+    save_failed: "保存失败",
+    update: "更新",
     app_developer: "应用开发者",
     developer_info: "Vercel 平台构建",
+    back_to_forest: "返回森林",
+    customer_support: "客户支持",
+    customer_support_description: "如果您有任何问题，请通过以下电子邮件与我们联系。",
+    support_email: "支持邮箱",
     app_introduction: "应用介绍",
-    app_introduction_description: "个人生活を体系的に管理できるオールインワン生活管理アプリです。",
-    notes_description: "笔记、会议记录、想法等，并使用AI进行摘要和翻译。",
+    app_introduction_description:
+      "本应用是一款集成的生活管理工具，可让您在一个地方管理日常生活的各项记录，包括日程、待办事项、预算、健康、旅行、车辆等。",
+    notes_description: "记录笔记、会议记录、想法，并使用AI进行摘要和翻译。",
     diaries_description: "撰写每日日记并用密码保护。",
-    diaries: "日记",
-    schedules: "日程",
-    schedules_description: "管理您的日程并设置提醒。",
-    travel_records: "旅行记录",
+    schedules_description: "以日历格式管理日程并设置提醒。",
     travel_records_description: "规划您的旅行并使用AI优化行程。",
-    vehicle_records: "车辆管理",
-    vehicle_records_description: "管理车辆信息和维护历史。",
-    health_records: "健康记录",
-    health_records_description: "记录和追踪健康指标，如血压、血糖和体重。",
+    vehicle_records_description: "管理车辆维护记录和预防性维护计划。",
+    health_records_description: "管理您的健康数据、用药计划和医疗联系人。",
     budget_description: "记录收入和支出，并使用AI分析您的预算。",
     business_cards_description: "扫描名片以自动提取和管理信息。",
     weather_description: "查看当前天气和预报。",
     radio_description: "收听各种广播频道。",
     data_backup: "数据备份",
     data_backup_description: "以JSON、CSV或Excel格式导出或导入所有数据。",
-
-    // Legal Information
+    diaries: "日记",
+    schedules: "日程",
+    travel_records: "旅行记录",
+    vehicle_records: "车辆记录",
+    health_records: "健康记录",
     legal_information: "法적 정보",
-
-    // Customer Support
-    customer_support: "客户支持",
-    customer_support_description: "如果您有任何问题，请通过以下电子邮件与我们联系。",
-    support_email: "支持邮箱",
   },
 
   ja: {
@@ -2679,40 +2603,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     connection_status_title: "接続状態",
     connection_label: "Supabase接続",
 
-    // Announcement Management
-    announcement_management: "お知らせ管理",
-    new_announcement: "新規お知らせ",
-    edit_announcement: "お知らせ編集",
-    announcement_message: "お知らせメッセージ",
-    announcement_message_placeholder: "ユーザーに表示するお知らせを入力してください",
-    announcement_type: "お知らせの種類",
-    type_info: "情報",
-    type_warning: "警告",
-    type_success: "成功",
-    expires_at: "有効期限",
-    active_announcements: "アクティブなお知らせ",
-    no_announcements: "アクティブなお知らせはありません",
-    expires: "有効期限",
-    announcement_expires: "有効期限",
-    announcement_active: "アクティブ",
-    announcement_save: "お知らせを保存",
-    announcement_delete: "お知らせを削除",
-    announcement_info: "情報",
-    announcement_warning: "警告",
-    announcement_success: "成功",
-    save_success: "保存されました！",
-    delete_success: "削除されました！",
-    save_error: "保存中にエラーが発生しました。",
-    delete_error: "削除中にエラーが発生しました。",
-
-    // Data Deletion Report
-    data_deletion_report: "個人情報削除記録",
-    generate_deletion_report: "記録を生成",
-    deletion_report_description: "サービス終了時に個人情報削除を証明する文書を生成します。",
-    generating_report: "生成中...",
-    report_generated: "削除記録が生成されました",
-    report_generation_failed: "削除記録の生成中にエラーが発生しました。",
-
     // Privacy Policy - Japanese translations
     privacy_policy: "プライバシーポリシー",
     privacy_last_updated: "最終更新: 2025年12月",
@@ -2753,7 +2643,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     terms_service2: "予算、健康、旅行、車両記録管理",
     terms_service3: "AIベースの分析と翻訳（Groq AIを使用）",
     terms_service4: "データバックアップと復元",
-    terms_service5: "名片管理、天気、ラジオなど",
+    terms_service5: "名刺管理、天気、ラジオなど",
     terms_section4_title: "4. ユーザーの義務",
     terms_obligation1: "他人の個人情報を無断で収集または盗用しない",
     terms_obligation2: "サービスを違法な目的で使用しない",
@@ -2803,36 +2693,50 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     deleting: "削除中...",
     delete_permanently: "永久削除",
 
-    // App Developer and Introduction
+    // Announcement Management
+    announcement_management: "お知らせ管理",
+    new_announcement: "新規お知らせ",
+    edit_announcement: "お知らせ編集",
+    announcement_message: "お知らせメッセージ",
+    announcement_message_placeholder: "ユーザーに表示するお知らせを入力してください",
+    announcement_type: "お知らせの種類",
+    type_info: "情報",
+    type_warning: "警告",
+    type_success: "成功",
+    expires_at: "有効期限",
+    active_announcements: "アクティブなお知らせ",
+    no_announcements: "アクティブなお知らせはありません",
+    expires: "有効期限",
+    save_success: "保存されました！",
+    save_failed: "保存失敗",
+    update: "更新",
     app_developer: "アプリ開発者",
     developer_info: "Vercel プラットフォームで構築",
+    back_to_forest: "森に戻る",
+    customer_support: "カスタマーサポート",
+    customer_support_description: "ご質問がございましたら、下記メールアドレスまでご連絡ください。",
+    support_email: "サポートメールアドレス",
     app_introduction: "アプリ紹介",
-    app_introduction_description: "個人生活を体系的に管理できるオールインワン生活管理アプリです。",
+    app_introduction_description:
+      "このアプリは、スケジュール、ToDo、予算、健康、旅行、車両など、日常生活のすべての記録を一つの場所で管理できる統合生活管理ツールです。",
     notes_description: "ノート、会議議事録、アイデアなどを記録し、AIで要約・翻訳できます。",
     diaries_description: "毎日の日記を書き、パスワードで保護できます。",
-    diaries: "日記",
-    schedules: "スケジュール",
     schedules_description: "スケジュールをカレンダー形式で管理し、リマインダーを設定できます。",
-    travel_records: "旅行記録",
     travel_records_description: "旅行計画を立て、AIで旅程を最適化できます。",
-    vehicle_records: "車両管理",
-    vehicle_records_description: "車両情報とメンテナンス記録を管理できます。",
-    health_records: "健康記録",
-    health_records_description: "血圧、血糖値、体重などの健康指標を記録・追跡できます。",
+    vehicle_records_description: "車両のメンテナンス記録と予防メンテナンススケジュールを管理できます。",
+    health_records_description: "健康データ、服薬スケジュール、医療連絡先を管理できます。",
     budget_description: "収入と支出を記録し、AIで予算を分析できます。",
     business_cards_description: "名刺をスキャンして情報を自動抽出し、管理できます。",
     weather_description: "現在の天気と予報を確認できます。",
     radio_description: "様々なラジオチャンネルを聴くことができます。",
     data_backup: "データバックアップ",
     data_backup_description: "すべてのデータをJSON、CSV、Excel形式でエクスポートまたはインポートできます。",
-
-    // Legal Information
+    diaries: "日記",
+    schedules: "スケジュール",
+    travel_records: "旅行記録",
+    vehicle_records: "車両記録",
+    health_records: "健康記録",
     legal_information: "法的情報",
-
-    // Customer Support
-    customer_support: "カスタマーサポート",
-    customer_support_description: "ご質問がございましたら、下記メールアドレスまでご連絡ください。",
-    support_email: "サポートメールアドレス",
   },
 }
 
