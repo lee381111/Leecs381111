@@ -548,6 +548,14 @@ export const translations = {
     highest_spending_category: "가장 많이 지출한 카테고리",
     saving_tips: "절약 팁",
     monthly_goal: "다음 달 목표",
+
+    // Added translations
+    customer_support: "고객 지원",
+    customer_support_description: "서비스 이용 중 문의사항이나 문제가 발생하면 언제든지 연락해 주세요.",
+    support_email: "지원 이메일",
+    legal_information: "법적 정보",
+    privacy_policy: "개인정보처리방침",
+    terms_of_service: "이용약관",
   },
 
   en: {
@@ -1098,8 +1106,15 @@ export const translations = {
     highest_spending_category: "Highest Spending Category",
     saving_tips: "Saving Tips",
     monthly_goal: "Next Month Goal",
-  },
 
+    // Added translations
+    customer_support: "Customer Support",
+    customer_support_description: "Contact us anytime if you have questions or issues using the service.",
+    support_email: "Support Email",
+    legal_information: "Legal Information",
+    privacy_policy: "Privacy Policy",
+    terms_of_service: "Terms of Service",
+  },
   zh: {
     // Common
     title: "记录之森",
@@ -1636,6 +1651,14 @@ export const translations = {
     highest_spending_category: "最多支出类别",
     saving_tips: "省钱技巧",
     monthly_goal: "下月目标",
+
+    // Added translations
+    customer_support: "客户支持",
+    customer_support_description: "如果您在使用服务时有任何疑问或问题，请随时联系我们。",
+    support_email: "支持邮箱",
+    legal_information: "法律信息",
+    privacy_policy: "隐私政策",
+    terms_of_service: "服务条款",
   },
 
   ja: {
@@ -1823,7 +1846,7 @@ export const translations = {
     // To-Do List translations for Japanese
     todo: "やること",
     todo_list: "やることリスト",
-    add_todo: "やることを追加",
+    add_todo: "やることの追加",
     todo_title: "やること",
     todo_title_required: "やることのタイトルを入力してください",
     todo_description: "説明",
@@ -2184,6 +2207,14 @@ export const translations = {
     highest_spending_category: "最多支出类别",
     saving_tips: "省钱技巧",
     monthly_goal: "下月目标",
+
+    // Added translations
+    customer_support: "カスタマーサポート",
+    customer_support_description: "サービスのご利用中にご質問や問題が発生した場合は、いつでもお問い合わせください。",
+    support_email: "サポートメール",
+    legal_information: "法的情報",
+    privacy_policy: "プライバシーポリシー",
+    terms_of_service: "利用規約",
   },
 }
 

@@ -325,6 +325,39 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
         </div>
       </Card>
 
+      <Card className="p-6 space-y-4 bg-card">
+        <h2 className="text-xl font-bold">{getTranslation(lang, "customer_support")}</h2>
+        <div className="space-y-2">
+          <p className="text-sm text-muted-foreground">{getTranslation(lang, "customer_support_description")}</p>
+          <div className="bg-muted p-4 rounded-lg space-y-2">
+            <p className="font-semibold">{getTranslation(lang, "support_email")}</p>
+            <a href="mailto:lee381111@gmail.com" className="text-emerald-600 dark:text-emerald-400 hover:underline">
+              lee381111@gmail.com
+            </a>
+          </div>
+        </div>
+      </Card>
+
+      <Card className="p-6 space-y-4 bg-card">
+        <h2 className="text-xl font-bold">{getTranslation(lang, "legal_information")}</h2>
+        <div className="flex flex-col gap-2">
+          <Button
+            variant="outline"
+            className="justify-start bg-transparent"
+            onClick={() => window.open("/privacy-policy", "_blank")}
+          >
+            {getTranslation(lang, "privacy_policy")}
+          </Button>
+          <Button
+            variant="outline"
+            className="justify-start bg-transparent"
+            onClick={() => window.open("/terms-of-service", "_blank")}
+          >
+            {getTranslation(lang, "terms_of_service")}
+          </Button>
+        </div>
+      </Card>
+
       <Card className="p-6 space-y-2 bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950 dark:to-green-950">
         <h3 className="font-semibold text-emerald-800 dark:text-emerald-200">
           {getTranslation(lang, "app_developer")}
