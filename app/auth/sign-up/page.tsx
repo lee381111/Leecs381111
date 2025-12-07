@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-
+import { saveUserConsent } from "@/lib/storage"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -140,7 +140,7 @@ export default function Page() {
     }
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -151,6 +151,21 @@ export default function Page() {
         },
       })
       if (error) throw error
+
+      if (data.user) {
+        try {
+          await saveUserConsent(
+            data.user.id,
+            "v1.0_2025-12",
+            "v1.0_2025-12",
+            undefined, // IP address (optional)
+            navigator.userAgent,
+          )
+        } catch (consentError) {
+          console.error("[v0] Failed to save consent log:", consentError)
+          // Don't block signup if consent log fails
+        }
+      }
 
       alert(t[language].emailVerification)
       router.push("/auth/sign-up-success")

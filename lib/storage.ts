@@ -1493,3 +1493,29 @@ export async function deleteAnnouncement(id: string): Promise<void> {
     throw error
   }
 }
+
+// User Consent Management Functions
+export async function saveUserConsent(
+  userId: string,
+  termsVersion: string,
+  privacyVersion: string,
+  ipAddress?: string,
+  userAgent?: string,
+) {
+  const supabase = createClient()
+
+  const consent = {
+    user_id: userId,
+    terms_version: termsVersion,
+    privacy_version: privacyVersion,
+    agreed_at: new Date().toISOString(),
+    ip_address: ipAddress || null,
+    user_agent: userAgent || null,
+  }
+
+  const { error } = await supabase.from("user_consents").insert([consent])
+
+  if (error) {
+    console.error("[v0] Failed to save user consent:", error)
+  }
+}
