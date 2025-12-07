@@ -107,14 +107,14 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
       return
     }
 
-    if (!confirm(getTranslation(language as any, "confirmDelete") || "정말 삭제하시겠습니까?")) return
+    if (!confirm(getTranslation(language as any, "confirm_delete") || "정말 삭제하시겠습니까?")) return
 
     try {
       const updated = schedules.filter((s) => s.id !== id)
       setSchedules(updated)
       await saveSchedules(updated, user.id)
       notificationManager.cancelAlarm(`schedule_${id}`)
-      alert(getTranslation(language as any, "deleteSuccess") || "삭제되었습니다!")
+      alert("삭제되었습니다!")
     } catch (error) {
       console.error("[v0] Error deleting schedule:", error)
       alert("삭제 실패: " + error)

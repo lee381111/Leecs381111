@@ -2,7 +2,7 @@ import type { Language } from "./types"
 
 type TranslationKey = string
 
-const translations: Record<Language, Record<TranslationKey, string>> = {
+export const translations = {
   ko: {
     // Common
     title: "기록의 숲",
@@ -219,6 +219,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     filter_active: "진행중",
     filter_completed: "완료",
     confirm_delete: "정말 삭제하시겠습니까?",
+    delete_success: "삭제되었습니다!",
     delete_failed: "삭제 실패",
 
     // Schedule Section
@@ -765,7 +766,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     filter_active: "Active",
     filter_completed: "Completed",
     confirm_delete: "Are you sure you want to delete?",
-    delete_failed: "Deletion failed",
+    delete_success: "Deleted successfully!",
+    delete_failed: "Delete failed",
 
     // Schedule Section
     special_days: "Special Days",
@@ -1311,6 +1313,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     filter_active: "进行中",
     filter_completed: "已完成",
     confirm_delete: "确定要删除吗？",
+    delete_success: "删除成功！",
     delete_failed: "删除失败",
 
     // Schedule Section
@@ -1494,7 +1497,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     connection_status_title: "连接状态",
     connection_label: "Supabase连接",
     app_developer: "应用开发者",
-    developer_info: "京畿道金浦시 장기동 이찬세",
+    developer_info: "경기도김포시 장기동 이찬세",
     app_introduction: "应用介绍",
     app_introduction_description: "记录之森是一个一体化记录管理应用，可以在一个地方管理所有日常记录。",
     notes_description: "自由记录文字、照片、视频和语音。使用标签分类，便于搜索。",
@@ -1590,7 +1593,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     mileage_placeholder: "输入里程",
     amount: "金额",
     won_unit: "元",
-    amount_placeholder: "输入金额",
+    amount_placeholder: "金额输入",
     memo_placeholder: "输入备注",
     save_maintenance: "保存维修记录",
     date_required: "请输入日期",
@@ -1851,7 +1854,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     filter_active: "進行中",
     filter_completed: "完了",
     confirm_delete: "本当に削除しますか？",
-    delete_failed: "削除に失敗しました",
+    delete_success: "削除されました！",
+    delete_failed: "削除失敗",
 
     // Schedule Section
     special_days: "特別な日",
