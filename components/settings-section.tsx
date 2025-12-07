@@ -417,24 +417,24 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
     })
   }
 
-  const lang = language as Language
-
-  const backupRestoreTitle = getTranslation(lang, "backup_restore_title")
-  const backupDescription = getTranslation(lang, "backup_description")
-  const downloadBackupText = getTranslation(lang, "export_data")
-  const restoreBackupText = importing ? getTranslation(lang, "restoring") : getTranslation(lang, "restore_backup")
-  const userGuideTitle = getTranslation(lang, "user_guide_title")
-  const openGuideText = getTranslation(lang, "open_guide")
-  const connectionStatusTitle = getTranslation(lang, "connection_status_title")
-  const connectionStatusLabel = getTranslation(lang, "connection_label")
+  const backupRestoreTitle = getTranslation(language, "backup_restore_title")
+  const backupDescription = getTranslation(language, "backup_description")
+  const downloadBackupText = getTranslation(language, "export_data")
+  const restoreBackupText = importing
+    ? getTranslation(language, "restoring")
+    : getTranslation(language, "restore_backup")
+  const userGuideTitle = getTranslation(language, "user_guide_title")
+  const openGuideText = getTranslation(language, "open_guide")
+  const connectionStatusTitle = getTranslation(language, "connection_status_title")
+  const connectionStatusLabel = getTranslation(language, "connection_label")
   const connectionStatusText = user
-    ? `${getTranslation(lang, "logged_in")}: ${user.email}`
-    : getTranslation(lang, "not_logged_in")
+    ? `${getTranslation(language, "logged_in")}: ${user.email}`
+    : getTranslation(language, "not_logged_in")
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
       <Button variant="ghost" onClick={onBack}>
-        <ArrowLeft className="mr-2 h-4 w-4" /> {getTranslation(lang, "back_to_forest")}
+        <ArrowLeft className="mr-2 h-4 w-4" /> {getTranslation(language, "back_to_forest")}
       </Button>
 
       <Card className="p-6 space-y-4 bg-card">
@@ -463,7 +463,7 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
                     className="w-full px-4 py-2 text-left hover:bg-muted flex items-center gap-2"
                   >
                     <FileJson className="h-4 w-4" />
-                    <span>{getTranslation(lang, "json_format")}</span>
+                    <span>{getTranslation(language, "json_format")}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -473,7 +473,7 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
                     className="w-full px-4 py-2 text-left hover:bg-muted flex items-center gap-2"
                   >
                     <FileText className="h-4 w-4" />
-                    <span>{getTranslation(lang, "csv_format")}</span>
+                    <span>{getTranslation(language, "csv_format")}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -483,7 +483,7 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
                     className="w-full px-4 py-2 text-left hover:bg-muted flex items-center gap-2"
                   >
                     <FileSpreadsheet className="h-4 w-4" />
-                    <span>{getTranslation(lang, "excel_format")}</span>
+                    <span>{getTranslation(language, "excel_format")}</span>
                   </button>
                 </div>
               )}
@@ -504,36 +504,37 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
 
       <Card className="p-6 space-y-4 bg-card border-2 hover:border-emerald-500/50 transition-colors">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold">{getTranslation(lang, "personal_information")}</h2>
+          <h2 className="text-xl font-bold">{getTranslation(language, "personal_information")}</h2>
           <Button onClick={() => setShowPersonalInfo(!showPersonalInfo)} variant="outline" size="sm">
-            {showPersonalInfo ? getTranslation(lang, "hide") : getTranslation(lang, "view")}
+            {showPersonalInfo ? getTranslation(language, "hide") : getTranslation(language, "view")}
           </Button>
         </div>
 
         {showPersonalInfo && (
           <div className="space-y-4">
             <div className="space-y-2">
-              <h3 className="font-semibold text-sm">{getTranslation(lang, "account_information")}</h3>
+              <h3 className="font-semibold text-sm">{getTranslation(language, "account_information")}</h3>
               <div className="space-y-1 text-sm">
                 <p>
-                  <span className="font-medium">{getTranslation(lang, "email")}:</span> {user?.email || "-"}
+                  <span className="font-medium">{getTranslation(language, "email")}:</span> {user?.email || "-"}
                 </p>
                 <p>
-                  <span className="font-medium">{getTranslation(lang, "user_id")}:</span> {user?.id?.slice(0, 8) || "-"}
+                  <span className="font-medium">{getTranslation(language, "user_id")}:</span>{" "}
+                  {user?.id?.slice(0, 8) || "-"}
                   ...
                 </p>
                 <p>
-                  <span className="font-medium">{getTranslation(lang, "account_created")}:</span>{" "}
+                  <span className="font-medium">{getTranslation(language, "account_created")}:</span>{" "}
                   {user?.created_at ? new Date(user.created_at).toLocaleDateString() : "-"}
                 </p>
               </div>
             </div>
 
             <div className="space-y-2">
-              <h3 className="font-semibold text-sm">{getTranslation(lang, "change_email")}</h3>
+              <h3 className="font-semibold text-sm">{getTranslation(language, "change_email")}</h3>
               {!editingEmail ? (
                 <Button onClick={() => setEditingEmail(true)} variant="outline" size="sm">
-                  {getTranslation(lang, "update_email")}
+                  {getTranslation(language, "update_email")}
                 </Button>
               ) : (
                 <div className="space-y-2">
@@ -541,19 +542,19 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
                     type="email"
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
-                    placeholder={getTranslation(lang, "new_email")}
+                    placeholder={getTranslation(language, "new_email")}
                     className="w-full px-3 py-2 border rounded-lg text-sm"
                   />
                   <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder={getTranslation(lang, "enter_password")}
+                    placeholder={getTranslation(language, "enter_password")}
                     className="w-full px-3 py-2 border rounded-lg text-sm"
                   />
                   <div className="flex gap-2">
                     <Button onClick={handleEmailChange} disabled={isUpdating} size="sm" className="flex-1">
-                      {isUpdating ? getTranslation(lang, "updating") : getTranslation(lang, "save")}
+                      {isUpdating ? getTranslation(language, "updating") : getTranslation(language, "save")}
                     </Button>
                     <Button
                       onClick={() => {
@@ -565,7 +566,7 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
                       size="sm"
                       className="flex-1"
                     >
-                      {getTranslation(lang, "cancel")}
+                      {getTranslation(language, "cancel")}
                     </Button>
                   </div>
                 </div>
@@ -573,10 +574,10 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
             </div>
 
             <div className="space-y-2">
-              <h3 className="font-semibold text-sm">{getTranslation(lang, "data_management")}</h3>
-              <p className="text-xs text-muted-foreground">{getTranslation(lang, "data_management_description")}</p>
+              <h3 className="font-semibold text-sm">{getTranslation(language, "data_management")}</h3>
+              <p className="text-xs text-muted-foreground">{getTranslation(language, "data_management_description")}</p>
               <p className="text-xs text-muted-foreground">
-                {getTranslation(lang, "view_data")}: {getTranslation(lang, "data_export_description")}
+                {getTranslation(language, "view_data")}: {getTranslation(language, "data_export_description")}
               </p>
             </div>
           </div>
@@ -603,11 +604,11 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
       </Card>
 
       <Card className="p-6 space-y-4 bg-card">
-        <h2 className="text-xl font-bold">{getTranslation(lang, "customer_support")}</h2>
+        <h2 className="text-xl font-bold">{getTranslation(language, "customer_support")}</h2>
         <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">{getTranslation(lang, "customer_support_description")}</p>
+          <p className="text-sm text-muted-foreground">{getTranslation(language, "customer_support_description")}</p>
           <div className="bg-muted p-4 rounded-lg space-y-2">
-            <p className="font-semibold">{getTranslation(lang, "support_email")}</p>
+            <p className="font-semibold">{getTranslation(language, "support_email")}</p>
             <a href="mailto:lee381111@gmail.com" className="text-emerald-600 dark:text-emerald-400 hover:underline">
               lee381111@gmail.com
             </a>
@@ -615,43 +616,23 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
         </div>
       </Card>
 
-      <Card className="p-6 space-y-4 bg-card">
-        <h2 className="text-xl font-bold">{getTranslation(lang, "legal_information")}</h2>
-        <div className="flex flex-col gap-2">
-          <Button
-            variant="outline"
-            className="justify-start bg-transparent"
-            onClick={() => window.open("/privacy-policy", "_blank")}
-          >
-            {getTranslation(lang, "privacy_policy")}
-          </Button>
-          <Button
-            variant="outline"
-            className="justify-start bg-transparent"
-            onClick={() => window.open("/terms-of-service", "_blank")}
-          >
-            {getTranslation(lang, "terms_of_service")}
-          </Button>
-        </div>
-      </Card>
-
       <Card className="p-6 space-y-2 bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950 dark:to-green-950">
         <h3 className="font-semibold text-emerald-800 dark:text-emerald-200">
-          {getTranslation(lang, "app_developer")}
+          {getTranslation(language, "app_developer")}
         </h3>
-        <p className="text-sm text-emerald-700 dark:text-emerald-300">{getTranslation(lang, "developer_info")}</p>
+        <p className="text-sm text-emerald-700 dark:text-emerald-300">{getTranslation(language, "developer_info")}</p>
       </Card>
 
       <Card className="p-6 space-y-4 bg-card border-red-200 dark:border-red-900">
-        <h2 className="text-xl font-bold text-red-600 dark:text-red-400">{getTranslation(lang, "danger_zone")}</h2>
+        <h2 className="text-xl font-bold text-red-600 dark:text-red-400">{getTranslation(language, "danger_zone")}</h2>
         <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">{getTranslation(lang, "account_deletion_warning")}</p>
+          <p className="text-sm text-muted-foreground">{getTranslation(language, "account_deletion_warning")}</p>
           <Button
             onClick={() => setShowDeleteDialog(true)}
             variant="destructive"
             className="w-full bg-red-600 hover:bg-red-700 text-white"
           >
-            {getTranslation(lang, "delete_account")}
+            {getTranslation(language, "delete_account")}
           </Button>
         </div>
       </Card>
@@ -771,104 +752,104 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
       <Dialog open={showGuide} onOpenChange={setShowGuide}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto bg-white dark:bg-slate-900">
           <DialogHeader>
-            <DialogTitle>{getTranslation(lang, "user_guide")}</DialogTitle>
+            <DialogTitle>{getTranslation(language, "user_guide")}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-6 text-sm">
             <section>
               <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                {getTranslation(lang, "app_introduction")}
+                {getTranslation(language, "app_introduction")}
               </h3>
-              <p className="text-muted-foreground">{getTranslation(lang, "app_introduction_description")}</p>
+              <p className="text-muted-foreground">{getTranslation(language, "app_introduction_description")}</p>
             </section>
 
             <section>
               <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
-                {getTranslation(lang, "notes")}
+                {getTranslation(language, "notes")}
               </h3>
-              <p className="text-muted-foreground">{getTranslation(lang, "notes_description")}</p>
+              <p className="text-muted-foreground">{getTranslation(language, "notes_description")}</p>
             </section>
 
             <section>
               <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
-                {getTranslation(lang, "diaries")}
+                {getTranslation(language, "diaries")}
               </h3>
-              <p className="text-muted-foreground">{getTranslation(lang, "diaries_description")}</p>
+              <p className="text-muted-foreground">{getTranslation(language, "diaries_description")}</p>
             </section>
 
             <section>
               <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
-                {getTranslation(lang, "schedules")}
+                {getTranslation(language, "schedules")}
               </h3>
-              <p className="text-muted-foreground">{getTranslation(lang, "schedules_description")}</p>
+              <p className="text-muted-foreground">{getTranslation(language, "schedules_description")}</p>
             </section>
 
             <section>
               <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
-                {getTranslation(lang, "travel_records")}
+                {getTranslation(language, "travel_records")}
               </h3>
-              <p className="text-muted-foreground">{getTranslation(lang, "travel_records_description")}</p>
+              <p className="text-muted-foreground">{getTranslation(language, "travel_records_description")}</p>
             </section>
 
             <section>
               <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
-                {getTranslation(lang, "vehicle_records")}
+                {getTranslation(language, "vehicle_records")}
               </h3>
-              <p className="text-muted-foreground">{getTranslation(lang, "vehicle_records_description")}</p>
+              <p className="text-muted-foreground">{getTranslation(language, "vehicle_records_description")}</p>
             </section>
 
             <section>
               <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
-                {getTranslation(lang, "health_records")}
+                {getTranslation(language, "health_records")}
               </h3>
-              <p className="text-muted-foreground">{getTranslation(lang, "health_records_description")}</p>
+              <p className="text-muted-foreground">{getTranslation(language, "health_records_description")}</p>
             </section>
 
             <section>
               <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
-                {getTranslation(lang, "budget")}
+                {getTranslation(language, "budget")}
               </h3>
-              <p className="text-muted-foreground">{getTranslation(lang, "budget_description")}</p>
+              <p className="text-muted-foreground">{getTranslation(language, "budget_description")}</p>
             </section>
 
             <section>
               <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
-                {getTranslation(lang, "business_cards")}
+                {getTranslation(language, "business_cards")}
               </h3>
-              <p className="text-muted-foreground">{getTranslation(lang, "business_cards_description")}</p>
+              <p className="text-muted-foreground">{getTranslation(language, "business_cards_description")}</p>
             </section>
 
             <section>
               <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
-                {getTranslation(lang, "weather")}
+                {getTranslation(language, "weather")}
               </h3>
-              <p className="text-muted-foreground">{getTranslation(lang, "weather_description")}</p>
+              <p className="text-muted-foreground">{getTranslation(language, "weather_description")}</p>
             </section>
 
             <section>
               <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
-                {getTranslation(lang, "radio")}
+                {getTranslation(language, "radio")}
               </h3>
-              <p className="text-muted-foreground">{getTranslation(lang, "radio_description")}</p>
+              <p className="text-muted-foreground">{getTranslation(language, "radio_description")}</p>
             </section>
 
             <section>
               <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
-                {getTranslation(lang, "data_backup")}
+                {getTranslation(language, "data_backup")}
               </h3>
-              <p className="text-muted-foreground">{getTranslation(lang, "data_backup_description")}</p>
+              <p className="text-muted-foreground">{getTranslation(language, "data_backup_description")}</p>
             </section>
           </div>
         </DialogContent>
@@ -878,35 +859,35 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
         <DialogContent className="max-w-md bg-white dark:bg-slate-900">
           <DialogHeader>
             <DialogTitle className="text-red-600 dark:text-red-400">
-              {getTranslation(lang, "delete_account_title")}
+              {getTranslation(language, "delete_account_title")}
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="bg-red-50 dark:bg-red-950 p-4 rounded-lg space-y-2">
               <p className="text-sm font-semibold text-red-800 dark:text-red-200">
-                {getTranslation(lang, "delete_account_warning_title")}
+                {getTranslation(language, "delete_account_warning_title")}
               </p>
               <ul className="text-sm text-red-700 dark:text-red-300 list-disc list-inside space-y-1">
-                <li>{getTranslation(lang, "delete_warning_1")}</li>
-                <li>{getTranslation(lang, "delete_warning_2")}</li>
-                <li>{getTranslation(lang, "delete_warning_3")}</li>
+                <li>{getTranslation(language, "delete_warning_1")}</li>
+                <li>{getTranslation(language, "delete_warning_2")}</li>
+                <li>{getTranslation(language, "delete_warning_3")}</li>
               </ul>
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium">
-                {getTranslation(lang, "delete_account_confirm_instruction")}
+                {getTranslation(language, "delete_account_confirm_instruction")}
               </label>
               <p className="text-sm text-muted-foreground mb-2">
-                "{getTranslation(lang, "delete_account_confirm_phrase")}"
+                "{getTranslation(language, "delete_account_confirm_phrase")}"
               </p>
               <input
                 type="text"
                 value={deleteConfirmText}
                 onChange={(e) => setDeleteConfirmText(e.target.value)}
                 className="w-full p-2 border rounded-lg dark:bg-slate-800"
-                placeholder={getTranslation(lang, "delete_account_confirm_phrase")}
+                placeholder={getTranslation(language, "delete_account_confirm_phrase")}
               />
             </div>
 
@@ -920,15 +901,15 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
                 className="flex-1"
                 disabled={isDeleting}
               >
-                {getTranslation(lang, "cancel")}
+                {getTranslation(language, "cancel")}
               </Button>
               <Button
                 onClick={handleDeleteAccount}
                 variant="destructive"
                 className="flex-1"
-                disabled={isDeleting || deleteConfirmText !== getTranslation(lang, "delete_account_confirm_phrase")}
+                disabled={isDeleting || deleteConfirmText !== getTranslation(language, "delete_account_confirm_phrase")}
               >
-                {isDeleting ? getTranslation(lang, "deleting") : getTranslation(lang, "delete_permanently")}
+                {isDeleting ? getTranslation(language, "deleting") : getTranslation(language, "delete_permanently")}
               </Button>
             </div>
           </div>
