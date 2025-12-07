@@ -263,48 +263,70 @@ export async function loadDiaries(userId: string): Promise<DiaryEntry[]> {
 export async function saveSchedules(schedules: ScheduleEvent[], userId: string) {
   const supabase = createClient()
 
-  await supabase.from("schedules").delete().eq("user_id", userId)
-
-  if (schedules.length > 0) {
-    const dbSchedules = schedules.map((schedule) => {
-      let dateOnly = schedule.date
-      if (dateOnly.includes("T")) {
-        dateOnly = dateOnly.split("T")[0]
-      }
-
-      const startTime = `${dateOnly} ${schedule.time || "00:00"}:00`
-      const endTime = schedule.endTime
-        ? `${dateOnly} ${schedule.endTime}:00`
-        : `${dateOnly} ${schedule.time || "00:00"}:00`
-
-      const alarmTime =
-        schedule.alarmMinutesBefore && schedule.time
-          ? (() => {
-              const eventDateTime = new Date(`${dateOnly}T${schedule.time}:00`)
-              const alarmDateTime = new Date(eventDateTime.getTime() - schedule.alarmMinutesBefore * 60 * 1000)
-              return `${alarmDateTime.getFullYear()}-${String(alarmDateTime.getMonth() + 1).padStart(2, "0")}-${String(alarmDateTime.getDate()).padStart(2, "0")} ${String(alarmDateTime.getHours()).padStart(2, "0")}:${String(alarmDateTime.getMinutes()).padStart(2, "0")}:00`
-            })()
-          : null
-
-      return {
-        id: schedule.id,
-        user_id: userId,
-        title: schedule.title,
-        description: schedule.description || "",
-        category: schedule.category || "일정", // Save category field
-        start_time: startTime,
-        end_time: endTime,
-        alarm_enabled: schedule.alarmEnabled || false,
-        alarm_time: alarmTime,
-        completed: schedule.completed || false,
-        is_special_event: schedule.isSpecialEvent || false,
-        attachments: schedule.attachments || [], // Save attachments field
-        created_at: schedule.createdAt,
-      }
-    })
-
-    const { error } = await supabase.from("schedules").insert(dbSchedules)
+  if (schedules.length === 0) {
+    // If no schedules, delete all user schedules
+    const { error } = await supabase.from("schedules").delete().eq("user_id", userId)
     if (error) throw error
+    return
+  }
+
+  // Get current schedule IDs
+  const currentIds = schedules.map((s) => s.id).filter(Boolean)
+
+  // Delete schedules that are no longer in the list
+  if (currentIds.length > 0) {
+    await supabase
+      .from("schedules")
+      .delete()
+      .eq("user_id", userId)
+      .not("id", "in", `(${currentIds.join(",")})`)
+  } else {
+    // If no IDs (all new schedules), delete all existing
+    await supabase.from("schedules").delete().eq("user_id", userId)
+  }
+
+  const dbSchedules = schedules.map((schedule) => {
+    let dateOnly = schedule.date
+    if (dateOnly.includes("T")) {
+      dateOnly = dateOnly.split("T")[0]
+    }
+
+    const startTime = `${dateOnly} ${schedule.time || "00:00"}:00`
+    const endTime = schedule.endTime
+      ? `${dateOnly} ${schedule.endTime}:00`
+      : `${dateOnly} ${schedule.time || "00:00"}:00`
+
+    const alarmTime =
+      schedule.alarmMinutesBefore && schedule.time
+        ? (() => {
+            const eventDateTime = new Date(`${dateOnly}T${schedule.time}:00`)
+            const alarmDateTime = new Date(eventDateTime.getTime() - schedule.alarmMinutesBefore * 60 * 1000)
+            return `${alarmDateTime.getFullYear()}-${String(alarmDateTime.getMonth() + 1).padStart(2, "0")}-${String(alarmDateTime.getDate()).padStart(2, "0")} ${String(alarmDateTime.getHours()).padStart(2, "0")}:${String(alarmDateTime.getMinutes()).padStart(2, "0")}:00`
+          })()
+        : null
+
+    return {
+      id: schedule.id,
+      user_id: userId,
+      title: schedule.title,
+      description: schedule.description || "",
+      category: schedule.category || "일정",
+      start_time: startTime,
+      end_time: endTime,
+      alarm_enabled: schedule.alarmEnabled || false,
+      alarm_time: alarmTime,
+      completed: schedule.completed || false,
+      is_special_event: schedule.isSpecialEvent || false,
+      attachments: schedule.attachments || [],
+      created_at: schedule.createdAt,
+    }
+  })
+
+  const { error } = await supabase.from("schedules").upsert(dbSchedules, { onConflict: "id" })
+
+  if (error) {
+    console.error("[v0] Error saving schedules:", error)
+    throw error
   }
 }
 
