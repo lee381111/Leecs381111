@@ -1,5 +1,6 @@
-import type { Metadata } from "next"
-import { Geist, Geist_Mono } from 'next/font/google'
+import type React from "react"
+import type { Metadata, Viewport } from "next"
+import { Geist, Geist_Mono } from "next/font/google"
 import { AuthProvider } from "@/lib/auth-context"
 import "./globals.css"
 
@@ -8,8 +9,14 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "Forest Note - 숲속 노트",
-  description: "다기능 노트 및 생활 기록 앱",
+  description: "일정, 할일, 예산, 여행, 차량, 건강을 한 곳에서 관리하는 올인원 생활 관리 앱",
   generator: "v0.app",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Forest Note",
+  },
   icons: {
     icon: [
       {
@@ -29,6 +36,14 @@ export const metadata: Metadata = {
   },
 }
 
+export const viewport: Viewport = {
+  themeColor: "#10b981",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -36,10 +51,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className={`font-sans antialiased`} style={{ background: 'linear-gradient(135deg, rgb(220, 252, 231) 0%, rgb(220, 252, 231) 100%)' }}>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Forest Note" />
+      </head>
+      <body
+        className={`font-sans antialiased`}
+        style={{ background: "linear-gradient(135deg, rgb(220, 252, 231) 0%, rgb(220, 252, 231) 100%)" }}
+      >
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   )
