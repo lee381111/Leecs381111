@@ -552,27 +552,8 @@ type TranslationKey =
   | "account_deletion_failed"
   | "deleting"
   | "delete_permanently"
-  | "personal_information"
-  | "account_information"
-  | "user_id"
-  | "account_created"
-  | "change_email"
-  | "update_email"
-  | "new_email"
-  | "current_password"
-  | "enter_password"
-  | "updating"
-  | "update"
-  | "email_updated_success"
-  | "email_update_error"
-  | "data_management"
-  | "data_management_description"
-  | "download_my_data"
-  | "download_data_confirm"
-  | "not_available"
-  | "fill_all_fields"
-  | "view"
-  | "hide"
+  | "view_data"
+  | "data_export_description"
 
 const translations: Record<Language, Record<TranslationKey, string>> = {
   ko: {
@@ -1199,6 +1180,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     fill_all_fields: "모든 필드를 입력해주세요",
     view: "보기",
     hide: "숨기기",
+    view_data: "데이터 열람",
+    data_export_description: "위의 백업/복원 섹션을 사용하여 데이터를 내보낼 수 있습니다",
 
     danger_zone: "위험 구역",
     delete_account: "계정 삭제",
@@ -1845,6 +1828,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     fill_all_fields: "Please fill all fields",
     view: "View",
     hide: "Hide",
+    view_data: "View Data",
+    data_export_description: "You can export data using the Backup/Restore section above",
 
     danger_zone: "Danger Zone",
     delete_account: "Delete Account",
@@ -2475,8 +2460,10 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     fill_all_fields: "请填写所有字段",
     view: "查看",
     hide: "隐藏",
+    view_data: "查看数据",
+    data_export_description: "您可以使用上面的备份/恢复部分导出数据",
 
-    danger_zone: "危险区域",
+    danger_zone: "危险区",
     delete_account: "删除帐户",
     delete_account_title: "确认删除帐户",
     account_deletion_warning: "警告：删除帐户将永久删除所有数据，无法恢复。",
@@ -3117,6 +3104,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     fill_all_fields: "すべてのフィールドを入力してください",
     view: "表示",
     hide: "非表示",
+    view_data: "データ閲覧",
+    data_export_description: "上記のバックアップ/復元セクションを使用してデータをエクスポートできます",
 
     danger_zone: "危険ゾーン",
     delete_account: "アカウント削除",

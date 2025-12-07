@@ -500,9 +500,11 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
             </div>
 
             <div className="space-y-2">
-              <h3 className="font-semibold text-sm">{getTranslation(lang, "data_rights")}</h3>
-              <p className="text-xs text-muted-foreground">{getTranslation(lang, "data_rights_description")}</p>
-              <p className="text-xs text-muted-foreground">{getTranslation(lang, "use_backup_section")}</p>
+              <h3 className="font-semibold text-sm">{getTranslation(lang, "data_management")}</h3>
+              <p className="text-xs text-muted-foreground">{getTranslation(lang, "data_management_description")}</p>
+              <p className="text-xs text-muted-foreground">
+                {getTranslation(lang, "view_data")}: {getTranslation(lang, "data_export_description")}
+              </p>
             </div>
           </div>
         )}
