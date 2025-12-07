@@ -369,19 +369,28 @@ export default function SettingsSection({ user, language, onLogout }: SettingsSe
   }
 
   useEffect(() => {
+    console.log("[v0] Settings section mounted, user:", user?.id)
+    if (user && showPersonalInfo) {
+      console.log("[v0] Loading consent logs for user:", user.id)
+      setLoadingConsents(true)
+      loadUserConsents(user.id)
+        .then((logs) => {
+          console.log("[v0] Loaded consent logs:", logs)
+          setConsentLogs(logs)
+        })
+        .catch((error) => {
+          console.error("[v0] Error loading consent logs:", error)
+          setConsentLogs([])
+        })
+        .finally(() => setLoadingConsents(false))
+    }
+  }, [user, showPersonalInfo])
+
+  useEffect(() => {
     if (user && showAnnouncementPanel) {
       loadAllAnnouncements(user.id).then(setAnnouncements)
     }
   }, [user, showAnnouncementPanel])
-
-  useEffect(() => {
-    if (user && showPersonalInfo) {
-      setLoadingConsents(true)
-      loadUserConsents(user.id)
-        .then(setConsentLogs)
-        .finally(() => setLoadingConsents(false))
-    }
-  }, [user, showPersonalInfo])
 
   const handleSaveAnnouncement = async () => {
     if (!user || !announcementForm.message.trim()) return
