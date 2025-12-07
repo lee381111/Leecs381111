@@ -431,7 +431,7 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
 
       <Card className="p-6 space-y-4 bg-card border-2 hover:border-emerald-500/50 transition-colors">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold">{getTranslation(lang, "personal_info_title")}</h2>
+          <h2 className="text-xl font-bold">{getTranslation(lang, "personal_information")}</h2>
           <Button onClick={() => setShowPersonalInfo(!showPersonalInfo)} variant="outline" size="sm">
             {showPersonalInfo ? getTranslation(lang, "hide") : getTranslation(lang, "show")}
           </Button>
@@ -571,7 +571,11 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
         <h2 className="text-xl font-bold text-red-600 dark:text-red-400">{getTranslation(lang, "danger_zone")}</h2>
         <div className="space-y-2">
           <p className="text-sm text-muted-foreground">{getTranslation(lang, "account_deletion_warning")}</p>
-          <Button onClick={() => setShowDeleteDialog(true)} variant="destructive" className="w-full">
+          <Button
+            onClick={() => setShowDeleteDialog(true)}
+            variant="destructive"
+            className="w-full bg-red-600 hover:bg-red-700 text-white"
+          >
             {getTranslation(lang, "delete_account")}
           </Button>
         </div>
