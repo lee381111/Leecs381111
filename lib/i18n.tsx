@@ -508,6 +508,7 @@ type TranslationKey =
   | "privacy_section2_title"
   | "privacy_collected1"
   | "privacy_collected2"
+  | "privacy_section3_title"
   | "privacy_storage_desc"
   | "privacy_supabase_desc"
   | "privacy_section4_title"
@@ -566,6 +567,24 @@ type TranslationKey =
   | "expires"
   | "save_success"
   | "save_failed"
+  | "personal_information"
+  | "account_information"
+  | "user_id"
+  | "email"
+  | "account_created"
+  | "change_email"
+  | "update_email"
+  | "new_email"
+  | "updating"
+  | "data_management"
+  | "data_management_description"
+  | "view"
+  | "hide"
+  | "view_data"
+  | "data_export_description"
+  | "fill_all_fields"
+  | "email_updated_success"
+  | "email_update_error"
 
 const translations: Record<Language, Record<TranslationKey, string>> = {
   ko: {
@@ -1135,7 +1154,26 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     expires: "만료",
     save_success: "저장되었습니다!",
     save_failed: "저장에 실패했습니다",
-    delete_failed: "삭제에 실패했습니다",
+
+    // Settings Section
+    personal_information: "개인 정보",
+    account_information: "계정 정보",
+    user_id: "사용자 ID",
+    account_created: "계정 생성일",
+    change_email: "이메일 변경",
+    update_email: "이메일 업데이트",
+    new_email: "새 이메일",
+    enter_password: "비밀번호 입력",
+    updating: "업데이트 중...",
+    data_management: "데이터 관리",
+    data_management_description: "모든 데이터를 관리하고 내보낼 수 있습니다.",
+    view_data: "데이터 보기",
+    data_export_description: "데이터를 JSON, CSV, Excel 형식으로 내보낼 수 있습니다.",
+    view: "보기",
+    hide: "숨기기",
+    fill_all_fields: "모든 필드를 입력해주세요",
+    email_updated_success: "이메일이 성공적으로 업데이트되었습니다.",
+    email_update_error: "이메일 업데이트에 실패했습니다.",
   },
 
   en: {
@@ -1708,6 +1746,26 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     expires: "Expires",
     save_success: "Saved successfully!",
     save_failed: "Failed to save",
+
+    // Settings Section
+    personal_information: "Personal Information",
+    account_information: "Account Information",
+    user_id: "User ID",
+    account_created: "Account Created",
+    change_email: "Change Email",
+    update_email: "Update Email",
+    new_email: "New Email",
+    enter_password: "Enter Password",
+    updating: "Updating...",
+    data_management: "Data Management",
+    data_management_description: "Manage and export all your data.",
+    view_data: "View Data",
+    data_export_description: "Export your data in JSON, CSV, or Excel format.",
+    view: "View",
+    hide: "Hide",
+    fill_all_fields: "Please fill all fields",
+    email_updated_success: "Email updated successfully.",
+    email_update_error: "Email update failed.",
   },
 
   zh: {
@@ -1977,7 +2035,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     travel_map: "旅行地图",
     map_zoom_instruction: "缩放",
     map_drag_instruction: "拖动移动",
-    map_button_instruction: "使用 +/- 按钮缩放",
+    map_button_instruction: "+/-按钮缩放",
     destination_label: "目的地",
     destination_placeholder: "例如：济州汉拿山、首尔南山、巴黎、纽约",
     latitude_label: "纬度",
@@ -2240,8 +2298,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     analyze_budget: "支出分析",
     analyzing_budget: "分析中...",
     budget_analysis_result: "支出分析结果",
-    no_transactions_for_analysis: "分析할 거래 내역이 없습니다.",
-    budget_analysis_failed: "支出分析に失敗しました。",
+    no_transactions_for_analysis: "没有可供分析的交易记录。",
+    budget_analysis_failed: "支出分析失败。",
     budget_summary: "支出要约",
     highest_spending_category: "最多支出类别",
     saving_tips: "省钱技巧",
@@ -2268,6 +2326,26 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     expires: "过期",
     save_success: "保存成功！",
     save_failed: "保存失败",
+
+    // Settings Section
+    personal_information: "个人信息",
+    account_information: "账户信息",
+    user_id: "用户ID",
+    account_created: "账户创建日期",
+    change_email: "更改邮箱",
+    update_email: "更新邮箱",
+    new_email: "新邮箱",
+    enter_password: "输入密码",
+    updating: "更新中...",
+    data_management: "数据管理",
+    data_management_description: "管理和导出所有数据。",
+    view_data: "查看数据",
+    data_export_description: "将数据导出为JSON、CSV或Excel格式。",
+    view: "查看",
+    hide: "隐藏",
+    fill_all_fields: "请填写所有字段",
+    email_updated_success: "邮箱更新成功。",
+    email_update_error: "邮箱更新失败。",
   },
 
   ja: {
@@ -2810,7 +2888,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     analyze_budget: "支出分析",
     analyzing_budget: "分析中...",
     budget_analysis_result: "支出分析結果",
-    no_transactions_for_analysis: "分析할 거래 내역이 없습니다.",
+    no_transactions_for_analysis: "分析할 거래 내역이 없습니다。",
     budget_analysis_failed: "支出分析に失敗しました。",
     budget_summary: "支出要约",
     highest_spending_category: "最多支出类别",
@@ -2838,6 +2916,26 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     expires: "有効期限",
     save_success: "保存されました！",
     save_failed: "保存に失敗しました",
+
+    // Settings Section
+    personal_information: "個人情報",
+    account_information: "アカウント情報",
+    user_id: "ユーザーID",
+    account_created: "アカウント作成日",
+    change_email: "メールアドレス変更",
+    update_email: "メールアドレス更新",
+    new_email: "新しいメールアドレス",
+    enter_password: "パスワード入力",
+    updating: "更新中...",
+    data_management: "データ管理",
+    data_management_description: "すべてのデータを管理・エクスポートできます。",
+    view_data: "データ表示",
+    data_export_description: "データをJSON、CSV、Excel形式でエクスポートできます。",
+    view: "表示",
+    hide: "隠す",
+    fill_all_fields: "すべてのフィールドを入力してください",
+    email_updated_success: "メールアドレスが正常に更新されました。",
+    email_update_error: "メールアドレスの更新に失敗しました。",
   },
 }
 
