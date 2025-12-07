@@ -19,6 +19,11 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [deleteConfirmText, setDeleteConfirmText] = useState("")
   const [isDeleting, setIsDeleting] = useState(false)
+  const [showPersonalInfo, setShowPersonalInfo] = useState(false)
+  const [editingEmail, setEditingEmail] = useState(false)
+  const [newEmail, setNewEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [isUpdating, setIsUpdating] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleExport = async () => {
@@ -273,6 +278,39 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
     }
   }
 
+  const handleUpdateEmail = async () => {
+    if (!user?.id || !newEmail || !password) {
+      const lang = language as Language
+      alert(getTranslation(lang, "fill_all_fields"))
+      return
+    }
+
+    setIsUpdating(true)
+    try {
+      const { createClient } = await import("@/lib/supabase")
+      const supabase = createClient()
+
+      const { error } = await supabase.auth.updateUser({
+        email: newEmail,
+        password: password,
+      })
+
+      if (error) throw error
+
+      const lang = language as Language
+      alert(getTranslation(lang, "email_updated_success"))
+      setEditingEmail(false)
+      setNewEmail("")
+      setPassword("")
+    } catch (err) {
+      console.error("[v0] Email update error:", err)
+      const lang = language as Language
+      alert(getTranslation(lang, "email_update_error"))
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
   const lang = language as Language
 
   const backupRestoreTitle = getTranslation(lang, "backup_restore_title")
@@ -356,6 +394,114 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
             <input ref={fileInputRef} type="file" accept=".json" onChange={handleImport} className="hidden" />
           </div>
         </div>
+      </Card>
+
+      <Card className="p-6 space-y-4 bg-card">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold">{getTranslation(lang, "personal_information")}</h2>
+          <Button onClick={() => setShowPersonalInfo(!showPersonalInfo)} variant="outline" size="sm">
+            {showPersonalInfo ? getTranslation(lang, "hide") : getTranslation(lang, "view")}
+          </Button>
+        </div>
+
+        {showPersonalInfo && (
+          <div className="space-y-4 pt-4 border-t">
+            <div className="space-y-2">
+              <h3 className="font-semibold text-sm">{getTranslation(lang, "account_information")}</h3>
+              <div className="bg-muted p-4 rounded-lg space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">{getTranslation(lang, "email")}:</span>
+                  <span className="font-medium">{user?.email || getTranslation(lang, "not_available")}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">{getTranslation(lang, "user_id")}:</span>
+                  <span className="font-mono text-xs">{user?.id?.substring(0, 8)}...</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">{getTranslation(lang, "account_created")}:</span>
+                  <span className="text-sm">
+                    {user?.created_at
+                      ? new Date(user.created_at).toLocaleDateString(lang)
+                      : getTranslation(lang, "not_available")}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="font-semibold text-sm">{getTranslation(lang, "change_email")}</h3>
+              {!editingEmail ? (
+                <Button onClick={() => setEditingEmail(true)} variant="outline" className="w-full">
+                  {getTranslation(lang, "update_email")}
+                </Button>
+              ) : (
+                <div className="space-y-3 bg-muted p-4 rounded-lg">
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium">{getTranslation(lang, "new_email")}</label>
+                    <input
+                      type="email"
+                      value={newEmail}
+                      onChange={(e) => setNewEmail(e.target.value)}
+                      className="w-full p-2 border rounded-lg dark:bg-slate-800"
+                      placeholder={user?.email || ""}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium">{getTranslation(lang, "current_password")}</label>
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full p-2 border rounded-lg dark:bg-slate-800"
+                      placeholder={getTranslation(lang, "enter_password")}
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => {
+                        setEditingEmail(false)
+                        setNewEmail("")
+                        setPassword("")
+                      }}
+                      variant="outline"
+                      className="flex-1"
+                      disabled={isUpdating}
+                    >
+                      {getTranslation(lang, "cancel")}
+                    </Button>
+                    <Button
+                      onClick={handleUpdateEmail}
+                      className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                      disabled={isUpdating || !newEmail || !password}
+                    >
+                      {isUpdating ? getTranslation(lang, "updating") : getTranslation(lang, "update")}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="font-semibold text-sm">{getTranslation(lang, "data_management")}</h3>
+              <p className="text-xs text-muted-foreground">{getTranslation(lang, "data_management_description")}</p>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => {
+                    const lang = language as Language
+                    if (confirm(getTranslation(lang, "download_data_confirm"))) {
+                      handleExport()
+                    }
+                  }}
+                  variant="outline"
+                  className="flex-1"
+                  size="sm"
+                >
+                  {getTranslation(lang, "download_my_data")}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </Card>
 
       <Card className="p-6 space-y-4 bg-card">

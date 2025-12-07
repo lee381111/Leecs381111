@@ -552,6 +552,27 @@ type TranslationKey =
   | "account_deletion_failed"
   | "deleting"
   | "delete_permanently"
+  | "personal_information"
+  | "account_information"
+  | "user_id"
+  | "account_created"
+  | "change_email"
+  | "update_email"
+  | "new_email"
+  | "current_password"
+  | "enter_password"
+  | "updating"
+  | "update"
+  | "email_updated_success"
+  | "email_update_error"
+  | "data_management"
+  | "data_management_description"
+  | "download_my_data"
+  | "download_data_confirm"
+  | "not_available"
+  | "fill_all_fields"
+  | "view"
+  | "hide"
 
 const translations: Record<Language, Record<TranslationKey, string>> = {
   ko: {
@@ -1155,6 +1176,29 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     terms_section6_desc:
       "서비스는 시스템 점검, 업그레이드 등의 이유로 일시적으로 중단될 수 있습니다. 중요한 변경사항은 사전에 공지합니다.",
     back: "뒤로 가기",
+
+    // Personal Information Section
+    personal_information: "개인정보 관리",
+    account_information: "계정 정보",
+    user_id: "사용자 ID",
+    account_created: "가입일",
+    change_email: "이메일 변경",
+    update_email: "이메일 수정",
+    new_email: "새 이메일",
+    current_password: "현재 비밀번호",
+    enter_password: "비밀번호를 입력하세요",
+    updating: "업데이트 중...",
+    update: "수정",
+    email_updated_success: "이메일이 성공적으로 변경되었습니다",
+    email_update_error: "이메일 변경 중 오류가 발생했습니다",
+    data_management: "데이터 관리",
+    data_management_description: "내 데이터를 다운로드하여 백업하거나 다른 서비스로 이동할 수 있습니다",
+    download_my_data: "내 데이터 다운로드",
+    download_data_confirm: "모든 데이터를 다운로드하시겠습니까?",
+    not_available: "정보 없음",
+    fill_all_fields: "모든 필드를 입력해주세요",
+    view: "보기",
+    hide: "숨기기",
 
     danger_zone: "위험 구역",
     delete_account: "계정 삭제",
@@ -1779,6 +1823,29 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     terms_section6_desc:
       "Service may be temporarily suspended for system maintenance, upgrades, etc. Important changes will be announced in advance.",
 
+    // Personal Information Section
+    personal_information: "Personal Information",
+    account_information: "Account Information",
+    user_id: "User ID",
+    account_created: "Account Created",
+    change_email: "Change Email",
+    update_email: "Update Email",
+    new_email: "New Email",
+    current_password: "Current Password",
+    enter_password: "Enter password",
+    updating: "Updating...",
+    update: "Update",
+    email_updated_success: "Email successfully updated",
+    email_update_error: "Error updating email",
+    data_management: "Data Management",
+    data_management_description: "Download your data to back up or move to another service",
+    download_my_data: "Download My Data",
+    download_data_confirm: "Download all data?",
+    not_available: "Not available",
+    fill_all_fields: "Please fill all fields",
+    view: "View",
+    hide: "Hide",
+
     danger_zone: "Danger Zone",
     delete_account: "Delete Account",
     delete_account_title: "Confirm Account Deletion",
@@ -2385,6 +2452,29 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
       "用户创建的内容的版权归用户所有。服务仅为提供服务目的使用用户内容，未经用户同意不会提供给第三方。",
     terms_section6_title: "6. 服务变更和中断",
     terms_section6_desc: "服务可能因系统检查、升级等原因暂时中断。重要变更将提前通知。",
+
+    // Personal Information Section
+    personal_information: "个人信息管理",
+    account_information: "帐户信息",
+    user_id: "用户ID",
+    account_created: "注册日期",
+    change_email: "更改电子邮件",
+    update_email: "更新电子邮件",
+    new_email: "新电子邮件",
+    current_password: "当前密码",
+    enter_password: "输入密码",
+    updating: "更新中...",
+    update: "更新",
+    email_updated_success: "电子邮件已成功更改",
+    email_update_error: "更改电子邮件时出错",
+    data_management: "数据管理",
+    data_management_description: "下载您的数据以备份或移至其他服务",
+    download_my_data: "下载我的数据",
+    download_data_confirm: "下载所有数据？",
+    not_available: "无信息",
+    fill_all_fields: "请填写所有字段",
+    view: "查看",
+    hide: "隐藏",
 
     danger_zone: "危险区域",
     delete_account: "删除帐户",
@@ -3004,6 +3094,29 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     terms_section6_title: "6. サービスの変更と中断",
     terms_section6_desc:
       "システムメンテナンス、アップグレードなどの理由でサービスが一時的に中断される場合があります。重要な変更は事前に通知します。",
+
+    // Personal Information Section
+    personal_information: "個人情報管理",
+    account_information: "アカウント情報",
+    user_id: "ユーザーID",
+    account_created: "登録日",
+    change_email: "メールアドレス変更",
+    update_email: "メールアドレス更新",
+    new_email: "新しいメールアドレス",
+    current_password: "現在のパスワード",
+    enter_password: "パスワードを入力",
+    updating: "更新中...",
+    update: "更新",
+    email_updated_success: "メールアドレスが正常に変更されました",
+    email_update_error: "メールアドレスの変更中にエラーが発生しました",
+    data_management: "データ管理",
+    data_management_description: "データをダウンロードしてバックアップまたは他のサービスに移行できます",
+    download_my_data: "データをダウンロード",
+    download_data_confirm: "すべてのデータをダウンロードしますか？",
+    not_available: "情報なし",
+    fill_all_fields: "すべてのフィールドを入力してください",
+    view: "表示",
+    hide: "非表示",
 
     danger_zone: "危険ゾーン",
     delete_account: "アカウント削除",
