@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, Plus, Download, Edit, Trash2, Calendar } from "lucide-react"
+import { ArrowLeft, Plus, Download, Edit, Trash2, Calendar, Sparkles } from "lucide-react"
 import { saveSchedules, loadSchedules } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import type { ScheduleEvent, Attachment } from "@/lib/types"
@@ -36,7 +36,6 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
     style: "",
   })
   const [optimizedItinerary, setOptimizedItinerary] = useState<any>(null)
-  // </CHANGE>
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState<{
     title: string
@@ -317,7 +316,6 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
     setIsOptimizingTravel(false)
     alert(t("itinerary_applied"))
   }
-  // </CHANGE>
 
   const exportToCalendar = (schedule: ScheduleEvent) => {
     console.log("[v0] Export button clicked for:", schedule.title)
@@ -478,7 +476,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
             <Button
               onClick={handleOptimizeTravel}
               disabled={optimizing}
-              className="w-full bg-blue-600 hover:bg-blue-700"
+              className="w-full bg-emerald-600 hover:bg-emerald-700"
             >
               {optimizing ? <Spinner className="h-4 w-4 mr-2" /> : null}
               {optimizing ? t("optimizing") : t("generate_itinerary")}
@@ -601,7 +599,6 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
       </div>
     )
   }
-  // </CHANGE>
 
   if (isBatchAdding) {
     return (
@@ -849,18 +846,21 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
             <ArrowLeft className="mr-2 h-4 w-4" /> {t("title")}
           </Button>
           <div className="flex gap-2">
-            <Button onClick={() => setIsBatchAdding(true)} className="bg-green-500 hover:bg-green-600 text-white">
+            <Button onClick={() => setIsBatchAdding(true)} className="bg-emerald-500 hover:bg-emerald-600 text-white">
               <Calendar className="mr-2 h-4 w-4" /> {t("special_days")}
             </Button>
-            <Button onClick={() => setIsAdding(true)} className="bg-green-500 hover:bg-green-600 text-white">
+            <Button onClick={() => setIsAdding(true)} className="bg-emerald-500 hover:bg-emerald-600 text-white">
               <Plus className="mr-2 h-4 w-4" /> {t("add")} {t("schedule")}
             </Button>
           </div>
         </div>
 
         <div className="flex justify-end">
-          <Button onClick={() => setIsOptimizingTravel(true)} className="bg-green-500 hover:bg-green-600 text-white">
-            🤖 {t("ai_travel_optimizer")}
+          <Button
+            onClick={() => setIsOptimizingTravel(true)}
+            className="bg-emerald-500 hover:bg-emerald-600 text-white"
+          >
+            <Sparkles className="mr-2 h-4 w-4" /> {t("ai_travel_optimizer")}
           </Button>
         </div>
       </div>
