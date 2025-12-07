@@ -1106,6 +1106,12 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     radio_description: "다양한 라디오 채널을 들을 수 있습니다.",
     data_backup: "데이터 백업",
     data_backup_description: "모든 데이터를 JSON, CSV, Excel 형식으로 내보내거나 가져올 수 있습니다.",
+    diaries: "일기",
+    schedules: "일정",
+    travel_records: "여행 기록",
+    vehicle_records: "차량 기록",
+    health_records: "건강 기록",
+    legal_information: "법적 정보",
   },
 
   en: {
@@ -1630,6 +1636,12 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     radio_description: "Listen to various radio channels.",
     data_backup: "Data Backup",
     data_backup_description: "Export or import all your data in JSON, CSV, or Excel format.",
+    diaries: "Diaries",
+    schedules: "Schedules",
+    travel_records: "Travel Records",
+    vehicle_records: "Vehicle Records",
+    health_records: "Health Records",
+    legal_information: "Legal Information",
   },
 
   zh: {
@@ -2147,6 +2159,12 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     radio_description: "收听各种广播频道。",
     data_backup: "数据备份",
     data_backup_description: "以JSON、CSV或Excel格式导出或导入所有数据。",
+    diaries: "日记",
+    schedules: "日程",
+    travel_records: "旅行记录",
+    vehicle_records: "车辆记录",
+    health_records: "健康记录",
+    legal_information: "法적 정보",
   },
 
   ja: {
@@ -2670,6 +2688,12 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     radio_description: "様々なラジオチャンネルを聴くことができます。",
     data_backup: "データバックアップ",
     data_backup_description: "すべてのデータをJSON、CSV、Excel形式でエクスポートまたはインポートできます。",
+    diaries: "日記",
+    schedules: "スケジュール",
+    travel_records: "旅行記録",
+    vehicle_records: "車両記録",
+    health_records: "健康記録",
+    legal_information: "法的情報",
   },
 }
 
