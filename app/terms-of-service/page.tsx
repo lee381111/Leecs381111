@@ -75,8 +75,8 @@ export default function TermsOfServicePage() {
           <section className="space-y-4">
             <h2 className="text-2xl font-semibold">{t("customer_support")}</h2>
             <div className="bg-muted p-4 rounded-lg space-y-2">
-              <p className="text-muted-foreground">{t("support_email")}: lee381111@gmail.com</p>
               <p className="text-sm text-muted-foreground">{t("customer_support_description")}</p>
+              <p className="text-muted-foreground">{t("support_email")}: lee381111@gmail.com</p>
             </div>
           </section>
         </Card>
