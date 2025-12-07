@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ForestCanvas } from "@/components/forest-canvas"
+import { AnnouncementBanner } from "@/components/announcement-banner"
 import {
   FileText,
   BookOpen,
@@ -637,6 +638,8 @@ export default function ForestNotePage() {
 
   return (
     <div className="min-h-screen bg-[rgb(220,252,231)] relative overflow-hidden">
+      <AnnouncementBanner language={language} />
+
       <div className="absolute inset-0 opacity-30">
         <ForestCanvas />
       </div>

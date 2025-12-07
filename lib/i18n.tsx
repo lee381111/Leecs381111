@@ -537,6 +537,21 @@ type TranslationKey =
   | "terms_section5_desc"
   | "terms_section6_title"
   | "terms_section6_desc"
+  | "danger_zone"
+  | "delete_account"
+  | "delete_account_title"
+  | "account_deletion_warning"
+  | "delete_account_warning_title"
+  | "delete_warning_1"
+  | "delete_warning_2"
+  | "delete_warning_3"
+  | "delete_account_confirm_instruction"
+  | "delete_account_confirm_phrase"
+  | "delete_account_phrase_mismatch"
+  | "account_deleted_success"
+  | "account_deletion_failed"
+  | "deleting"
+  | "delete_permanently"
 
 const translations: Record<Language, Record<TranslationKey, string>> = {
   ko: {
@@ -1140,6 +1155,22 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     terms_section6_desc:
       "서비스는 시스템 점검, 업그레이드 등의 이유로 일시적으로 중단될 수 있습니다. 중요한 변경사항은 사전에 공지합니다.",
     back: "뒤로 가기",
+
+    danger_zone: "위험 구역",
+    delete_account: "계정 삭제",
+    delete_account_title: "계정 삭제 확인",
+    account_deletion_warning: "경고: 계정을 삭제하면 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.",
+    delete_account_warning_title: "⚠️ 다음 사항을 확인하세요:",
+    delete_warning_1: "모든 일정, 할일, 메모, 일기、예산 등 모든 데이터가 삭제됩니다",
+    delete_warning_2: "삭제된 데이터는 복구할 수 없습니다",
+    delete_warning_3: "계정은 즉시 삭제되며 되돌릴 수 없습니다",
+    delete_account_confirm_instruction: "계속하려면 다음 문구를 정확히 입력하세요:",
+    delete_account_confirm_phrase: "계정을 삭제합니다",
+    delete_account_phrase_mismatch: "입력한 문구가 일치하지 않습니다",
+    account_deleted_success: "계정이 성공적으로 삭제되었습니다",
+    account_deletion_failed: "계정 삭제에 실패했습니다",
+    deleting: "삭제 중...",
+    delete_permanently: "영구 삭제",
   },
 
   en: {
@@ -1747,6 +1778,23 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     terms_section6_title: "6. Service Changes and Interruptions",
     terms_section6_desc:
       "Service may be temporarily suspended for system maintenance, upgrades, etc. Important changes will be announced in advance.",
+
+    danger_zone: "Danger Zone",
+    delete_account: "Delete Account",
+    delete_account_title: "Confirm Account Deletion",
+    account_deletion_warning:
+      "Warning: Deleting your account will permanently delete all data and cannot be recovered.",
+    delete_account_warning_title: "⚠️ Please confirm:",
+    delete_warning_1: "All schedules, todos, notes, diaries, budgets, and other data will be deleted",
+    delete_warning_2: "Deleted data cannot be recovered",
+    delete_warning_3: "Account will be deleted immediately and cannot be undone",
+    delete_account_confirm_instruction: "Type the following phrase exactly to continue:",
+    delete_account_confirm_phrase: "delete my account",
+    delete_account_phrase_mismatch: "The phrase you entered does not match",
+    account_deleted_success: "Account successfully deleted",
+    account_deletion_failed: "Account deletion failed",
+    deleting: "Deleting...",
+    delete_permanently: "Delete Permanently",
   },
 
   zh: {
@@ -2315,6 +2363,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     privacy_right2: "数据导出：在设置中以JSON/CSV格式下载所有数据",
     privacy_right3: "帐户删除：随时可在设置中删除帐户和所有数据",
     privacy_section6_title: "6. 个人信息保护负责人",
+
+    // Terms of Service - Chinese
     terms_last_updated: "最后更新：2025年1月",
     terms_section1_title: "1. 服务定义",
     terms_section1_desc: "记录之森是提供日程、待办事项、备忘录、日记、预算、旅行、车辆、健康管理等功能的网络服务。",
@@ -2335,7 +2385,22 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
       "用户创建的内容的版权归用户所有。服务仅为提供服务目的使用用户内容，未经用户同意不会提供给第三方。",
     terms_section6_title: "6. 服务变更和中断",
     terms_section6_desc: "服务可能因系统检查、升级等原因暂时中断。重要变更将提前通知。",
-    back: "返回",
+
+    danger_zone: "危险区域",
+    delete_account: "删除帐户",
+    delete_account_title: "确认删除帐户",
+    account_deletion_warning: "警告：删除帐户将永久删除所有数据，无法恢复。",
+    delete_account_warning_title: "⚠️ 请确认：",
+    delete_warning_1: "所有日程、待办事项、备忘录、日记、预算等数据将被删除",
+    delete_warning_2: "已删除的数据无法恢复",
+    delete_warning_3: "帐户将立即删除且无法撤销",
+    delete_account_confirm_instruction: "请准确输入以下短语以继续：",
+    delete_account_confirm_phrase: "删除我的帐户",
+    delete_account_phrase_mismatch: "您输入的短语不匹配",
+    account_deleted_success: "帐户已成功删除",
+    account_deletion_failed: "帐户删除失败",
+    deleting: "删除中...",
+    delete_permanently: "永久删除",
   },
 
   ja: {
@@ -2939,6 +3004,22 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     terms_section6_title: "6. サービスの変更と中断",
     terms_section6_desc:
       "システムメンテナンス、アップグレードなどの理由でサービスが一時的に中断される場合があります。重要な変更は事前に通知します。",
+
+    danger_zone: "危険ゾーン",
+    delete_account: "アカウント削除",
+    delete_account_title: "アカウント削除の確認",
+    account_deletion_warning: "警告：アカウントを削除すると、すべてのデータが完全に削除され、復元できません。",
+    delete_account_warning_title: "⚠️ 確認してください：",
+    delete_warning_1: "すべてのスケジュール、タスク、メモ、日記、予算などのデータが削除されます",
+    delete_warning_2: "削除されたデータは復元できません",
+    delete_warning_3: "アカウントは即座に削除され、元に戻すことはできません",
+    delete_account_confirm_instruction: "続行するには、次のフレーズを正確に入力してください：",
+    delete_account_confirm_phrase: "アカウントを削除します",
+    delete_account_phrase_mismatch: "入力したフレーズが一致しません",
+    account_deleted_success: "アカウントが正常に削除されました",
+    account_deletion_failed: "アカウントの削除に失敗しました",
+    deleting: "削除中...",
+    delete_permanently: "完全に削除",
   },
 }
 

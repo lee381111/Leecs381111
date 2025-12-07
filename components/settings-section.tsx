@@ -16,6 +16,9 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
   const [importing, setImporting] = useState(false)
   const [showGuide, setShowGuide] = useState(false)
   const [showExportMenu, setShowExportMenu] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [deleteConfirmText, setDeleteConfirmText] = useState("")
+  const [isDeleting, setIsDeleting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleExport = async () => {
@@ -221,6 +224,55 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
     }
   }
 
+  const handleDeleteAccount = async () => {
+    if (!user?.id) {
+      const lang = language as Language
+      alert(getTranslation(lang, "not_logged_in"))
+      return
+    }
+
+    const lang = language as Language
+    const confirmPhrase = getTranslation(lang, "delete_account_confirm_phrase")
+
+    if (deleteConfirmText !== confirmPhrase) {
+      alert(getTranslation(lang, "delete_account_phrase_mismatch"))
+      return
+    }
+
+    setIsDeleting(true)
+    try {
+      const { createClient } = await import("@/lib/supabase")
+      const supabase = createClient()
+
+      await Promise.all([
+        supabase.from("notes").delete().eq("user_id", user.id),
+        supabase.from("diaries").delete().eq("user_id", user.id),
+        supabase.from("schedules").delete().eq("user_id", user.id),
+        supabase.from("todo_items").delete().eq("user_id", user.id),
+        supabase.from("travel_records").delete().eq("user_id", user.id),
+        supabase.from("health_records").delete().eq("user_id", user.id),
+        supabase.from("medications").delete().eq("user_id", user.id),
+        supabase.from("budget_transactions").delete().eq("user_id", user.id),
+        supabase.from("business_cards").delete().eq("user_id", user.id),
+        supabase.from("vehicles").delete().eq("user_id", user.id),
+      ])
+
+      const { error } = await supabase.auth.admin.deleteUser(user.id)
+
+      if (error) throw error
+
+      alert(getTranslation(lang, "account_deleted_success"))
+
+      await supabase.auth.signOut()
+      window.location.href = "/"
+    } catch (err) {
+      console.error("[v0] Account deletion error:", err)
+      alert(getTranslation(lang, "account_deletion_failed"))
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   const lang = language as Language
 
   const backupRestoreTitle = getTranslation(lang, "backup_restore_title")
@@ -365,6 +417,16 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
         <p className="text-sm text-emerald-700 dark:text-emerald-300">{getTranslation(lang, "developer_info")}</p>
       </Card>
 
+      <Card className="p-6 space-y-4 bg-card border-red-200 dark:border-red-900">
+        <h2 className="text-xl font-bold text-red-600 dark:text-red-400">{getTranslation(lang, "danger_zone")}</h2>
+        <div className="space-y-2">
+          <p className="text-sm text-muted-foreground">{getTranslation(lang, "account_deletion_warning")}</p>
+          <Button onClick={() => setShowDeleteDialog(true)} variant="destructive" className="w-full">
+            {getTranslation(lang, "delete_account")}
+          </Button>
+        </div>
+      </Card>
+
       <Dialog open={showGuide} onOpenChange={setShowGuide}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto bg-white dark:bg-slate-900">
           <DialogHeader>
@@ -467,6 +529,67 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
               </h3>
               <p className="text-muted-foreground">{getTranslation(lang, "data_backup_description")}</p>
             </section>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="max-w-md bg-white dark:bg-slate-900">
+          <DialogHeader>
+            <DialogTitle className="text-red-600 dark:text-red-400">
+              {getTranslation(lang, "delete_account_title")}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="bg-red-50 dark:bg-red-950 p-4 rounded-lg space-y-2">
+              <p className="text-sm font-semibold text-red-800 dark:text-red-200">
+                {getTranslation(lang, "delete_account_warning_title")}
+              </p>
+              <ul className="text-sm text-red-700 dark:text-red-300 list-disc list-inside space-y-1">
+                <li>{getTranslation(lang, "delete_warning_1")}</li>
+                <li>{getTranslation(lang, "delete_warning_2")}</li>
+                <li>{getTranslation(lang, "delete_warning_3")}</li>
+              </ul>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                {getTranslation(lang, "delete_account_confirm_instruction")}
+              </label>
+              <p className="text-sm text-muted-foreground mb-2">
+                "{getTranslation(lang, "delete_account_confirm_phrase")}"
+              </p>
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                className="w-full p-2 border rounded-lg dark:bg-slate-800"
+                placeholder={getTranslation(lang, "delete_account_confirm_phrase")}
+              />
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                onClick={() => {
+                  setShowDeleteDialog(false)
+                  setDeleteConfirmText("")
+                }}
+                variant="outline"
+                className="flex-1"
+                disabled={isDeleting}
+              >
+                {getTranslation(lang, "cancel")}
+              </Button>
+              <Button
+                onClick={handleDeleteAccount}
+                variant="destructive"
+                className="flex-1"
+                disabled={isDeleting || deleteConfirmText !== getTranslation(lang, "delete_account_confirm_phrase")}
+              >
+                {isDeleting ? getTranslation(lang, "deleting") : getTranslation(lang, "delete_permanently")}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
