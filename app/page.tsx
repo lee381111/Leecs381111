@@ -42,6 +42,8 @@ import {
   loadVehicleMaintenanceRecords,
 } from "@/lib/storage"
 import { NotificationCenter } from "@/components/notification-center"
+import { checkUserConsent } from "@/lib/storage"
+import { TermsConsentModal } from "@/components/terms-consent-modal"
 
 const NotesSection = dynamic(() => import("@/components/notes-section").then((m) => ({ default: m.NotesSection })), {
   loading: () => <LoadingSection />,
@@ -384,10 +386,12 @@ export default function ForestNotePage() {
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([])
   const [storageUsed, setStorageUsed] = useState(0)
   const isCalculatingRef = useRef(false)
+  const [needsConsent, setNeedsConsent] = useState(false)
+  const [isCheckingConsent, setIsCheckingConsent] = useState(false)
 
-  const ADMIN_EMAILS = ["chanse1984@hanmail.net", "lee381111@gmail.com"] // 관리자 이메일 목록
+  const ADMIN_EMAILS = ["chanse1984@hanmail.net", "lee381111@gmail.com"]
   const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email) : false
-  const STORAGE_LIMIT = isAdmin ? 1000 * 1024 * 1024 : 500 * 1024 * 1024 // Admin: 1000MB, Others: 500MB
+  const STORAGE_LIMIT = isAdmin ? 1000 * 1024 * 1024 : 500 * 1024 * 1024
 
   console.log(
     "[v0] User email:",
@@ -531,23 +535,33 @@ export default function ForestNotePage() {
     console.log("[v0] Auth state:", { user: user?.email, loading })
   }, [user, loading])
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-          <p className="text-emerald-800">로딩 중...</p>
-        </div>
-      </div>
-    )
+  useEffect(() => {
+    const checkConsent = async () => {
+      if (!user || isCheckingConsent) return
+
+      setIsCheckingConsent(true)
+      try {
+        const hasConsent = await checkUserConsent(user.id)
+        console.log("[v0] User consent check:", hasConsent)
+        setNeedsConsent(!hasConsent)
+      } catch (error) {
+        console.error("[v0] Consent check error:", error)
+        setNeedsConsent(false)
+      } finally {
+        setIsCheckingConsent(false)
+      }
+    }
+
+    checkConsent()
+  }, [user])
+
+  const handleConsentAccept = () => {
+    setNeedsConsent(false)
   }
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 flex items-center justify-center p-6">
-        <LoginForm language={language} onLanguageChange={setLanguage} />
-      </div>
-    )
+  const handleConsentDecline = async () => {
+    await logout()
+    setNeedsConsent(false)
   }
 
   const sections: { id: Section; label: string; icon: any; color: string }[] = [
@@ -583,6 +597,36 @@ export default function ForestNotePage() {
   }
 
   const storagePercentage = (storageUsed / STORAGE_LIMIT) * 100
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+          <p className="text-emerald-800">로딩 중...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 flex items-center justify-center p-6">
+        <LoginForm language={language} onLanguageChange={setLanguage} />
+      </div>
+    )
+  }
+
+  if (needsConsent && user) {
+    return (
+      <TermsConsentModal
+        userId={user.id}
+        userEmail={user.email || ""}
+        onConsent={handleConsentAccept}
+        onDecline={handleConsentDecline}
+      />
+    )
+  }
 
   if (currentSection === "notes") {
     return <NotesSection onBack={() => setCurrentSection("home")} language={language} />

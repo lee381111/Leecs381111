@@ -1520,6 +1520,19 @@ export async function saveUserConsent(
   }
 }
 
+export async function checkUserConsent(userId: string): Promise<boolean> {
+  const supabase = createClient()
+
+  const { data, error } = await supabase.from("user_consents").select("id").eq("user_id", userId).limit(1)
+
+  if (error) {
+    console.error("[v0] Failed to check user consent:", error)
+    return false
+  }
+
+  return data && data.length > 0
+}
+
 // Data Deletion Report for Legal Compliance
 export async function generateDataDeletionReport(userId: string): Promise<string> {
   const supabase = createClient()
