@@ -508,7 +508,6 @@ type TranslationKey =
   | "privacy_section2_title"
   | "privacy_collected1"
   | "privacy_collected2"
-  | "privacy_section3_title"
   | "privacy_storage_desc"
   | "privacy_supabase_desc"
   | "privacy_section4_title"
@@ -554,6 +553,27 @@ type TranslationKey =
   | "delete_permanently"
   | "view_data"
   | "data_export_description"
+  | "personal_information"
+  | "account_information"
+  | "user_id"
+  | "account_created"
+  | "change_email"
+  | "update_email"
+  | "new_email"
+  | "current_password"
+  | "enter_password"
+  | "updating"
+  | "update"
+  | "email_updated_success"
+  | "email_update_error"
+  | "data_management"
+  | "data_management_description"
+  | "download_my_data"
+  | "download_data_confirm"
+  | "not_available"
+  | "fill_all_fields"
+  | "view"
+  | "hide"
 
 const translations: Record<Language, Record<TranslationKey, string>> = {
   ko: {
@@ -571,6 +591,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     date: "날짜",
     back: "뒤로",
     back_to_forest: "숲으로 돌아가기",
+    email: "이메일",
 
     year: "년",
     month: "월",
@@ -1215,6 +1236,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     date: "Date",
     back: "Back",
     back_to_forest: "Back to Forest",
+    email: "Email",
 
     year: "",
     month: "",
@@ -1851,7 +1873,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
 
   zh: {
     // Common
-    title: "记录之森",
+    title: "记录之林",
     loading: "加载中...",
     saving: "保存中...",
     save: "保存",
@@ -1864,6 +1886,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     date: "日期",
     back: "返回",
     back_to_forest: "返回森林",
+    email: "电子邮件",
 
     steps_unit: "步",
     krw_unit: "元",
@@ -2248,7 +2271,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     app_developer: "应用开发者",
     developer_info: "경기도김포시 장기동 이찬세",
     app_introduction: "应用介绍",
-    app_introduction_description: "记录之森是一个一体化记录管理应用，可以在一个地方管理所有日常记录。",
+    app_introduction_description: "记录之林是一个一体化记录管理应用，可以在一个地方管理所有日常记录。",
     notes_description: "自由记录文字、照片、视频和语音。使用标签分类，便于搜索。",
     diaries_description: "记录每天的心情和天气。在日历上一目了然。",
     diaries: "日记",
@@ -2397,7 +2420,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     // Privacy Policy - Chinese
     privacy_last_updated: "最后更新：2025年1月",
     privacy_section1_title: "1. 个人信息收集和使用目的",
-    privacy_section1_intro: "记录之森为以下目的收集和使用个人信息：",
+    privacy_section1_intro: "记录之林为以下目的收集和使用个人信息：",
     privacy_purpose1: "会员注册和认证：基于电子邮件的帐户管理",
     privacy_purpose2: "服务提供：日程、待办事项、备忘录、日记、预算、旅行、车辆、健康信息管理",
     privacy_purpose3: "服务改进和客户支持",
@@ -2495,6 +2518,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     date: "日付",
     back: "戻る",
     back_to_forest: "森に戻る",
+    email: "メールアドレス",
 
     year: "",
     month: "",
