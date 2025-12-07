@@ -534,6 +534,14 @@ type TranslationKey =
   | "terms_obligation3"
   | "terms_section5_title"
   | "terms_section5_desc"
+  | "terms_termination1"
+  | "terms_termination2"
+  | "terms_termination3"
+  | "terms_termination4"
+  | "terms_section6_title"
+  | "privacy_section7_title"
+  | "privacy_termination_desc"
+  | "privacy_data_deletion"
   | "danger_zone"
   | "delete_account"
   | "delete_account_title"
@@ -1030,6 +1038,14 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     terms_obligation3: "계정 정보를 안전하게 관리하기",
     terms_section5_title: "5. 서비스 변경 및 공지",
     terms_section5_desc: "중요한 변경사항은 앱 상단 배너로 사전 공지합니다.",
+    terms_section6_title: "6. 서비스 중단 및 종료",
+    terms_termination1: "운영자는 다음 사유로 서비스를 중단할 수 있습니다: 천재지변, 시스템 장애, 경영상 이유",
+    terms_termination2: "서비스 종료 시 최소 30일 전 앱 상단 배너로 공지합니다",
+    terms_termination3: "종료 공지 후 30일간 데이터 내보내기 기능을 제공합니다",
+    terms_termination4: "무료 서비스이므로 서비스 중단으로 인한 손해배상 책임은 제한됩니다",
+    privacy_section7_title: "7. 서비스 종료 시 개인정보 처리",
+    privacy_termination_desc: "서비스 종료 시 사용자에게 30일 전 공지하며, 데이터 내보내기 기간을 제공합니다.",
+    privacy_data_deletion: "서비스 종료 후 30일 이내에 모든 개인정보를 Supabase 데이터베이스에서 완전히 삭제합니다.",
 
     // Settings section - Personal Information translations for Korean
     personal_information: "개인정보 관리",
@@ -1539,6 +1555,11 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     privacy_right2: "Download data (Settings > Backup/Restore)",
     privacy_right3: "Delete account (Settings > Danger Zone) - All data deleted immediately",
     privacy_section6_title: "6. Data Protection Officer",
+    privacy_section7_title: "7. Personal Information Processing Upon Service Termination",
+    privacy_termination_desc:
+      "Users will be notified 30 days before service termination and provided with data export period.",
+    privacy_data_deletion:
+      "All personal information will be completely deleted from Supabase database within 30 days after service termination.",
 
     // Terms of Service - Simplified English translations
     terms_of_service: "Terms of Service",
@@ -1558,8 +1579,14 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     terms_obligation1: "Do not collect or misuse others' personal information without authorization",
     terms_obligation2: "Do not use the service for illegal purposes",
     terms_obligation3: "Manage account information securely",
-    terms_section5_title: "5. Service Changes and Announcements",
-    terms_section5_desc: "Important changes will be announced in advance via a banner at the top of the app.",
+    terms_section5_title: "5. Service Changes and Notifications",
+    terms_section5_desc: "Important changes will be notified via banner at the top of the app.",
+    terms_section6_title: "6. Service Suspension and Termination",
+    terms_termination1:
+      "The operator may suspend the service for the following reasons: natural disasters, system failures, business reasons",
+    terms_termination2: "Users will be notified at least 30 days in advance via app banner when service terminates",
+    terms_termination3: "Data export feature will be provided for 30 days after termination notice",
+    terms_termination4: "As a free service, liability for damages from service termination is limited",
 
     // Settings section - Personal Information translations for English
     personal_information: "Personal Information",
@@ -2063,6 +2090,9 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     privacy_right2: "下载数据（设置 > 备份/恢复）",
     privacy_right3: "删除账户（设置 > 危险区域）- 立即删除所有数据",
     privacy_section6_title: "6. 保护负责人",
+    privacy_section7_title: "7. 服务终止时的个人信息处理",
+    privacy_termination_desc: "服务终止前30天通知用户，并提供数据导出期限。",
+    privacy_data_deletion: "服务终止后30天内从Supabase数据库中完全删除所有个人信息。",
 
     // Terms of Service - Simplified Chinese translations
     terms_of_service: "服务条款",
@@ -2081,8 +2111,13 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     terms_obligation1: "不得非法收集或盗用他人个人信息",
     terms_obligation2: "不得将服务用于非法目的",
     terms_obligation3: "安全管理账户信息",
-    terms_section5_title: "5. 服务变更与通知",
-    terms_section5_desc: "重要变更将通过应用顶部横幅提前通知。",
+    terms_section5_title: "5. 服务变更和通知",
+    terms_section5_desc: "重要变更将通过应用顶部横幅通知。",
+    terms_section6_title: "6. 服务暂停和终止",
+    terms_termination1: "运营商可能因以下原因暂停服务：自然灾害、系统故障、经营原因",
+    terms_termination2: "服务终止时将提前至少30天通过应用横幅通知",
+    terms_termination3: "通知后30天内提供数据导出功能",
+    terms_termination4: "作为免费服务，服务中断造成的损害赔偿责任有限",
 
     // Settings section - Personal Information translations for Chinese
     personal_information: "个人信息管理",
@@ -2591,6 +2626,9 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     privacy_right2: "データのダウンロード（設定 > バックアップ/復元）",
     privacy_right3: "アカウント削除（設定 > 危険ゾーン）- すべてのデータを即座に削除",
     privacy_section6_title: "6. 保護責任者",
+    privacy_section7_title: "7. サービス終了時の個人情報処理",
+    privacy_termination_desc: "サービス終了の30日前にユーザーに通知し、データエクスポート期間を提供します。",
+    privacy_data_deletion: "サービス終了後30日以内にSupabaseデータベースからすべての個人情報を完全に削除します。",
 
     // Terms of Service - Simplified Japanese translations
     terms_of_service: "利用規約",
@@ -2610,11 +2648,16 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     terms_obligation1: "他人の個人情報を無断で収集または盗用しない",
     terms_obligation2: "サービスを違法な目的で使用しない",
     terms_obligation3: "アカウント情報を安全に管理する",
-    terms_section5_title: "5. サービス変更と通知",
+    terms_section5_title: "5. サービスの変更と通知",
     terms_section5_desc: "重要な変更は、アプリ上部のバナーで事前にお知らせします。",
+    terms_section6_title: "6. サービスの中断と終了",
+    terms_termination1: "運営者は次の理由でサービスを中断できます：天災、システム障害、経営上の理由",
+    terms_termination2: "サービス終了時は少なくとも30日前にアプリバナーで通知します",
+    terms_termination3: "通知後30日間データエクスポート機能を提供します",
+    terms_termination4: "無料サービスのため、サービス中断による損害賠償責任は制限されます",
 
     // Settings section - Personal Information translations for Japanese
-    personal_information: "個人情報",
+    personal_information: "個人情報管理",
     view: "表示",
     hide: "非表示",
     account_information: "アカウント情報",

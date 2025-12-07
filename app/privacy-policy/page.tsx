@@ -85,6 +85,15 @@ export default function PrivacyPolicyPage() {
               <p className="text-muted-foreground">{t("support_email")}: lee381111@gmail.com</p>
             </div>
           </section>
+
+          {/* 7. 서비스 종료 시 개인정보 처리 */}
+          <section className="space-y-4">
+            <h2 className="text-2xl font-semibold">{t("privacy_section7_title")}</h2>
+            <p className="text-muted-foreground">{t("privacy_termination_desc")}</p>
+            <div className="bg-red-50 dark:bg-red-950 p-4 rounded-lg space-y-2">
+              <p className="text-sm text-muted-foreground">{t("privacy_data_deletion")}</p>
+            </div>
+          </section>
         </Card>
       </div>
     </div>
