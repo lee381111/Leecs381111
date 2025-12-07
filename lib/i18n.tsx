@@ -551,29 +551,21 @@ type TranslationKey =
   | "account_deletion_failed"
   | "deleting"
   | "delete_permanently"
-  | "view_data"
-  | "data_export_description"
-  | "personal_information"
-  | "account_information"
-  | "user_id"
-  | "account_created"
-  | "change_email"
-  | "update_email"
-  | "new_email"
-  | "current_password"
-  | "enter_password"
-  | "updating"
-  | "update"
-  | "email_updated_success"
-  | "email_update_error"
-  | "data_management"
-  | "data_management_description"
-  | "download_my_data"
-  | "download_data_confirm"
-  | "not_available"
-  | "fill_all_fields"
-  | "view"
-  | "hide"
+  | "announcement_management"
+  | "new_announcement"
+  | "edit_announcement"
+  | "announcement_message"
+  | "announcement_message_placeholder"
+  | "announcement_type"
+  | "type_info"
+  | "type_warning"
+  | "type_success"
+  | "expires_at"
+  | "active_announcements"
+  | "no_announcements"
+  | "expires"
+  | "save_success"
+  | "save_failed"
 
 const translations: Record<Language, Record<TranslationKey, string>> = {
   ko: {
@@ -1086,7 +1078,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     maintenance_saved: "정비 기록이 저장되었습니다",
     delete_maintenance_confirm: "이 정비 기록을 삭제하시겠습니까?",
     maintenance_history: "정비 내역",
-    attachments: "첨부파일",
     attachments_count: "개",
     no_records: "기록 없음",
 
@@ -1127,98 +1118,24 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     customer_support: "고객 지원",
     customer_support_description: "서비스 이용 중 문의사항이나 문제가 발생하면 언제든지 연락해 주세요.",
     support_email: "지원 이메일",
-    legal_information: "법적 정보",
-    privacy_policy: "개인정보처리방침",
-    terms_of_service: "이용약관",
 
-    // Privacy Policy - Korean
-    privacy_last_updated: "최종 업데이트: 2025년 1월",
-    privacy_section1_title: "1. 개인정보의 수집 및 이용 목적",
-    privacy_section1_intro: "기록의 숲은 다음의 목적을 위해 개인정보를 수집하고 이용합니다:",
-    privacy_purpose1: "회원 가입 및 인증: 이메일 기반 계정 관리",
-    privacy_purpose2: "서비스 제공: 일정, 할일, 메모, 일기, 예산, 여행, 차량, 건강 정보 관리",
-    privacy_purpose3: "서비스 개선 및 고객 지원",
-    privacy_section2_title: "2. 수집하는 개인정보 항목",
-    privacy_collected1: "필수: 이메일 주소, 암호화된 비밀번호",
-    privacy_collected2: "자동 수집: 서비스 이용 기록, IP 주소, 쿠키",
-    privacy_section3_title: "3. 개인정보 저장 및 관리",
-    privacy_storage_desc: "모든 개인정보는 Supabase(미국 기반 클라우드 서비스)에 안전하게 저장됩니다.",
-    privacy_supabase_desc:
-      "Supabase는 SOC2 Type 2 및 GDPR 인증을 받은 서비스로, 엔터프라이즈급 보안을 제공합니다. 데이터는 암호화되어 저장되며, 접근 권한은 엄격하게 관리됩니다.",
-    privacy_section4_title: "4. 개인정보의 보유 기간",
-    privacy_retention_desc:
-      "회원 탈퇴 시까지 보유하며, 탈퇴 시 즉시 삭제됩니다. 설정 섹션에서 언제든지 계정을 삭제할 수 있습니다.",
-    privacy_section5_title: "5. 사용자의 권리",
-    privacy_right1: "개인정보 열람 및 수정: 설정 섹션에서 언제든 확인 및 수정 가능",
-    privacy_right2: "데이터 내보내기: 설정 섹션에서 모든 데이터를 JSON/CSV 형식으로 다운로드 가능",
-    privacy_right3: "계정 삭제: 설정 섹션에서 언제든 계정 및 모든 데이터 삭제 가능",
-    privacy_section6_title: "6. 개인정보 보호책임자",
-
-    // Terms of Service - Korean
-    terms_last_updated: "최종 업데이트: 2025년 1월",
-    terms_section1_title: "1. 서비스 정의",
-    terms_section1_desc:
-      "기록의 숲(Forest of Records)은 일정, 할일, 메모, 일기, 예산, 여행, 차량, 건강 관리 등의 기능을 제공하는 웹 기반 서비스입니다.",
-    terms_section2_title: "2. 회원가입",
-    terms_section2_desc: "누구나 이메일 주소만으로 자유롭게 회원가입할 수 있습니다. 연령, 지역, 기타 제약이 없습니다.",
-    terms_section3_title: "3. 제공하는 서비스",
-    terms_service1: "일정 및 할일 관리",
-    terms_service2: "메모 및 일기 작성",
-    terms_service3: "예산 및 가계부 관리",
-    terms_service4: "여행 기록 및 계획",
-    terms_service5: "차량 정비 기록, 건강 정보 추적, 명함 관리 등",
-    terms_section4_title: "4. 사용자의 의무",
-    terms_obligation1: "타인의 개인정보를 도용하거나 허위 정보를 입력하지 않을 것",
-    terms_obligation2: "서비스를 불법적인 목적으로 사용하지 않을 것",
-    terms_obligation3: "타인에게 피해를 주거나 서비스 운영을 방해하지 않을 것",
-    terms_section5_title: "5. 저작권",
-    terms_section5_desc:
-      "사용자가 작성한 콘텐츠의 저작권은 사용자에게 있습니다. 서비스는 사용자의 콘텐츠를 서비스 제공 목적으로만 사용하며, 사용자 동의 없이 제3자에게 제공하지 않습니다.",
-    terms_section6_title: "6. 서비스 변경 및 중단",
-    terms_section6_desc:
-      "서비스는 시스템 점검, 업그레이드 등의 이유로 일시적으로 중단될 수 있습니다. 중요한 변경사항은 사전에 공지합니다.",
-    back: "뒤로 가기",
-
-    // Personal Information Section
-    personal_information: "개인정보 관리",
-    account_information: "계정 정보",
-    user_id: "사용자 ID",
-    account_created: "가입일",
-    change_email: "이메일 변경",
-    update_email: "이메일 수정",
-    new_email: "새 이메일",
-    current_password: "현재 비밀번호",
-    enter_password: "비밀번호를 입력하세요",
-    updating: "업데이트 중...",
-    update: "수정",
-    email_updated_success: "이메일이 성공적으로 변경되었습니다",
-    email_update_error: "이메일 변경 중 오류가 발생했습니다",
-    data_management: "데이터 관리",
-    data_management_description: "내 데이터를 다운로드하여 백업하거나 다른 서비스로 이동할 수 있습니다",
-    download_my_data: "내 데이터 다운로드",
-    download_data_confirm: "모든 데이터를 다운로드하시겠습니까?",
-    not_available: "정보 없음",
-    fill_all_fields: "모든 필드를 입력해주세요",
-    view: "보기",
-    hide: "숨기기",
-    view_data: "데이터 열람",
-    data_export_description: "위의 백업/복원 섹션을 사용하여 데이터를 내보낼 수 있습니다",
-
-    danger_zone: "위험 구역",
-    delete_account: "계정 삭제",
-    delete_account_title: "계정 삭제 확인",
-    account_deletion_warning: "경고: 계정을 삭제하면 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.",
-    delete_account_warning_title: "⚠️ 다음 사항을 확인하세요:",
-    delete_warning_1: "모든 일정, 할일, 메모, 일기、예산 등 모든 데이터가 삭제됩니다",
-    delete_warning_2: "삭제된 데이터는 복구할 수 없습니다",
-    delete_warning_3: "계정은 즉시 삭제되며 되돌릴 수 없습니다",
-    delete_account_confirm_instruction: "계속하려면 다음 문구를 정확히 입력하세요:",
-    delete_account_confirm_phrase: "계정을 삭제합니다",
-    delete_account_phrase_mismatch: "입력한 문구가 일치하지 않습니다",
-    account_deleted_success: "계정이 성공적으로 삭제되었습니다",
-    account_deletion_failed: "계정 삭제에 실패했습니다",
-    deleting: "삭제 중...",
-    delete_permanently: "영구 삭제",
+    // Announcement Management
+    announcement_management: "공지사항 관리",
+    new_announcement: "새 공지사항",
+    edit_announcement: "공지사항 수정",
+    announcement_message: "공지 메시지",
+    announcement_message_placeholder: "사용자에게 표시될 공지 내용을 입력하세요",
+    announcement_type: "공지 유형",
+    type_info: "정보 (파란색)",
+    type_warning: "경고 (노란색)",
+    type_success: "성공 (녹색)",
+    expires_at: "만료일 (선택사항)",
+    active_announcements: "활성 공지사항",
+    no_announcements: "등록된 공지사항이 없습니다",
+    expires: "만료",
+    save_success: "저장되었습니다!",
+    save_failed: "저장에 실패했습니다",
+    delete_failed: "삭제에 실패했습니다",
   },
 
   en: {
@@ -1734,7 +1651,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     maintenance_saved: "Maintenance record saved",
     delete_maintenance_confirm: "Delete this maintenance record?",
     maintenance_history: "Maintenance History",
-    attachments: "Attachments",
     attachments_count: "file(s)",
     no_records: "No records",
 
@@ -1773,102 +1689,25 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
 
     // Added translations
     customer_support: "Customer Support",
-    customer_support_description: "Contact us anytime if you have questions or issues using the service.",
+    customer_support_description: "Please contact us anytime if you have questions or issues while using the service.",
     support_email: "Support Email",
-    legal_information: "Legal Information",
-    privacy_policy: "Privacy Policy",
-    terms_of_service: "Terms of Service",
 
-    // Privacy Policy - English
-    privacy_last_updated: "Last Updated: January 2025",
-    privacy_section1_title: "1. Purpose of Personal Information Collection",
-    privacy_section1_intro: "Forest of Records collects and uses personal information for the following purposes:",
-    privacy_purpose1: "Account registration and authentication: Email-based account management",
-    privacy_purpose2:
-      "Service provision: Schedule, todo, memo, diary, budget, travel, vehicle, health information management",
-    privacy_purpose3: "Service improvement and customer support",
-    privacy_section2_title: "2. Personal Information Collected",
-    privacy_collected1: "Required: Email address, encrypted password",
-    privacy_collected2: "Automatically collected: Service usage logs, IP address, cookies",
-    privacy_section3_title: "3. Personal Information Storage and Management",
-    privacy_storage_desc: "All personal information is securely stored on Supabase (US-based cloud service).",
-    privacy_supabase_desc:
-      "Supabase is SOC2 Type 2 and GDPR certified, providing enterprise-grade security. Data is encrypted at rest and access is strictly controlled.",
-    privacy_section4_title: "4. Personal Information Retention Period",
-    privacy_retention_desc:
-      "Retained until account deletion. Upon deletion, data is immediately removed. You can delete your account anytime from the Settings section.",
-    privacy_section5_title: "5. User Rights",
-    privacy_right1: "View and edit personal information: Available anytime in Settings",
-    privacy_right2: "Data export: Download all data in JSON/CSV format from Settings",
-    privacy_right3: "Account deletion: Delete account and all data anytime from Settings",
-    privacy_section6_title: "6. Data Protection Officer",
-
-    // Terms of Service - English
-    terms_last_updated: "Last Updated: January 2025",
-    terms_section1_title: "1. Service Definition",
-    terms_section1_desc:
-      "Forest of Records is a web-based service providing schedule, todo, memo, diary, budget, travel, vehicle, health management features.",
-    terms_section2_title: "2. Registration",
-    terms_section2_desc:
-      "Anyone can freely register with just an email address. No age, location, or other restrictions.",
-    terms_section3_title: "3. Services Provided",
-    terms_service1: "Schedule and todo management",
-    terms_service2: "Memo and diary writing",
-    terms_service3: "Budget and expense management",
-    terms_service4: "Travel records and planning",
-    terms_service5: "Vehicle maintenance records, health tracking, business card management, etc.",
-    terms_section4_title: "4. User Obligations",
-    terms_obligation1: "Do not steal others' personal information or enter false information",
-    terms_obligation2: "Do not use the service for illegal purposes",
-    terms_obligation3: "Do not harm others or interfere with service operations",
-    terms_section5_title: "5. Copyright",
-    terms_section5_desc:
-      "Users retain copyright of their content. The service uses user content only for service provision and will not share with third parties without consent.",
-    terms_section6_title: "6. Service Changes and Interruptions",
-    terms_section6_desc:
-      "Service may be temporarily suspended for system maintenance, upgrades, etc. Important changes will be announced in advance.",
-
-    // Personal Information Section
-    personal_information: "Personal Information",
-    account_information: "Account Information",
-    user_id: "User ID",
-    account_created: "Account Created",
-    change_email: "Change Email",
-    update_email: "Update Email",
-    new_email: "New Email",
-    current_password: "Current Password",
-    enter_password: "Enter password",
-    updating: "Updating...",
-    update: "Update",
-    email_updated_success: "Email successfully updated",
-    email_update_error: "Error updating email",
-    data_management: "Data Management",
-    data_management_description: "Download your data to back up or move to another service",
-    download_my_data: "Download My Data",
-    download_data_confirm: "Download all data?",
-    not_available: "Not available",
-    fill_all_fields: "Please fill all fields",
-    view: "View",
-    hide: "Hide",
-    view_data: "View Data",
-    data_export_description: "You can export data using the Backup/Restore section above",
-
-    danger_zone: "Danger Zone",
-    delete_account: "Delete Account",
-    delete_account_title: "Confirm Account Deletion",
-    account_deletion_warning:
-      "Warning: Deleting your account will permanently delete all data and cannot be recovered.",
-    delete_account_warning_title: "⚠️ Please confirm:",
-    delete_warning_1: "All schedules, todos, notes, diaries, budgets, and other data will be deleted",
-    delete_warning_2: "Deleted data cannot be recovered",
-    delete_warning_3: "Account will be deleted immediately and cannot be undone",
-    delete_account_confirm_instruction: "Type the following phrase exactly to continue:",
-    delete_account_confirm_phrase: "delete my account",
-    delete_account_phrase_mismatch: "The phrase you entered does not match",
-    account_deleted_success: "Account successfully deleted",
-    account_deletion_failed: "Account deletion failed",
-    deleting: "Deleting...",
-    delete_permanently: "Delete Permanently",
+    // Announcement Management
+    announcement_management: "Announcement Management",
+    new_announcement: "New Announcement",
+    edit_announcement: "Edit Announcement",
+    announcement_message: "Announcement Message",
+    announcement_message_placeholder: "Enter the message to display to users",
+    announcement_type: "Announcement Type",
+    type_info: "Info (Blue)",
+    type_warning: "Warning (Yellow)",
+    type_success: "Success (Green)",
+    expires_at: "Expires At (Optional)",
+    active_announcements: "Active Announcements",
+    no_announcements: "No announcements registered",
+    expires: "Expires",
+    save_success: "Saved successfully!",
+    save_failed: "Failed to save",
   },
 
   zh: {
@@ -2372,7 +2211,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     maintenance_saved: "维修记录已保存",
     delete_maintenance_confirm: "删除此维修记录？",
     maintenance_history: "维修历史",
-    attachments: "附件",
     attachments_count: "个",
     no_records: "没有记录",
 
@@ -2411,96 +2249,25 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
 
     // Added translations
     customer_support: "客户支持",
-    customer_support_description: "如果您在使用服务时有任何疑问或问题，请随时联系我们。",
+    customer_support_description: "使用服务时如有疑问或问题，请随时联系我们。",
     support_email: "支持邮箱",
-    legal_information: "法律信息",
-    privacy_policy: "隐私政策",
-    terms_of_service: "服务条款",
 
-    // Privacy Policy - Chinese
-    privacy_last_updated: "最后更新：2025年1月",
-    privacy_section1_title: "1. 个人信息收集和使用目的",
-    privacy_section1_intro: "记录之林为以下目的收集和使用个人信息：",
-    privacy_purpose1: "会员注册和认证：基于电子邮件的帐户管理",
-    privacy_purpose2: "服务提供：日程、待办事项、备忘录、日记、预算、旅行、车辆、健康信息管理",
-    privacy_purpose3: "服务改进和客户支持",
-    privacy_section2_title: "2. 收集的个人信息项目",
-    privacy_collected1: "必需：电子邮件地址、加密密码",
-    privacy_collected2: "自动收集：服务使用记录、IP地址、Cookie",
-    privacy_section3_title: "3. 个人信息存储和管理",
-    privacy_storage_desc: "所有个人信息都安全地存储在Supabase（美国云服务）上。",
-    privacy_supabase_desc:
-      "Supabase已获得SOC2 Type 2和GDPR认证，提供企业级安全。数据经过加密存储，访问权限受到严格控制。",
-    privacy_section4_title: "4. 个人信息保留期限",
-    privacy_retention_desc: "保留至帐户删除为止。删除后立即删除数据。您可以随时从设置部分删除帐户。",
-    privacy_section5_title: "5. 用户权利",
-    privacy_right1: "查看和编辑个人信息：随时可在设置中查看和修改",
-    privacy_right2: "数据导出：在设置中以JSON/CSV格式下载所有数据",
-    privacy_right3: "帐户删除：随时可在设置中删除帐户和所有数据",
-    privacy_section6_title: "6. 个人信息保护负责人",
-
-    // Terms of Service - Chinese
-    terms_last_updated: "最后更新：2025年1月",
-    terms_section1_title: "1. 服务定义",
-    terms_section1_desc: "记录之森是提供日程、待办事项、备忘录、日记、预算、旅行、车辆、健康管理等功能的网络服务。",
-    terms_section2_title: "2. 会员注册",
-    terms_section2_desc: "任何人都可以仅使用电子邮件地址自由注册。没有年龄、地区或其他限制。",
-    terms_section3_title: "3. 提供的服务",
-    terms_service1: "日程和待办事项管理",
-    terms_service2: "备忘录和日记撰写",
-    terms_service3: "预算和账簿管理",
-    terms_service4: "旅行记录和计划",
-    terms_service5: "车辆维护记录、健康信息跟踪、名片管理等",
-    terms_section4_title: "4. 用户义务",
-    terms_obligation1: "不得盗用他人个人信息或输入虚假信息",
-    terms_obligation2: "不得将服务用于非法目的",
-    terms_obligation3: "不得伤害他人或妨碍服务运营",
-    terms_section5_title: "5. 版权",
-    terms_section5_desc:
-      "用户创建的内容的版权归用户所有。服务仅为提供服务目的使用用户内容，未经用户同意不会提供给第三方。",
-    terms_section6_title: "6. 服务变更和中断",
-    terms_section6_desc: "服务可能因系统检查、升级等原因暂时中断。重要变更将提前通知。",
-
-    // Personal Information Section
-    personal_information: "个人信息管理",
-    account_information: "帐户信息",
-    user_id: "用户ID",
-    account_created: "注册日期",
-    change_email: "更改电子邮件",
-    update_email: "更新电子邮件",
-    new_email: "新电子邮件",
-    current_password: "当前密码",
-    enter_password: "输入密码",
-    updating: "更新中...",
-    update: "更新",
-    email_updated_success: "电子邮件已成功更改",
-    email_update_error: "更改电子邮件时出错",
-    data_management: "数据管理",
-    data_management_description: "下载您的数据以备份或移至其他服务",
-    download_my_data: "下载我的数据",
-    download_data_confirm: "下载所有数据？",
-    not_available: "无信息",
-    fill_all_fields: "请填写所有字段",
-    view: "查看",
-    hide: "隐藏",
-    view_data: "查看数据",
-    data_export_description: "您可以使用上面的备份/恢复部分导出数据",
-
-    danger_zone: "危险区",
-    delete_account: "删除帐户",
-    delete_account_title: "确认删除帐户",
-    account_deletion_warning: "警告：删除帐户将永久删除所有数据，无法恢复。",
-    delete_account_warning_title: "⚠️ 请确认：",
-    delete_warning_1: "所有日程、待办事项、备忘录、日记、预算等数据将被删除",
-    delete_warning_2: "已删除的数据无法恢复",
-    delete_warning_3: "帐户将立即删除且无法撤销",
-    delete_account_confirm_instruction: "请准确输入以下短语以继续：",
-    delete_account_confirm_phrase: "删除我的帐户",
-    delete_account_phrase_mismatch: "您输入的短语不匹配",
-    account_deleted_success: "帐户已成功删除",
-    account_deletion_failed: "帐户删除失败",
-    deleting: "删除中...",
-    delete_permanently: "永久删除",
+    // Announcement Management
+    announcement_management: "公告管理",
+    new_announcement: "新公告",
+    edit_announcement: "编辑公告",
+    announcement_message: "公告消息",
+    announcement_message_placeholder: "输入要向用户显示的公告内容",
+    announcement_type: "公告类型",
+    type_info: "信息（蓝色）",
+    type_warning: "警告（黄色）",
+    type_success: "成功（绿色）",
+    expires_at: "过期日期（可选）",
+    active_announcements: "活跃公告",
+    no_announcements: "没有注册的公告",
+    expires: "过期",
+    save_success: "保存成功！",
+    save_failed: "保存失败",
   },
 
   ja: {
@@ -3014,7 +2781,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     maintenance_saved: "整備記録が保存されました",
     delete_maintenance_confirm: "この整備記録を削除しますか？",
     maintenance_history: "整備履歴",
-    attachments: "添付ファイル",
     attachments_count: "個",
     no_records: "記録がありません",
 
@@ -3055,97 +2821,23 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     customer_support: "カスタマーサポート",
     customer_support_description: "サービスのご利用中にご質問や問題が発生した場合は、いつでもお問い合わせください。",
     support_email: "サポートメール",
-    legal_information: "法的情報",
-    privacy_policy: "プライバシーポリシー",
-    terms_of_service: "利用規約",
 
-    // Privacy Policy - Japanese
-    privacy_last_updated: "最終更新：2025年1月",
-    privacy_section1_title: "1. 個人情報の収集および利用目的",
-    privacy_section1_intro: "記録の森は、以下の目的で個人情報を収集・利用します：",
-    privacy_purpose1: "会員登録と認証：メールベースのアカウント管理",
-    privacy_purpose2: "サービス提供：スケジュール、タスク、メモ、日記、予算、旅行、車両、健康情報管理",
-    privacy_purpose3: "サービス改善とカスタマーサポート",
-    privacy_section2_title: "2. 収集する個人情報項目",
-    privacy_collected1: "必須：メールアドレス、暗号化パスワード",
-    privacy_collected2: "自動収集：サービス利用記録、IPアドレス、クッキー",
-    privacy_section3_title: "3. 個人情報の保管と管理",
-    privacy_storage_desc: "すべての個人情報はSupabase（米国クラウドサービス）に安全に保管されます。",
-    privacy_supabase_desc:
-      "SupabaseはSOC2 Type 2およびGDPR認証を取得しており、エンタープライズグレードのセキュリティを提供します。データは暗号化され、アクセス権限は厳格に管理されます。",
-    privacy_section4_title: "4. 個人情報の保有期間",
-    privacy_retention_desc:
-      "アカウント削除まで保有し、削除時に即座に削除されます。設定からいつでもアカウントを削除できます。",
-    privacy_section5_title: "5. ユーザーの権利",
-    privacy_right1: "個人情報の閲覧と編集：設定からいつでも確認・修正可能",
-    privacy_right2: "データエクスポート：設定からJSON/CSV形式ですべてのデータをダウンロード可能",
-    privacy_right3: "アカウント削除：設定からいつでもアカウントとすべてのデータを削除可能",
-    privacy_section6_title: "6. データ保護責任者",
-
-    // Terms of Service - Japanese
-    terms_last_updated: "最終更新：2025年1月",
-    terms_section1_title: "1. サービス定義",
-    terms_section1_desc:
-      "記録の森は、スケジュール、タスク、メモ、日記、予算、旅行、車両、健康管理機能を提供するウェブベースのサービスです。",
-    terms_section2_title: "2. 会員登録",
-    terms_section2_desc: "誰でもメールアドレスだけで自由に登録できます。年齢、地域、その他の制限はありません。",
-    terms_section3_title: "3. 提供するサービス",
-    terms_service1: "スケジュールとタスク管理",
-    terms_service2: "メモと日記作成",
-    terms_service3: "予算と支出管理",
-    terms_service4: "旅行記録と計画",
-    terms_service5: "車両整備記録、健康追跡、名刺管理など",
-    terms_section4_title: "4. ユーザーの義務",
-    terms_obligation1: "他人の個人情報を盗用したり虚偽情報を入力しないこと",
-    terms_obligation2: "サービスを不法な目的で使用しないこと",
-    terms_obligation3: "他人に害を与えたりサービス運営を妨害しないこと",
-    terms_section5_title: "5. 著作権",
-    terms_section5_desc:
-      "ユーザーが作成したコンテンツの著作権はユーザーに帰属します。サービスはユーザーのコンテンツをサービス提供目的でのみ使用し、同意なしに第三者と共有しません。",
-    terms_section6_title: "6. サービスの変更と中断",
-    terms_section6_desc:
-      "システムメンテナンス、アップグレードなどの理由でサービスが一時的に中断される場合があります。重要な変更は事前に通知します。",
-
-    // Personal Information Section
-    personal_information: "個人情報管理",
-    account_information: "アカウント情報",
-    user_id: "ユーザーID",
-    account_created: "登録日",
-    change_email: "メールアドレス変更",
-    update_email: "メールアドレス更新",
-    new_email: "新しいメールアドレス",
-    current_password: "現在のパスワード",
-    enter_password: "パスワードを入力",
-    updating: "更新中...",
-    update: "更新",
-    email_updated_success: "メールアドレスが正常に変更されました",
-    email_update_error: "メールアドレスの変更中にエラーが発生しました",
-    data_management: "データ管理",
-    data_management_description: "データをダウンロードしてバックアップまたは他のサービスに移行できます",
-    download_my_data: "データをダウンロード",
-    download_data_confirm: "すべてのデータをダウンロードしますか？",
-    not_available: "情報なし",
-    fill_all_fields: "すべてのフィールドを入力してください",
-    view: "表示",
-    hide: "非表示",
-    view_data: "データ閲覧",
-    data_export_description: "上記のバックアップ/復元セクションを使用してデータをエクスポートできます",
-
-    danger_zone: "危険ゾーン",
-    delete_account: "アカウント削除",
-    delete_account_title: "アカウント削除の確認",
-    account_deletion_warning: "警告：アカウントを削除すると、すべてのデータが完全に削除され、復元できません。",
-    delete_account_warning_title: "⚠️ 確認してください：",
-    delete_warning_1: "すべてのスケジュール、タスク、メモ、日記、予算などのデータが削除されます",
-    delete_warning_2: "削除されたデータは復元できません",
-    delete_warning_3: "アカウントは即座に削除され、元に戻すことはできません",
-    delete_account_confirm_instruction: "続行するには、次のフレーズを正確に入力してください：",
-    delete_account_confirm_phrase: "アカウントを削除します",
-    delete_account_phrase_mismatch: "入力したフレーズが一致しません",
-    account_deleted_success: "アカウントが正常に削除されました",
-    account_deletion_failed: "アカウントの削除に失敗しました",
-    deleting: "削除中...",
-    delete_permanently: "完全に削除",
+    // Announcement Management
+    announcement_management: "お知らせ管理",
+    new_announcement: "新しいお知らせ",
+    edit_announcement: "お知らせを編集",
+    announcement_message: "お知らせメッセージ",
+    announcement_message_placeholder: "ユーザーに表示するメッセージを入力してください",
+    announcement_type: "お知らせタイプ",
+    type_info: "情報（青）",
+    type_warning: "警告（黄）",
+    type_success: "成功（緑）",
+    expires_at: "有効期限（任意）",
+    active_announcements: "アクティブなお知らせ",
+    no_announcements: "登録されたお知らせがありません",
+    expires: "有効期限",
+    save_success: "保存されました！",
+    save_failed: "保存に失敗しました",
   },
 }
 

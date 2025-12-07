@@ -2,14 +2,24 @@
 
 import type React from "react"
 import { useAuth } from "@/lib/auth-context"
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { ArrowLeft, Download, Upload, BookOpen, CheckCircle2, FileJson, FileSpreadsheet, FileText } from "lucide-react"
-import { exportAllData, importAllData } from "@/lib/storage"
+import { Card, CardContent } from "@/components/ui/card"
+import {
+  ArrowLeft,
+  Download,
+  Upload,
+  BookOpen,
+  CheckCircle2,
+  FileJson,
+  FileSpreadsheet,
+  FileText,
+  ChevronDown,
+} from "lucide-react"
+import { exportAllData, importAllData, loadAllAnnouncements, saveAnnouncement, deleteAnnouncement } from "@/lib/storage"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { getTranslation } from "@/lib/i18n"
-import type { Language } from "@/lib/types"
+import type { Language, Announcement } from "@/lib/types"
 
 export function SettingsSection({ onBack, language }: { onBack: () => void; language: string }) {
   const { user } = useAuth()
@@ -24,6 +34,14 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
   const [newEmail, setNewEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isUpdating, setIsUpdating] = useState(false)
+  const [showAnnouncementPanel, setShowAnnouncementPanel] = useState(false)
+  const [announcements, setAnnouncements] = useState<Announcement[]>([])
+  const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null)
+  const [announcementForm, setAnnouncementForm] = useState({
+    message: "",
+    type: "info" as "info" | "warning" | "success",
+    expiresAt: "",
+  })
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleExport = async () => {
@@ -344,6 +362,61 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
     }
   }
 
+  useEffect(() => {
+    if (user && showAnnouncementPanel) {
+      loadAllAnnouncements(user.id).then(setAnnouncements)
+    }
+  }, [user, showAnnouncementPanel])
+
+  const handleSaveAnnouncement = async () => {
+    if (!user || !announcementForm.message.trim()) return
+
+    try {
+      const announcement: Announcement = {
+        id: editingAnnouncement?.id || crypto.randomUUID(),
+        message: announcementForm.message,
+        type: announcementForm.type,
+        isActive: true,
+        expiresAt: announcementForm.expiresAt || undefined,
+        createdAt: editingAnnouncement?.createdAt || new Date().toISOString(),
+        createdBy: user.id,
+      }
+
+      await saveAnnouncement(announcement, user.id)
+      const updated = await loadAllAnnouncements(user.id)
+      setAnnouncements(updated)
+      setAnnouncementForm({ message: "", type: "info", expiresAt: "" })
+      setEditingAnnouncement(null)
+      alert(getTranslation(language, "save_success"))
+    } catch (error) {
+      console.error("[v0] Failed to save announcement:", error)
+      alert(getTranslation(language, "save_failed"))
+    }
+  }
+
+  const handleDeleteAnnouncement = async (id: string) => {
+    if (!confirm(getTranslation(language, "confirm_delete"))) return
+
+    try {
+      await deleteAnnouncement(id)
+      const updated = await loadAllAnnouncements(user!.id)
+      setAnnouncements(updated)
+      alert(getTranslation(language, "delete_success"))
+    } catch (error) {
+      console.error("[v0] Failed to delete announcement:", error)
+      alert(getTranslation(language, "delete_failed"))
+    }
+  }
+
+  const handleEditAnnouncement = (announcement: Announcement) => {
+    setEditingAnnouncement(announcement)
+    setAnnouncementForm({
+      message: announcement.message,
+      type: announcement.type,
+      expiresAt: announcement.expiresAt || "",
+    })
+  }
+
   const lang = language as Language
 
   const backupRestoreTitle = getTranslation(lang, "backup_restore_title")
@@ -581,6 +654,118 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
             {getTranslation(lang, "delete_account")}
           </Button>
         </div>
+      </Card>
+
+      <Card>
+        <CardContent className="p-6">
+          <button
+            onClick={() => setShowAnnouncementPanel(!showAnnouncementPanel)}
+            className="w-full flex items-center justify-between text-left"
+          >
+            <h3 className="text-lg font-semibold">{getTranslation(language, "announcement_management")}</h3>
+            <ChevronDown className={`h-5 w-5 transition-transform ${showAnnouncementPanel ? "rotate-180" : ""}`} />
+          </button>
+
+          {showAnnouncementPanel && (
+            <div className="mt-4 space-y-4">
+              <div className="space-y-3 border rounded-lg p-4 bg-muted/30">
+                <h4 className="font-medium">
+                  {editingAnnouncement
+                    ? getTranslation(language, "edit_announcement")
+                    : getTranslation(language, "new_announcement")}
+                </h4>
+
+                <div>
+                  <label className="text-sm font-medium">{getTranslation(language, "announcement_message")}</label>
+                  <textarea
+                    value={announcementForm.message}
+                    onChange={(e) => setAnnouncementForm({ ...announcementForm, message: e.target.value })}
+                    className="w-full mt-1 p-2 border rounded-md"
+                    rows={3}
+                    placeholder={getTranslation(language, "announcement_message_placeholder")}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">{getTranslation(language, "announcement_type")}</label>
+                  <select
+                    value={announcementForm.type}
+                    onChange={(e) => setAnnouncementForm({ ...announcementForm, type: e.target.value as any })}
+                    className="w-full mt-1 p-2 border rounded-md"
+                  >
+                    <option value="info">{getTranslation(language, "type_info")}</option>
+                    <option value="warning">{getTranslation(language, "type_warning")}</option>
+                    <option value="success">{getTranslation(language, "type_success")}</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">{getTranslation(language, "expires_at")}</label>
+                  <input
+                    type="date"
+                    value={announcementForm.expiresAt}
+                    onChange={(e) => setAnnouncementForm({ ...announcementForm, expiresAt: e.target.value })}
+                    className="w-full mt-1 p-2 border rounded-md"
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <Button onClick={handleSaveAnnouncement} className="bg-green-600 hover:bg-green-700">
+                    {editingAnnouncement ? getTranslation(language, "update") : getTranslation(language, "save")}
+                  </Button>
+                  {editingAnnouncement && (
+                    <Button
+                      onClick={() => {
+                        setEditingAnnouncement(null)
+                        setAnnouncementForm({ message: "", type: "info", expiresAt: "" })
+                      }}
+                      variant="outline"
+                    >
+                      {getTranslation(language, "cancel")}
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <h4 className="font-medium">{getTranslation(language, "active_announcements")}</h4>
+                {announcements.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">{getTranslation(language, "no_announcements")}</p>
+                ) : (
+                  announcements.map((announcement) => (
+                    <div key={announcement.id} className="border rounded-lg p-3 space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-sm flex-1">{announcement.message}</p>
+                        <div className="flex gap-1">
+                          <Button size="sm" variant="ghost" onClick={() => handleEditAnnouncement(announcement)}>
+                            {getTranslation(language, "edit")}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleDeleteAnnouncement(announcement.id)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            {getTranslation(language, "delete")}
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 text-xs text-muted-foreground">
+                        <span className="capitalize">{announcement.type}</span>
+                        {announcement.expiresAt && (
+                          <span>
+                            • {getTranslation(language, "expires")}:{" "}
+                            {new Date(announcement.expiresAt).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </CardContent>
       </Card>
 
       <Dialog open={showGuide} onOpenChange={setShowGuide}>

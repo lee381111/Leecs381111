@@ -221,3 +221,14 @@ export interface TodoItem {
   createdAt: string
   user_id?: string
 }
+
+export interface Announcement {
+  id: string
+  message: string
+  type: "info" | "warning" | "success"
+  isActive: boolean
+  expiresAt?: string
+  createdAt: string
+  updatedAt?: string
+  createdBy?: string
+}

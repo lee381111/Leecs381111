@@ -3,40 +3,40 @@
 import { useState, useEffect } from "react"
 import { X, Megaphone } from "lucide-react"
 import { Button } from "@/components/ui/button"
-
-interface Announcement {
-  id: string
-  message: string
-  type: "info" | "warning" | "success"
-  expiresAt?: string
-}
+import { loadActiveAnnouncements } from "@/lib/storage"
+import type { Announcement } from "@/lib/types"
 
 export function AnnouncementBanner({ language }: { language: string }) {
   const [announcement, setAnnouncement] = useState<Announcement | null>(null)
   const [dismissed, setDismissed] = useState(false)
 
   useEffect(() => {
-    // Check for active announcement
-    const storedDismissed = localStorage.getItem(`announcement-dismissed-${announcement?.id}`)
-    if (storedDismissed) {
-      setDismissed(true)
-      return
-    }
+    const loadAnnouncement = async () => {
+      try {
+        const announcements = await loadActiveAnnouncements()
+        if (announcements.length > 0) {
+          const latest = announcements[0]
 
-    // Fetch announcement from localStorage or API
-    const announcementData = localStorage.getItem("active-announcement")
-    if (announcementData) {
-      const parsed = JSON.parse(announcementData) as Announcement
+          // Check if user has dismissed this announcement
+          const storedDismissed = localStorage.getItem(`announcement-dismissed-${latest.id}`)
+          if (storedDismissed) {
+            setDismissed(true)
+            return
+          }
 
-      // Check if announcement is still valid
-      if (parsed.expiresAt && new Date(parsed.expiresAt) < new Date()) {
-        localStorage.removeItem("active-announcement")
-        return
+          setAnnouncement(latest)
+        }
+      } catch (error) {
+        console.error("[v0] Failed to load announcements:", error)
       }
-
-      setAnnouncement(parsed)
     }
-  }, [announcement?.id])
+
+    loadAnnouncement()
+
+    // Refresh announcements every 5 minutes
+    const interval = setInterval(loadAnnouncement, 5 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [])
 
   const handleDismiss = () => {
     if (announcement) {

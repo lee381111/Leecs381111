@@ -13,6 +13,7 @@ import type {
   BudgetTransaction,
   TodoItem,
   MedicalContact,
+  Announcement, // Added Announcement import
 } from "./types"
 
 async function uploadAttachment(attachment: any, userId: string, bucket = "attachments"): Promise<string> {
@@ -1402,5 +1403,87 @@ export async function loadData<T>(key: string): Promise<T | null> {
   } catch (error) {
     console.error(`[v0] Error loading ${key}:`, error)
     return null
+  }
+}
+
+// Announcement Management Functions
+export async function loadActiveAnnouncements(): Promise<Announcement[]> {
+  const supabase = createClient()
+
+  const { data, error } = await supabase
+    .from("announcements")
+    .select("*")
+    .eq("is_active", true)
+    .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+    .order("created_at", { ascending: false })
+
+  if (error) {
+    console.warn("[v0] Failed to load announcements:", error.message)
+    return []
+  }
+
+  return (data || []).map((row) => ({
+    id: row.id,
+    message: row.message,
+    type: row.type,
+    isActive: row.is_active,
+    expiresAt: row.expires_at,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    createdBy: row.created_by,
+  }))
+}
+
+export async function loadAllAnnouncements(userId: string): Promise<Announcement[]> {
+  const supabase = createClient()
+
+  const { data, error } = await supabase.from("announcements").select("*").order("created_at", { ascending: false })
+
+  if (error) {
+    console.warn("[v0] Failed to load all announcements:", error.message)
+    return []
+  }
+
+  return (data || []).map((row) => ({
+    id: row.id,
+    message: row.message,
+    type: row.type,
+    isActive: row.is_active,
+    expiresAt: row.expires_at,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    createdBy: row.created_by,
+  }))
+}
+
+export async function saveAnnouncement(announcement: Announcement, userId: string): Promise<void> {
+  const supabase = createClient()
+
+  const dbAnnouncement = {
+    id: announcement.id,
+    message: announcement.message,
+    type: announcement.type,
+    is_active: announcement.isActive,
+    expires_at: announcement.expiresAt || null,
+    created_by: userId,
+    updated_at: new Date().toISOString(),
+  }
+
+  const { error } = await supabase.from("announcements").upsert(dbAnnouncement, { onConflict: "id" })
+
+  if (error) {
+    console.error("[v0] Error saving announcement:", error)
+    throw error
+  }
+}
+
+export async function deleteAnnouncement(id: string): Promise<void> {
+  const supabase = createClient()
+
+  const { error } = await supabase.from("announcements").delete().eq("id", id)
+
+  if (error) {
+    console.error("[v0] Error deleting announcement:", error)
+    throw error
   }
 }
