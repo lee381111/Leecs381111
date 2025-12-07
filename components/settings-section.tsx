@@ -15,21 +15,17 @@ import {
   FileSpreadsheet,
   FileText,
   ChevronDown,
+  Shield,
 } from "lucide-react"
-import {
-  exportAllData,
-  importAllData,
-  loadAllAnnouncements,
-  saveAnnouncement,
-  deleteAnnouncement,
-  generateDataDeletionReport,
-} from "@/lib/storage"
+import { exportAllData, importAllData, loadAllAnnouncements, saveAnnouncement, deleteAnnouncement } from "@/lib/storage"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { getTranslation } from "@/lib/i18n"
 import type { Language, Announcement } from "@/lib/types"
+import { useRouter } from "next/navigation" // Added for admin page navigation
 
 export function SettingsSection({ onBack, language }: { onBack: () => void; language: string }) {
   const { user } = useAuth()
+  const router = useRouter() // Added router for navigation
   const [importing, setImporting] = useState(false)
   const [showGuide, setShowGuide] = useState(false)
   const [showExportMenu, setShowExportMenu] = useState(false)
@@ -610,57 +606,32 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
         </div>
       </Card>
 
-      <Card className="p-6 space-y-4 bg-card">
-        <h2 className="text-xl font-bold">{getTranslation(language, "customer_support")}</h2>
-        <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">{getTranslation(language, "customer_support_description")}</p>
-          <div className="bg-muted p-4 rounded-lg space-y-2">
-            <p className="font-semibold">{getTranslation(language, "support_email")}</p>
-            <a href="mailto:lee381111@gmail.com" className="text-emerald-600 dark:text-emerald-400 hover:underline">
-              lee381111@gmail.com
-            </a>
+      {user.email === "lee381111@gmail.com" && (
+        <Card className="p-6 space-y-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20 border-purple-200 dark:border-purple-800">
+          <div className="flex items-center gap-2">
+            <Shield className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+            <h2 className="text-xl font-bold text-purple-600 dark:text-purple-400">관리자 전용</h2>
           </div>
-        </div>
-      </Card>
+          <p className="text-sm text-muted-foreground">약관 동의 로그 및 개인정보 파기 대장을 관리할 수 있습니다.</p>
+          <Button
+            onClick={() => router.push("/admin/consents")}
+            variant="outline"
+            className="w-full border-purple-300 hover:bg-purple-50 dark:border-purple-700 dark:hover:bg-purple-950/50"
+          >
+            관리자 페이지 열기
+          </Button>
+        </Card>
+      )}
 
-      <Card className="p-6 space-y-2 bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950 dark:to-green-950">
-        <h3 className="font-semibold text-emerald-800 dark:text-emerald-200">
+      <Card className="p-6 space-y-2 bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900">
+        <h2 className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
           {getTranslation(language, "app_developer")}
-        </h3>
+        </h2>
         <p className="text-sm text-emerald-700 dark:text-emerald-300">{getTranslation(language, "developer_info")}</p>
       </Card>
 
       <Card className="p-6 space-y-4 bg-card border-red-200 dark:border-red-900">
         <h2 className="text-xl font-bold text-red-600 dark:text-red-400">{getTranslation(language, "danger_zone")}</h2>
-
-        <div className="space-y-2 pb-4 border-b border-border">
-          <h3 className="font-semibold text-sm">{getTranslation(language, "data_deletion_report")}</h3>
-          <p className="text-sm text-muted-foreground">{getTranslation(language, "data_deletion_report_desc")}</p>
-          <Button
-            onClick={async () => {
-              try {
-                const report = await generateDataDeletionReport(user.id)
-                const blob = new Blob([report], { type: "text/plain;charset=utf-8" })
-                const url = URL.createObjectURL(blob)
-                const a = document.createElement("a")
-                a.href = url
-                a.download = `개인정보파기대장-${new Date().toISOString().split("T")[0]}.txt`
-                document.body.appendChild(a)
-                a.click()
-                document.body.removeChild(a)
-                URL.revokeObjectURL(url)
-                alert(getTranslation(language, "report_generated"))
-              } catch (error) {
-                console.error("[v0] Error generating report:", error)
-                alert(getTranslation(language, "report_generation_failed"))
-              }
-            }}
-            variant="outline"
-            className="w-full"
-          >
-            {getTranslation(language, "generate_report")}
-          </Button>
-        </div>
 
         <div className="space-y-2">
           <p className="text-sm text-muted-foreground">{getTranslation(language, "account_deletion_warning")}</p>
