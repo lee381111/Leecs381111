@@ -1519,21 +1519,3 @@ export async function saveUserConsent(
     console.error("[v0] Failed to save user consent:", error)
   }
 }
-
-// Load user consent logs
-export async function loadUserConsents(userId: string) {
-  const supabase = createClient()
-
-  const { data, error } = await supabase
-    .from("user_consents")
-    .select("*")
-    .eq("user_id", userId)
-    .order("agreed_at", { ascending: false })
-
-  if (error) {
-    console.warn("[v0] Failed to load user consents:", error.message)
-    return []
-  }
-
-  return data || []
-}
