@@ -16,7 +16,14 @@ import {
   FileText,
   ChevronDown,
 } from "lucide-react"
-import { exportAllData, importAllData, loadAllAnnouncements, saveAnnouncement, deleteAnnouncement } from "@/lib/storage"
+import {
+  exportAllData,
+  importAllData,
+  loadAllAnnouncements,
+  saveAnnouncement,
+  deleteAnnouncement,
+  generateDataDeletionReport,
+} from "@/lib/storage"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { getTranslation } from "@/lib/i18n"
 import type { Language, Announcement } from "@/lib/types"
@@ -616,18 +623,6 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
         </div>
       </Card>
 
-      <Card className="p-6 space-y-4 bg-card">
-        <h2 className="text-xl font-bold">{getTranslation(language, "legal_information")}</h2>
-        <div className="space-y-2">
-          <a href="/privacy-policy" className="block text-sm text-emerald-600 dark:text-emerald-400 hover:underline">
-            {getTranslation(language, "privacy_policy")}
-          </a>
-          <a href="/terms-of-service" className="block text-sm text-emerald-600 dark:text-emerald-400 hover:underline">
-            {getTranslation(language, "terms_of_service")}
-          </a>
-        </div>
-      </Card>
-
       <Card className="p-6 space-y-2 bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950 dark:to-green-950">
         <h3 className="font-semibold text-emerald-800 dark:text-emerald-200">
           {getTranslation(language, "app_developer")}
@@ -637,6 +632,36 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
 
       <Card className="p-6 space-y-4 bg-card border-red-200 dark:border-red-900">
         <h2 className="text-xl font-bold text-red-600 dark:text-red-400">{getTranslation(language, "danger_zone")}</h2>
+
+        <div className="space-y-2 pb-4 border-b border-border">
+          <h3 className="font-semibold text-sm">{getTranslation(language, "data_deletion_report")}</h3>
+          <p className="text-sm text-muted-foreground">{getTranslation(language, "data_deletion_report_desc")}</p>
+          <Button
+            onClick={async () => {
+              try {
+                const report = await generateDataDeletionReport(user.id)
+                const blob = new Blob([report], { type: "text/plain;charset=utf-8" })
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement("a")
+                a.href = url
+                a.download = `개인정보파기대장-${new Date().toISOString().split("T")[0]}.txt`
+                document.body.appendChild(a)
+                a.click()
+                document.body.removeChild(a)
+                URL.revokeObjectURL(url)
+                alert(getTranslation(language, "report_generated"))
+              } catch (error) {
+                console.error("[v0] Error generating report:", error)
+                alert(getTranslation(language, "report_generation_failed"))
+              }
+            }}
+            variant="outline"
+            className="w-full"
+          >
+            {getTranslation(language, "generate_report")}
+          </Button>
+        </div>
+
         <div className="space-y-2">
           <p className="text-sm text-muted-foreground">{getTranslation(language, "account_deletion_warning")}</p>
           <Button

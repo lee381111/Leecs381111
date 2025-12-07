@@ -1519,3 +1519,57 @@ export async function saveUserConsent(
     console.error("[v0] Failed to save user consent:", error)
   }
 }
+
+// Data Deletion Report for Legal Compliance
+export async function generateDataDeletionReport(userId: string): Promise<string> {
+  const supabase = createClient()
+
+  try {
+    const tables = [
+      "profiles",
+      "notes",
+      "diary_entries",
+      "schedules",
+      "todo_items",
+      "health_records",
+      "medications",
+      "medical_contacts",
+      "budget_transactions",
+      "travel_records",
+      "vehicles",
+      "vehicle_maintenance",
+      "business_cards",
+      "radio_stations",
+      "user_settings",
+      "announcements",
+    ]
+
+    const report = [`개인정보 파기 대장\n${"=".repeat(50)}\n`]
+    report.push(`생성일시: ${new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })}\n`)
+    report.push(`작성자: 관리자\n`)
+    report.push(`파기 사유: 서비스 종료\n\n`)
+
+    report.push(`데이터 현황:\n${"-".repeat(50)}\n`)
+
+    let totalRecords = 0
+
+    for (const table of tables) {
+      const { count, error } = await supabase.from(table).select("*", { count: "exact", head: true })
+
+      if (!error && count !== null) {
+        report.push(`${table}: ${count}건\n`)
+        totalRecords += count
+      }
+    }
+
+    report.push(`\n총 레코드 수: ${totalRecords}건\n\n`)
+    report.push(`파기 방법: Supabase 프로젝트 완전 삭제\n`)
+    report.push(`파기 예정일: 서비스 종료 후 30일\n`)
+    report.push(`보관 기간: 이 문서는 3년간 보관됩니다.\n`)
+
+    return report.join("")
+  } catch (error) {
+    console.error("[v0] Error generating deletion report:", error)
+    throw error
+  }
+}

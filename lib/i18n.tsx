@@ -590,6 +590,12 @@ type TranslationKey =
   | "fill_all_fields"
   | "email_updated_success"
   | "email_update_error"
+  | "data_deletion_report"
+  | "data_deletion_report_desc"
+  | "generate_report"
+  | "generating_report"
+  | "report_generated"
+  | "report_generation_failed"
 
 const translations: Record<Language, Record<TranslationKey, string>> = {
   ko: {
@@ -1070,6 +1076,12 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     // Danger Zone
     danger_zone: "위험 구역",
     account_deletion_warning: "계정을 삭제하면 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.",
+    data_deletion_report: "개인정보 파기 대장 생성",
+    data_deletion_report_desc: "서비스 종료 시 법적 증명을 위한 개인정보 파기 대장을 생성합니다.",
+    generate_report: "파기 대장 생성",
+    generating_report: "생성 중...",
+    report_generated: "파기 대장이 생성되었습니다",
+    report_generation_failed: "파기 대장 생성에 실패했습니다",
     delete_account: "계정 삭제",
     delete_account_title: "계정 삭제",
     delete_account_warning_title: "⚠️ 경고: 이 작업은 되돌릴 수 없습니다",
@@ -1611,6 +1623,12 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     // Danger Zone
     danger_zone: "Danger Zone",
     account_deletion_warning: "Deleting your account will permanently erase all your data and cannot be recovered.",
+    data_deletion_report: "Generate Data Deletion Report",
+    data_deletion_report_desc: "Generate a data deletion report for legal proof upon service termination.",
+    generate_report: "Generate Report",
+    generating_report: "Generating...",
+    report_generated: "Data deletion report generated",
+    report_generation_failed: "Failed to generate data deletion report",
     delete_account: "Delete Account",
     delete_account_title: "Delete Account",
     delete_account_warning_title: "⚠️ Warning: This action is irreversible",
@@ -2142,6 +2160,12 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     // Danger Zone
     danger_zone: "危险区域",
     account_deletion_warning: "删除账户将永久删除所有数据，且无法恢复。",
+    data_deletion_report: "生成个人信息销毁台账",
+    data_deletion_report_desc: "服务终止时，为法律证明生成个人信息销毁台账。",
+    generate_report: "生成台账",
+    generating_report: "生成中...",
+    report_generated: "销毁台账已生成",
+    report_generation_failed: "销毁台账生成失败",
     delete_account: "删除账户",
     delete_account_title: "删除账户",
     delete_account_warning_title: "⚠️ 警告：此操作不可逆",
@@ -2679,6 +2703,12 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     // Danger Zone
     danger_zone: "危険ゾーン",
     account_deletion_warning: "アカウントを削除すると、すべてのデータが永久に削除され、復元できません。",
+    data_deletion_report: "個人情報破棄台帳作成",
+    data_deletion_report_desc: "サービス終了時、法的証明のため個人情報破棄台帳を作成します。",
+    generate_report: "台帳作成",
+    generating_report: "作成中...",
+    report_generated: "破棄台帳が作成されました",
+    report_generation_failed: "破棄台帳作成に失敗しました",
     delete_account: "アカウント削除",
     delete_account_title: "アカウント削除",
     delete_account_warning_title: "⚠️ 警告：この操作は元に戻せません",
