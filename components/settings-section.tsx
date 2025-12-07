@@ -747,15 +747,33 @@ ${report.tables
 
       <Card className="p-6 space-y-4 bg-card border-red-200 dark:border-red-900">
         <h2 className="text-xl font-bold text-red-600 dark:text-red-400">{getTranslation(language, "danger_zone")}</h2>
-        <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">{getTranslation(language, "account_deletion_warning")}</p>
-          <Button
-            onClick={() => setShowDeleteDialog(true)}
-            variant="destructive"
-            className="w-full bg-red-600 hover:bg-red-700 text-white"
-          >
-            {getTranslation(language, "delete_account")}
-          </Button>
+        <div className="space-y-4">
+          <div className="space-y-2 pb-4 border-b">
+            <h3 className="font-semibold text-sm">{getTranslation(language, "data_deletion_report")}</h3>
+            <p className="text-sm text-muted-foreground">{getTranslation(language, "deletion_report_description")}</p>
+            <Button
+              onClick={handleGenerateDeletionReport}
+              variant="outline"
+              className="w-full bg-transparent"
+              disabled={isGeneratingReport}
+            >
+              <FileBarChart className="mr-2 h-4 w-4" />
+              {isGeneratingReport
+                ? getTranslation(language, "generating_report")
+                : getTranslation(language, "generate_deletion_report")}
+            </Button>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">{getTranslation(language, "account_deletion_warning")}</p>
+            <Button
+              onClick={() => setShowDeleteDialog(true)}
+              variant="destructive"
+              className="w-full bg-red-600 hover:bg-red-700 text-white"
+            >
+              {getTranslation(language, "delete_account")}
+            </Button>
+          </div>
         </div>
       </Card>
 
