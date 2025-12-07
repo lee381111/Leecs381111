@@ -1014,6 +1014,10 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     radio_description: "기록을 작성하면서 라디오 방송을 들을 수 있습니다.",
     data_backup: "데이터 백업",
     data_backup_description: "모든 기록을 JSON 파일로 백업하고 복원할 수 있습니다. 정기적인 백업을 권장합니다.",
+    personal_information: "개인정보 관리",
+    view: "보기",
+    danger_zone: "위험 구역",
+    announcement_management: "공지사항 관리",
 
     // Diary Password
     set_diary_password: "일기 비밀번호 설정",
@@ -1147,35 +1151,19 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     privacy_storage_desc:
       "수집한 정보는 오직 서비스 제공(기록 저장, AI 분석)에만 사용되며, 제3자에게 판매하거나 제공하지 않습니다.",
     privacy_supabase_desc: "AI 기능 사용 시 Groq API에 텍스트가 전송되지만 저장되지 않습니다.",
-    privacy_section4_title: "4. 사용자 권리",
-    privacy_retention_desc: "언제든지 다음 권리를 행사할 수 있습니다:",
+    privacy_section4_title: "4. 개인정보의 보유 기간",
+    privacy_retention_desc:
+      "회원 탈퇴 시 모든 개인정보는 즉시 삭제됩니다. 단, 법령에서 정한 보관 의무가 있는 경우 해당 기간 동안 보관합니다.",
+    privacy_section5_title: "5. 사용자의 권리",
     privacy_right1: "개인정보 열람 및 수정 (설정 > 개인정보 관리)",
     privacy_right2: "데이터 다운로드 (설정 > 백업/복원)",
     privacy_right3: "계정 삭제 (설정 > 위험 구역) - 모든 데이터 즉시 삭제",
-    privacy_section5_title: "5. 문의",
-    privacy_section6_title: "문의처",
+    privacy_section6_title: "6. 보호책임자",
 
     // Terms of Service - 간소화
     terms_last_updated: "최종 수정일: 2025년 12월",
-    terms_section1_title: "1. 서비스 소개",
     terms_section1_desc:
-      "이 앱은 개인 생활 관리를 위한 무료 및 유료 서비스입니다. 할일, 일정, 예산, 건강, 여행, 차량, 메모, 일기 등을 기록하고 관리할 수 있습니다.",
-    terms_section2_title: "2. 가입",
-    terms_section2_desc:
-      "누구나 이메일 주소로 자유롭게 가입할 수 있습니다. 제약 사항은 없으며, 이메일 인증만 필요합니다.",
-    terms_section3_title: "3. 제공 기능",
-    terms_service1: "할일/일정 관리, 예산 추적",
-    terms_service2: "건강 기록, 복약 관리",
-    terms_service3: "여행/차량 관리",
-    terms_service4: "메모/일기 작성, AI 요약/번역",
-    terms_service5: "명함 인식, 라디오 청취",
-    terms_section4_title: "4. 사용 규칙",
-    terms_obligation1: "본인의 계정 정보를 안전하게 관리해야 합니다",
-    terms_obligation2: "불법적인 목적으로 서비스를 사용할 수 없습니다",
-    terms_obligation3: "타인의 정보를 무단으로 수집하거나 사용할 수 없습니다",
-    terms_section5_title: "5. 서비스 변경 및 공지",
-    terms_section5_desc:
-      "서비스 개선, 점검, 오류 수정 등을 위해 서비스를 일시 중단하거나 변경할 수 있습니다. 중요한 변경사항은 앱 상단 배너를 통해 사전 공지합니다.",
+      "이 앱은 개인 생활 관리를 위한 서비스를 제공합니다. 기본 기능은 무료이며, 향후 프리미엄 기능이 추가될 수 있습니다.",
   },
 
   en: {
@@ -1612,6 +1600,10 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     radio_description: "Listen to radio broadcasts from around the world while writing records.",
     data_backup: "Data Backup",
     data_backup_description: "You can backup and restore all records as JSON files. Regular backups are recommended.",
+    personal_information: "Personal Information",
+    view: "View",
+    danger_zone: "Danger Zone",
+    announcement_management: "Announcement Management",
 
     // Diary Password
     set_diary_password: "Set Diary Password",
@@ -1746,35 +1738,19 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     privacy_storage_desc:
       "Collected information is used only for service provision (data storage, AI analysis) and is never sold or shared with third parties.",
     privacy_supabase_desc: "When using AI features, text is sent to Groq API but not stored.",
-    privacy_section4_title: "4. Your Rights",
-    privacy_retention_desc: "You can exercise the following rights at any time:",
+    privacy_section4_title: "4. Data Retention Period",
+    privacy_retention_desc:
+      "All personal information is deleted immediately upon account withdrawal. However, if there is a legal obligation to retain data, it will be kept for the required period.",
+    privacy_section5_title: "5. Your Rights",
     privacy_right1: "View and edit personal information (Settings > Personal Information)",
     privacy_right2: "Download data (Settings > Backup/Restore)",
     privacy_right3: "Delete account (Settings > Danger Zone) - All data deleted immediately",
-    privacy_section5_title: "5. Contact",
-    privacy_section6_title: "Contact Information",
+    privacy_section6_title: "6. Data Protection Officer",
 
     // Terms of Service - Simplified
     terms_last_updated: "Last Updated: December 2025",
-    terms_section1_title: "1. Service Introduction",
     terms_section1_desc:
-      "This app is a free and paid service for personal life management. You can record and manage tasks, schedules, budgets, health, travel, vehicles, notes, diaries, and more.",
-    terms_section2_title: "2. Registration",
-    terms_section2_desc:
-      "Anyone can freely sign up with an email address. There are no restrictions, only email verification is required.",
-    terms_section3_title: "3. Features",
-    terms_service1: "Task/schedule management, budget tracking",
-    terms_service2: "Health records, medication management",
-    terms_service3: "Travel/vehicle management",
-    terms_service4: "Note/diary writing, AI summary/translation",
-    terms_service5: "Business card recognition, radio listening",
-    terms_section4_title: "4. Usage Rules",
-    terms_obligation1: "You must keep your account information secure",
-    terms_obligation2: "You cannot use the service for illegal purposes",
-    terms_obligation3: "You cannot collect or use others' information without permission",
-    terms_section5_title: "5. Service Changes and Notifications",
-    terms_section5_desc:
-      "We may temporarily suspend or change the service for improvements, maintenance, or bug fixes. Important changes will be announced in advance through the app banner.",
+      "This app provides services for personal life management. Basic features are free, and premium features may be added in the future.",
   },
 
   zh: {
@@ -2078,7 +2054,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     close_image: "放大图片",
     close: "关闭",
     new_travel_record: "新旅行记录",
-    edit_travel_record: "编辑旅行记录",
+    edit_travel_record: "旅行记录 수정",
     coordinates_calculated: "坐标计算",
     attachments_count_label: "附件",
     travel_expense_with_unit: "旅行费用",
@@ -2200,6 +2176,10 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     radio_description: "在写记录时收听广播。",
     data_backup: "数据备份",
     data_backup_description: "可以将所有记录备份和恢复为JSON文件。建议定期备份。",
+    personal_information: "个人信息管理",
+    view: "查看",
+    danger_zone: "危险区域",
+    announcement_management: "公告管理",
 
     // Diary Password
     set_diary_password: "设置日记密码",
@@ -2332,33 +2312,17 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     privacy_section3_title: "3. 信息使用方式",
     privacy_storage_desc: "收集的信息仅用于提供服务（数据存储、AI分析），绝不出售或共享给第三方。",
     privacy_supabase_desc: "使用AI功能时，文本会发送到Groq API，但不会存储。",
-    privacy_section4_title: "4. 用户权利",
-    privacy_retention_desc: "您可以随时行使以下权利：",
+    privacy_section4_title: "4. 个人信息保留期限",
+    privacy_retention_desc: "会员退出时，所有个人信息将立即删除。但如法律规定有保留义务，则在规定期限内保留。",
+    privacy_section5_title: "5. 用户权利",
     privacy_right1: "查看和修改个人信息（设置 > 个人信息管理）",
     privacy_right2: "下载数据（设置 > 备份/恢复）",
     privacy_right3: "删除账户（设置 > 危险区域）- 立即删除所有数据",
-    privacy_section5_title: "5. 联系方式",
-    privacy_section6_title: "联系信息",
+    privacy_section6_title: "6. 保护负责人",
 
     // Terms of Service - Simplified
     terms_last_updated: "最后更新：2025年12月",
-    terms_section1_title: "1. 服务介绍",
-    terms_section1_desc:
-      "本应用是用于个人生活管理的免费和付费服务。可以记录和管理待办事项、日程、预算、健康、旅行、车辆、笔记、日记等。",
-    terms_section2_title: "2. 注册",
-    terms_section2_desc: "任何人都可以使用电子邮件地址自由注册。没有限制，只需要电子邮件验证。",
-    terms_section3_title: "3. 功能",
-    terms_service1: "任务/日程管理、预算跟踪",
-    terms_service2: "健康记录、用药管理",
-    terms_service3: "旅行/车辆管理",
-    terms_service4: "笔记/日记写作、AI摘要/翻译",
-    terms_service5: "名片识别、收音机收听",
-    terms_section4_title: "4. 使用规则",
-    terms_obligation1: "您必须安全保管您的账户信息",
-    terms_obligation2: "您不能将服务用于非法目的",
-    terms_obligation3: "您不能未经许可收集或使用他人信息",
-    terms_section5_title: "5. 服务变更和通知",
-    terms_section5_desc: "为了改进、维护或修复错误，我们可能会暂时中断或更改服务。重要变更将通过应用横幅提前通知。",
+    terms_section1_desc: "本应用提供个人生活管理服务。基本功能免费，未来可能会增加高级功能。",
   },
 
   ja: {
@@ -2794,6 +2758,10 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     data_backup: "データバックアップ",
     data_backup_description:
       "すべての記録をJSONファイルとしてバックアップおよび復元できます。定期的なバックアップをお勧めします。",
+    personal_information: "個人情報管理",
+    view: "表示",
+    danger_zone: "危険ゾーン",
+    announcement_management: "お知らせ管理",
 
     // Diary Password
     set_diary_password: "日記パスワード設定",
@@ -2927,34 +2895,19 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     privacy_storage_desc:
       "収集した情報はサービス提供（データ保存、AI分析）のみに使用され、第三者に販売または共有することはありません。",
     privacy_supabase_desc: "AI機能使用時、テキストはGroq APIに送信されますが保存されません。",
-    privacy_section4_title: "4. ユーザーの権利",
-    privacy_retention_desc: "いつでも以下の権利を行使できます：",
+    privacy_section4_title: "4. 個人情報の保持期間",
+    privacy_retention_desc:
+      "会員退会時にすべての個人情報は即時削除されます。ただし、法令で定められた保管義務がある場合は、該当期間保管します。",
+    privacy_section5_title: "5. ユーザーの権利",
     privacy_right1: "個人情報の閲覧と編集（設定 > 個人情報管理）",
     privacy_right2: "データのダウンロード（設定 > バックアップ/復元）",
     privacy_right3: "アカウント削除（設定 > 危険ゾーン）- すべてのデータを即座に削除",
-    privacy_section5_title: "5. お問い合わせ",
-    privacy_section6_title: "連絡先",
+    privacy_section6_title: "6. 保護責任者",
 
     // Terms of Service - Simplified
     terms_last_updated: "最終更新: 2025年12月",
-    terms_section1_title: "1. サービス概要",
     terms_section1_desc:
-      "このアプリは個人の生活管理のための無料および有料サービスです。タスク、スケジュール、予算、健康、旅行、車両、メモ、日記などを記録・管理できます。",
-    terms_section2_title: "2. 登録",
-    terms_section2_desc: "誰でもメールアドレスで自由に登録できます。制限はなく、メール認証のみが必要です。",
-    terms_section3_title: "3. 機能",
-    terms_service1: "タスク/スケジュール管理、予算追跡",
-    terms_service2: "健康記録、服薬管理",
-    terms_service3: "旅行/車両管理",
-    terms_service4: "メモ/日記作成、AI要約/翻訳",
-    terms_service5: "名刺認識、ラジオ視聴",
-    terms_section4_title: "4. 利用規則",
-    terms_obligation1: "アカウント情報を安全に管理する必要があります",
-    terms_obligation2: "違法な目的でサービスを使用できません",
-    terms_obligation3: "他人の情報を無断で収集・使用できません",
-    terms_section5_title: "5. サービス変更と通知",
-    terms_section5_desc:
-      "サービス改善、メンテナンス、エラー修正のため、サービスを一時的に中断または変更することがあります。重要な変更はアプリバナーで事前に通知します。",
+      "このアプリは個人の生活管理のためのサービスを提供します。基本機能は無料であり、将来的にはプレミアム機能が追加される可能性があります。",
   },
 }
 

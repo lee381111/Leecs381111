@@ -65,19 +65,13 @@ export default function TermsOfServicePage() {
             </ul>
           </section>
 
-          {/* 5. 저작권 */}
+          {/* 5. 서비스 변경 및 공지 */}
           <section className="space-y-4">
             <h2 className="text-2xl font-semibold">{t("terms_section5_title")}</h2>
             <p className="text-muted-foreground">{t("terms_section5_desc")}</p>
           </section>
 
-          {/* 6. 서비스 변경 및 중단 */}
-          <section className="space-y-4">
-            <h2 className="text-2xl font-semibold">{t("terms_section6_title")}</h2>
-            <p className="text-muted-foreground">{t("terms_section6_desc")}</p>
-          </section>
-
-          {/* 7. 고객 지원 */}
+          {/* 고객 지원 - 설정 섹션 참조 안내 */}
           <section className="space-y-4">
             <h2 className="text-2xl font-semibold">{t("customer_support")}</h2>
             <div className="bg-muted p-4 rounded-lg space-y-2">
