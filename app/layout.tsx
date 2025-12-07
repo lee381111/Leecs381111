@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata, Viewport } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { AuthProvider } from "@/lib/auth-context"
+import { LanguageProvider } from "@/lib/language-context"
 import "./globals.css"
 
 const _geist = Geist({ subsets: ["latin"] })
@@ -62,7 +63,9 @@ export default function RootLayout({
         className={`font-sans antialiased`}
         style={{ background: "linear-gradient(135deg, rgb(220, 252, 231) 0%, rgb(220, 252, 231) 100%)" }}
       >
-        <AuthProvider>{children}</AuthProvider>
+        <LanguageProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </LanguageProvider>
       </body>
     </html>
   )

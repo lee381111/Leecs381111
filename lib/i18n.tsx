@@ -1,8 +1,544 @@
 import type { Language } from "./types"
 
-type TranslationKey = string
+type TranslationKey =
+  | "title"
+  | "loading"
+  | "saving"
+  | "save"
+  | "cancel"
+  | "delete"
+  | "edit"
+  | "add"
+  | "search"
+  | "all"
+  | "date"
+  | "back"
+  | "back_to_forest"
+  | "year"
+  | "month"
+  | "steps_unit"
+  | "krw_unit"
+  | "file_upload"
+  | "take_photo"
+  | "ocr_camera"
+  | "ocr_upload"
+  | "handwriting"
+  | "speech_to_text"
+  | "speech_recognition"
+  | "stop_recognition"
+  | "ocr_capture_and_process"
+  | "ocr_take_photo"
+  | "ocr_processing"
+  | "ocr_completed"
+  | "ocr_no_text_found"
+  | "ocr_error_occurred"
+  | "clear"
+  | "stop_recording"
+  | "audio_recording"
+  | "video_recording"
+  | "attachments"
+  | "video_cannot_play"
+  | "audio_cannot_play"
+  | "audio_permission_required"
+  | "video_permission_required"
+  | "camera_permission_required"
+  | "speech_recognition_not_supported"
+  | "mic_permission_required"
+  | "speech_recognition_failed"
+  | "notes"
+  | "diary"
+  | "schedule"
+  | "health"
+  | "travel"
+  | "vehicle"
+  | "budget"
+  | "business_card"
+  | "business_cards"
+  | "radio"
+  | "weather"
+  | "statistics"
+  | "settings"
+  | "title_label"
+  | "title_required"
+  | "content"
+  | "tags_placeholder"
+  | "attached_files"
+  | "filter_by_tag"
+  | "organize_meeting_minutes"
+  | "organizing_meeting"
+  | "content_required_for_organize"
+  | "confirm_organize_meeting"
+  | "meeting_organized_success"
+  | "meeting_organize_failed"
+  | "summarize_note"
+  | "summarizing"
+  | "content_required_for_summary"
+  | "note_summarized_success"
+  | "note_summary_failed"
+  | "summary_result"
+  | "replace_with_summary"
+  | "add_summary_below"
+  | "translate_note"
+  | "translating"
+  | "content_required_for_translation"
+  | "translation_result"
+  | "replace_with_translation"
+  | "add_translation_below"
+  | "select_target_language"
+  | "translate_to_korean"
+  | "translate_to_english"
+  | "translate_to_chinese"
+  | "translate_to_japanese"
+  | "translation_failed"
+  | "health_record"
+  | "health_record_btn"
+  | "add_health_record"
+  | "medication_management_title"
+  | "medication_management"
+  | "medication_management_btn"
+  | "health_statistics"
+  | "health_graph"
+  | "view_graph"
+  | "recent_records"
+  | "vital_signs"
+  | "exercise"
+  | "medical_expenses"
+  | "record_type"
+  | "blood_pressure"
+  | "blood_sugar"
+  | "temperature"
+  | "weight"
+  | "steps"
+  | "distance"
+  | "medical_expense"
+  | "medication_expense"
+  | "medication_cost"
+  | "memo"
+  | "medication_name"
+  | "dosage"
+  | "frequency"
+  | "time"
+  | "start_date"
+  | "end_date"
+  | "add_time"
+  | "add_medication"
+  | "save_medication_schedule"
+  | "enable_alarm"
+  | "date_label"
+  | "systolic_bp"
+  | "diastolic_bp"
+  | "systolic_placeholder"
+  | "diastolic_placeholder"
+  | "blood_sugar_placeholder"
+  | "temperature_placeholder"
+  | "weight_placeholder"
+  | "steps_placeholder"
+  | "distance_placeholder"
+  | "medical_expense_placeholder"
+  | "medication_expense_placeholder"
+  | "memo_additional"
+  | "medicine_name"
+  | "medicine_name_placeholder"
+  | "dosage_placeholder"
+  | "frequency_placeholder"
+  | "medication_times"
+  | "end_date_optional"
+  | "add_medication_schedule"
+  | "dosage_label"
+  | "frequency_label"
+  | "today_medication_times"
+  | "systolic"
+  | "diastolic"
+  | "no_health_records_message"
+  | "medical_and_medication_expenses"
+  | "total_expense"
+  | "medical_contacts"
+  | "medical_contacts_btn"
+  | "manage_medical_contacts"
+  | "add_medical_contact"
+  | "contact_type"
+  | "hospital"
+  | "clinic"
+  | "pharmacy"
+  | "contact_name"
+  | "contact_phone"
+  | "contact_address"
+  | "contact_notes"
+  | "contact_name_placeholder"
+  | "contact_phone_placeholder"
+  | "contact_address_placeholder"
+  | "no_medical_contacts_message"
+  | "save_contact"
+  | "todo"
+  | "todo_list"
+  | "add_todo"
+  | "todo_title"
+  | "todo_title_required"
+  | "todo_description"
+  | "todo_priority"
+  | "priority_low"
+  | "priority_medium"
+  | "priority_high"
+  | "todo_due_date"
+  | "todo_repeat"
+  | "repeat_none"
+  | "repeat_daily"
+  | "repeat_weekly"
+  | "repeat_monthly"
+  | "todo_alarm"
+  | "todo_alarm_notification"
+  | "invalid_alarm_time"
+  | "todo_completed"
+  | "todo_incomplete"
+  | "mark_as_completed"
+  | "mark_as_incomplete"
+  | "no_todos_message"
+  | "voice_input_todo"
+  | "voice_input_active"
+  | "total_todos"
+  | "completed_todos"
+  | "pending_todos"
+  | "filter_all"
+  | "filter_active"
+  | "filter_completed"
+  | "confirm_delete"
+  | "delete_success"
+  | "delete_failed"
+  | "special_days"
+  | "general_schedule"
+  | "special_day_reminder"
+  | "event_name"
+  | "category"
+  | "birthday"
+  | "anniversary"
+  | "holiday"
+  | "vacation"
+  | "meeting"
+  | "other"
+  | "alarm_time"
+  | "alarm_settings"
+  | "enable_alarm_before_event"
+  | "minutes_before"
+  | "5_min_before"
+  | "10_min_before"
+  | "15_min_before"
+  | "minutes_before_30"
+  | "hours_before_1"
+  | "hours_before_3"
+  | "day_before_1"
+  | "days_before_3"
+  | "week_before_1"
+  | "special_days_batch_title"
+  | "special_days_batch_description"
+  | "schedule_number"
+  | "save_schedules_count"
+  | "special_day_name_placeholder"
+  | "alarm"
+  | "day_off"
+  | "30_min_before"
+  | "1_hour_before"
+  | "2_hours_before"
+  | "12_hours_before"
+  | "1_day_before"
+  | "2_days_before"
+  | "1_week_before"
+  | "add_schedule"
+  | "download_ics_description"
+  | "attachments_label"
+  | "travel_map"
+  | "map_zoom_instruction"
+  | "map_drag_instruction"
+  | "map_button_instruction"
+  | "destination_label"
+  | "destination_placeholder"
+  | "latitude_label"
+  | "longitude_label"
+  | "auto_or_manual_input"
+  | "select_location_cancel"
+  | "select_location_on_map"
+  | "select_location_instruction"
+  | "location_selected_message"
+  | "start_date_label"
+  | "end_date_label"
+  | "city_category"
+  | "nature_category"
+  | "mountain_category"
+  | "sea_category"
+  | "historic_category"
+  | "restaurant_category"
+  | "cafe_category"
+  | "other_category"
+  | "travel_expense_label"
+  | "travel_expense_placeholder"
+  | "expense_auto_save_notice"
+  | "enter_destination"
+  | "enter_dates"
+  | "travel_saved"
+  | "travel_delete_confirm"
+  | "no_travel_records"
+  | "add_first_travel"
+  | "file"
+  | "close_image"
+  | "close"
+  | "new_travel_record"
+  | "edit_travel_record"
+  | "coordinates_calculated"
+  | "attachments_count_label"
+  | "travel_expense_with_unit"
+  | "ai_travel_optimizer"
+  | "ai_travel_optimizer_description"
+  | "budget_placeholder"
+  | "travel_style_label"
+  | "select_style"
+  | "sightseeing"
+  | "relaxation"
+  | "food_tour"
+  | "adventure"
+  | "cultural"
+  | "generate_itinerary"
+  | "optimizing"
+  | "trip_summary"
+  | "day"
+  | "recommendations"
+  | "recommended_restaurants"
+  | "recommended_attractions"
+  | "travel_tips"
+  | "budget_breakdown"
+  | "accommodation"
+  | "food"
+  | "transportation"
+  | "activities"
+  | "total"
+  | "apply_to_schedule"
+  | "regenerate"
+  | "itinerary_applied"
+  | "optimization_failed"
+  | "please_fill_required_fields"
+  | "loading_weather"
+  | "refresh"
+  | "current_temp"
+  | "weather_status"
+  | "feels_like"
+  | "humidity"
+  | "wind_speed"
+  | "air_quality"
+  | "pm25"
+  | "pm10"
+  | "yellow_dust"
+  | "large_particles"
+  | "air_good"
+  | "air_moderate"
+  | "air_bad"
+  | "air_very_bad"
+  | "air_high"
+  | "air_low"
+  | "weekly_forecast"
+  | "max_temp"
+  | "min_temp"
+  | "latitude"
+  | "longitude"
+  | "loading_stats"
+  | "total_records"
+  | "precious_memories"
+  | "backup_restore_title"
+  | "backup_description"
+  | "export_data"
+  | "restore_backup"
+  | "restoring"
+  | "json_format"
+  | "csv_format"
+  | "excel_format"
+  | "login_required"
+  | "csv_downloaded"
+  | "csv_export_failed"
+  | "excel_downloaded"
+  | "excel_export_failed"
+  | "backup_downloaded"
+  | "backup_error"
+  | "restore_success"
+  | "restore_error"
+  | "not_logged_in"
+  | "logged_in"
+  | "user_guide_title"
+  | "user_guide"
+  | "open_guide"
+  | "connection_status_title"
+  | "connection_label"
+  | "app_developer"
+  | "developer_info"
+  | "app_introduction"
+  | "app_introduction_description"
+  | "notes_description"
+  | "diaries_description"
+  | "diaries"
+  | "schedules"
+  | "schedules_description"
+  | "travel_records"
+  | "travel_records_description"
+  | "vehicle_records"
+  | "vehicle_records_description"
+  | "health_records"
+  | "health_records_description"
+  | "budget_description"
+  | "business_cards_description"
+  | "ai_auto_fill"
+  | "extracting_card_info"
+  | "card_info_extracted"
+  | "card_extraction_failed"
+  | "please_add_card_photo_first"
+  | "weather_description"
+  | "radio_description"
+  | "data_backup"
+  | "data_backup_description"
+  | "set_diary_password"
+  | "password_description"
+  | "new_password"
+  | "password_placeholder"
+  | "confirm_password"
+  | "confirm_password_placeholder"
+  | "set_password"
+  | "skip"
+  | "locked_diary"
+  | "enter_password_to_unlock"
+  | "password"
+  | "unlock"
+  | "password_too_short"
+  | "password_mismatch"
+  | "password_set"
+  | "enter_password"
+  | "unlocked"
+  | "wrong_password"
+  | "password_changed"
+  | "confirm_remove_password"
+  | "password_removed"
+  | "lock_diary"
+  | "add_vehicle"
+  | "first_vehicle"
+  | "vehicle_list"
+  | "new_vehicle"
+  | "edit_vehicle"
+  | "vehicle_name_placeholder"
+  | "license_plate_placeholder"
+  | "vehicle_type_placeholder"
+  | "vehicle_model_placeholder"
+  | "purchase_year_placeholder"
+  | "insurance_placeholder"
+  | "vehicle_type"
+  | "vehicle_model"
+  | "purchase_year"
+  | "insurance"
+  | "insurance_fee"
+  | "register"
+  | "update"
+  | "vehicle_name_and_plate_required"
+  | "vehicle_saved"
+  | "save_error"
+  | "delete_vehicle_confirm"
+  | "deleted"
+  | "delete_error"
+  | "no_vehicles"
+  | "records_count"
+  | "schedules_count"
+  | "records_unit"
+  | "tap_to_add_maintenance_and_schedule"
+  | "add_maintenance"
+  | "maintenance_input"
+  | "maintenance_category"
+  | "maintenance_date"
+  | "engine_oil"
+  | "tire"
+  | "filter"
+  | "repair"
+  | "parts"
+  | "mileage"
+  | "km_unit"
+  | "mileage_placeholder"
+  | "amount"
+  | "won_unit"
+  | "amount_placeholder"
+  | "memo_placeholder"
+  | "save_maintenance"
+  | "date_required"
+  | "maintenance_saved"
+  | "delete_maintenance_confirm"
+  | "maintenance_history"
+  | "attachments_count"
+  | "no_records"
+  | "preventive_schedule"
+  | "preventive_input"
+  | "scheduled_date"
+  | "estimated_mileage"
+  | "estimated_mileage_placeholder"
+  | "description"
+  | "description_placeholder"
+  | "alarm_setting"
+  | "alarm_days_before"
+  | "days_before_2"
+  | "days_before_7"
+  | "days_before_14"
+  | "days_before_30"
+  | "save_schedule"
+  | "scheduled_date_required"
+  | "schedule_saved"
+  | "delete_schedule_confirm"
+  | "alarm_notification"
+  | "maintenance_alarm_title"
+  | "maintenance_alarm_message"
+  | "analyze_budget"
+  | "analyzing_budget"
+  | "budget_analysis_result"
+  | "no_transactions_for_analysis"
+  | "budget_analysis_failed"
+  | "budget_summary"
+  | "highest_spending_category"
+  | "saving_tips"
+  | "monthly_goal"
+  | "customer_support"
+  | "customer_support_description"
+  | "support_email"
+  | "legal_information"
+  | "privacy_policy"
+  | "terms_of_service"
+  | "privacy_last_updated"
+  | "privacy_section1_title"
+  | "privacy_section1_intro"
+  | "privacy_purpose1"
+  | "privacy_purpose2"
+  | "privacy_purpose3"
+  | "privacy_section2_title"
+  | "privacy_collected1"
+  | "privacy_collected2"
+  | "privacy_section3_title"
+  | "privacy_storage_desc"
+  | "privacy_supabase_desc"
+  | "privacy_section4_title"
+  | "privacy_retention_desc"
+  | "privacy_section5_title"
+  | "privacy_right1"
+  | "privacy_right2"
+  | "privacy_right3"
+  | "privacy_section6_title"
+  | "terms_last_updated"
+  | "terms_section1_title"
+  | "terms_section1_desc"
+  | "terms_section2_title"
+  | "terms_section2_desc"
+  | "terms_section3_title"
+  | "terms_service1"
+  | "terms_service2"
+  | "terms_service3"
+  | "terms_service4"
+  | "terms_service5"
+  | "terms_section4_title"
+  | "terms_obligation1"
+  | "terms_obligation2"
+  | "terms_obligation3"
+  | "terms_section5_title"
+  | "terms_section5_desc"
+  | "terms_section6_title"
+  | "terms_section6_desc"
 
-export const translations = {
+const translations: Record<Language, Record<TranslationKey, string>> = {
   ko: {
     // Common
     title: "기록의 숲",
@@ -556,6 +1092,54 @@ export const translations = {
     legal_information: "법적 정보",
     privacy_policy: "개인정보처리방침",
     terms_of_service: "이용약관",
+
+    // Privacy Policy - Korean
+    privacy_last_updated: "최종 업데이트: 2025년 1월",
+    privacy_section1_title: "1. 개인정보의 수집 및 이용 목적",
+    privacy_section1_intro: "기록의 숲은 다음의 목적을 위해 개인정보를 수집하고 이용합니다:",
+    privacy_purpose1: "회원 가입 및 인증: 이메일 기반 계정 관리",
+    privacy_purpose2: "서비스 제공: 일정, 할일, 메모, 일기, 예산, 여행, 차량, 건강 정보 관리",
+    privacy_purpose3: "서비스 개선 및 고객 지원",
+    privacy_section2_title: "2. 수집하는 개인정보 항목",
+    privacy_collected1: "필수: 이메일 주소, 암호화된 비밀번호",
+    privacy_collected2: "자동 수집: 서비스 이용 기록, IP 주소, 쿠키",
+    privacy_section3_title: "3. 개인정보 저장 및 관리",
+    privacy_storage_desc: "모든 개인정보는 Supabase(미국 기반 클라우드 서비스)에 안전하게 저장됩니다.",
+    privacy_supabase_desc:
+      "Supabase는 SOC2 Type 2 및 GDPR 인증을 받은 서비스로, 엔터프라이즈급 보안을 제공합니다. 데이터는 암호화되어 저장되며, 접근 권한은 엄격하게 관리됩니다.",
+    privacy_section4_title: "4. 개인정보의 보유 기간",
+    privacy_retention_desc:
+      "회원 탈퇴 시까지 보유하며, 탈퇴 시 즉시 삭제됩니다. 설정 섹션에서 언제든지 계정을 삭제할 수 있습니다.",
+    privacy_section5_title: "5. 사용자의 권리",
+    privacy_right1: "개인정보 열람 및 수정: 설정 섹션에서 언제든 확인 및 수정 가능",
+    privacy_right2: "데이터 내보내기: 설정 섹션에서 모든 데이터를 JSON/CSV 형식으로 다운로드 가능",
+    privacy_right3: "계정 삭제: 설정 섹션에서 언제든 계정 및 모든 데이터 삭제 가능",
+    privacy_section6_title: "6. 개인정보 보호책임자",
+
+    // Terms of Service - Korean
+    terms_last_updated: "최종 업데이트: 2025년 1월",
+    terms_section1_title: "1. 서비스 정의",
+    terms_section1_desc:
+      "기록의 숲(Forest of Records)은 일정, 할일, 메모, 일기, 예산, 여행, 차량, 건강 관리 등의 기능을 제공하는 웹 기반 서비스입니다.",
+    terms_section2_title: "2. 회원가입",
+    terms_section2_desc: "누구나 이메일 주소만으로 자유롭게 회원가입할 수 있습니다. 연령, 지역, 기타 제약이 없습니다.",
+    terms_section3_title: "3. 제공하는 서비스",
+    terms_service1: "일정 및 할일 관리",
+    terms_service2: "메모 및 일기 작성",
+    terms_service3: "예산 및 가계부 관리",
+    terms_service4: "여행 기록 및 계획",
+    terms_service5: "차량 정비 기록, 건강 정보 추적, 명함 관리 등",
+    terms_section4_title: "4. 사용자의 의무",
+    terms_obligation1: "타인의 개인정보를 도용하거나 허위 정보를 입력하지 않을 것",
+    terms_obligation2: "서비스를 불법적인 목적으로 사용하지 않을 것",
+    terms_obligation3: "타인에게 피해를 주거나 서비스 운영을 방해하지 않을 것",
+    terms_section5_title: "5. 저작권",
+    terms_section5_desc:
+      "사용자가 작성한 콘텐츠의 저작권은 사용자에게 있습니다. 서비스는 사용자의 콘텐츠를 서비스 제공 목적으로만 사용하며, 사용자 동의 없이 제3자에게 제공하지 않습니다.",
+    terms_section6_title: "6. 서비스 변경 및 중단",
+    terms_section6_desc:
+      "서비스는 시스템 점검, 업그레이드 등의 이유로 일시적으로 중단될 수 있습니다. 중요한 변경사항은 사전에 공지합니다.",
+    back: "뒤로 가기",
   },
 
   en: {
@@ -1114,7 +1698,57 @@ export const translations = {
     legal_information: "Legal Information",
     privacy_policy: "Privacy Policy",
     terms_of_service: "Terms of Service",
+
+    // Privacy Policy - English
+    privacy_last_updated: "Last Updated: January 2025",
+    privacy_section1_title: "1. Purpose of Personal Information Collection",
+    privacy_section1_intro: "Forest of Records collects and uses personal information for the following purposes:",
+    privacy_purpose1: "Account registration and authentication: Email-based account management",
+    privacy_purpose2:
+      "Service provision: Schedule, todo, memo, diary, budget, travel, vehicle, health information management",
+    privacy_purpose3: "Service improvement and customer support",
+    privacy_section2_title: "2. Personal Information Collected",
+    privacy_collected1: "Required: Email address, encrypted password",
+    privacy_collected2: "Automatically collected: Service usage logs, IP address, cookies",
+    privacy_section3_title: "3. Personal Information Storage and Management",
+    privacy_storage_desc: "All personal information is securely stored on Supabase (US-based cloud service).",
+    privacy_supabase_desc:
+      "Supabase is SOC2 Type 2 and GDPR certified, providing enterprise-grade security. Data is encrypted at rest and access is strictly controlled.",
+    privacy_section4_title: "4. Personal Information Retention Period",
+    privacy_retention_desc:
+      "Retained until account deletion. Upon deletion, data is immediately removed. You can delete your account anytime from the Settings section.",
+    privacy_section5_title: "5. User Rights",
+    privacy_right1: "View and edit personal information: Available anytime in Settings",
+    privacy_right2: "Data export: Download all data in JSON/CSV format from Settings",
+    privacy_right3: "Account deletion: Delete account and all data anytime from Settings",
+    privacy_section6_title: "6. Data Protection Officer",
+
+    // Terms of Service - English
+    terms_last_updated: "Last Updated: January 2025",
+    terms_section1_title: "1. Service Definition",
+    terms_section1_desc:
+      "Forest of Records is a web-based service providing schedule, todo, memo, diary, budget, travel, vehicle, health management features.",
+    terms_section2_title: "2. Registration",
+    terms_section2_desc:
+      "Anyone can freely register with just an email address. No age, location, or other restrictions.",
+    terms_section3_title: "3. Services Provided",
+    terms_service1: "Schedule and todo management",
+    terms_service2: "Memo and diary writing",
+    terms_service3: "Budget and expense management",
+    terms_service4: "Travel records and planning",
+    terms_service5: "Vehicle maintenance records, health tracking, business card management, etc.",
+    terms_section4_title: "4. User Obligations",
+    terms_obligation1: "Do not steal others' personal information or enter false information",
+    terms_obligation2: "Do not use the service for illegal purposes",
+    terms_obligation3: "Do not harm others or interfere with service operations",
+    terms_section5_title: "5. Copyright",
+    terms_section5_desc:
+      "Users retain copyright of their content. The service uses user content only for service provision and will not share with third parties without consent.",
+    terms_section6_title: "6. Service Changes and Interruptions",
+    terms_section6_desc:
+      "Service may be temporarily suspended for system maintenance, upgrades, etc. Important changes will be announced in advance.",
   },
+
   zh: {
     // Common
     title: "记录之森",
@@ -1659,6 +2293,49 @@ export const translations = {
     legal_information: "法律信息",
     privacy_policy: "隐私政策",
     terms_of_service: "服务条款",
+
+    // Privacy Policy - Chinese
+    privacy_last_updated: "最后更新：2025年1月",
+    privacy_section1_title: "1. 个人信息收集和使用目的",
+    privacy_section1_intro: "记录之森为以下目的收集和使用个人信息：",
+    privacy_purpose1: "会员注册和认证：基于电子邮件的帐户管理",
+    privacy_purpose2: "服务提供：日程、待办事项、备忘录、日记、预算、旅行、车辆、健康信息管理",
+    privacy_purpose3: "服务改进和客户支持",
+    privacy_section2_title: "2. 收集的个人信息项目",
+    privacy_collected1: "必需：电子邮件地址、加密密码",
+    privacy_collected2: "自动收集：服务使用记录、IP地址、Cookie",
+    privacy_section3_title: "3. 个人信息存储和管理",
+    privacy_storage_desc: "所有个人信息都安全地存储在Supabase（美国云服务）上。",
+    privacy_supabase_desc:
+      "Supabase已获得SOC2 Type 2和GDPR认证，提供企业级安全。数据经过加密存储，访问权限受到严格控制。",
+    privacy_section4_title: "4. 个人信息保留期限",
+    privacy_retention_desc: "保留至帐户删除为止。删除后立即删除数据。您可以随时从设置部分删除帐户。",
+    privacy_section5_title: "5. 用户权利",
+    privacy_right1: "查看和编辑个人信息：随时可在设置中查看和修改",
+    privacy_right2: "数据导出：在设置中以JSON/CSV格式下载所有数据",
+    privacy_right3: "帐户删除：随时可在设置中删除帐户和所有数据",
+    privacy_section6_title: "6. 个人信息保护负责人",
+    terms_last_updated: "最后更新：2025年1月",
+    terms_section1_title: "1. 服务定义",
+    terms_section1_desc: "记录之森是提供日程、待办事项、备忘录、日记、预算、旅行、车辆、健康管理等功能的网络服务。",
+    terms_section2_title: "2. 会员注册",
+    terms_section2_desc: "任何人都可以仅使用电子邮件地址自由注册。没有年龄、地区或其他限制。",
+    terms_section3_title: "3. 提供的服务",
+    terms_service1: "日程和待办事项管理",
+    terms_service2: "备忘录和日记撰写",
+    terms_service3: "预算和账簿管理",
+    terms_service4: "旅行记录和计划",
+    terms_service5: "车辆维护记录、健康信息跟踪、名片管理等",
+    terms_section4_title: "4. 用户义务",
+    terms_obligation1: "不得盗用他人个人信息或输入虚假信息",
+    terms_obligation2: "不得将服务用于非法目的",
+    terms_obligation3: "不得伤害他人或妨碍服务运营",
+    terms_section5_title: "5. 版权",
+    terms_section5_desc:
+      "用户创建的内容的版权归用户所有。服务仅为提供服务目的使用用户内容，未经用户同意不会提供给第三方。",
+    terms_section6_title: "6. 服务变更和中断",
+    terms_section6_desc: "服务可能因系统检查、升级等原因暂时中断。重要变更将提前通知。",
+    back: "返回",
   },
 
   ja: {
@@ -2215,6 +2892,53 @@ export const translations = {
     legal_information: "法的情報",
     privacy_policy: "プライバシーポリシー",
     terms_of_service: "利用規約",
+
+    // Privacy Policy - Japanese
+    privacy_last_updated: "最終更新：2025年1月",
+    privacy_section1_title: "1. 個人情報の収集および利用目的",
+    privacy_section1_intro: "記録の森は、以下の目的で個人情報を収集・利用します：",
+    privacy_purpose1: "会員登録と認証：メールベースのアカウント管理",
+    privacy_purpose2: "サービス提供：スケジュール、タスク、メモ、日記、予算、旅行、車両、健康情報管理",
+    privacy_purpose3: "サービス改善とカスタマーサポート",
+    privacy_section2_title: "2. 収集する個人情報項目",
+    privacy_collected1: "必須：メールアドレス、暗号化パスワード",
+    privacy_collected2: "自動収集：サービス利用記録、IPアドレス、クッキー",
+    privacy_section3_title: "3. 個人情報の保管と管理",
+    privacy_storage_desc: "すべての個人情報はSupabase（米国クラウドサービス）に安全に保管されます。",
+    privacy_supabase_desc:
+      "SupabaseはSOC2 Type 2およびGDPR認証を取得しており、エンタープライズグレードのセキュリティを提供します。データは暗号化され、アクセス権限は厳格に管理されます。",
+    privacy_section4_title: "4. 個人情報の保有期間",
+    privacy_retention_desc:
+      "アカウント削除まで保有し、削除時に即座に削除されます。設定からいつでもアカウントを削除できます。",
+    privacy_section5_title: "5. ユーザーの権利",
+    privacy_right1: "個人情報の閲覧と編集：設定からいつでも確認・修正可能",
+    privacy_right2: "データエクスポート：設定からJSON/CSV形式ですべてのデータをダウンロード可能",
+    privacy_right3: "アカウント削除：設定からいつでもアカウントとすべてのデータを削除可能",
+    privacy_section6_title: "6. データ保護責任者",
+
+    // Terms of Service - Japanese
+    terms_last_updated: "最終更新：2025年1月",
+    terms_section1_title: "1. サービス定義",
+    terms_section1_desc:
+      "記録の森は、スケジュール、タスク、メモ、日記、予算、旅行、車両、健康管理機能を提供するウェブベースのサービスです。",
+    terms_section2_title: "2. 会員登録",
+    terms_section2_desc: "誰でもメールアドレスだけで自由に登録できます。年齢、地域、その他の制限はありません。",
+    terms_section3_title: "3. 提供するサービス",
+    terms_service1: "スケジュールとタスク管理",
+    terms_service2: "メモと日記作成",
+    terms_service3: "予算と支出管理",
+    terms_service4: "旅行記録と計画",
+    terms_service5: "車両整備記録、健康追跡、名刺管理など",
+    terms_section4_title: "4. ユーザーの義務",
+    terms_obligation1: "他人の個人情報を盗用したり虚偽情報を入力しないこと",
+    terms_obligation2: "サービスを不法な目的で使用しないこと",
+    terms_obligation3: "他人に害を与えたりサービス運営を妨害しないこと",
+    terms_section5_title: "5. 著作権",
+    terms_section5_desc:
+      "ユーザーが作成したコンテンツの著作権はユーザーに帰属します。サービスはユーザーのコンテンツをサービス提供目的でのみ使用し、同意なしに第三者と共有しません。",
+    terms_section6_title: "6. サービスの変更と中断",
+    terms_section6_desc:
+      "システムメンテナンス、アップグレードなどの理由でサービスが一時的に中断される場合があります。重要な変更は事前に通知します。",
   },
 }
 
