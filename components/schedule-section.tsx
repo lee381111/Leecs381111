@@ -852,14 +852,14 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
             <Button onClick={() => setIsBatchAdding(true)} className="bg-green-500 hover:bg-green-600 text-white">
               <Calendar className="mr-2 h-4 w-4" /> {t("special_days")}
             </Button>
-            <Button onClick={() => setIsAdding(true)} className="bg-emerald-600 hover:bg-emerald-700">
+            <Button onClick={() => setIsAdding(true)} className="bg-green-500 hover:bg-green-600 text-white">
               <Plus className="mr-2 h-4 w-4" /> {t("add")} {t("schedule")}
             </Button>
           </div>
         </div>
 
         <div className="flex justify-end">
-          <Button onClick={() => setIsOptimizingTravel(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
+          <Button onClick={() => setIsOptimizingTravel(true)} className="bg-green-500 hover:bg-green-600 text-white">
             🤖 {t("ai_travel_optimizer")}
           </Button>
         </div>
