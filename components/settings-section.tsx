@@ -433,14 +433,14 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold">{getTranslation(lang, "personal_information")}</h2>
           <Button onClick={() => setShowPersonalInfo(!showPersonalInfo)} variant="outline" size="sm">
-            {showPersonalInfo ? getTranslation(lang, "hide") : getTranslation(lang, "show")}
+            {showPersonalInfo ? getTranslation(lang, "hide") : getTranslation(lang, "view")}
           </Button>
         </div>
 
         {showPersonalInfo && (
           <div className="space-y-4">
             <div className="space-y-2">
-              <h3 className="font-semibold text-sm">{getTranslation(lang, "account_info")}</h3>
+              <h3 className="font-semibold text-sm">{getTranslation(lang, "account_information")}</h3>
               <div className="space-y-1 text-sm">
                 <p>
                   <span className="font-medium">{getTranslation(lang, "email")}:</span> {user?.email || "-"}
@@ -450,7 +450,7 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
                   ...
                 </p>
                 <p>
-                  <span className="font-medium">{getTranslation(lang, "created_at")}:</span>{" "}
+                  <span className="font-medium">{getTranslation(lang, "account_created")}:</span>{" "}
                   {user?.created_at ? new Date(user.created_at).toLocaleDateString() : "-"}
                 </p>
               </div>
@@ -460,7 +460,7 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
               <h3 className="font-semibold text-sm">{getTranslation(lang, "change_email")}</h3>
               {!editingEmail ? (
                 <Button onClick={() => setEditingEmail(true)} variant="outline" size="sm">
-                  {getTranslation(lang, "change_email_button")}
+                  {getTranslation(lang, "update_email")}
                 </Button>
               ) : (
                 <div className="space-y-2">
@@ -468,14 +468,14 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
                     type="email"
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
-                    placeholder={getTranslation(lang, "new_email_placeholder")}
+                    placeholder={getTranslation(lang, "new_email")}
                     className="w-full px-3 py-2 border rounded-lg text-sm"
                   />
                   <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder={getTranslation(lang, "password_placeholder")}
+                    placeholder={getTranslation(lang, "enter_password")}
                     className="w-full px-3 py-2 border rounded-lg text-sm"
                   />
                   <div className="flex gap-2">
