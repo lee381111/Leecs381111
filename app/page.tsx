@@ -40,6 +40,7 @@ import {
   loadMedications,
   loadVehicles,
   loadVehicleMaintenanceRecords,
+  loadBusinessCards,
 } from "@/lib/storage"
 import { NotificationCenter } from "@/components/notification-center"
 import { checkUserConsent } from "@/lib/storage"
@@ -429,16 +430,18 @@ export default function ForestNotePage() {
           }
         }
 
-        const [notes, diaries, schedules, travels, health, medications, vehicles, maintenance] = await Promise.all([
-          fetchWithFallback(() => loadNotes(user.id), "notes"),
-          fetchWithFallback(() => loadDiaries(user.id), "diaries"),
-          fetchWithFallback(() => loadSchedules(user.id), "schedules"),
-          fetchWithFallback(() => loadTravelRecords(user.id), "travels"),
-          fetchWithFallback(() => loadHealthRecords(user.id), "health"),
-          fetchWithFallback(() => loadMedications(user.id), "medications"),
-          fetchWithFallback(() => loadVehicles(user.id), "vehicles"),
-          fetchWithFallback(() => loadVehicleMaintenanceRecords(user.id), "maintenance"),
-        ])
+        const [notes, diaries, schedules, travels, health, medications, vehicles, maintenance, businessCards] =
+          await Promise.all([
+            fetchWithFallback(() => loadNotes(user.id), "notes"),
+            fetchWithFallback(() => loadDiaries(user.id), "diaries"),
+            fetchWithFallback(() => loadSchedules(user.id), "schedules"),
+            fetchWithFallback(() => loadTravelRecords(user.id), "travels"),
+            fetchWithFallback(() => loadHealthRecords(user.id), "health"),
+            fetchWithFallback(() => loadMedications(user.id), "medications"),
+            fetchWithFallback(() => loadVehicles(user.id), "vehicles"),
+            fetchWithFallback(() => loadVehicleMaintenanceRecords(user.id), "maintenance"),
+            fetchWithFallback(() => loadBusinessCards(user.id), "business_cards"),
+          ])
 
         const jsonData = JSON.stringify({
           notes: Array.isArray(notes) ? notes : [],
@@ -449,6 +452,7 @@ export default function ForestNotePage() {
           medications: Array.isArray(medications) ? medications : [],
           vehicles: Array.isArray(vehicles) ? vehicles : [],
           maintenance: Array.isArray(maintenance) ? maintenance : [],
+          businessCards: Array.isArray(businessCards) ? businessCards : [],
         })
         const totalSize = new Blob([jsonData]).size
 
@@ -475,6 +479,14 @@ export default function ForestNotePage() {
         if (Array.isArray(travels)) {
           travels.forEach((travel: any) => {
             const urls = travel.attachments || []
+            const count = Array.isArray(urls) ? urls.length : 0
+            mediaCount += count
+          })
+        }
+
+        if (Array.isArray(health)) {
+          health.forEach((record: any) => {
+            const urls = record.attachments || []
             const count = Array.isArray(urls) ? urls.length : 0
             mediaCount += count
           })
