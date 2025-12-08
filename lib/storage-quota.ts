@@ -33,6 +33,84 @@ async function isAdminUser(userId: string): Promise<boolean> {
   return profile?.email === ADMIN_EMAIL
 }
 
+export async function calculateRealTimeStorageUsage(userId: string): Promise<number> {
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  )
+
+  try {
+    const fetchWithFallback = async (table: string, select = "*"): Promise<any[]> => {
+      try {
+        const { data, error } = await supabase.from(table).select(select).eq("user_id", userId)
+        if (error) throw error
+        return Array.isArray(data) ? data : []
+      } catch (error) {
+        console.warn(`[v0] Failed to load ${table}:`, error)
+        return []
+      }
+    }
+
+    const [notes, diaries, schedules, travels, health, medications, vehicles, maintenance, businessCards] =
+      await Promise.all([
+        fetchWithFallback("notes"),
+        fetchWithFallback("diary_entries"),
+        fetchWithFallback("schedules"),
+        fetchWithFallback("travel_records"),
+        fetchWithFallback("health_records"),
+        fetchWithFallback("medications"),
+        fetchWithFallback("vehicles"),
+        fetchWithFallback("vehicle_maintenance"),
+        fetchWithFallback("business_cards"),
+      ])
+
+    // Calculate JSON data size
+    const jsonData = JSON.stringify({
+      notes,
+      diaries,
+      schedules,
+      travels,
+      health,
+      medications,
+      vehicles,
+      maintenance,
+      businessCards,
+    })
+    const jsonSize = new Blob([jsonData]).size
+
+    // Count media files
+    let mediaCount = 0
+
+    notes.forEach((note: any) => {
+      const urls = note.attachments || []
+      mediaCount += Array.isArray(urls) ? urls.length : 0
+    })
+
+    diaries.forEach((diary: any) => {
+      const urls = diary.mediaUrls || diary.attachments || []
+      mediaCount += Array.isArray(urls) ? urls.length : 0
+    })
+
+    travels.forEach((travel: any) => {
+      const urls = travel.attachments || []
+      mediaCount += Array.isArray(urls) ? urls.length : 0
+    })
+
+    health.forEach((record: any) => {
+      const urls = record.attachments || []
+      mediaCount += Array.isArray(urls) ? urls.length : 0
+    })
+
+    // Estimate media size (500KB per file)
+    const estimatedMediaSize = mediaCount * 500 * 1024
+
+    return jsonSize + estimatedMediaSize
+  } catch (error) {
+    console.error("[v0] Error calculating real-time storage:", error)
+    return 0
+  }
+}
+
 // Get user's storage information
 export async function getUserStorageInfo(userId: string): Promise<StorageInfo | null> {
   const supabase = createBrowserClient(
@@ -54,7 +132,7 @@ export async function getUserStorageInfo(userId: string): Promise<StorageInfo | 
   const isAdmin = profile.email === ADMIN_EMAIL
   const quota = isAdmin ? STORAGE_QUOTAS.ADMIN : profile.storage_quota || STORAGE_QUOTAS.EMAIL_USER
 
-  const used = profile.storage_used || 0
+  const used = await calculateRealTimeStorageUsage(userId)
   const remaining = Math.max(0, quota - used)
   const percentage = quota > 0 ? (used / quota) * 100 : 0
 
