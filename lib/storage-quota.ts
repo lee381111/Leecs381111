@@ -78,7 +78,6 @@ export async function calculateRealTimeStorageUsage(userId: string): Promise<num
     })
     const jsonSize = new Blob([jsonData]).size
 
-    // Count media files
     let mediaCount = 0
 
     notes.forEach((note: any) => {
@@ -88,6 +87,11 @@ export async function calculateRealTimeStorageUsage(userId: string): Promise<num
 
     diaries.forEach((diary: any) => {
       const urls = diary.mediaUrls || diary.attachments || []
+      mediaCount += Array.isArray(urls) ? urls.length : 0
+    })
+
+    schedules.forEach((schedule: any) => {
+      const urls = schedule.attachments || []
       mediaCount += Array.isArray(urls) ? urls.length : 0
     })
 
