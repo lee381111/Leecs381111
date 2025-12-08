@@ -4,9 +4,9 @@ import { useState, useEffect } from "react"
 import { X, Megaphone } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { loadActiveAnnouncements } from "@/lib/storage"
-import type { Announcement } from "@/lib/types"
+import type { Announcement, Language } from "@/lib/types"
 
-export function AnnouncementBanner({ language }: { language: string }) {
+export function AnnouncementBanner({ language }: { language: Language }) {
   const [announcement, setAnnouncement] = useState<Announcement | null>(null)
   const [dismissed, setDismissed] = useState(false)
 
@@ -71,7 +71,11 @@ export function AnnouncementBanner({ language }: { language: string }) {
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 flex-1">
             <Megaphone className={`h-5 w-5 ${iconColor} flex-shrink-0`} />
-            <p className={`text-sm font-medium ${textColor}`}>{announcement.message}</p>
+            <p className={`text-sm font-medium ${textColor}`}>
+              {typeof announcement.message === "string"
+                ? announcement.message
+                : announcement.message[language] || announcement.message.ko}
+            </p>
           </div>
           <Button
             variant="ghost"

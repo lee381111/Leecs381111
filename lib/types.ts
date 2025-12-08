@@ -224,7 +224,12 @@ export interface TodoItem {
 
 export interface Announcement {
   id: string
-  message: string
+  message: {
+    ko: string
+    en: string
+    zh: string
+    ja: string
+  }
   type: "info" | "warning" | "success"
   isActive: boolean
   expiresAt?: string

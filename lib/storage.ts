@@ -1449,7 +1449,7 @@ export async function loadActiveAnnouncements(): Promise<Announcement[]> {
 
   return (data || []).map((row) => ({
     id: row.id,
-    message: row.message,
+    message: typeof row.message === "string" ? JSON.parse(row.message) : row.message,
     type: row.type,
     isActive: row.is_active,
     expiresAt: row.expires_at,
@@ -1471,7 +1471,7 @@ export async function loadAllAnnouncements(userId: string): Promise<Announcement
 
   return (data || []).map((row) => ({
     id: row.id,
-    message: row.message,
+    message: typeof row.message === "string" ? JSON.parse(row.message) : row.message,
     type: row.type,
     isActive: row.is_active,
     expiresAt: row.expires_at,
@@ -1488,7 +1488,7 @@ export async function saveAnnouncement(announcement: Announcement, userId: strin
 
   const dbAnnouncement = {
     id: announcement.id,
-    message: announcement.message,
+    message: JSON.stringify(announcement.message),
     type: announcement.type,
     is_active: announcement.isActive,
     expires_at: announcement.expiresAt || null,
