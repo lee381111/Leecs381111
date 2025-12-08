@@ -5,6 +5,7 @@ import { X, Megaphone } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { loadActiveAnnouncements } from "@/lib/storage"
 import type { Announcement } from "@/lib/types"
+import { getTranslation, type Language } from "@/lib/i18n"
 
 export function AnnouncementBanner({ language }: { language: string }) {
   const [announcement, setAnnouncement] = useState<Announcement | null>(null)
@@ -65,13 +66,22 @@ export function AnnouncementBanner({ language }: { language: string }) {
     success: "text-green-600 dark:text-green-400",
   }[announcement.type]
 
+  const getMessage = () => {
+    // If message starts with 'announcement_', treat it as a translation key
+    if (announcement.message.startsWith("announcement_")) {
+      return getTranslation(language as Language, announcement.message as any)
+    }
+    // Otherwise, return the message as-is (for backward compatibility)
+    return announcement.message
+  }
+
   return (
     <div className={`${bgColor} border-b`}>
       <div className="max-w-7xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 flex-1">
             <Megaphone className={`h-5 w-5 ${iconColor} flex-shrink-0`} />
-            <p className={`text-sm font-medium ${textColor}`}>{announcement.message}</p>
+            <p className={`text-sm font-medium ${textColor}`}>{getMessage()}</p>
           </div>
           <Button
             variant="ghost"

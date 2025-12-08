@@ -617,6 +617,10 @@ type TranslationKey =
   | "upgrade_coming_soon"
   | "email_user_storage_info"
   | "admin_storage_info"
+  | "announcement_welcome"
+  | "announcement_maintenance"
+  | "announcement_update"
+  | "announcement_event"
 
 const translations: Record<Language, Record<TranslationKey, string>> = {
   ko: {
@@ -1280,6 +1284,12 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     upgrade_coming_soon: "프리미엄 업그레이드 기능이 곧 추가됩니다!",
     email_user_storage_info: "이메일 사용자는 500MB를 무료로 사용할 수 있습니다",
     admin_storage_info: "관리자 계정은 1GB 저장 공간을 사용할 수 있습니다",
+
+    // Announcement Translations
+    announcement_welcome: "Pi Life Manager에 오신 것을 환영합니다!",
+    announcement_maintenance: "시스템 점검이 예정되어 있습니다. 서비스 이용에 참고해주세요.",
+    announcement_update: "새로운 기능이 추가되었습니다. 확인해보세요!",
+    announcement_event: "특별 이벤트가 진행 중입니다!",
   },
 
   en: {
@@ -1946,8 +1956,13 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     upgrade_coming_soon: "Premium upgrade coming soon!",
     email_user_storage_info: "Email users get 500MB storage for free",
     admin_storage_info: "Admin account has 1GB storage space",
-  },
 
+    // Announcement Translations
+    announcement_welcome: "Welcome to Pi Life Manager!",
+    announcement_maintenance: "System maintenance is scheduled. Please be aware of service availability.",
+    announcement_update: "New features have been added. Check them out!",
+    announcement_event: "Special event is ongoing!",
+  },
   zh: {
     // Common
     title: "记录之林",
@@ -2602,6 +2617,12 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     upgrade_coming_soon: "高级版升级功能即将推出！",
     email_user_storage_info: "电子邮件用户可免费使用500MB存储空间",
     admin_storage_info: "管理员账户拥有1GB存储空间",
+
+    // Announcement Translations
+    announcement_welcome: "欢迎使用 Pi Life Manager！",
+    announcement_maintenance: "系统维护已安排。请注意服务可用性。",
+    announcement_update: "新功能已添加。请查看！",
+    announcement_event: "特别活动正在进行中！",
   },
 
   ja: {
@@ -3264,6 +3285,12 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     upgrade_coming_soon: "プレミアムアップグレード機能は近日公開予定です！",
     email_user_storage_info: "メールユーザーは500MBのストレージを無料で使用できます",
     admin_storage_info: "管理者アカウントは1GBのストレージ容量を持っています",
+
+    // Announcement Translations
+    announcement_welcome: "Pi Life Managerへようこそ！",
+    announcement_maintenance: "システムメンテナンスが予定されています。サービス利用にご注意ください。",
+    announcement_update: "新機能が追加されました。ぜひご確認ください！",
+    announcement_event: "特別イベント開催中！",
   },
 }
 

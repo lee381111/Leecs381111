@@ -384,6 +384,10 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
   const handleSaveAnnouncement = async () => {
     if (!user || !announcementForm.message.trim()) return
 
+    console.log("[v0] handleSaveAnnouncement called")
+    console.log("[v0] User:", user)
+    console.log("[v0] Form data:", announcementForm)
+
     try {
       const announcement: Announcement = {
         id: editingAnnouncement?.id || crypto.randomUUID(),
@@ -395,7 +399,12 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
         createdBy: user.id,
       }
 
+      console.log("[v0] Calling saveAnnouncement with:", announcement)
+
       await saveAnnouncement(announcement, user.id)
+
+      console.log("[v0] saveAnnouncement completed successfully")
+
       const updated = await loadAllAnnouncements(user.id)
       setAnnouncements(updated)
       setAnnouncementForm({ message: "", type: "info", expiresAt: "" })
@@ -403,6 +412,7 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
       alert(getTranslation(currentLanguage, "save_success"))
     } catch (error) {
       console.error("[v0] Failed to save announcement:", error)
+      console.error("[v0] Error details:", JSON.stringify(error, null, 2))
       alert(getTranslation(currentLanguage, "save_failed"))
     }
   }
@@ -735,9 +745,14 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
                 </h4>
 
                 <div>
-                  <label className="text-sm font-medium">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     {getTranslation(currentLanguage, "announcement_message")}
                   </label>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-2">
+                    {currentLanguage === "ko"
+                      ? "번역 키 사용: announcement_welcome, announcement_maintenance, announcement_update, announcement_event 또는 직접 입력"
+                      : "Use translation keys: announcement_welcome, announcement_maintenance, announcement_update, announcement_event or enter custom message"}
+                  </p>
                   <textarea
                     value={announcementForm.message}
                     onChange={(e) => setAnnouncementForm({ ...announcementForm, message: e.target.value })}
