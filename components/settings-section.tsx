@@ -664,7 +664,12 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
                 {getTranslation(currentLanguage, "privacy_policy_description")}
               </p>
             </div>
-            <Button onClick={() => router.push("/privacy-policy")} variant="ghost" size="sm" className="gap-2">
+            <Button
+              onClick={() => router.push(`/privacy-policy?lang=${currentLanguage}`)}
+              variant="ghost"
+              size="sm"
+              className="gap-2"
+            >
               {getTranslation(currentLanguage, "view")}
               <ExternalLink className="h-4 w-4" />
             </Button>
@@ -677,7 +682,12 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
                 {getTranslation(currentLanguage, "terms_of_service_description")}
               </p>
             </div>
-            <Button onClick={() => router.push("/terms-of-service")} variant="ghost" size="sm" className="gap-2">
+            <Button
+              onClick={() => router.push(`/terms-of-service?lang=${currentLanguage}`)}
+              variant="ghost"
+              size="sm"
+              className="gap-2"
+            >
               {getTranslation(currentLanguage, "view")}
               <ExternalLink className="h-4 w-4" />
             </Button>
