@@ -384,14 +384,52 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
   const handleSaveAnnouncement = async () => {
     if (!user || !announcementForm.message.trim()) return
 
-    console.log("[v0] handleSaveAnnouncement called")
-    console.log("[v0] User:", user)
-    console.log("[v0] Form data:", announcementForm)
+    const saveButton = document.querySelector("[data-save-announcement]") as HTMLButtonElement
+    if (saveButton) {
+      saveButton.disabled = true
+      saveButton.textContent = getTranslation(currentLanguage, "translating")
+    }
 
     try {
+      let messageToSave = announcementForm.message
+
+      // If message doesn't start with 'announcement_', translate it
+      if (!announcementForm.message.startsWith("announcement_")) {
+        try {
+          console.log("[v0] Translating message:", announcementForm.message)
+
+          const response = await fetch("/api/translate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              text: announcementForm.message,
+              sourceLang: "ko",
+            }),
+          })
+
+          if (response.ok) {
+            const { translations } = await response.json()
+            console.log("[v0] Translations received:", translations)
+
+            // Store as JSON with all languages
+            messageToSave = JSON.stringify({
+              ko: announcementForm.message,
+              en: translations.en,
+              zh: translations.zh,
+              ja: translations.ja,
+            })
+          } else {
+            console.error("[v0] Translation failed, using original message")
+          }
+        } catch (error) {
+          console.error("[v0] Translation error:", error)
+          // Continue with original message
+        }
+      }
+
       const announcement: Announcement = {
         id: editingAnnouncement?.id || crypto.randomUUID(),
-        message: announcementForm.message,
+        message: messageToSave,
         type: announcementForm.type,
         isActive: true,
         expiresAt: announcementForm.expiresAt || undefined,
@@ -399,11 +437,7 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
         createdBy: user.id,
       }
 
-      console.log("[v0] Calling saveAnnouncement with:", announcement)
-
       await saveAnnouncement(announcement, user.id)
-
-      console.log("[v0] saveAnnouncement completed successfully")
 
       const updated = await loadAllAnnouncements(user.id)
       setAnnouncements(updated)
@@ -412,8 +446,12 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
       alert(getTranslation(currentLanguage, "save_success"))
     } catch (error) {
       console.error("[v0] Failed to save announcement:", error)
-      console.error("[v0] Error details:", JSON.stringify(error, null, 2))
       alert(getTranslation(currentLanguage, "save_failed"))
+    } finally {
+      if (saveButton) {
+        saveButton.disabled = false
+        saveButton.textContent = getTranslation(currentLanguage, "save")
+      }
     }
   }
 
@@ -786,7 +824,11 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
                 </div>
 
                 <div className="flex gap-2">
-                  <Button onClick={handleSaveAnnouncement} className="bg-green-600 hover:bg-green-700">
+                  <Button
+                    onClick={handleSaveAnnouncement}
+                    className="bg-green-600 hover:bg-green-700"
+                    data-save-announcement
+                  >
                     {editingAnnouncement
                       ? getTranslation(currentLanguage, "update")
                       : getTranslation(currentLanguage, "save")}

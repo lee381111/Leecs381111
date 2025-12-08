@@ -57,7 +57,7 @@ export function AnnouncementBanner({ language }: { language: string }) {
   const textColor = {
     info: "text-blue-800 dark:text-blue-200",
     warning: "text-yellow-800 dark:text-yellow-200",
-    success: "text-green-800 dark:text-green-200",
+    success: "text-green-800 dark:text-green-400",
   }[announcement.type]
 
   const iconColor = {
@@ -67,10 +67,20 @@ export function AnnouncementBanner({ language }: { language: string }) {
   }[announcement.type]
 
   const getMessage = () => {
+    try {
+      const parsed = JSON.parse(announcement.message)
+      if (typeof parsed === "object" && parsed[language as Language]) {
+        return parsed[language as Language]
+      }
+    } catch {
+      // Not JSON, continue
+    }
+
     // If message starts with 'announcement_', treat it as a translation key
     if (announcement.message.startsWith("announcement_")) {
       return getTranslation(language as Language, announcement.message as any)
     }
+
     // Otherwise, return the message as-is (for backward compatibility)
     return announcement.message
   }
