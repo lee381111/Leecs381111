@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/auth-context"
 
 export default function Page() {
@@ -17,9 +17,18 @@ export default function Page() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-  const { login } = useAuth()
+  const { login, loginWithPi, isPiMode } = useAuth()
 
-  const handleLogin = async (e: React.FormEvent) => {
+  useEffect(() => {
+    if (isPiMode) {
+      const piUserId = localStorage.getItem("pi_user_id")
+      if (piUserId) {
+        router.push("/")
+      }
+    }
+  }, [isPiMode, router])
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault()
 
     setIsLoading(true)
@@ -38,6 +47,52 @@ export default function Page() {
     }
   }
 
+  const handlePiLogin = async () => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      await loginWithPi()
+      router.push("/")
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : "Pi 로그인 중 오류가 발생했습니다")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (isPiMode) {
+    return (
+      <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+        <div className="w-full max-w-sm">
+          <div className="flex flex-col gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-2xl">Pi Network 로그인</CardTitle>
+                <CardDescription>Pi 지갑으로 안전하게 로그인하세요</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col gap-4">
+                  {error && <p className="text-sm text-red-500">{error}</p>}
+                  <Button
+                    onClick={handlePiLogin}
+                    className="w-full bg-purple-600 hover:bg-purple-700"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "로그인 중..." : "🥧 Pi로 로그인"}
+                  </Button>
+                  <p className="text-xs text-center text-muted-foreground">
+                    Pi Network 앱 내에서 자동으로 로그인됩니다
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
       <div className="w-full max-w-sm">
@@ -48,7 +103,7 @@ export default function Page() {
               <CardDescription>이메일과 비밀번호를 입력하여 로그인하세요</CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleLogin}>
+              <form onSubmit={handleEmailLogin}>
                 <div className="flex flex-col gap-6">
                   <div className="grid gap-2">
                     <Label htmlFor="email">이메일</Label>
