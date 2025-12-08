@@ -553,6 +553,7 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
                   <label className="block text-sm font-medium mb-1">{t("maintenance_date")}</label>
                   <input
                     type="date"
+                    lang={language}
                     value={maintenanceForm.date}
                     onChange={(e) => setMaintenanceForm({ ...maintenanceForm, date: e.target.value })}
                     className="w-full p-2 border rounded bg-white/50 dark:bg-slate-800/50"
@@ -629,6 +630,7 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
                   <label className="block text-sm font-medium mb-1">{t("scheduled_date")}</label>
                   <input
                     type="date"
+                    lang={language}
                     value={scheduleForm.scheduledDate}
                     onChange={(e) => setScheduleForm({ ...scheduleForm, scheduledDate: e.target.value })}
                     className="w-full p-2 border rounded bg-white/50 dark:bg-slate-800/50"
