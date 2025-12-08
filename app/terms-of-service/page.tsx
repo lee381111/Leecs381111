@@ -18,10 +18,8 @@ export default function TermsOfServicePage() {
     if (urlLang && ["ko", "en", "zh", "ja"].includes(urlLang)) {
       setLanguage(urlLang)
     } else {
-      const savedLang = localStorage.getItem("language") as Language
-      if (savedLang) {
-        setLanguage(savedLang)
-      }
+      const savedLang = (localStorage.getItem("language") as Language) || "ko"
+      setLanguage(savedLang)
     }
 
     const handleLanguageChange = (e?: Event) => {

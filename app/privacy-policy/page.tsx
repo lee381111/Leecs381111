@@ -18,10 +18,8 @@ export default function PrivacyPolicyPage() {
     if (urlLang && ["ko", "en", "zh", "ja"].includes(urlLang)) {
       setLanguage(urlLang)
     } else {
-      const savedLang = localStorage.getItem("language") as Language
-      if (savedLang) {
-        setLanguage(savedLang)
-      }
+      const savedLang = (localStorage.getItem("language") as Language) || "ko"
+      setLanguage(savedLang)
     }
 
     const handleLanguageChange = (e?: Event) => {
@@ -42,6 +40,8 @@ export default function PrivacyPolicyPage() {
   }, [])
 
   const t = (key: string) => getTranslation(language, key as any)
+
+  console.log("[v0] Privacy Policy - Current language:", language)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6">
