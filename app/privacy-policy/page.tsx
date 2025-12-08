@@ -12,9 +12,16 @@ export default function PrivacyPolicyPage() {
   const [language, setLanguage] = useState<Language>("ko")
 
   useEffect(() => {
-    const savedLang = localStorage.getItem("language") as Language
-    if (savedLang) {
-      setLanguage(savedLang)
+    const urlParams = new URLSearchParams(window.location.search)
+    const urlLang = urlParams.get("lang") as Language
+
+    if (urlLang && ["ko", "en", "zh", "ja"].includes(urlLang)) {
+      setLanguage(urlLang)
+    } else {
+      const savedLang = localStorage.getItem("language") as Language
+      if (savedLang) {
+        setLanguage(savedLang)
+      }
     }
 
     const handleLanguageChange = (e?: Event) => {

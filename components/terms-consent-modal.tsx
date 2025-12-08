@@ -92,7 +92,7 @@ export function TermsConsentModal({ userId, userEmail, onConsent, onDecline }: T
                           : "(必須) 利用規約に同意します"}
                   </label>
                   <a
-                    href="/terms-of-service"
+                    href={`/terms-of-service?lang=${language}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-xs text-blue-600 hover:underline ml-1"
@@ -127,7 +127,7 @@ export function TermsConsentModal({ userId, userEmail, onConsent, onDecline }: T
                           : "(必須) 個人情報保護方針に同意します"}
                   </label>
                   <a
-                    href="/privacy-policy"
+                    href={`/privacy-policy?lang=${language}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-xs text-blue-600 hover:underline ml-1"

@@ -248,7 +248,7 @@ export default function Page() {
                           <span className="text-red-500">{t[language].required}</span> {t[language].agreeTerms}
                         </label>
                         <Link
-                          href="/terms-of-service"
+                          href={`/terms-of-service?lang=${language}`}
                           target="_blank"
                           className="text-xs text-emerald-600 hover:underline"
                         >
@@ -271,7 +271,7 @@ export default function Page() {
                           <span className="text-red-500">{t[language].required}</span> {t[language].agreePrivacy}
                         </label>
                         <Link
-                          href="/privacy-policy"
+                          href={`/privacy-policy?lang=${language}`}
                           target="_blank"
                           className="text-xs text-emerald-600 hover:underline"
                         >
