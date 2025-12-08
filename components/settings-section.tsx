@@ -17,6 +17,7 @@ import {
   ChevronDown,
   Shield,
   ExternalLink,
+  Loader2,
 } from "lucide-react"
 import { exportAllData, importAllData, loadAllAnnouncements, saveAnnouncement, deleteAnnouncement } from "@/lib/storage"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -50,6 +51,7 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
     type: "info" as "info" | "warning" | "success",
     expiresAt: "",
   })
+  const [isSavingAnnouncement, setIsSavingAnnouncement] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [currentLanguage, setLanguage] = useState(language)
 
@@ -385,8 +387,12 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
   }, [user, showAnnouncementPanel])
 
   const handleSaveAnnouncement = async () => {
-    if (!user || !announcementForm.message_ko.trim()) return
+    if (!user || !announcementForm.message_ko.trim()) {
+      alert(getTranslation(currentLanguage, "korean_message_required") || "한국어 메시지는 필수입니다.")
+      return
+    }
 
+    setIsSavingAnnouncement(true)
     try {
       const announcement: Announcement = {
         id: editingAnnouncement?.id || crypto.randomUUID(),
@@ -404,8 +410,10 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
       }
 
       await saveAnnouncement(announcement, user.id)
+
       const updated = await loadAllAnnouncements(user.id)
       setAnnouncements(updated)
+
       setAnnouncementForm({
         message_ko: "",
         message_en: "",
@@ -415,10 +423,20 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
         expiresAt: "",
       })
       setEditingAnnouncement(null)
-      alert(getTranslation(currentLanguage, "save_success"))
+
+      alert(
+        editingAnnouncement
+          ? getTranslation(currentLanguage, "announcement_updated") || "공지사항이 수정되었습니다."
+          : getTranslation(currentLanguage, "announcement_created") || "공지사항이 생성되었습니다.",
+      )
     } catch (error) {
-      console.error("[v0] Failed to save announcement:", error)
-      alert(getTranslation(currentLanguage, "save_failed"))
+      console.error("Failed to save announcement:", error)
+      alert(
+        getTranslation(currentLanguage, "announcement_save_failed") ||
+          "공지사항 저장에 실패했습니다: " + (error as Error).message,
+      )
+    } finally {
+      setIsSavingAnnouncement(false)
     }
   }
 
@@ -833,10 +851,21 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
                 </div>
 
                 <div className="flex gap-2">
-                  <Button onClick={handleSaveAnnouncement} className="bg-green-600 hover:bg-green-700">
-                    {editingAnnouncement
-                      ? getTranslation(currentLanguage, "update")
-                      : getTranslation(currentLanguage, "save")}
+                  <Button
+                    onClick={handleSaveAnnouncement}
+                    className="bg-green-600 hover:bg-green-700"
+                    disabled={isSavingAnnouncement}
+                  >
+                    {isSavingAnnouncement ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {getTranslation(currentLanguage, "saving") || "저장 중..."}
+                      </>
+                    ) : editingAnnouncement ? (
+                      getTranslation(currentLanguage, "update")
+                    ) : (
+                      getTranslation(currentLanguage, "create")
+                    )}
                   </Button>
                   {editingAnnouncement && (
                     <Button
