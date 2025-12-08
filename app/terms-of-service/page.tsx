@@ -17,22 +17,20 @@ export default function TermsOfServicePage() {
       setLanguage(savedLang)
     }
 
-    // Listen for language changes
-    const handleLanguageChange = () => {
-      const newLang = localStorage.getItem("language") as Language
+    const handleLanguageChange = (e?: Event) => {
+      const customEvent = e as CustomEvent
+      const newLang = customEvent?.detail?.language || (localStorage.getItem("language") as Language)
       if (newLang) {
         setLanguage(newLang)
       }
     }
 
     window.addEventListener("storage", handleLanguageChange)
-
-    // Also listen for custom language change event
-    window.addEventListener("languageChange", handleLanguageChange)
+    window.addEventListener("languageChange", handleLanguageChange as EventListener)
 
     return () => {
       window.removeEventListener("storage", handleLanguageChange)
-      window.removeEventListener("languageChange", handleLanguageChange)
+      window.removeEventListener("languageChange", handleLanguageChange as EventListener)
     }
   }, [])
 
