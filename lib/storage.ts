@@ -1484,6 +1484,8 @@ export async function loadAllAnnouncements(userId: string): Promise<Announcement
 export async function saveAnnouncement(announcement: Announcement, userId: string): Promise<void> {
   const supabase = createClient()
 
+  console.log("[v0] Saving announcement:", announcement)
+
   const dbAnnouncement = {
     id: announcement.id,
     message: JSON.stringify(announcement.message),
@@ -1494,11 +1496,16 @@ export async function saveAnnouncement(announcement: Announcement, userId: strin
     updated_at: new Date().toISOString(),
   }
 
+  console.log("[v0] DB announcement object:", dbAnnouncement)
+
   const { error } = await supabase.from("announcements").upsert(dbAnnouncement, { onConflict: "id" })
 
   if (error) {
+    console.error("[v0] Error saving announcement:", error)
     throw error
   }
+
+  console.log("[v0] Announcement saved successfully")
 }
 
 export async function deleteAnnouncement(id: string): Promise<void> {
