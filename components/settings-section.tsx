@@ -631,6 +631,13 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
         <p className="text-sm text-emerald-700 dark:text-emerald-300">{getTranslation(language, "developer_info")}</p>
       </Card>
 
+      <Card className="p-6 space-y-2 bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
+        <h2 className="text-xl font-bold text-blue-600 dark:text-blue-400">
+          {getTranslation(language, "app_designer")}
+        </h2>
+        <p className="text-sm text-blue-700 dark:text-blue-300">{getTranslation(language, "designer_info")}</p>
+      </Card>
+
       <Card className="p-6 space-y-4 bg-card">
         <h2 className="text-xl font-bold">{getTranslation(language, "legal_information")}</h2>
 

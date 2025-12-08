@@ -366,6 +366,8 @@ type TranslationKey =
   | "connection_label"
   | "app_developer"
   | "developer_info"
+  | "app_designer"
+  | "designer_info"
   | "app_introduction"
   | "app_introduction_description"
   | "notes_description"
@@ -497,6 +499,7 @@ type TranslationKey =
   | "support_email"
   | "legal_information"
   | "privacy_policy"
+  | "privacy_policy_description"
   | "privacy_last_updated"
   | "privacy_section1_title"
   | "privacy_section1_intro"
@@ -517,6 +520,7 @@ type TranslationKey =
   | "privacy_section5_title"
   | "privacy_section6_title"
   | "terms_of_service"
+  | "terms_of_service_description"
   | "terms_last_updated"
   | "terms_section1_title"
   | "terms_section1_desc"
@@ -1002,6 +1006,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
 
     // Privacy Policy - Korean translations
     privacy_policy: "개인정보 처리방침",
+    privacy_policy_description: "개인정보 수집 및 사용에 관한 정책을 확인하세요",
     privacy_last_updated: "최종 수정일: 2025년 12월",
     privacy_section1_title: "1. 수집하는 정보",
     privacy_section1_intro: "서비스 제공을 위해 다음 정보를 수집합니다:",
@@ -1023,9 +1028,13 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     privacy_right2: "데이터 다운로드 (설정 > 백업/복원)",
     privacy_right3: "계정 삭제 (설정 > 위험 구역) - 모든 데이터 즉시 삭제",
     privacy_section6_title: "6. 보호책임자",
+    privacy_section7_title: "7. 서비스 종료 시 개인정보 처리",
+    privacy_termination_desc: "서비스 종료 시 사용자에게 30일 전 공지하며, 데이터 내보내기 기간을 제공합니다.",
+    privacy_data_deletion: "서비스 종료 후 30일 이내에 모든 개인정보를 Supabase 데이터베이스에서 완전히 삭제합니다.",
 
     // Terms of Service - Simplified Korean translations
     terms_of_service: "이용약관",
+    terms_of_service_description: "서비스 이용 약관 및 규정을 확인하세요",
     terms_last_updated: "최종 수정일: 2025년 12월",
     terms_section1_title: "1. 서비스 정의",
     terms_section1_desc:
@@ -1049,9 +1058,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     terms_termination2: "서비스 종료 시 최소 30일 전 앱 상단 배너로 공지합니다",
     terms_termination3: "종료 공지 후 30일간 데이터 내보내기 기능을 제공합니다",
     terms_termination4: "무료 서비스이므로 서비스 중단으로 인한 손해배상 책임은 제한됩니다",
-    privacy_section7_title: "7. 서비스 종료 시 개인정보 처리",
-    privacy_termination_desc: "서비스 종료 시 사용자에게 30일 전 공지하며, 데이터 내보내기 기간을 제공합니다.",
-    privacy_data_deletion: "서비스 종료 후 30일 이내에 모든 개인정보를 Supabase 데이터베이스에서 완전히 삭제합니다.",
 
     // Settings section - Personal Information translations for Korean
     personal_information: "개인정보 관리",
@@ -1114,7 +1120,9 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     save_failed: "저장 실패",
     update: "업데이트",
     app_developer: "앱 개발자",
-    developer_info: "Vercel Platform",
+    developer_info: "김포시 장기동 이찬세",
+    app_designer: "앱 디자이너",
+    designer_info: "김포시 장기동 이찬세",
     back_to_forest: "숲으로 돌아가기",
     customer_support: "고객 지원",
     customer_support_description: "문의사항이 있으시면 아래 이메일로 연락해주세요.",
@@ -1140,6 +1148,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     vehicle_records: "차량 기록",
     health_records: "건강 기록",
     legal_information: "법적 정보",
+    privacy_policy_description: "개인정보 수집 및 사용에 관한 정책을 확인하세요",
+    terms_of_service_description: "서비스 이용 약관 및 규정을 확인하세요",
     set_diary_password: "일기 비밀번호 설정",
     password_description: "일기를 보호하기 위한 비밀번호를 설정하세요",
     new_password: "새 비밀번호",
@@ -1641,6 +1651,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
 
     // Privacy Policy - English translations
     privacy_policy: "Privacy Policy",
+    privacy_policy_description: "View our privacy policy and data collection practices",
     privacy_last_updated: "Last Updated: December 2025",
     privacy_section1_title: "1. Information We Collect",
     privacy_section1_intro: "We collect the following information to provide our service:",
@@ -1670,6 +1681,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
 
     // Terms of Service - Simplified English translations
     terms_of_service: "Terms of Service",
+    terms_of_service_description: "View service terms and conditions",
     terms_last_updated: "Last Updated: December 2025",
     terms_section1_title: "1. Service Definition",
     terms_section1_desc:
@@ -1756,7 +1768,9 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     save_failed: "Save failed",
     update: "Update",
     app_developer: "App Developer",
-    developer_info: "Built with Vercel",
+    developer_info: "Lee Chan-se, Janggi-dong, Gimpo",
+    app_designer: "App Designer",
+    designer_info: "Lee Chan-se, Janggi-dong, Gimpo",
     back_to_forest: "Back to Forest",
     customer_support: "Customer Support",
     customer_support_description: "If you have any questions, please contact us via email below.",
@@ -1782,6 +1796,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     vehicle_records: "Vehicle Records",
     health_records: "Health Records",
     legal_information: "Legal Information",
+    privacy_policy_description: "View our privacy policy and data collection practices",
+    terms_of_service_description: "View service terms and conditions",
     set_diary_password: "Set Diary Password",
     password_description: "Set a password to protect your diary",
     new_password: "New Password",
@@ -2279,6 +2295,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
 
     // Privacy Policy - Chinese translations
     privacy_policy: "隐私政策",
+    privacy_policy_description: "查看我们的隐私政策和数据收集做法",
     privacy_last_updated: "最后更新：2025年12月",
     privacy_section1_title: "1. 收集的信息",
     privacy_section1_intro: "为提供服务，我们收集以下信息：",
@@ -2304,6 +2321,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
 
     // Terms of Service - Simplified Chinese translations
     terms_of_service: "服务条款",
+    terms_of_service_description: "查看服务条款和条件",
     terms_last_updated: "最后更新：2025年12月",
     terms_section1_title: "1. 服务定义",
     terms_section1_desc: "本应用提供个人生活管理服务。基本功能免费，未来可能会增加高级功能。",
@@ -2388,7 +2406,9 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     save_failed: "保存失败",
     update: "更新",
     app_developer: "应用开发者",
-    developer_info: "Vercel Platform",
+    developer_info: "李赞世，金浦市长基洞",
+    app_designer: "应用设计师",
+    designer_info: "李赞世，金浦市长基洞",
     back_to_forest: "返回森林",
     customer_support: "客户支持",
     customer_support_description: "如果您有任何问题，请通过以下电子邮件与我们联系。",
@@ -2413,7 +2433,9 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     travel_records: "旅行记录",
     vehicle_records: "车辆记录",
     health_records: "健康记录",
-    legal_information: "法적 정보",
+    legal_information: "法律信息",
+    privacy_policy_description: "查看我们的隐私政策和数据收集做法",
+    terms_of_service_description: "查看服务条款和条件",
     set_diary_password: "设置日记密码",
     password_description: "设置密码以保护您的日记",
     new_password: "新密码",
@@ -2914,6 +2936,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
 
     // Privacy Policy - Japanese translations
     privacy_policy: "プライバシーポリシー",
+    privacy_policy_description: "プライバシーポリシーとデータ収集方法を確認してください",
     privacy_last_updated: "最終更新: 2025年12月",
     privacy_section1_title: "1. 収集する情報",
     privacy_section1_intro: "サービス提供のため、以下の情報を収集します：",
@@ -2941,6 +2964,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
 
     // Terms of Service - Simplified Japanese translations
     terms_of_service: "利用規約",
+    terms_of_service_description: "サービス利用規約と条件を確認してください",
     terms_last_updated: "最終更新: 2025年12月",
     terms_section1_title: "1. サービス定義",
     terms_section1_desc:
@@ -3026,7 +3050,9 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     save_failed: "保存失敗",
     update: "更新",
     app_developer: "アプリ開発者",
-    developer_info: "Vercel Platform",
+    developer_info: "イ・チャンセ、金浦市長基洞",
+    app_designer: "アプリデザイナー",
+    designer_info: "イ・チャンセ、金浦市長基洞",
     back_to_forest: "森に戻る",
     customer_support: "カスタマーサポート",
     customer_support_description: "ご質問がございましたら、下記メールアドレスまでご連絡ください。",
@@ -3052,6 +3078,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     vehicle_records: "車両記録",
     health_records: "健康記録",
     legal_information: "法的情報",
+    privacy_policy_description: "プライバシーポリシーとデータ収集方法を確認してください",
+    terms_of_service_description: "サービス利用規約と条件を確認してください",
     set_diary_password: "日記のパスワード設定",
     password_description: "日記を保護するためのパスワードを設定してください",
     new_password: "新しいパスワード",
