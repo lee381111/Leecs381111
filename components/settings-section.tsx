@@ -16,6 +16,7 @@ import {
   FileText,
   ChevronDown,
   Shield,
+  ExternalLink,
 } from "lucide-react"
 import { exportAllData, importAllData, loadAllAnnouncements, saveAnnouncement, deleteAnnouncement } from "@/lib/storage"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -630,6 +631,36 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
         <p className="text-sm text-emerald-700 dark:text-emerald-300">{getTranslation(language, "developer_info")}</p>
       </Card>
 
+      <Card className="p-6 space-y-4 bg-card">
+        <h2 className="text-xl font-bold">{getTranslation(language, "legal_information")}</h2>
+
+        <div className="space-y-3">
+          <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+            <div>
+              <h3 className="font-semibold">{getTranslation(language, "privacy_policy")}</h3>
+              <p className="text-sm text-muted-foreground">{getTranslation(language, "privacy_policy_description")}</p>
+            </div>
+            <Button onClick={() => router.push("/privacy-policy")} variant="ghost" size="sm" className="gap-2">
+              {getTranslation(language, "view")}
+              <ExternalLink className="h-4 w-4" />
+            </Button>
+          </div>
+
+          <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+            <div>
+              <h3 className="font-semibold">{getTranslation(language, "terms_of_service")}</h3>
+              <p className="text-sm text-muted-foreground">
+                {getTranslation(language, "terms_of_service_description")}
+              </p>
+            </div>
+            <Button onClick={() => router.push("/terms-of-service")} variant="ghost" size="sm" className="gap-2">
+              {getTranslation(language, "view")}
+              <ExternalLink className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </Card>
+
       <Card className="p-6 space-y-4 bg-card border-red-200 dark:border-red-900">
         <h2 className="text-xl font-bold text-red-600 dark:text-red-400">{getTranslation(language, "danger_zone")}</h2>
 
@@ -857,7 +888,7 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
                 {getTranslation(language, "data_backup")}
               </h3>
-              <p className="text-muted-foreground">{getTranslation(language, "data_backup_description")}</p>
+              <p className="text-sm text-muted-foreground">{getTranslation(language, "data_backup_description")}</p>
             </section>
           </div>
         </DialogContent>
