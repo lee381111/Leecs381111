@@ -387,7 +387,18 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
   }, [user, showAnnouncementPanel])
 
   const handleSaveAnnouncement = async () => {
-    if (!user || !announcementForm.message_ko.trim()) {
+    if (!user) {
+      alert(getTranslation(currentLanguage, "login_required") || "로그인이 필요합니다.")
+      return
+    }
+
+    // Check if user is admin
+    if (user.email !== "lee381111@gmail.com") {
+      alert("관리자만 공지사항을 작성할 수 있습니다.")
+      return
+    }
+
+    if (!announcementForm.message_ko.trim()) {
       alert(getTranslation(currentLanguage, "korean_message_required") || "한국어 메시지는 필수입니다.")
       return
     }
