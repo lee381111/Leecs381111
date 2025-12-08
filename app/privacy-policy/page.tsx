@@ -16,6 +16,24 @@ export default function PrivacyPolicyPage() {
     if (savedLang) {
       setLanguage(savedLang)
     }
+
+    // Listen for language changes
+    const handleLanguageChange = () => {
+      const newLang = localStorage.getItem("language") as Language
+      if (newLang) {
+        setLanguage(newLang)
+      }
+    }
+
+    window.addEventListener("storage", handleLanguageChange)
+
+    // Also listen for custom language change event
+    window.addEventListener("languageChange", handleLanguageChange)
+
+    return () => {
+      window.removeEventListener("storage", handleLanguageChange)
+      window.removeEventListener("languageChange", handleLanguageChange)
+    }
   }, [])
 
   const t = (key: string) => getTranslation(language, key as any)
