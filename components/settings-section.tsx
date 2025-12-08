@@ -43,10 +43,7 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null)
   const [announcementForm, setAnnouncementForm] = useState({
-    message_ko: "",
-    message_en: "",
-    message_zh: "",
-    message_ja: "",
+    message: "",
     type: "info" as "info" | "warning" | "success",
     expiresAt: "",
   })
@@ -385,17 +382,12 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
   }, [user, showAnnouncementPanel])
 
   const handleSaveAnnouncement = async () => {
-    if (!user || !announcementForm.message_ko.trim()) return
+    if (!user || !announcementForm.message.trim()) return
 
     try {
       const announcement: Announcement = {
         id: editingAnnouncement?.id || crypto.randomUUID(),
-        message: {
-          ko: announcementForm.message_ko,
-          en: announcementForm.message_en || announcementForm.message_ko,
-          zh: announcementForm.message_zh || announcementForm.message_ko,
-          ja: announcementForm.message_ja || announcementForm.message_ko,
-        },
+        message: announcementForm.message,
         type: announcementForm.type,
         isActive: true,
         expiresAt: announcementForm.expiresAt || undefined,
@@ -406,14 +398,7 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
       await saveAnnouncement(announcement, user.id)
       const updated = await loadAllAnnouncements(user.id)
       setAnnouncements(updated)
-      setAnnouncementForm({
-        message_ko: "",
-        message_en: "",
-        message_zh: "",
-        message_ja: "",
-        type: "info",
-        expiresAt: "",
-      })
+      setAnnouncementForm({ message: "", type: "info", expiresAt: "" })
       setEditingAnnouncement(null)
       alert(getTranslation(currentLanguage, "save_success"))
     } catch (error) {
@@ -438,16 +423,8 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
 
   const handleEditAnnouncement = (announcement: Announcement) => {
     setEditingAnnouncement(announcement)
-    const msg =
-      typeof announcement.message === "string"
-        ? { ko: announcement.message, en: announcement.message, zh: announcement.message, ja: announcement.message }
-        : announcement.message
-
     setAnnouncementForm({
-      message_ko: msg.ko,
-      message_en: msg.en,
-      message_zh: msg.zh,
-      message_ja: msg.ja,
+      message: announcement.message,
       type: announcement.type,
       expiresAt: announcement.expiresAt || "",
     })
@@ -759,53 +736,14 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
 
                 <div>
                   <label className="text-sm font-medium">
-                    {getTranslation(currentLanguage, "announcement_message")} (한국어) *
+                    {getTranslation(currentLanguage, "announcement_message")}
                   </label>
                   <textarea
-                    value={announcementForm.message_ko}
-                    onChange={(e) => setAnnouncementForm({ ...announcementForm, message_ko: e.target.value })}
+                    value={announcementForm.message}
+                    onChange={(e) => setAnnouncementForm({ ...announcementForm, message: e.target.value })}
                     className="w-full mt-1 p-2 border rounded-md"
-                    rows={2}
-                    placeholder="한국어 공지사항 메시지를 입력하세요"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium">
-                    {getTranslation(currentLanguage, "announcement_message")} (English)
-                  </label>
-                  <textarea
-                    value={announcementForm.message_en}
-                    onChange={(e) => setAnnouncementForm({ ...announcementForm, message_en: e.target.value })}
-                    className="w-full mt-1 p-2 border rounded-md"
-                    rows={2}
-                    placeholder="Enter announcement message in English"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium">
-                    {getTranslation(currentLanguage, "announcement_message")} (中文)
-                  </label>
-                  <textarea
-                    value={announcementForm.message_zh}
-                    onChange={(e) => setAnnouncementForm({ ...announcementForm, message_zh: e.target.value })}
-                    className="w-full mt-1 p-2 border rounded-md"
-                    rows={2}
-                    placeholder="请输入中文公告信息"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium">
-                    {getTranslation(currentLanguage, "announcement_message")} (日本語)
-                  </label>
-                  <textarea
-                    value={announcementForm.message_ja}
-                    onChange={(e) => setAnnouncementForm({ ...announcementForm, message_ja: e.target.value })}
-                    className="w-full mt-1 p-2 border rounded-md"
-                    rows={2}
-                    placeholder="日本語でお知らせメッセージを入力してください"
+                    rows={3}
+                    placeholder={getTranslation(currentLanguage, "announcement_message_placeholder")}
                   />
                 </div>
 
@@ -842,14 +780,7 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
                     <Button
                       onClick={() => {
                         setEditingAnnouncement(null)
-                        setAnnouncementForm({
-                          message_ko: "",
-                          message_en: "",
-                          message_zh: "",
-                          message_ja: "",
-                          type: "info",
-                          expiresAt: "",
-                        })
+                        setAnnouncementForm({ message: "", type: "info", expiresAt: "" })
                       }}
                       variant="outline"
                     >
@@ -864,42 +795,35 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
                 {announcements.length === 0 ? (
                   <p className="text-sm text-muted-foreground">{getTranslation(currentLanguage, "no_announcements")}</p>
                 ) : (
-                  announcements.map((announcement) => {
-                    const displayMessage =
-                      typeof announcement.message === "string"
-                        ? announcement.message
-                        : announcement.message[currentLanguage] || announcement.message.ko
-
-                    return (
-                      <div key={announcement.id} className="border rounded-lg p-3 space-y-2">
-                        <div className="flex items-start gap-2">
-                          <p className="text-sm flex-1">{displayMessage}</p>
-                          <div className="flex gap-1">
-                            <Button size="sm" variant="ghost" onClick={() => handleEditAnnouncement(announcement)}>
-                              {getTranslation(currentLanguage, "edit")}
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleDeleteAnnouncement(announcement.id)}
-                              className="text-red-600 hover:text-red-700"
-                            >
-                              {getTranslation(currentLanguage, "delete")}
-                            </Button>
-                          </div>
-                        </div>
-                        <div className="flex gap-2 text-xs text-muted-foreground">
-                          <span className="capitalize">{announcement.type}</span>
-                          {announcement.expiresAt && (
-                            <span>
-                              • {getTranslation(currentLanguage, "expires")}:{" "}
-                              {new Date(announcement.expiresAt).toLocaleDateString()}
-                            </span>
-                          )}
+                  announcements.map((announcement) => (
+                    <div key={announcement.id} className="border rounded-lg p-3 space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-sm flex-1">{announcement.message}</p>
+                        <div className="flex gap-1">
+                          <Button size="sm" variant="ghost" onClick={() => handleEditAnnouncement(announcement)}>
+                            {getTranslation(currentLanguage, "edit")}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleDeleteAnnouncement(announcement.id)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            {getTranslation(currentLanguage, "delete")}
+                          </Button>
                         </div>
                       </div>
-                    )
-                  })
+                      <div className="flex gap-2 text-xs text-muted-foreground">
+                        <span className="capitalize">{announcement.type}</span>
+                        {announcement.expiresAt && (
+                          <span>
+                            • {getTranslation(currentLanguage, "expires")}:{" "}
+                            {new Date(announcement.expiresAt).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))
                 )}
               </div>
             </div>

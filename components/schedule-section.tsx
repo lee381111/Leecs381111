@@ -431,7 +431,6 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                 <label className="block text-sm font-medium">{t("start_date_label")}</label>
                 <input
                   type="date"
-                  lang={language}
                   value={travelOptimizeData.startDate}
                   onChange={(e) => setTravelOptimizeData({ ...travelOptimizeData, startDate: e.target.value })}
                   className="w-full p-2 border rounded bg-white"
@@ -441,7 +440,6 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                 <label className="block text-sm font-medium">{t("end_date_label")}</label>
                 <input
                   type="date"
-                  lang={language}
                   value={travelOptimizeData.endDate}
                   onChange={(e) => setTravelOptimizeData({ ...travelOptimizeData, endDate: e.target.value })}
                   className="w-full p-2 border rounded bg-white"
@@ -656,7 +654,6 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                   <label className="text-sm text-muted-foreground mb-1 block">{t("date")}</label>
                   <input
                     type="date"
-                    lang={language}
                     value={event.date}
                     onChange={(e) => {
                       const updated = [...batchEvents]
@@ -751,12 +748,12 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
           value={formData.title}
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
         />
-        <div className="grid grid-cols-2 gap-2">
-          <Input
+        <div className="grid grid-cols-2 gap-4">
+          <input
             type="date"
             value={formData.date}
             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-            className="w-full bg-white/50 dark:bg-slate-800/50"
+            className="p-2 border rounded"
           />
           <input
             type="time"

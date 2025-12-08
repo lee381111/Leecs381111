@@ -1,16 +1,5 @@
 // Storage quota management for differentiated user tiers
 import { createBrowserClient } from "@supabase/ssr"
-import {
-  loadNotes,
-  loadDiaries,
-  loadSchedules,
-  loadTravelRecords,
-  loadHealthRecords,
-  loadMedications,
-  loadVehicles,
-  loadVehicleMaintenanceRecords,
-  loadBusinessCards,
-} from "./storage"
 
 const ADMIN_EMAIL = "lee381111@gmail.com"
 
@@ -45,85 +34,76 @@ async function isAdminUser(userId: string): Promise<boolean> {
 }
 
 export async function calculateRealTimeStorageUsage(userId: string): Promise<number> {
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  )
+
   try {
-    const fetchWithFallback = async (fn: () => Promise<any[]>, name: string): Promise<any[]> => {
+    const fetchWithFallback = async (table: string, select = "*"): Promise<any[]> => {
       try {
-        const result = await fn()
-        return Array.isArray(result) ? result : []
+        const { data, error } = await supabase.from(table).select(select).eq("user_id", userId)
+        if (error) throw error
+        return Array.isArray(data) ? data : []
       } catch (error) {
-        console.warn(`[v0] Failed to load ${name} in storage quota:`, error)
+        console.warn(`[v0] Failed to load ${table}:`, error)
         return []
       }
     }
 
     const [notes, diaries, schedules, travels, health, medications, vehicles, maintenance, businessCards] =
       await Promise.all([
-        fetchWithFallback(() => loadNotes(userId), "notes"),
-        fetchWithFallback(() => loadDiaries(userId), "diaries"),
-        fetchWithFallback(() => loadSchedules(userId), "schedules"),
-        fetchWithFallback(() => loadTravelRecords(userId), "travels"),
-        fetchWithFallback(() => loadHealthRecords(userId), "health"),
-        fetchWithFallback(() => loadMedications(userId), "medications"),
-        fetchWithFallback(() => loadVehicles(userId), "vehicles"),
-        fetchWithFallback(() => loadVehicleMaintenanceRecords(userId), "maintenance"),
-        fetchWithFallback(() => loadBusinessCards(userId), "business_cards"),
+        fetchWithFallback("notes"),
+        fetchWithFallback("diary_entries"),
+        fetchWithFallback("schedules"),
+        fetchWithFallback("travel_records"),
+        fetchWithFallback("health_records"),
+        fetchWithFallback("medications"),
+        fetchWithFallback("vehicles"),
+        fetchWithFallback("vehicle_maintenance"),
+        fetchWithFallback("business_cards"),
       ])
 
     // Calculate JSON data size
     const jsonData = JSON.stringify({
-      notes: Array.isArray(notes) ? notes : [],
-      diaries: Array.isArray(diaries) ? diaries : [],
-      schedules: Array.isArray(schedules) ? schedules : [],
-      travels: Array.isArray(travels) ? travels : [],
-      health: Array.isArray(health) ? health : [],
-      medications: Array.isArray(medications) ? medications : [],
-      vehicles: Array.isArray(vehicles) ? vehicles : [],
-      maintenance: Array.isArray(maintenance) ? maintenance : [],
-      businessCards: Array.isArray(businessCards) ? businessCards : [],
+      notes,
+      diaries,
+      schedules,
+      travels,
+      health,
+      medications,
+      vehicles,
+      maintenance,
+      businessCards,
     })
     const jsonSize = new Blob([jsonData]).size
 
     let mediaCount = 0
 
-    if (Array.isArray(notes)) {
-      notes.forEach((note: any) => {
-        const urls = note.attachments || []
-        const count = Array.isArray(urls) ? urls.length : 0
-        mediaCount += count
-      })
-    }
+    notes.forEach((note: any) => {
+      const urls = note.attachments || []
+      mediaCount += Array.isArray(urls) ? urls.length : 0
+    })
 
-    if (Array.isArray(diaries)) {
-      diaries.forEach((diary: any) => {
-        const urls = diary.mediaUrls || diary.attachments || []
-        const count = Array.isArray(urls) ? urls.length : 0
-        mediaCount += count
-      })
-    }
+    diaries.forEach((diary: any) => {
+      const urls = diary.mediaUrls || diary.attachments || []
+      mediaCount += Array.isArray(urls) ? urls.length : 0
+    })
 
-    if (Array.isArray(schedules)) {
-      schedules.forEach((schedule: any) => {
-        const urls = schedule.attachments || []
-        const count = Array.isArray(urls) ? urls.length : 0
-        mediaCount += count
-      })
-    }
+    schedules.forEach((schedule: any) => {
+      const urls = schedule.attachments || []
+      mediaCount += Array.isArray(urls) ? urls.length : 0
+    })
 
-    if (Array.isArray(travels)) {
-      travels.forEach((travel: any) => {
-        const urls = travel.attachments || []
-        const count = Array.isArray(urls) ? urls.length : 0
-        mediaCount += count
-      })
-    }
+    travels.forEach((travel: any) => {
+      const urls = travel.attachments || []
+      mediaCount += Array.isArray(urls) ? urls.length : 0
+    })
 
-    if (Array.isArray(health)) {
-      health.forEach((record: any) => {
-        const urls = record.attachments || []
-        const count = Array.isArray(urls) ? urls.length : 0
-        mediaCount += count
-      })
-    }
+    health.forEach((record: any) => {
+      const urls = record.attachments || []
+      mediaCount += Array.isArray(urls) ? urls.length : 0
+    })
 
     // Estimate media size (500KB per file)
     const estimatedMediaSize = mediaCount * 500 * 1024
