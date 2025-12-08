@@ -751,13 +751,12 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
           value={formData.title}
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
         />
-        <div className="grid grid-cols-2 gap-4">
-          <input
+        <div className="grid grid-cols-2 gap-2">
+          <Input
             type="date"
-            lang={language}
             value={formData.date}
             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-            className="p-2 border rounded"
+            className="w-full bg-white/50 dark:bg-slate-800/50"
           />
           <input
             type="time"

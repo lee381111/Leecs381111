@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, Plus, Pencil, Trash2, Car, Calendar } from "lucide-react"
+import { ArrowLeft, Plus, Pencil, Trash2, Car } from "lucide-react"
 import { saveVehicles, loadVehicles, saveVehicleMaintenanceRecords, loadVehicleMaintenanceRecords } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import type { Vehicle, VehicleMaintenanceRecord, PreventiveMaintenanceSchedule, Attachment } from "@/lib/types"
@@ -522,7 +522,7 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
             className="flex-1 bg-green-600 hover:bg-green-700 text-white"
             disabled={!selectedVehicle}
           >
-            <Calendar className="mr-2 h-4 w-4" />
+            <Plus className="mr-2 h-4 w-4" />
             {showScheduleForm ? t("cancel") : t("preventive_schedule")}
           </Button>
         </div>
@@ -551,12 +551,11 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">{t("maintenance_date")}</label>
-                  <input
+                  <Input
                     type="date"
-                    lang={language}
                     value={maintenanceForm.date}
                     onChange={(e) => setMaintenanceForm({ ...maintenanceForm, date: e.target.value })}
-                    className="w-full p-2 border rounded bg-white/50 dark:bg-slate-800/50"
+                    className="w-full bg-white/50 dark:bg-slate-800/50"
                   />
                 </div>
                 <div>
@@ -628,12 +627,11 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">{t("scheduled_date")}</label>
-                  <input
+                  <Input
                     type="date"
-                    lang={language}
                     value={scheduleForm.scheduledDate}
                     onChange={(e) => setScheduleForm({ ...scheduleForm, scheduledDate: e.target.value })}
-                    className="w-full p-2 border rounded bg-white/50 dark:bg-slate-800/50"
+                    className="w-full bg-white/50 dark:bg-slate-800/50"
                   />
                 </div>
                 <div>
