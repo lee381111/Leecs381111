@@ -476,6 +476,14 @@ export default function ForestNotePage() {
           })
         }
 
+        if (Array.isArray(schedules)) {
+          schedules.forEach((schedule: any) => {
+            const urls = schedule.attachments || []
+            const count = Array.isArray(urls) ? urls.length : 0
+            mediaCount += count
+          })
+        }
+
         if (Array.isArray(travels)) {
           travels.forEach((travel: any) => {
             const urls = travel.attachments || []
