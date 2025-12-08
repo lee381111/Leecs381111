@@ -17,6 +17,7 @@ interface StorageQuotaCardProps {
 export function StorageQuotaCard({ userId, language }: StorageQuotaCardProps) {
   const [storageInfo, setStorageInfo] = useState<StorageInfo | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isAdmin, setIsAdmin] = useState(false)
   const isPi = isPiEnvironment()
 
   useEffect(() => {
@@ -27,6 +28,11 @@ export function StorageQuotaCard({ userId, language }: StorageQuotaCardProps) {
     setLoading(true)
     const info = await getUserStorageInfo(userId)
     setStorageInfo(info)
+
+    if (info && info.quota === 1073741824) {
+      setIsAdmin(true)
+    }
+
     setLoading(false)
   }
 
@@ -56,7 +62,13 @@ export function StorageQuotaCard({ userId, language }: StorageQuotaCardProps) {
     <Card className="p-6 space-y-4 bg-card border-2 hover:border-emerald-500/50 transition-colors">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold">{getTranslation(language, "storage_usage")}</h2>
-        {storageInfo.isPremium && (
+        {isAdmin && (
+          <div className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full text-xs font-semibold">
+            <Crown className="h-3 w-3" />
+            ADMIN
+          </div>
+        )}
+        {storageInfo.isPremium && !isAdmin && (
           <div className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-full text-xs font-semibold">
             <Crown className="h-3 w-3" />
             {getTranslation(language, "premium")}
@@ -99,8 +111,15 @@ export function StorageQuotaCard({ userId, language }: StorageQuotaCardProps) {
           </div>
         )}
 
-        {/* Show upgrade button for Pi free users */}
-        {isPi && !storageInfo.isPremium && storageInfo.authType === "pi" && (
+        {isAdmin && (
+          <div className="pt-4 border-t">
+            <p className="text-xs text-muted-foreground text-center">
+              {getTranslation(language, "admin_storage_info")}
+            </p>
+          </div>
+        )}
+
+        {isPi && !storageInfo.isPremium && storageInfo.authType === "pi" && !isAdmin && (
           <div className="pt-4 border-t">
             <div className="space-y-3">
               <div className="flex items-start gap-3 p-3 bg-gradient-to-r from-emerald-500/10 to-blue-500/10 rounded-lg border border-emerald-500/20">
@@ -123,8 +142,7 @@ export function StorageQuotaCard({ userId, language }: StorageQuotaCardProps) {
           </div>
         )}
 
-        {/* Show info for email users */}
-        {storageInfo.authType === "email" && (
+        {storageInfo.authType === "email" && !isAdmin && (
           <div className="pt-4 border-t">
             <p className="text-xs text-muted-foreground text-center">
               {getTranslation(language, "email_user_storage_info")}

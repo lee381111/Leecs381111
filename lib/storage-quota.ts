@@ -1,8 +1,11 @@
 // Storage quota management for differentiated user tiers
 import { createBrowserClient } from "@supabase/ssr"
 
+const ADMIN_EMAIL = "lee381111@gmail.com"
+
 // Storage quota constants (in bytes)
 export const STORAGE_QUOTAS = {
+  ADMIN: 1073741824, // 1000MB (1GB) for admin
   EMAIL_USER: 524288000, // 500MB for email users (free forever)
   PI_FREE: 52428800, // 50MB for Pi free users
   PI_PREMIUM: 524288000, // 500MB for Pi premium users
@@ -19,6 +22,17 @@ export interface StorageInfo {
   authType: AuthType
 }
 
+async function isAdminUser(userId: string): Promise<boolean> {
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  )
+
+  const { data: profile } = await supabase.from("profiles").select("email").eq("id", userId).single()
+
+  return profile?.email === ADMIN_EMAIL
+}
+
 // Get user's storage information
 export async function getUserStorageInfo(userId: string): Promise<StorageInfo | null> {
   const supabase = createBrowserClient(
@@ -28,7 +42,7 @@ export async function getUserStorageInfo(userId: string): Promise<StorageInfo | 
 
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select("storage_quota, storage_used, is_premium, auth_type")
+    .select("storage_quota, storage_used, is_premium, auth_type, email")
     .eq("id", userId)
     .single()
 
@@ -37,7 +51,9 @@ export async function getUserStorageInfo(userId: string): Promise<StorageInfo | 
     return null
   }
 
-  const quota = profile.storage_quota || STORAGE_QUOTAS.EMAIL_USER
+  const isAdmin = profile.email === ADMIN_EMAIL
+  const quota = isAdmin ? STORAGE_QUOTAS.ADMIN : profile.storage_quota || STORAGE_QUOTAS.EMAIL_USER
+
   const used = profile.storage_used || 0
   const remaining = Math.max(0, quota - used)
   const percentage = quota > 0 ? (used / quota) * 100 : 0
@@ -104,8 +120,15 @@ export async function initializeUserStorageQuota(
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   )
 
-  // Determine initial quota based on auth type
-  const quota = authType === "email" ? STORAGE_QUOTAS.EMAIL_USER : STORAGE_QUOTAS.PI_FREE
+  const isAdmin = await isAdminUser(userId)
+
+  // Determine initial quota based on auth type or admin status
+  let quota: number
+  if (isAdmin) {
+    quota = STORAGE_QUOTAS.ADMIN // 1GB for admin
+  } else {
+    quota = authType === "email" ? STORAGE_QUOTAS.EMAIL_USER : STORAGE_QUOTAS.PI_FREE
+  }
 
   const { error } = await supabase
     .from("profiles")

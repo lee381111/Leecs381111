@@ -616,6 +616,7 @@ type TranslationKey =
   | "upgrade_for_1_pi"
   | "upgrade_coming_soon"
   | "email_user_storage_info"
+  | "admin_storage_info"
 
 const translations: Record<Language, Record<TranslationKey, string>> = {
   ko: {
@@ -1278,6 +1279,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     upgrade_for_1_pi: "월 1 Pi로 업그레이드",
     upgrade_coming_soon: "프리미엄 업그레이드 기능이 곧 추가됩니다!",
     email_user_storage_info: "이메일 사용자는 500MB를 무료로 사용할 수 있습니다",
+    admin_storage_info: "관리자 계정은 1GB 저장 공간을 사용할 수 있습니다",
   },
 
   en: {
@@ -1943,6 +1945,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     upgrade_for_1_pi: "Upgrade for 1 Pi/month",
     upgrade_coming_soon: "Premium upgrade coming soon!",
     email_user_storage_info: "Email users get 500MB storage for free",
+    admin_storage_info: "Admin account has 1GB storage space",
   },
 
   zh: {
@@ -2598,6 +2601,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     upgrade_for_1_pi: "每月1 Pi升级",
     upgrade_coming_soon: "高级版升级功能即将推出！",
     email_user_storage_info: "电子邮件用户可免费使用500MB存储空间",
+    admin_storage_info: "管理员账户拥有1GB存储空间",
   },
 
   ja: {
@@ -3259,6 +3263,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     upgrade_for_1_pi: "月額1 Piでアップグレード",
     upgrade_coming_soon: "プレミアムアップグレード機能は近日公開予定です！",
     email_user_storage_info: "メールユーザーは500MBのストレージを無料で使用できます",
+    admin_storage_info: "管理者アカウントは1GBのストレージ容量を持っています",
   },
 }
 
