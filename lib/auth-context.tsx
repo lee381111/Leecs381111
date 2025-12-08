@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from "
 import { createClient } from "./supabase/client"
 import type { User } from "@supabase/supabase-js"
 import { isPiEnvironment, initPiSDK, authenticateWithPi, type PiUser } from "./pi-utils"
+import { initializeUserStorageQuota } from "./storage-quota"
 
 type AuthContextType = {
   user: User | null
@@ -83,6 +84,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("pi_access_token", piUser.accessToken)
       localStorage.setItem("pi_user_id", piUser.uid)
 
+      const { data: existingProfile } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .eq("user_id", piUser.uid)
+        .single()
+
       // Create or update user profile in Supabase
       const { error } = await supabase.from("profiles").upsert(
         {
@@ -98,6 +105,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       )
 
       if (error) throw error
+
+      if (!existingProfile) {
+        await initializeUserStorageQuota(piUser.uid, "pi", piUser.username)
+      }
 
       // Set user in context
       setUser({
@@ -122,7 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const register = async (email: string, password: string): Promise<void> => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -130,6 +141,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
     })
     if (error) throw error
+
+    if (data.user) {
+      await initializeUserStorageQuota(data.user.id, "email")
+    }
   }
 
   const logout = async (): Promise<void> => {

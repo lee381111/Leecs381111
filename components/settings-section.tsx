@@ -23,6 +23,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { getTranslation } from "@/lib/i18n"
 import type { Language, Announcement } from "@/lib/types"
 import { useRouter } from "next/navigation" // Added for admin page navigation
+import { StorageQuotaCard } from "./storage-quota-card" // Import storage quota card
 
 export function SettingsSection({ onBack, language }: { onBack: () => void; language: string }) {
   const { user } = useAuth()
@@ -600,6 +601,8 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
           </div>
         )}
       </Card>
+
+      {user && <StorageQuotaCard userId={user.id} language={currentLanguage} />}
 
       <Card className="p-6 space-y-4 bg-card">
         <div className="flex items-center justify-between">

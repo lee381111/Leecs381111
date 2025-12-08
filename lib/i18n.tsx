@@ -600,6 +600,22 @@ type TranslationKey =
   | "generating_report"
   | "report_generated"
   | "report_generation_failed"
+  | "storage_usage"
+  | "storage_used"
+  | "used"
+  | "used_lowercase"
+  | "remaining"
+  | "storage_full"
+  | "storage_warning"
+  | "premium"
+  | "upgrade_to_premium"
+  | "premium_benefits"
+  | "benefit_500mb"
+  | "benefit_no_ads"
+  | "benefit_priority_support"
+  | "upgrade_for_1_pi"
+  | "upgrade_coming_soon"
+  | "email_user_storage_info"
 
 const translations: Record<Language, Record<TranslationKey, string>> = {
   ko: {
@@ -1234,7 +1250,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     description_placeholder: "정비 내용 입력",
     alarm_setting: "알림 설정",
     alarm_days_before: "일 전 알림",
-    days_before_1: "일 전",
     days_before_2: "2일 전",
     days_before_7: "7일 전",
     days_before_14: "14일 전",
@@ -1245,6 +1260,24 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     delete_schedule_confirm: "이 일정을 삭제하시겠습니까?",
     maintenance_alarm_title: "차량 정비 알림",
     maintenance_alarm_message: "예정된 정비 일정",
+
+    // Storage Quota Translations
+    storage_usage: "저장 용량",
+    storage_used: "사용 중",
+    used: "사용됨",
+    used_lowercase: "사용됨",
+    remaining: "남음",
+    storage_full: "저장 공간이 거의 찼습니다! 파일을 삭제하거나 프리미엄으로 업그레이드하세요.",
+    storage_warning: "저장 공간이 80%를 초과했습니다. 공간을 확보해주세요.",
+    premium: "프리미엄",
+    upgrade_to_premium: "프리미엄으로 업그레이드",
+    premium_benefits: "500MB 저장 공간과 더 많은 기능을 이용하세요",
+    benefit_500mb: "500MB 저장 공간",
+    benefit_no_ads: "광고 없음",
+    benefit_priority_support: "우선 지원",
+    upgrade_for_1_pi: "월 1 Pi로 업그레이드",
+    upgrade_coming_soon: "프리미엄 업그레이드 기능이 곧 추가됩니다!",
+    email_user_storage_info: "이메일 사용자는 500MB를 무료로 사용할 수 있습니다",
   },
 
   en: {
@@ -1882,7 +1915,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     description_placeholder: "Enter maintenance details",
     alarm_setting: "Alarm Settings",
     alarm_days_before: "days before alarm",
-    days_before_1: "day(s) before",
     days_before_2: "2 days before",
     days_before_7: "7 days before",
     days_before_14: "14 days before",
@@ -1893,6 +1925,24 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     delete_schedule_confirm: "Do you want to delete this schedule?",
     maintenance_alarm_title: "Vehicle Maintenance Reminder",
     maintenance_alarm_message: "Scheduled maintenance",
+
+    // Storage Quota Translations
+    storage_usage: "Storage Usage",
+    storage_used: "Used",
+    used: "Used",
+    used_lowercase: "used",
+    remaining: "remaining",
+    storage_full: "Storage almost full! Delete files or upgrade to premium.",
+    storage_warning: "Storage over 80%. Please free up space.",
+    premium: "Premium",
+    upgrade_to_premium: "Upgrade to Premium",
+    premium_benefits: "Get 500MB storage and more features",
+    benefit_500mb: "500MB Storage",
+    benefit_no_ads: "No Ads",
+    benefit_priority_support: "Priority Support",
+    upgrade_for_1_pi: "Upgrade for 1 Pi/month",
+    upgrade_coming_soon: "Premium upgrade coming soon!",
+    email_user_storage_info: "Email users get 500MB storage for free",
   },
 
   zh: {
@@ -2520,7 +2570,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     description_placeholder: "输入维护详情",
     alarm_setting: "提醒设置",
     alarm_days_before: "天前提醒",
-    days_before_1: "天前",
     days_before_2: "2天前",
     days_before_7: "7天前",
     days_before_14: "14天前",
@@ -2531,6 +2580,24 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     delete_schedule_confirm: "是否删除此计划？",
     maintenance_alarm_title: "车辆维护提醒",
     maintenance_alarm_message: "计划维护",
+
+    // Storage Quota Translations
+    storage_usage: "存储使用情况",
+    storage_used: "已使用",
+    used: "已使用",
+    used_lowercase: "已使用",
+    remaining: "剩余",
+    storage_full: "存储空间即将满！请删除文件或升级到高级版。",
+    storage_warning: "存储空间超过80%。请释放空间。",
+    premium: "高级版",
+    upgrade_to_premium: "升级到高级版",
+    premium_benefits: "获得500MB存储空间和更多功能",
+    benefit_500mb: "500MB存储空间",
+    benefit_no_ads: "无广告",
+    benefit_priority_support: "优先支持",
+    upgrade_for_1_pi: "每月1 Pi升级",
+    upgrade_coming_soon: "高级版升级功能即将推出！",
+    email_user_storage_info: "电子邮件用户可免费使用500MB存储空间",
   },
 
   ja: {
@@ -3164,7 +3231,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     description_placeholder: "整備内容を入力",
     alarm_setting: "アラーム設定",
     alarm_days_before: "日前アラーム",
-    days_before_1: "日前",
     days_before_2: "2日前",
     days_before_7: "7日前",
     days_before_14: "14日前",
@@ -3175,6 +3241,24 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     delete_schedule_confirm: "この予定を削除しますか？",
     maintenance_alarm_title: "車両整備アラーム",
     maintenance_alarm_message: "予定された整備",
+
+    // Storage Quota Translations
+    storage_usage: "ストレージ使用状況",
+    storage_used: "使用中",
+    used: "使用済み",
+    used_lowercase: "使用済み",
+    remaining: "残り",
+    storage_full: "ストレージがほぼいっぱいです！ファイルを削除するかプレミアムにアップグレードしてください。",
+    storage_warning: "ストレージが80%を超えました。空き容量を確保してください。",
+    premium: "プレミアム",
+    upgrade_to_premium: "プレミアムにアップグレード",
+    premium_benefits: "500MBのストレージとさらなる機能を利用",
+    benefit_500mb: "500MBストレージ",
+    benefit_no_ads: "広告なし",
+    benefit_priority_support: "優先サポート",
+    upgrade_for_1_pi: "月額1 Piでアップグレード",
+    upgrade_coming_soon: "プレミアムアップグレード機能は近日公開予定です！",
+    email_user_storage_info: "メールユーザーは500MBのストレージを無料で使用できます",
   },
 }
 

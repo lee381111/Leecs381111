@@ -15,6 +15,7 @@ import type {
   MedicalContact,
   Announcement, // Added Announcement import
 } from "./types"
+import { checkStorageAvailable, updateStorageUsage } from "./storage-quota"
 
 async function uploadAttachment(attachment: any, userId: string, bucket = "attachments"): Promise<string> {
   const supabase = createClient()
@@ -42,6 +43,28 @@ async function uploadAttachment(attachment: any, userId: string, bucket = "attac
     const byteArray = new Uint8Array(byteNumbers)
     const blob = new Blob([byteArray], { type: mimeType })
 
+    const fileSize = blob.size
+    const { available, info } = await checkStorageAvailable(userId, fileSize)
+
+    if (!available) {
+      if (info) {
+        const authType = info.authType === "pi" ? "Pi" : "이메일"
+        const remaining = (info.remaining / (1024 * 1024)).toFixed(2)
+        const quota = (info.quota / (1024 * 1024)).toFixed(0)
+
+        console.error(`[v0] Storage quota exceeded. Remaining: ${remaining}MB / ${quota}MB`)
+        alert(
+          `저장 용량이 부족합니다!\n\n` +
+            `사용 가능: ${remaining}MB / ${quota}MB\n` +
+            `인증 방식: ${authType}\n\n` +
+            (info.authType === "pi" && !info.isPremium
+              ? "프리미엄으로 업그레이드하면 500MB를 사용할 수 있습니다."
+              : "파일을 삭제하거나 용량을 확보해주세요."),
+        )
+      }
+      return ""
+    }
+
     // Generate unique filename
     const ext = mimeType.split("/")[1] || "bin"
     const fileName = `${userId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`
@@ -57,6 +80,8 @@ async function uploadAttachment(attachment: any, userId: string, bucket = "attac
       // Return empty string instead of throwing - graceful degradation
       return ""
     }
+
+    await updateStorageUsage(userId, fileSize)
 
     // Get public URL
     const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(data.path)
