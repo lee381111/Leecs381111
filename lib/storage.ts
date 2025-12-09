@@ -1524,7 +1524,7 @@ export async function saveUserConsent(
   const supabase = createClient()
 
   const consent = {
-    user_id: userId,
+    user_id: userId, // Supabase가 자동으로 UUID로 변환
     terms_version: termsVersion,
     privacy_version: privacyVersion,
     agreed_at: new Date().toISOString(),
@@ -1536,7 +1536,10 @@ export async function saveUserConsent(
 
   if (error) {
     console.error("[v0] Failed to save user consent:", error)
+    throw error // 에러를 throw하여 상위에서 처리 가능하도록
   }
+
+  console.log("[v0] User consent saved successfully for user:", userId)
 }
 
 export async function checkUserConsent(userId: string): Promise<boolean> {
