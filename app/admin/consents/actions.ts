@@ -5,17 +5,10 @@ import { createClient } from "@/lib/supabase/client"
 export async function loadAllConsentsWithEmails() {
   const supabase = createClient()
 
-  console.log("[v0] Starting to load all user consents...")
-
   const { data: consents, error: consentsError } = await supabase
     .from("user_consents")
     .select("*")
     .order("agreed_at", { ascending: false })
-
-  console.log("[v0] user_consents query result:", {
-    count: consents?.length || 0,
-    error: consentsError,
-  })
 
   if (consentsError) {
     console.error("[v0] Failed to load consents:", consentsError.message)
@@ -23,7 +16,6 @@ export async function loadAllConsentsWithEmails() {
   }
 
   if (!consents || consents.length === 0) {
-    console.log("[v0] No consents found in database")
     return []
   }
 
@@ -38,16 +30,12 @@ export async function loadAllConsentsWithEmails() {
     console.error("[v0] Failed to load profiles:", profilesError.message)
   }
 
-  const emailMap = new Map(profiles?.map((p) => [p.user_id, p.email]) || [])
-
-  console.log("[v0] Found", emailMap.size, "profiles with emails")
+  const emailMap = new Map(profiles?.map((p) => [String(p.user_id), p.email]) || [])
 
   const result = consents.map((consent) => ({
     ...consent,
-    email: emailMap.get(consent.user_id) || consent.user_id.substring(0, 13) + "...",
+    email: emailMap.get(String(consent.user_id)) || String(consent.user_id).substring(0, 13) + "...",
   }))
-
-  console.log("[v0] Returning", result.length, "consent records")
 
   return result
 }
