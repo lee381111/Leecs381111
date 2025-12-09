@@ -9,6 +9,7 @@ import { initializeUserStorageQuota } from "./storage-quota"
 type AuthContextType = {
   user: User | null
   login: (email: string, password: string) => Promise<void>
+  signUp: (email: string, password: string) => Promise<void>
   loginWithPi: () => Promise<void>
   logout: () => Promise<void>
   register: (email: string, password: string) => Promise<void>
@@ -20,7 +21,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [isPiMode, setIsPiMode] = useState(false)
   const supabase = createClient()
 
@@ -28,21 +29,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const piMode = isPiEnvironment()
     setIsPiMode(piMode)
 
-    if (piMode) {
-      initPiSDK()
-      // Check for existing Pi session in localStorage
-      const piUserId = localStorage.getItem("pi_user_id")
-      if (piUserId) {
-        // Load Pi user session
-        loadPiUserSession(piUserId)
+    const loadInitialSession = async () => {
+      try {
+        if (piMode) {
+          initPiSDK()
+          const piUserId = localStorage.getItem("pi_user_id")
+          if (piUserId) {
+            await loadPiUserSession(piUserId)
+          }
+        } else {
+          const {
+            data: { session },
+          } = await supabase.auth.getSession()
+          setUser(session?.user ?? null)
+        }
+      } catch (error) {
+        console.error("[v0] Failed to load initial session:", error)
+      } finally {
+        setLoading(false)
       }
     }
+
+    loadInitialSession()
 
     try {
       const {
         data: { subscription },
       } = supabase.auth.onAuthStateChange((_event, session) => {
         setUser(session?.user ?? null)
+        setLoading(false)
       })
 
       return () => {
@@ -54,6 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       // Silently ignore auth state change errors - app will work without auth
+      setLoading(false)
       return () => {}
     }
   }, [supabase])
@@ -132,7 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error
   }
 
-  const register = async (email: string, password: string): Promise<void> => {
+  const signUp = async (email: string, password: string): Promise<void> => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -147,6 +163,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const register = async (email: string, password: string): Promise<void> => {
+    await signUp(email, password)
+  }
+
   const logout = async (): Promise<void> => {
     if (isPiMode) {
       localStorage.removeItem("pi_access_token")
@@ -159,7 +179,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, loginWithPi, logout, register, loading, isPiMode }}>
+    <AuthContext.Provider value={{ user, login, signUp, loginWithPi, logout, register, loading, isPiMode }}>
       {children}
     </AuthContext.Provider>
   )
