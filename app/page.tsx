@@ -1,7 +1,5 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useEffect, useRef } from "react"
 import dynamic from "next/dynamic"
 import { Card } from "@/components/ui/card"
@@ -45,6 +43,7 @@ import {
 import { NotificationCenter } from "@/components/notification-center"
 import { checkUserConsent } from "@/lib/storage"
 import { TermsConsentModal } from "@/components/terms-consent-modal"
+import { LoginForm } from "@/components/login-form" // Import LoginForm
 
 const NotesSection = dynamic(() => import("@/components/notes-section").then((m) => ({ default: m.NotesSection })), {
   loading: () => <LoadingSection />,
@@ -557,7 +556,7 @@ export default function ForestNotePage() {
 
   useEffect(() => {
     const checkConsent = async () => {
-      if (!user || isCheckingConsent) return
+      if (!user || isCheckingConsent || loading) return
 
       console.log("[v0] Starting consent check for user:", user.id)
       setIsCheckingConsent(true)
@@ -574,7 +573,7 @@ export default function ForestNotePage() {
     }
 
     checkConsent()
-  }, [user])
+  }, [user, loading])
 
   const handleConsentAccept = () => {
     setNeedsConsent(false)
@@ -638,7 +637,7 @@ export default function ForestNotePage() {
     )
   }
 
-  if (needsConsent && user) {
+  if (needsConsent && user && !loading) {
     return (
       <TermsConsentModal
         userId={user.id}
@@ -856,238 +855,11 @@ export default function ForestNotePage() {
               : language === "en"
                 ? "Your peaceful records like a forest"
                 : language === "zh"
-                  ? "像森林一样平静的记录"
-                  : "森のように穏やかな記録"}
+                  ? "像森林一样平静的你的记录"
+                  : "あなたの記録は森のように平和です"}
           </p>
         </div>
       </div>
     </div>
-  )
-}
-
-function LoginForm({
-  language,
-  onLanguageChange,
-}: {
-  language: Language
-  onLanguageChange: (lang: Language) => void
-}) {
-  const { login, register } = useAuth()
-  const [isRegister, setIsRegister] = useState(false)
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-    setIsSubmitting(true)
-
-    try {
-      if (isRegister) {
-        await register(email, password)
-        alert(
-          language === "ko"
-            ? "회원가입이 완료되었습니다. 이메일을 확인해주세요."
-            : language === "en"
-              ? "Registration complete. Please check your email."
-              : language === "zh"
-                ? "注册完成。请检查您的电子邮件。"
-                : "登録完了。メールを確認してください。",
-        )
-        setIsRegister(false)
-        setEmail("")
-        setPassword("")
-      } else {
-        console.log("[v0] Attempting login...")
-        await login(email, password)
-        console.log("[v0] Login successful")
-      }
-    } catch (error: any) {
-      console.error("[v0] Login error:", error)
-      let errorMessage = ""
-
-      if (error.message?.includes("Invalid login credentials")) {
-        errorMessage =
-          language === "ko"
-            ? "이메일 또는 비밀번호가 올바르지 않습니다."
-            : language === "en"
-              ? "Incorrect email or password."
-              : language === "zh"
-                ? "电子邮件或密码不正确。"
-                : "メールアドレスまたはパスワードが正しくありません。"
-      } else if (error.message?.includes("Email not confirmed")) {
-        errorMessage =
-          language === "ko"
-            ? "이메일 인증이 필요합니다. 이메일을 확인해주세요."
-            : language === "en"
-              ? "Email confirmation required. Please check your email."
-              : language === "zh"
-                ? "需要确认电子邮件。请检查您的电子邮件。"
-                : "メールの確認が必要です。メールを確認してください。"
-      } else {
-        errorMessage = error.message || (language === "ko" ? "오류가 발생했습니다." : "An error occurred")
-      }
-
-      setError(errorMessage)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  return (
-    <Card className="p-6 w-full max-w-md bg-white/90 backdrop-blur">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-emerald-800">🌲 {getTranslation(language, "title")}</h2>
-        <LanguageSelector language={language} onChange={onLanguageChange} />
-      </div>
-      <h3 className="text-xl font-semibold mb-4">
-        {isRegister
-          ? language === "ko"
-            ? "회원가입"
-            : language === "en"
-              ? "Register"
-              : language === "zh"
-                ? "注册"
-                : "登録"
-          : language === "ko"
-            ? "로그인"
-            : language === "en"
-              ? "Login"
-              : language === "zh"
-                ? "登录"
-                : "ログイン"}
-      </h3>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            {language === "ko" ? "이메일" : language === "en" ? "Email" : language === "zh" ? "电子邮件" : "メール"}
-          </label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-            disabled={isSubmitting}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            {language === "ko"
-              ? "비밀번호"
-              : language === "en"
-                ? "Password"
-                : language === "zh"
-                  ? "密码"
-                  : "パスワード"}
-          </label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-            minLength={6}
-            disabled={isSubmitting}
-          />
-          {isRegister && (
-            <p className="text-xs text-gray-500 mt-1">
-              {language === "ko"
-                ? "비밀번호는 최소 6자 이상이어야 합니다."
-                : language === "en"
-                  ? "Password must be at least 6 characters."
-                  : language === "zh"
-                    ? "密码必须至少6个字符。"
-                    : "パスワードは6文字以上である必要があります。"}
-            </p>
-          )}
-        </div>
-        {!isRegister && (
-          <div className="w-full text-center mb-2">
-            <a href="/auth/reset-password" className="text-sm text-blue-600 hover:text-blue-700 underline font-medium">
-              {language === "ko"
-                ? "비밀번호를 잊으셨나요?"
-                : language === "en"
-                  ? "Forgot password?"
-                  : language === "zh"
-                    ? "忘记密码？"
-                    : "パスワードをお忘れですか？"}
-            </a>
-          </div>
-        )}
-        {error && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{error}</p>}
-        <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={isSubmitting}>
-          {isSubmitting ? (
-            <span className="flex items-center justify-center gap-2">
-              <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
-              {language === "ko"
-                ? "처리 중..."
-                : language === "en"
-                  ? "Processing..."
-                  : language === "zh"
-                    ? "处理中..."
-                    : "処理中..."}
-            </span>
-          ) : isRegister ? (
-            language === "ko" ? (
-              "가입하기"
-            ) : language === "en" ? (
-              "Sign Up"
-            ) : language === "zh" ? (
-              "注册"
-            ) : (
-              "登録"
-            )
-          ) : language === "ko" ? (
-            "로그인"
-          ) : language === "en" ? (
-            "Login"
-          ) : language === "zh" ? (
-            "登录"
-          ) : (
-            "ログイン"
-          )}
-        </Button>
-        <Button
-          type="button"
-          variant="link"
-          onClick={() => {
-            setIsRegister(!isRegister)
-            setError("")
-          }}
-          className="w-full"
-          disabled={isSubmitting}
-        >
-          {isRegister
-            ? language === "ko"
-              ? "이미 계정이 있으신가요?"
-              : language === "en"
-                ? "Already have an account?"
-                : language === "zh"
-                  ? "已有账户？"
-                  : "既にアカウントをお持ちですか？"
-            : language === "ko"
-              ? "계정이 없으신가요?"
-              : language === "en"
-                ? "Don't have an account?"
-                : language === "zh"
-                  ? "还没有账户？"
-                  : "アカウントをお持ちではありませんか？"}
-        </Button>
-      </form>
-      <div className="mt-6 pt-4 border-t text-center text-sm text-gray-600">
-        <p>
-          {language === "ko"
-            ? "개인당 500MB 무료 저장소 제공"
-            : language === "en"
-              ? "500MB free storage per user"
-              : language === "zh"
-                ? "每位用户500MB免费存储"
-                : "ユーザーあたり500MB無料ストレージ"}
-        </p>
-      </div>
-    </Card>
   )
 }
