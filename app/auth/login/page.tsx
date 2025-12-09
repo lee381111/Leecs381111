@@ -99,6 +99,12 @@ export default function Page() {
                     <Button variant="outline" onClick={() => setShowEmailLogin(true)} className="w-full">
                       이메일로 로그인
                     </Button>
+                    <div className="text-center text-sm text-muted-foreground mt-2">
+                      이메일 계정 비밀번호를 잊으셨나요?{" "}
+                      <Link href="/auth/reset-password" className="text-emerald-600 hover:underline font-medium">
+                        재설정하기
+                      </Link>
+                    </div>
                   </div>
                 ) : (
                   <form onSubmit={handleEmailLogin}>
