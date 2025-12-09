@@ -129,14 +129,14 @@ export default function Page() {
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                         />
-                      </div>
-                      <div className="text-right -mt-4">
-                        <Link
-                          href="/auth/reset-password"
-                          className="text-sm text-blue-600 hover:text-blue-700 hover:underline font-medium"
-                        >
-                          비밀번호를 잊으셨나요?
-                        </Link>
+                        <div className="text-right mt-1">
+                          <Link
+                            href="/auth/reset-password"
+                            className="text-sm text-blue-600 hover:text-blue-700 hover:underline font-medium"
+                          >
+                            비밀번호를 잊으셨나요?
+                          </Link>
+                        </div>
                       </div>
                       {error && <p className="text-sm text-red-500">{error}</p>}
                       <Button type="submit" className="w-full" disabled={isLoading}>
@@ -194,14 +194,14 @@ export default function Page() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                     />
-                  </div>
-                  <div className="text-right -mt-4">
-                    <Link
-                      href="/auth/reset-password"
-                      className="text-sm text-blue-600 hover:text-blue-700 hover:underline font-medium"
-                    >
-                      비밀번호를 잊으셨나요?
-                    </Link>
+                    <div className="text-right mt-1">
+                      <Link
+                        href="/auth/reset-password"
+                        className="text-sm text-blue-600 hover:text-blue-700 hover:underline font-medium"
+                      >
+                        비밀번호를 잊으셨나요?
+                      </Link>
+                    </div>
                   </div>
                   {error && <p className="text-sm text-red-500">{error}</p>}
                   <Button type="submit" className="w-full" disabled={isLoading}>
