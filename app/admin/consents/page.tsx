@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { generateDataDeletionReport } from "@/lib/storage"
+import { loadAllConsentsWithEmails } from "./actions"
 
 interface ConsentLog {
   id: string
@@ -52,30 +53,15 @@ export default function AdminConsentsPage() {
   }
 
   async function loadConsents() {
-    const supabase = createClient()
+    console.log("[v0] Loading all user consents with emails...")
 
-    console.log("[v0] Loading all user consents...")
+    try {
+      const consentsWithEmails = await loadAllConsentsWithEmails()
 
-    const { data: consentsData, error: consentsError } = await supabase
-      .from("user_consents")
-      .select("*")
-      .order("agreed_at", { ascending: false })
-
-    if (consentsError) {
-      console.error("[v0] Error loading consents:", consentsError)
-      return
-    }
-
-    console.log("[v0] Found consent records:", consentsData?.length)
-
-    if (consentsData && consentsData.length > 0) {
-      const consentsWithEmails = consentsData.map((c: ConsentLog) => ({
-        ...c,
-        email: c.user_id.slice(0, 13) + "...", // Show first 13 chars of user_id
-      }))
-
-      console.log("[v0] Displaying all consent records:", consentsWithEmails.length)
+      console.log("[v0] Found consent records:", consentsWithEmails.length)
       setConsents(consentsWithEmails)
+    } catch (error) {
+      console.error("[v0] Error loading consents:", error)
     }
   }
 
