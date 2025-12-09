@@ -942,7 +942,21 @@ function LoginForm({
         <LanguageSelector language={language} onChange={onLanguageChange} />
       </div>
       <h3 className="text-xl font-semibold mb-4">
-        {isRegister ? (language === "ko" ? "회원가입" : "Register") : language === "ko" ? "로그인" : "Login"}
+        {isRegister
+          ? language === "ko"
+            ? "회원가입"
+            : language === "en"
+              ? "Register"
+              : language === "zh"
+                ? "注册"
+                : "登録"
+          : language === "ko"
+            ? "로그인"
+            : language === "en"
+              ? "Login"
+              : language === "zh"
+                ? "登录"
+                : "ログイン"}
       </h3>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -1007,18 +1021,32 @@ function LoginForm({
           {isSubmitting ? (
             <span className="flex items-center justify-center gap-2">
               <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
-              {language === "ko" ? "처리 중..." : "Processing..."}
+              {language === "ko"
+                ? "처리 중..."
+                : language === "en"
+                  ? "Processing..."
+                  : language === "zh"
+                    ? "处理中..."
+                    : "処理中..."}
             </span>
           ) : isRegister ? (
             language === "ko" ? (
               "가입하기"
-            ) : (
+            ) : language === "en" ? (
               "Sign Up"
+            ) : language === "zh" ? (
+              "注册"
+            ) : (
+              "登録"
             )
           ) : language === "ko" ? (
             "로그인"
-          ) : (
+          ) : language === "en" ? (
             "Login"
+          ) : language === "zh" ? (
+            "登录"
+          ) : (
+            "ログイン"
           )}
         </Button>
         <Button
@@ -1034,10 +1062,18 @@ function LoginForm({
           {isRegister
             ? language === "ko"
               ? "이미 계정이 있으신가요?"
-              : "Already have an account?"
+              : language === "en"
+                ? "Already have an account?"
+                : language === "zh"
+                  ? "已有账户？"
+                  : "既にアカウントをお持ちですか？"
             : language === "ko"
               ? "계정이 없으신가요?"
-              : "Don't have an account?"}
+              : language === "en"
+                ? "Don't have an account?"
+                : language === "zh"
+                  ? "还没有账户？"
+                  : "アカウントをお持ちではありませんか？"}
         </Button>
       </form>
       <div className="mt-6 pt-4 border-t text-center text-sm text-gray-600">
