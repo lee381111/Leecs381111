@@ -559,10 +559,11 @@ export default function ForestNotePage() {
     const checkConsent = async () => {
       if (!user || isCheckingConsent) return
 
+      console.log("[v0] Starting consent check for user:", user.id)
       setIsCheckingConsent(true)
       try {
         const hasConsent = await checkUserConsent(user.id)
-        console.log("[v0] User consent check:", hasConsent)
+        console.log("[v0] User consent check result:", hasConsent ? "HAS CONSENT" : "NEEDS CONSENT")
         setNeedsConsent(!hasConsent)
       } catch (error) {
         console.error("[v0] Consent check error:", error)
@@ -1004,8 +1005,8 @@ function LoginForm({
           )}
         </div>
         {!isRegister && (
-          <div className="text-right">
-            <a href="/auth/reset-password" className="text-sm text-emerald-600 hover:text-emerald-700 hover:underline">
+          <div className="w-full text-center mb-2">
+            <a href="/auth/reset-password" className="text-sm text-blue-600 hover:text-blue-700 underline font-medium">
               {language === "ko"
                 ? "비밀번호를 잊으셨나요?"
                 : language === "en"

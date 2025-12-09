@@ -154,6 +154,7 @@ export default function Page() {
 
       if (data.user) {
         try {
+          console.log("[v0] Saving consent during sign up for user:", data.user.id)
           await saveUserConsent(
             data.user.id,
             "v1.0_2025-12",
@@ -161,6 +162,7 @@ export default function Page() {
             undefined, // IP address (optional)
             navigator.userAgent,
           )
+          console.log("[v0] Sign up consent saved successfully")
         } catch (consentError) {
           console.error("[v0] Failed to save consent log:", consentError)
           // Don't block signup if consent log fails

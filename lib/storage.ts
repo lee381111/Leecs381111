@@ -1529,6 +1529,8 @@ export async function saveUserConsent(
 ) {
   const supabase = createClient()
 
+  console.log("[v0] Saving user consent for:", userId, "Terms:", termsVersion, "Privacy:", privacyVersion)
+
   const consent = {
     user_id: userId,
     terms_version: termsVersion,
@@ -1542,11 +1544,15 @@ export async function saveUserConsent(
 
   if (error) {
     console.error("[v0] Failed to save user consent:", error)
+  } else {
+    console.log("[v0] User consent saved successfully")
   }
 }
 
 export async function checkUserConsent(userId: string): Promise<boolean> {
   const supabase = createClient()
+
+  console.log("[v0] Checking user consent for:", userId)
 
   const { data, error } = await supabase.from("user_consents").select("id").eq("user_id", userId).limit(1)
 
@@ -1555,7 +1561,10 @@ export async function checkUserConsent(userId: string): Promise<boolean> {
     return false
   }
 
-  return data && data.length > 0
+  const hasConsent = data && data.length > 0
+  console.log("[v0] Consent check result:", hasConsent, "Data:", data)
+
+  return hasConsent
 }
 
 // Data Deletion Report for Legal Compliance

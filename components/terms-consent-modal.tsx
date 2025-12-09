@@ -26,9 +26,11 @@ export function TermsConsentModal({ userId, userEmail, onConsent, onDecline }: T
 
   const handleAgree = async () => {
     if (!agreeTerms || !agreePrivacy) {
+      console.log("[v0] Terms consent incomplete - Terms:", agreeTerms, "Privacy:", agreePrivacy)
       return
     }
 
+    console.log("[v0] Saving user consent from modal for user:", userId)
     setIsSubmitting(true)
     try {
       await saveUserConsent(
@@ -38,6 +40,7 @@ export function TermsConsentModal({ userId, userEmail, onConsent, onDecline }: T
         undefined,
         typeof navigator !== "undefined" ? navigator.userAgent : undefined,
       )
+      console.log("[v0] Consent saved successfully, calling onConsent")
       onConsent()
     } catch (error) {
       console.error("[v0] Failed to save consent:", error)
