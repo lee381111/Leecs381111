@@ -989,6 +989,19 @@ function LoginForm({
             </p>
           )}
         </div>
+        {!isRegister && (
+          <div className="text-right">
+            <a href="/auth/reset-password" className="text-sm text-emerald-600 hover:text-emerald-700 hover:underline">
+              {language === "ko"
+                ? "비밀번호를 잊으셨나요?"
+                : language === "en"
+                  ? "Forgot password?"
+                  : language === "zh"
+                    ? "忘记密码？"
+                    : "パスワードをお忘れですか？"}
+            </a>
+          </div>
+        )}
         {error && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{error}</p>}
         <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={isSubmitting}>
           {isSubmitting ? (
