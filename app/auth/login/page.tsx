@@ -129,14 +129,14 @@ export default function Page() {
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                         />
-                        <div className="text-center -mt-2 mb-2">
-                          <Link
-                            href="/auth/reset-password"
-                            className="text-sm text-emerald-600 hover:text-emerald-700 hover:underline font-medium"
-                          >
-                            비밀번호를 잊으셨나요?
-                          </Link>
-                        </div>
+                      </div>
+                      <div className="text-right -mt-4">
+                        <Link
+                          href="/auth/reset-password"
+                          className="text-sm text-blue-600 hover:text-blue-700 hover:underline font-medium"
+                        >
+                          비밀번호를 잊으셨나요?
+                        </Link>
                       </div>
                       {error && <p className="text-sm text-red-500">{error}</p>}
                       <Button type="submit" className="w-full" disabled={isLoading}>
@@ -194,14 +194,14 @@ export default function Page() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                     />
-                    <div className="text-center -mt-2 mb-2">
-                      <Link
-                        href="/auth/reset-password"
-                        className="text-sm text-emerald-600 hover:text-emerald-700 hover:underline font-medium"
-                      >
-                        비밀번호를 잊으셨나요?
-                      </Link>
-                    </div>
+                  </div>
+                  <div className="text-right -mt-4">
+                    <Link
+                      href="/auth/reset-password"
+                      className="text-sm text-blue-600 hover:text-blue-700 hover:underline font-medium"
+                    >
+                      비밀번호를 잊으셨나요?
+                    </Link>
                   </div>
                   {error && <p className="text-sm text-red-500">{error}</p>}
                   <Button type="submit" className="w-full" disabled={isLoading}>
@@ -217,6 +217,7 @@ export default function Page() {
               </form>
             </CardContent>
           </Card>
+          <div className="text-center text-sm text-muted-foreground">개인당 500MB 무료 저장소 제공</div>
         </div>
       </div>
     </div>
