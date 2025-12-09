@@ -46,18 +46,33 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
     priority: "low" | "medium" | "high"
     dueDate: string
     repeatType: "none" | "daily" | "weekly" | "monthly"
+    alarmEnabled: boolean
   }>({
     title: "",
     description: "",
     priority: "medium",
     dueDate: "",
     repeatType: "none",
+    alarmEnabled: false,
   })
 
   const t = (key: string) => getTranslation(language as any, key)
 
-  const handleToggleComplete = (id: string) => {
-    setTodos((prevTodos) => prevTodos.map((todo) => (todo.id === id ? { ...todo, completed: !todo.completed } : todo)))
+  const handleToggleComplete = async (id: string) => {
+    if (!user?.id) return
+
+    const updatedTodos = todos.map((todo) => (todo.id === id ? { ...todo, completed: !todo.completed } : todo))
+
+    setTodos(updatedTodos)
+
+    try {
+      await saveTodoItems(updatedTodos, user.id)
+    } catch (error) {
+      console.error("Error saving todo completion:", error)
+      // Revert on error
+      setTodos(todos)
+      alert(t("save_failed"))
+    }
   }
 
   useEffect(() => {
@@ -181,6 +196,7 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
           priority: formData.priority,
           dueDate: formData.dueDate || undefined,
           repeatType: formData.repeatType,
+          alarmEnabled: formData.alarmEnabled,
           createdAt: new Date().toISOString(),
         }
         updatedTodos = [newTodo, ...todos]
@@ -194,6 +210,7 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
         priority: "medium",
         dueDate: "",
         repeatType: "none",
+        alarmEnabled: false,
       })
       setEditingId(null)
     } catch (error) {
@@ -213,6 +230,7 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
       priority: todo.priority,
       dueDate: todo.dueDate || "",
       repeatType: todo.repeatType || "none",
+      alarmEnabled: todo.alarmEnabled || false,
     })
   }
 
@@ -441,6 +459,7 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
                       priority: "medium",
                       dueDate: "",
                       repeatType: "none",
+                      alarmEnabled: false,
                     })
                   }}
                   className="flex-1"

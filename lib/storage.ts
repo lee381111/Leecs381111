@@ -930,6 +930,8 @@ export async function saveTodoItems(items: TodoItem[], userId: string) {
       priority: item.priority,
       due_date: item.dueDate || null,
       repeat_type: item.repeatType,
+      alarm_enabled: item.alarmEnabled,
+      alarm_time: item.alarmTime || null,
       created_at: item.createdAt || new Date().toISOString(),
     }))
 
@@ -961,6 +963,8 @@ export async function loadTodoItems(userId: string): Promise<TodoItem[]> {
     priority: row.priority,
     dueDate: row.due_date || undefined,
     repeatType: row.repeat_type,
+    alarmEnabled: row.alarm_enabled || false,
+    alarmTime: row.alarm_time || undefined,
     createdAt: row.created_at,
   }))
 }
