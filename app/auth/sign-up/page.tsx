@@ -154,18 +154,38 @@ export default function Page() {
 
       if (data.user) {
         try {
-          console.log("[v0] Saving consent during sign up for user:", data.user.id)
-          await saveUserConsent(
-            data.user.id,
-            "v1.0_2025-12",
-            "v1.0_2025-12",
-            undefined, // IP address (optional)
-            navigator.userAgent,
+          const { error: profileError } = await supabase.from("profiles").upsert(
+            {
+              id: data.user.id,
+              user_id: data.user.id,
+              email: email,
+              name: displayName,
+              auth_type: "email",
+              storage_quota: 524288000,
+              storage_used: 0,
+              language: language,
+              theme: "light",
+            },
+            {
+              onConflict: "id",
+            },
           )
+
+          if (profileError) {
+            console.error("[v0] Failed to create profile:", profileError)
+          } else {
+            console.log("[v0] Profile created successfully for:", email)
+          }
+        } catch (profileError) {
+          console.error("[v0] Profile creation error:", profileError)
+        }
+
+        try {
+          console.log("[v0] Saving consent during sign up for user:", data.user.id)
+          await saveUserConsent(data.user.id, "v1.0_2025-12", "v1.0_2025-12", undefined, navigator.userAgent)
           console.log("[v0] Sign up consent saved successfully")
         } catch (consentError) {
           console.error("[v0] Failed to save consent log:", consentError)
-          // Don't block signup if consent log fails
         }
       }
 
