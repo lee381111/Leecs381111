@@ -72,11 +72,11 @@ export default function AdminConsentsPage() {
       const userIds = consentsData.map((c: ConsentLog) => c.user_id)
       console.log("[v0] Looking up auth users for user IDs:", userIds)
 
-      const { data: authUsers } = await supabase.auth.admin.listUsers()
+      const { data: profiles } = await supabase.from("profiles").select("user_id, email, name")
 
-      console.log("[v0] Found auth users:", authUsers?.users?.length)
+      console.log("[v0] Found auth users:", profiles?.length)
 
-      const emailMap = new Map(authUsers?.users?.map((u) => [u.id, u.email || u.id.slice(0, 8)]) || [])
+      const emailMap = new Map(profiles?.map((p) => [p.user_id, p.email || p.name || p.user_id.slice(0, 8)]) || [])
 
       const consentsWithEmails = consentsData.map((c: ConsentLog) => ({
         ...c,
