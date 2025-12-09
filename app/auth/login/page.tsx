@@ -129,10 +129,10 @@ export default function Page() {
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                         />
-                        <div className="text-right">
+                        <div className="text-center -mt-2 mb-2">
                           <Link
                             href="/auth/reset-password"
-                            className="text-sm text-emerald-600 hover:underline font-medium"
+                            className="text-sm text-emerald-600 hover:text-emerald-700 hover:underline font-medium"
                           >
                             비밀번호를 잊으셨나요?
                           </Link>
@@ -194,10 +194,10 @@ export default function Page() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                     />
-                    <div className="text-right">
+                    <div className="text-center -mt-2 mb-2">
                       <Link
                         href="/auth/reset-password"
-                        className="text-sm text-emerald-600 hover:underline font-medium"
+                        className="text-sm text-emerald-600 hover:text-emerald-700 hover:underline font-medium"
                       >
                         비밀번호를 잊으셨나요?
                       </Link>
