@@ -117,7 +117,12 @@ export default function Page() {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="password">비밀번호</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="password">비밀번호</Label>
+                      <Link href="/auth/reset-password" className="text-sm text-emerald-600 hover:underline">
+                        비밀번호를 잊으셨나요?
+                      </Link>
+                    </div>
                     <Input
                       id="password"
                       type="password"
