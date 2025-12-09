@@ -54,28 +54,36 @@ export default function AdminConsentsPage() {
   async function loadConsents() {
     const supabase = createClient()
 
+    console.log("[v0] Loading all user consents...")
+
     const { data: consentsData, error: consentsError } = await supabase
       .from("user_consents")
       .select("*")
       .order("agreed_at", { ascending: false })
 
     if (consentsError) {
-      console.error("Error loading consents:", consentsError)
+      console.error("[v0] Error loading consents:", consentsError)
       return
     }
 
+    console.log("[v0] Found consent records:", consentsData?.length)
+
     if (consentsData && consentsData.length > 0) {
       const userIds = consentsData.map((c: ConsentLog) => c.user_id)
+      console.log("[v0] Looking up profiles for user IDs:", userIds)
 
-      const { data: profiles } = await supabase.from("profiles").select("id, display_name").in("id", userIds)
+      const { data: profiles } = await supabase.from("profiles").select("user_id, email, name").in("user_id", userIds)
 
-      const profileMap = new Map(profiles?.map((p) => [p.id, p.display_name]) || [])
+      console.log("[v0] Found profiles:", profiles?.length)
+
+      const profileMap = new Map(profiles?.map((p) => [p.user_id, p.email || p.name || p.user_id.slice(0, 8)]) || [])
 
       const consentsWithEmails = consentsData.map((c: ConsentLog) => ({
         ...c,
         email: profileMap.get(c.user_id) || c.user_id.slice(0, 8),
       }))
 
+      console.log("[v0] Mapped consents with emails:", consentsWithEmails.length)
       setConsents(consentsWithEmails)
     }
   }
