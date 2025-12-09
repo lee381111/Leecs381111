@@ -1,9 +1,9 @@
 "use server"
 
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/lib/supabase/server"
 
 export async function loadAllConsentsWithEmails() {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data: consents, error: consentsError } = await supabase
     .from("user_consents")
