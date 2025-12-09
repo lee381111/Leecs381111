@@ -1,9 +1,9 @@
 "use server"
 
-import { createClient } from "@/lib/supabase/server"
+import { createClient } from "@/lib/supabase/client"
 
 export async function loadAllConsentsWithEmails() {
-  const supabase = await createClient()
+  const supabase = createClient()
 
   console.log("[v0] Starting to load all user consents...")
 
@@ -15,11 +15,10 @@ export async function loadAllConsentsWithEmails() {
   console.log("[v0] user_consents query result:", {
     count: consents?.length || 0,
     error: consentsError,
-    data: consents,
   })
 
   if (consentsError) {
-    console.error("[v0] Failed to load consents:", consentsError)
+    console.error("[v0] Failed to load consents:", consentsError.message)
     return []
   }
 
@@ -28,37 +27,27 @@ export async function loadAllConsentsWithEmails() {
     return []
   }
 
-  console.log("[v0] Found", consents.length, "consent records, now loading user emails...")
+  const userIds = consents.map((c) => c.user_id)
 
-  const {
-    data: { users },
-    error: usersError,
-  } = await supabase.auth.admin.listUsers()
+  const { data: profiles, error: profilesError } = await supabase
+    .from("profiles")
+    .select("user_id, email")
+    .in("user_id", userIds)
 
-  console.log("[v0] auth.admin.listUsers result:", {
-    userCount: users?.length || 0,
-    error: usersError,
-  })
-
-  if (usersError) {
-    console.error("[v0] Failed to load users:", usersError)
-    // Return consents without emails if auth fails
-    return consents.map((consent) => ({
-      ...consent,
-      email: consent.user_id.substring(0, 13) + "...",
-    }))
+  if (profilesError) {
+    console.error("[v0] Failed to load profiles:", profilesError.message)
   }
 
-  const emailMap = new Map(users.map((user) => [user.id, user.email || "No email"]))
+  const emailMap = new Map(profiles?.map((p) => [p.user_id, p.email]) || [])
 
-  console.log("[v0] Email map created with", emailMap.size, "entries")
+  console.log("[v0] Found", emailMap.size, "profiles with emails")
 
   const result = consents.map((consent) => ({
     ...consent,
     email: emailMap.get(consent.user_id) || consent.user_id.substring(0, 13) + "...",
   }))
 
-  console.log("[v0] Final result:", result)
+  console.log("[v0] Returning", result.length, "consent records")
 
   return result
 }
