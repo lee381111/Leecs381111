@@ -29,6 +29,7 @@ import {
 import { getTranslation } from "@/lib/i18n"
 import type { Language } from "@/lib/types"
 import { useAuth } from "@/lib/auth-context"
+import { useLanguage } from "@/lib/language-context" // Adding useLanguage import to use the language context properly
 import {
   loadSchedules,
   loadNotes,
@@ -381,8 +382,8 @@ const GlobalSearch = ({
 
 export default function ForestNotePage() {
   const { user, logout, loading } = useAuth()
+  const { language, setLanguage } = useLanguage()
   const [currentSection, setCurrentSection] = useState<Section>("home")
-  const [language, setLanguage] = useState<Language>("ko")
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([])
   const [storageUsed, setStorageUsed] = useState(0)
   const isCalculatingRef = useRef(false)
