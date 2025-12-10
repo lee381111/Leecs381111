@@ -157,7 +157,7 @@ export default function Page() {
           const { error: profileError } = await supabase.from("profiles").upsert(
             {
               id: data.user.id,
-              user_id: data.user.id,
+              user_id: data.user.id.toString(), // TEXT 타입으로 저장
               email: email,
               name: displayName,
               auth_type: "email",
@@ -189,8 +189,7 @@ export default function Page() {
         }
       }
 
-      alert(t[language].emailVerification)
-      router.push("/auth/sign-up-success")
+      router.push(`/auth/email-verification?email=${encodeURIComponent(email)}&lang=${language}`)
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : t[language].signUpError)
     } finally {
