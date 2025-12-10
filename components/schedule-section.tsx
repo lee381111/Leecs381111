@@ -13,6 +13,7 @@ import { MediaTools } from "@/components/media-tools"
 import { Spinner } from "@/components/ui/spinner"
 import { getTranslation } from "@/lib/i18n"
 import { notificationManager } from "@/lib/notification-manager"
+import { toast } from "@/components/ui/use-toast"
 
 interface ScheduleSectionProps {
   onBack: () => void
@@ -102,7 +103,11 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
 
   const handleDelete = async (id: string) => {
     if (!user?.id) {
-      alert(t("login_required") || "로그인이 필요합니다")
+      toast({
+        title: t("login_required") || "로그인이 필요합니다",
+        description: "",
+        variant: "destructive",
+      })
       return
     }
 
@@ -113,26 +118,46 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
       setSchedules(updated)
       await saveSchedules(updated, user.id)
       notificationManager.cancelAlarm(`schedule_${id}`)
-      alert("삭제되었습니다!")
+      toast({
+        title: t("schedule_deleted") || "일정이 삭제되었습니다",
+        description: "",
+        variant: "default",
+      })
     } catch (error) {
       console.error("[v0] Error deleting schedule:", error)
-      alert("삭제 실패: " + error)
+      toast({
+        title: t("delete_failed") || "삭제 실패",
+        description: error.toString(),
+        variant: "destructive",
+      })
     }
   }
 
   const handleSave = async (attachments: Attachment[]) => {
     if (!user?.id) {
-      alert(t("login_required") || "로그인이 필요합니다")
+      toast({
+        title: t("login_required") || "로그인이 필요합니다",
+        description: "",
+        variant: "destructive",
+      })
       return
     }
 
     if (!formData.title.trim()) {
-      alert(t("please_enter_title") || "제목을 입력해주세요")
+      toast({
+        title: t("title_required") || "제목 필수",
+        description: t("please_enter_title") || "일정 제목을 입력해주세요",
+        variant: "destructive",
+      })
       return
     }
 
     if (!formData.date) {
-      alert(t("please_select_date") || "날짜를 선택해주세요")
+      toast({
+        title: t("date_required") || "날짜 필수",
+        description: t("please_select_date") || "시작 날짜를 선택해주세요",
+        variant: "destructive",
+      })
       return
     }
 
@@ -184,7 +209,11 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
 
       console.log("[v0] Schedule saved successfully")
       window.dispatchEvent(new Event("storage"))
-      alert("일정이 저장되었습니다! 메인 화면 캘린더에 표시됩니다.")
+      toast({
+        title: t("schedule_saved") || "일정이 저장되었습니다",
+        description: t("main_calendar") || "메인 화면 캘린더에 표시됩니다",
+        variant: "default",
+      })
 
       setFormData({
         title: "",
@@ -200,7 +229,11 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
       setIsAdding(false)
     } catch (error) {
       console.error("[v0] Error saving schedule:", error)
-      alert("저장 실패: " + error)
+      toast({
+        title: t("save_failed") || "저장 실패",
+        description: error.toString(),
+        variant: "destructive",
+      })
     } finally {
       setSaving(false)
     }
@@ -208,14 +241,22 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
 
   const handleBatchSave = async () => {
     if (!user?.id) {
-      alert(t("login_required") || "로그인이 필요합니다")
+      toast({
+        title: t("login_required") || "로그인이 필요합니다",
+        description: "",
+        variant: "destructive",
+      })
       return
     }
 
     const validEvents = batchEvents.filter((e) => e.name.trim() && e.date)
 
     if (validEvents.length === 0) {
-      alert("최소 1개 이상의 일정을 입력해주세요")
+      toast({
+        title: t("batch_save_failed") || "일정 등록 실패",
+        description: t("please_enter_at_least_one_schedule") || "최소 1개 이상의 일정을 입력해주세요",
+        variant: "destructive",
+      })
       return
     }
 
@@ -258,13 +299,21 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
       await saveSchedules(updated, user.id)
 
       window.dispatchEvent(new Event("storage"))
-      alert(`${validEvents.length}개의 일정이 등록되었습니다!`)
+      toast({
+        title: t("schedules_saved") || `${validEvents.length}개의 일정이 등록되었습니다`,
+        description: "",
+        variant: "default",
+      })
 
       setBatchEvents([{ name: "", date: "", category: "birthday", alarmMinutesBefore: 1440 }])
       setIsBatchAdding(false)
     } catch (error) {
       console.error("[v0] Error saving batch schedules:", error)
-      alert("저장 실패: " + error)
+      toast({
+        title: t("batch_save_failed") || "일정 등록 실패",
+        description: error.toString(),
+        variant: "destructive",
+      })
     } finally {
       setSaving(false)
     }
@@ -272,7 +321,11 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
 
   const handleOptimizeTravel = async () => {
     if (!travelOptimizeData.destination.trim() || !travelOptimizeData.startDate || !travelOptimizeData.endDate) {
-      alert(t("please_fill_required_fields"))
+      toast({
+        title: t("fields_required") || "필수 항목 입력 필요",
+        description: t("please_fill_required_fields") || "",
+        variant: "destructive",
+      })
       return
     }
 
@@ -293,7 +346,11 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
       setOptimizedItinerary(itinerary)
     } catch (error) {
       console.error("Travel optimization error:", error)
-      alert(t("optimization_failed"))
+      toast({
+        title: t("optimization_failed") || "여행 계획 최적화 실패",
+        description: error.toString(),
+        variant: "destructive",
+      })
     } finally {
       setOptimizing(false)
     }
@@ -319,7 +376,11 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
     saveSchedules([...schedules, ...newSchedules], user!.id)
     setOptimizedItinerary(null)
     setIsOptimizingTravel(false)
-    alert(t("itinerary_applied"))
+    toast({
+      title: t("itinerary_applied") || "여행 일정 적용 완료",
+      description: "",
+      variant: "default",
+    })
   }
 
   const exportToCalendar = (schedule: ScheduleEvent) => {
@@ -368,12 +429,18 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
       document.body.removeChild(link)
       URL.revokeObjectURL(url)
 
-      alert(
-        "✅ 일정 다운로드 완료!\n\n다운로드한 .ics 파일을:\n1. 다운로드 폴더에서 찾아 캘린더 앱으로 열기\n2. 또는 캘린더 앱에서 '가져오기' 선택",
-      )
+      toast({
+        title: t("download_complete") || "다운로드 완료",
+        description: t("download_instructions") || "다운로드한 .ics 파일을 캘린더 앱으로 열거나 가져오세요",
+        variant: "default",
+      })
     } catch (error) {
       console.error("[v0] Export error:", error)
-      alert("❌ 다운로드 실패\n\n오류: " + error)
+      toast({
+        title: t("download_failed") || "다운로드 실패",
+        description: error.toString(),
+        variant: "destructive",
+      })
     }
   }
 
