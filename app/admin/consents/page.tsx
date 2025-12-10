@@ -193,7 +193,22 @@ export default function AdminConsentsPage() {
                 <tbody>
                   {consents.map((consent) => (
                     <tr key={consent.id} className="border-b hover:bg-muted/50">
-                      <td className="p-2 font-mono text-xs">{consent.email}</td>
+                      <td className="p-2">
+                        <div className="flex flex-col gap-1">
+                          {consent.email ? (
+                            <>
+                              <span className="font-medium">{consent.email}</span>
+                              <span className="font-mono text-xs text-muted-foreground">
+                                {consent.user_id.substring(0, 8)}...
+                              </span>
+                            </>
+                          ) : (
+                            <span className="font-mono text-xs text-muted-foreground">
+                              user {consent.user_id.substring(0, 8)}...
+                            </span>
+                          )}
+                        </div>
+                      </td>
                       <td className="p-2">{consent.terms_version}</td>
                       <td className="p-2">{consent.privacy_version}</td>
                       <td className="p-2">
