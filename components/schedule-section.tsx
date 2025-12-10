@@ -102,7 +102,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
 
   const handleDelete = async (id: string) => {
     if (!user?.id) {
-      alert("로그인이 필요합니다")
+      alert(t("login_required") || "로그인이 필요합니다")
       return
     }
 
@@ -122,12 +122,17 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
 
   const handleSave = async (attachments: Attachment[]) => {
     if (!user?.id) {
-      alert("로그인이 필요합니다")
+      alert(t("login_required") || "로그인이 필요합니다")
       return
     }
 
     if (!formData.title.trim()) {
-      alert("제목을 입력해주세요")
+      alert(t("please_enter_title") || "제목을 입력해주세요")
+      return
+    }
+
+    if (!formData.date) {
+      alert(t("please_select_date") || "날짜를 선택해주세요")
       return
     }
 
@@ -203,7 +208,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
 
   const handleBatchSave = async () => {
     if (!user?.id) {
-      alert("로그인이 필요합니다")
+      alert(t("login_required") || "로그인이 필요합니다")
       return
     }
 
