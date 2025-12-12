@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Plus, Edit, Trash2, Lock, Unlock, X, Sparkles } from "lucide-react"
+import { ArrowLeft, Plus, Edit, Trash2, Lock, X, Sparkles, Key } from "lucide-react"
 import { saveDiaries, loadDiaries } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import type { DiaryEntry, Attachment } from "@/lib/types"
@@ -50,6 +50,8 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
   const [password, setPassword] = useState("")
   const [isSettingPassword, setIsSettingPassword] = useState(false)
   const [confirmPassword, setConfirmPassword] = useState("")
+  const [isResettingPassword, setIsResettingPassword] = useState(false)
+  const [securityAnswer, setSecurityAnswer] = useState("")
 
   const [emotionAnalysis, setEmotionAnalysis] = useState<{
     emotion: string
@@ -102,13 +104,20 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
       alert(t("password_mismatch") || "비밀번호가 일치하지 않습니다")
       return
     }
+    if (!securityAnswer || securityAnswer.length < 2) {
+      alert(t("security_answer_required") || "보안 질문 답변을 입력하세요 (최소 2자)")
+      return
+    }
 
     const hash = await hashPassword(password)
+    const answerHash = await hashPassword(securityAnswer.toLowerCase().trim())
     localStorage.setItem("diary_password_hash", hash)
+    localStorage.setItem("diary_security_answer", answerHash)
     setIsSettingPassword(false)
     setIsLocked(false)
     setPassword("")
     setConfirmPassword("")
+    setSecurityAnswer("")
     alert(t("password_set") || "일기 비밀번호가 설정되었습니다")
   }
 
@@ -163,9 +172,50 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
 
     if (confirm(t("confirm_remove_password") || "정말 비밀번호를 제거하시겠습니까?")) {
       localStorage.removeItem("diary_password_hash")
+      localStorage.removeItem("diary_security_answer")
       setIsLocked(false)
       setPassword("")
       alert(t("password_removed") || "비밀번호가 제거되었습니다")
+    }
+  }
+
+  const handleResetPassword = async () => {
+    if (!securityAnswer || securityAnswer.length < 2) {
+      alert(t("enter_security_answer") || "보안 답변을 입력하세요")
+      return
+    }
+
+    const savedAnswerHash = localStorage.getItem("diary_security_answer")
+    if (!savedAnswerHash) {
+      alert(
+        t("security_not_set") || "보안 질문이 설정되지 않았습니다. 비밀번호를 완전히 제거하려면 설정에서 진행하세요.",
+      )
+      return
+    }
+
+    const inputAnswerHash = await hashPassword(securityAnswer.toLowerCase().trim())
+
+    if (inputAnswerHash === savedAnswerHash) {
+      if (!password || password.length < 4) {
+        alert(t("password_too_short") || "새 비밀번호는 최소 4자 이상이어야 합니다")
+        return
+      }
+      if (password !== confirmPassword) {
+        alert(t("password_mismatch") || "비밀번호가 일치하지 않습니다")
+        return
+      }
+
+      const newHash = await hashPassword(password)
+      localStorage.setItem("diary_password_hash", newHash)
+      setIsResettingPassword(false)
+      setIsLocked(false)
+      setPassword("")
+      setConfirmPassword("")
+      setSecurityAnswer("")
+      alert(t("password_reset_success") || "비밀번호가 재설정되었습니다")
+    } else {
+      alert(t("wrong_security_answer") || "보안 답변이 틀렸습니다")
+      setSecurityAnswer("")
     }
   }
 
@@ -345,6 +395,19 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
                 className="mt-1"
               />
             </div>
+            <div>
+              <label className="text-sm font-medium">{t("security_question") || "보안 질문: 태어난 도시는?"}</label>
+              <Input
+                type="text"
+                value={securityAnswer}
+                onChange={(e) => setSecurityAnswer(e.target.value)}
+                placeholder={t("security_answer_placeholder") || "예: 서울"}
+                className="mt-1"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                {t("security_answer_help") || "비밀번호를 잊어버렸을 때 사용됩니다"}
+              </p>
+            </div>
             <div className="flex gap-2">
               <Button onClick={handleSetPassword} className="flex-1 bg-green-600 hover:bg-green-700">
                 {t("set_password") || "설정"}
@@ -406,6 +469,71 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
     )
   }
 
+  if (isResettingPassword) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 flex items-center justify-center">
+        <Card className="max-w-md w-full p-8 space-y-6">
+          <div className="text-center space-y-2">
+            <Key className="h-12 w-12 mx-auto text-orange-600" />
+            <h2 className="text-2xl font-bold">{t("reset_password") || "비밀번호 재설정"}</h2>
+            <p className="text-sm text-muted-foreground">
+              {t("reset_password_description") || "보안 질문에 답하고 새 비밀번호를 설정하세요"}
+            </p>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">{t("security_question") || "보안 질문: 태어난 도시는?"}</label>
+              <Input
+                type="text"
+                value={securityAnswer}
+                onChange={(e) => setSecurityAnswer(e.target.value)}
+                placeholder={t("enter_security_answer") || "답변 입력"}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">{t("new_password") || "새 비밀번호"}</label>
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={t("password_placeholder") || "최소 4자 이상"}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">{t("confirm_password") || "비밀번호 확인"}</label>
+              <Input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder={t("confirm_password_placeholder") || "비밀번호 재입력"}
+                className="mt-1"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={handleResetPassword} className="flex-1 bg-orange-600 hover:bg-orange-700">
+                {t("reset_password") || "재설정"}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsResettingPassword(false)
+                  setPassword("")
+                  setConfirmPassword("")
+                  setSecurityAnswer("")
+                }}
+                className="flex-1 bg-transparent"
+              >
+                {t("cancel") || "취소"}
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </div>
+    )
+  }
+
   if (isLocked) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 flex items-center justify-center">
@@ -429,12 +557,22 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
             />
             <div className="flex gap-2">
               <Button onClick={handleUnlock} className="flex-1 bg-green-600 hover:bg-green-700">
-                <Unlock className="mr-2 h-4 w-4" /> {t("unlock") || "잠금 해제"}
+                {t("unlock") || "잠금 해제"}
               </Button>
               <Button variant="outline" onClick={onBack} className="flex-1 bg-transparent">
-                {t("cancel") || "취소"}
+                {t("back") || "뒤로"}
               </Button>
             </div>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setIsResettingPassword(true)
+                setPassword("")
+              }}
+              className="w-full text-sm text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+            >
+              {t("forgot_password") || "비밀번호를 잊으셨나요?"}
+            </Button>
           </div>
         </Card>
       </div>
