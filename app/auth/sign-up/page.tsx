@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { Mail, CheckCircle } from "lucide-react"
 
 export default function Page() {
   const [email, setEmail] = useState("")
@@ -22,7 +23,8 @@ export default function Page() {
   const [language, setLanguage] = useState<"ko" | "en" | "zh" | "ja">("ko")
   const [agreeTerms, setAgreeTerms] = useState(false)
   const [agreePrivacy, setAgreePrivacy] = useState(false)
-  const router = useRouter() // Declare the router variable
+  const [showEmailNotice, setShowEmailNotice] = useState(false)
+  const router = useRouter()
 
   const t = {
     ko: {
@@ -46,6 +48,11 @@ export default function Page() {
       viewTerms: "전문보기",
       mustAgree: "이용약관과 개인정보처리방침에 동의해주세요",
       required: "(필수)",
+      emailSentTitle: "이메일 인증이 필요합니다!",
+      emailSentMessage: "다음 주소로 인증 이메일을 보내드렸습니다:",
+      emailInstructions: "받은 편지함을 확인하고 인증 링크를 클릭하여 계정을 활성화해주세요.",
+      emailSpamNotice: "이메일이 보이지 않으면 스팸함을 확인해주세요.",
+      goToLogin: "로그인 페이지로 이동",
     },
     en: {
       signUp: "Sign Up",
@@ -68,6 +75,11 @@ export default function Page() {
       viewTerms: "View Full Text",
       mustAgree: "Please agree to Terms of Service and Privacy Policy",
       required: "(Required)",
+      emailSentTitle: "Email Verification Required!",
+      emailSentMessage: "We've sent a verification email to:",
+      emailInstructions: "Please check your inbox and click the verification link to activate your account.",
+      emailSpamNotice: "If you don't see the email, please check your spam folder.",
+      goToLogin: "Go to Login",
     },
     zh: {
       signUp: "注册",
@@ -90,6 +102,11 @@ export default function Page() {
       viewTerms: "查看全文",
       mustAgree: "请同意服务条款和隐私政策",
       required: "(必需)",
+      emailSentTitle: "需要电子邮件验证！",
+      emailSentMessage: "我们已向以下地址发送验证邮件：",
+      emailInstructions: "请检查您的收件箱并点击验证链接以激活您的帐户。",
+      emailSpamNotice: "如果您没有看到电子邮件，请检查垃圾邮件文件夹。",
+      goToLogin: "前往登录",
     },
     ja: {
       signUp: "新規登録",
@@ -112,6 +129,11 @@ export default function Page() {
       viewTerms: "全文表示",
       mustAgree: "利用規約とプライバシーポリシーに同意してください",
       required: "(必須)",
+      emailSentTitle: "メール認証が必要です！",
+      emailSentMessage: "以下のアドレスに認証メールを送信しました：",
+      emailInstructions: "受信トレイを確認し、認証リンクをクリックしてアカウントを有効化してください。",
+      emailSpamNotice: "メールが見つからない場合は、迷惑メールフォルダを確認してください。",
+      goToLogin: "ログインへ",
     },
   }
 
@@ -157,7 +179,7 @@ export default function Page() {
           const { error: profileError } = await supabase.from("profiles").upsert(
             {
               id: data.user.id,
-              user_id: data.user.id.toString(), // TEXT 타입으로 저장
+              user_id: data.user.id.toString(),
               email: email,
               name: displayName,
               auth_type: "email",
@@ -189,12 +211,47 @@ export default function Page() {
         }
       }
 
-      router.push(`/auth/email-verification?email=${encodeURIComponent(email)}&lang=${language}`)
+      setShowEmailNotice(true)
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : t[language].signUpError)
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (showEmailNotice) {
+    return (
+      <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50">
+        <div className="w-full max-w-md">
+          <Card>
+            <CardHeader className="text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
+                <CheckCircle className="h-10 w-10 text-emerald-600" />
+              </div>
+              <CardTitle className="text-2xl">{t[language].emailSentTitle}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-center space-y-2">
+                <p className="text-sm text-muted-foreground">{t[language].emailSentMessage}</p>
+                <p className="text-base font-semibold text-emerald-600">{email}</p>
+              </div>
+
+              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 space-y-3">
+                <div className="flex gap-2">
+                  <Mail className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm">{t[language].emailInstructions}</p>
+                </div>
+                <p className="text-xs text-muted-foreground pl-7">{t[language].emailSpamNotice}</p>
+              </div>
+
+              <Button asChild className="w-full bg-emerald-600 hover:bg-emerald-700">
+                <Link href="/auth/login">{t[language].goToLogin}</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
   }
 
   return (
