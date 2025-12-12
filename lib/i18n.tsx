@@ -776,7 +776,17 @@ type TranslationKey =
   | "pp_6_content"
   | "pp_7_title"
   | "pp_7_content"
-  | "pp_contact"
+  | "analyze_emotion"
+  | "analyzing_emotion"
+  | "emotion_analysis_result"
+  | "emotion_analysis_failed"
+  | "diary_too_short_for_analysis"
+  | "emotion_positive"
+  | "emotion_negative"
+  | "emotion_neutral"
+  | "emotion_score"
+  | "main_emotions"
+  | "ai_advice"
 
 const translations: Record<Language, Record<TranslationKey, string>> = {
   ko: {
@@ -1610,6 +1620,18 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     pp_7_content:
       "회사는 개인정보 처리에 관한 질문, 의견, 불만 등을 처리하기 위하여 아래와 같이 담당 부서 및 개인정보 보호책임자를 지정하고 있습니다. ...",
     pp_contact: "개인정보 보호책임자",
+
+    analyze_emotion: "감정 분석",
+    analyzing_emotion: "분석 중...",
+    emotion_analysis_result: "감정 분석 결과",
+    emotion_analysis_failed: "감정 분석 실패",
+    diary_too_short_for_analysis: "일기 내용이 너무 짧아 감정 분석을 할 수 없습니다.",
+    emotion_positive: "긍정",
+    emotion_negative: "부정",
+    emotion_neutral: "중립",
+    emotion_score: "감정 점수",
+    main_emotions: "주요 감정",
+    ai_advice: "AI 조언",
   },
 
   en: {
@@ -2449,6 +2471,18 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     pp_7_content:
       "The company designates the following departments and personal information protection officer to handle inquiries, opinions, and complaints regarding personal information processing. ...",
     pp_contact: "Personal Information Protection Officer",
+
+    analyze_emotion: "Analyze Emotion",
+    analyzing_emotion: "Analyzing emotion...",
+    emotion_analysis_result: "Emotion Analysis Result",
+    emotion_analysis_failed: "Emotion analysis failed",
+    diary_too_short_for_analysis: "Diary content is too short for emotion analysis.",
+    emotion_positive: "Positive",
+    emotion_negative: "Negative",
+    emotion_neutral: "Neutral",
+    emotion_score: "Emotion Score",
+    main_emotions: "Main Emotions",
+    ai_advice: "AI Advice",
   },
 
   ja: {
@@ -3281,6 +3315,18 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     pp_7_content:
       "当社は、個人情報の処理に関する質問、意見、不満などを処理するために、以下の担当部署および個人情報保護責任者を指定しています。...",
     pp_contact: "個人情報保護責任者",
+
+    analyze_emotion: "感情分析",
+    analyzing_emotion: "分析中...",
+    emotion_analysis_result: "感情分析結果",
+    emotion_analysis_failed: "感情分析失敗",
+    diary_too_short_for_analysis: "日記の内容が短すぎるため、感情分析ができません。",
+    emotion_positive: "ポジティブ",
+    emotion_negative: "ネガティブ",
+    emotion_neutral: "ニュートラル",
+    emotion_score: "感情スコア",
+    main_emotions: "主な感情",
+    ai_advice: "AIアドバイス",
   },
 
   zh: {
@@ -4107,6 +4153,18 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     pp_7_title: "第7条（关于个人信息的民事咨询服务）",
     pp_7_content: "公司指定以下部门及个人信息保护负责人，以处理有关个人信息处理的咨询、意见、投诉等。...",
     pp_contact: "个人信息保护负责人",
+
+    analyze_emotion: "情感分析",
+    analyzing_emotion: "分析中...",
+    emotion_analysis_result: "情感分析结果",
+    emotion_analysis_failed: "情感分析失败",
+    diary_too_short_for_analysis: "日记内容过短，无法进行情感分析。",
+    emotion_positive: "积极",
+    emotion_negative: "消极",
+    emotion_neutral: "中性",
+    emotion_score: "情感得分",
+    main_emotions: "主要情感",
+    ai_advice: "AI建议",
   },
 }
 
