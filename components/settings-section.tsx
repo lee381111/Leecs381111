@@ -16,7 +16,6 @@ import {
   FileText,
   ChevronDown,
   Shield,
-  ExternalLink,
 } from "lucide-react"
 import { exportAllData, importAllData, loadAllAnnouncements, saveAnnouncement, deleteAnnouncement } from "@/lib/storage"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -49,6 +48,9 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
   })
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [currentLanguage, setLanguage] = useState(language)
+
+  const [showDiaryPasswordSection, setShowDiaryPasswordSection] = useState(false)
+  const [diaryPasswordAction, setDiaryPasswordAction] = useState<"remove" | "reset">("remove")
 
   const handleExport = async () => {
     if (!user?.id) {
@@ -375,6 +377,20 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
     window.dispatchEvent(new CustomEvent("languageChange", { detail: { language: lang } }))
   }
 
+  const handleRemoveDiaryPassword = () => {
+    if (
+      confirm(
+        getTranslation(currentLanguage, "confirm_remove_diary_password") ||
+          "일기 비밀번호를 제거하시겠습니까? 모든 일기가 잠금 해제됩니다.",
+      )
+    ) {
+      localStorage.removeItem("diary_password_hash")
+      localStorage.removeItem("diary_security_answer")
+      alert(getTranslation(currentLanguage, "diary_password_removed") || "일기 비밀번호가 제거되었습니다")
+      setShowDiaryPasswordSection(false)
+    }
+  }
+
   useEffect(() => {
     if (user && showAnnouncementPanel) {
       loadAllAnnouncements(user.id).then(setAnnouncements)
@@ -637,6 +653,41 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
             </div>
 
             <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">
+                    {getTranslation(currentLanguage, "diary_password_management") || "일기 비밀번호 관리"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {getTranslation(currentLanguage, "diary_password_description") ||
+                      "일기 비밀번호를 제거하거나 재설정합니다"}
+                  </p>
+                </div>
+                <Button
+                  onClick={() => setShowDiaryPasswordSection(!showDiaryPasswordSection)}
+                  variant="outline"
+                  size="sm"
+                >
+                  {showDiaryPasswordSection
+                    ? getTranslation(currentLanguage, "hide")
+                    : getTranslation(currentLanguage, "manage")}
+                </Button>
+              </div>
+
+              {showDiaryPasswordSection && (
+                <div className="pl-4 space-y-3 border-l-2 border-primary/20">
+                  <Button onClick={handleRemoveDiaryPassword} variant="destructive" size="sm" className="w-full">
+                    {getTranslation(currentLanguage, "remove_diary_password") || "비밀번호 완전 제거"}
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    {getTranslation(currentLanguage, "remove_diary_password_help") ||
+                      "비밀번호를 제거하면 일기 섹션이 잠금 해제되며, 보안 질문도 함께 제거됩니다."}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
               <h3 className="font-semibold text-sm">{getTranslation(currentLanguage, "data_management")}</h3>
               <p className="text-xs text-muted-foreground">
                 {getTranslation(currentLanguage, "data_management_description")}
@@ -702,48 +753,6 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
           {getTranslation(currentLanguage, "app_designer")}
         </h2>
         <p className="text-sm text-blue-700 dark:text-blue-300">{getTranslation(currentLanguage, "designer_info")}</p>
-      </Card>
-
-      <Card className="p-6 space-y-4 bg-card">
-        <h2 className="text-xl font-bold">{getTranslation(currentLanguage, "legal_information")}</h2>
-
-        <div className="space-y-3">
-          <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
-            <div>
-              <h3 className="font-semibold">{getTranslation(currentLanguage, "privacy_policy")}</h3>
-              <p className="text-sm text-muted-foreground">
-                {getTranslation(currentLanguage, "privacy_policy_description")}
-              </p>
-            </div>
-            <Button
-              onClick={() => router.push(`/privacy-policy?lang=${currentLanguage}`)}
-              variant="ghost"
-              size="sm"
-              className="gap-2"
-            >
-              {getTranslation(currentLanguage, "view")}
-              <ExternalLink className="h-4 w-4" />
-            </Button>
-          </div>
-
-          <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
-            <div>
-              <h3 className="font-semibold">{getTranslation(currentLanguage, "terms_of_service")}</h3>
-              <p className="text-sm text-muted-foreground">
-                {getTranslation(currentLanguage, "terms_of_service_description")}
-              </p>
-            </div>
-            <Button
-              onClick={() => router.push(`/terms-of-service?lang=${currentLanguage}`)}
-              variant="ghost"
-              size="sm"
-              className="gap-2"
-            >
-              {getTranslation(currentLanguage, "view")}
-              <ExternalLink className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
       </Card>
 
       <Card className="p-6 space-y-4 bg-card border-red-200 dark:border-red-900">
