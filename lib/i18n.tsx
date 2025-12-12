@@ -787,6 +787,13 @@ type TranslationKey =
   | "emotion_score"
   | "main_emotions"
   | "ai_advice"
+  | "security_question"
+  | "security_not_set"
+  | "enter_security_answer"
+  | "security_answer_placeholder"
+  | "reset_password_description"
+  | "wrong_security_answer"
+  | "password_reset_success"
 
 const translations: Record<Language, Record<TranslationKey, string>> = {
   ko: {
@@ -1624,14 +1631,21 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     analyze_emotion: "감정 분석",
     analyzing_emotion: "분석 중...",
     emotion_analysis_result: "감정 분석 결과",
-    emotion_analysis_failed: "감정 분석 실패",
-    diary_too_short_for_analysis: "일기 내용이 너무 짧아 감정 분석을 할 수 없습니다.",
-    emotion_positive: "긍정",
-    emotion_negative: "부정",
-    emotion_neutral: "중립",
+    emotion_analysis_failed: "감정 분석에 실패했습니다",
+    diary_too_short_for_analysis: "일기가 너무 짧아 분석할 수 없습니다",
+    emotion_positive: "긍정적",
+    emotion_negative: "부정적",
+    emotion_neutral: "중립적",
     emotion_score: "감정 점수",
     main_emotions: "주요 감정",
     ai_advice: "AI 조언",
+    security_question: "보안 질문: 태어난 도시는?",
+    security_not_set: "보안 질문이 설정되지 않았습니다. 비밀번호를 완전히 제거하려면 설정에서 진행하세요.",
+    enter_security_answer: "보안 답변 입력",
+    security_answer_placeholder: "답변 입력",
+    reset_password_description: "보안 질문에 답하고 새 비밀번호를 설정하세요",
+    wrong_security_answer: "보안 답변이 틀렸습니다",
+    password_reset_success: "비밀번호가 재설정되었습니다",
   },
 
   en: {
@@ -2473,16 +2487,23 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     pp_contact: "Personal Information Protection Officer",
 
     analyze_emotion: "Analyze Emotion",
-    analyzing_emotion: "Analyzing emotion...",
+    analyzing_emotion: "Analyzing...",
     emotion_analysis_result: "Emotion Analysis Result",
     emotion_analysis_failed: "Emotion analysis failed",
-    diary_too_short_for_analysis: "Diary content is too short for emotion analysis.",
+    diary_too_short_for_analysis: "Diary is too short to analyze",
     emotion_positive: "Positive",
     emotion_negative: "Negative",
     emotion_neutral: "Neutral",
     emotion_score: "Emotion Score",
     main_emotions: "Main Emotions",
     ai_advice: "AI Advice",
+    security_question: "Security Question: What city were you born in?",
+    security_not_set: "Security question not set. To remove password completely, go to settings.",
+    enter_security_answer: "Enter Security Answer",
+    security_answer_placeholder: "Enter answer",
+    reset_password_description: "Answer security question and set new password",
+    wrong_security_answer: "Wrong security answer",
+    password_reset_success: "Password has been reset",
   },
 
   ja: {
@@ -3319,14 +3340,21 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     analyze_emotion: "感情分析",
     analyzing_emotion: "分析中...",
     emotion_analysis_result: "感情分析結果",
-    emotion_analysis_failed: "感情分析失敗",
-    diary_too_short_for_analysis: "日記の内容が短すぎるため、感情分析ができません。",
+    emotion_analysis_failed: "感情分析に失敗しました",
+    diary_too_short_for_analysis: "日記が短すぎて分析できません",
     emotion_positive: "ポジティブ",
     emotion_negative: "ネガティブ",
-    emotion_neutral: "ニュートラル",
+    emotion_neutral: "中立",
     emotion_score: "感情スコア",
     main_emotions: "主な感情",
     ai_advice: "AIアドバイス",
+    security_question: "セキュリティ質問：生まれた都市は？",
+    security_not_set: "セキュリティ質問が設定されていません。パスワードを完全に削除するには、設定から行ってください。",
+    enter_security_answer: "セキュリティ回答を入力",
+    security_answer_placeholder: "回答を入力",
+    reset_password_description: "セキュリティ質問に答えて新しいパスワードを設定してください",
+    wrong_security_answer: "セキュリティ回答が間違っています",
+    password_reset_success: "パスワードがリセットされました",
   },
 
   zh: {
@@ -4162,15 +4190,19 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     emotion_positive: "积极",
     emotion_negative: "消极",
     emotion_neutral: "中性",
-    emotion_score: "情感得分",
+    emotion_score: "情感评分",
     main_emotions: "主要情感",
     ai_advice: "AI建议",
+    security_question: "安全问题：您出生的城市是？",
+    security_not_set: "未设置安全问题。要完全删除密码，请转到设置。",
+    enter_security_answer: "输入安全答案",
+    security_answer_placeholder: "输入答案",
+    reset_password_description: "回答安全问题并设置新密码",
+    wrong_security_answer: "安全答案错误",
+    password_reset_success: "密码已重置",
   },
 }
 
 export function getTranslation(language: Language, key: TranslationKey): string {
-  return translations[language][key] || translations["ko"][key] || key
+  return translations[language]?.[key] || translations.ko[key] || key
 }
-
-export type { TranslationKey }
-export default translations
