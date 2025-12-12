@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, Plus, Download, Edit, Trash2, Calendar, Sparkles } from "lucide-react"
+import { ArrowLeft, Plus, Download, Edit, Trash2, Calendar, Sparkles, Repeat } from "lucide-react"
 import { saveSchedules, loadSchedules } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import type { ScheduleEvent, Attachment } from "@/lib/types"
@@ -46,6 +46,8 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
     attachments: Attachment[]
     alarmEnabled: boolean
     alarmMinutesBefore: number
+    repeatType: "none" | "daily" | "weekly" | "monthly"
+    repeatEndDate: string
   }>({
     title: "",
     date: "",
@@ -55,6 +57,8 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
     attachments: [],
     alarmEnabled: false,
     alarmMinutesBefore: 30,
+    repeatType: "none",
+    repeatEndDate: "",
   })
   const [batchEvents, setBatchEvents] = useState<
     Array<{
@@ -96,6 +100,8 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
       attachments: schedule.attachments || [],
       alarmEnabled: schedule.alarmEnabled || false,
       alarmMinutesBefore: schedule.alarmMinutesBefore || 30,
+      repeatType: schedule.repeatType || "none",
+      repeatEndDate: schedule.repeatEndDate || "",
     })
     setIsAdding(true)
   }
@@ -156,6 +162,8 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
           attachments,
           alarmEnabled: formData.alarmEnabled,
           alarmMinutesBefore: formData.alarmMinutesBefore,
+          repeatType: formData.repeatType,
+          repeatEndDate: formData.repeatEndDate || undefined,
           createdAt: new Date().toISOString(),
           user_id: user.id,
         }
@@ -195,6 +203,8 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
         attachments: [],
         alarmEnabled: false,
         alarmMinutesBefore: 30,
+        repeatType: "none",
+        repeatEndDate: "",
       })
       setEditingId(null)
       setIsAdding(false)
@@ -821,6 +831,48 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
             </div>
           )}
         </Card>
+
+        <div className="space-y-4 mb-4">
+          <div className="flex items-center gap-2">
+            <Repeat className="h-5 w-5 text-gray-600" />
+            <label className="font-medium">{t("repeat_schedule")}</label>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-gray-600 mb-2">{t("repeat_frequency")}</label>
+              <select
+                value={formData.repeatType}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    repeatType: e.target.value as "none" | "daily" | "weekly" | "monthly",
+                  })
+                }
+                className="w-full p-2 border rounded-lg"
+              >
+                <option value="none">{t("repeat_none")}</option>
+                <option value="daily">{t("repeat_daily")}</option>
+                <option value="weekly">{t("repeat_weekly")}</option>
+                <option value="monthly">{t("repeat_monthly")}</option>
+              </select>
+            </div>
+
+            {formData.repeatType !== "none" && (
+              <div>
+                <label className="block text-sm text-gray-600 mb-2">{t("repeat_until")}</label>
+                <input
+                  type="date"
+                  value={formData.repeatEndDate}
+                  onChange={(e) => setFormData({ ...formData, repeatEndDate: e.target.value })}
+                  min={formData.date}
+                  className="w-full p-2 border rounded-lg"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
         {formData.attachments && formData.attachments.length > 0 && (
           <div className="space-y-2">
             <p className="text-sm font-medium">{t("attachments_label")}:</p>
@@ -839,6 +891,39 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
           saving={saving}
           onTextFromSpeech={handleTranscriptReceived}
         />
+
+        <div className="flex gap-4">
+          <Button
+            onClick={() => handleSave(formData.attachments)}
+            disabled={saving}
+            className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+          >
+            {saving ? <Spinner className="h-4 w-4 mr-2" /> : null}
+            {saving ? t("saving") : t("save_schedule")}
+          </Button>
+
+          <Button
+            variant="outline"
+            onClick={() => {
+              setFormData({
+                title: "",
+                date: "",
+                time: "",
+                category: "meeting",
+                description: "",
+                attachments: [],
+                alarmEnabled: false,
+                alarmMinutesBefore: 30,
+                repeatType: "none",
+                repeatEndDate: "",
+              })
+              setEditingId(null)
+              setIsAdding(false)
+            }}
+          >
+            {t("cancel")}
+          </Button>
+        </div>
       </div>
     )
   }
@@ -1022,137 +1107,142 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
               ({schedules.filter((s) => !s.isSpecialEvent).length}개)
             </span>
           </div>
-          <div className="grid gap-4">
-            {schedules
-              .filter((schedule) => !schedule.isSpecialEvent)
-              .map((schedule) => (
-                <Card key={schedule.id} className="p-4">
-                  <div className="flex justify-between items-start gap-4">
-                    <div className="flex-1">
-                      <h3 className="font-semibold">{schedule.title}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {schedule.date} {schedule.time} • {t(schedule.category) || schedule.category}
-                      </p>
-                      {schedule.alarmEnabled && (
-                        <p className="text-xs text-amber-600 mt-1">
-                          🔔 {t("alarm")} {schedule.alarmMinutesBefore}
-                          {t("minutes_before")}
-                        </p>
-                      )}
-                      <p className="mt-2">{schedule.description}</p>
+          <div className="grid gap-4 md:grid-cols-2">
+            {schedules.map((schedule) => (
+              <Card key={schedule.id} className="p-6 hover:shadow-lg transition-shadow">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex-1">
+                    <h3 className="font-bold text-lg mb-1">{schedule.title}</h3>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Calendar className="h-4 w-4" />
+                      <span>
+                        {schedule.date} {schedule.time && `• ${schedule.time}`}
+                      </span>
                     </div>
-                    <div className="flex gap-1 flex-shrink-0 relative z-10">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          e.stopPropagation()
-                          exportToCalendar(schedule)
-                        }}
-                        className="p-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md transition-colors flex items-center justify-center"
-                        title={t("add_to_phone_calendar")}
-                      >
-                        <Download className="h-4 w-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          e.stopPropagation()
-                          handleEdit(schedule)
-                        }}
-                        className="p-2 hover:bg-gray-100 rounded-md transition-colors flex items-center justify-center"
-                        title={t("edit")}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          e.stopPropagation()
-                          handleDelete(schedule.id)
-                        }}
-                        className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors flex items-center justify-center"
-                        title={t("delete")}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
+                    {schedule.repeatType && schedule.repeatType !== "none" && (
+                      <div className="flex items-center gap-2 mt-2 text-sm text-purple-600">
+                        <Repeat className="h-4 w-4" />
+                        <span>{t(`repeat_${schedule.repeatType}`)}</span>
+                        {schedule.repeatEndDate && <span>~ {schedule.repeatEndDate}</span>}
+                      </div>
+                    )}
                   </div>
-                  {schedule.attachments && schedule.attachments.length > 0 && (
-                    <div className="mt-4 space-y-2">
-                      <p className="text-sm font-medium">
-                        {t("attachments_label")} ({schedule.attachments.length}개)
-                      </p>
-                      <div className="grid grid-cols-3 gap-2">
-                        {schedule.attachments.map((file: any, idx: number) => {
-                          const isImage =
-                            file.type?.startsWith("image/") ||
-                            file.type === "image" ||
-                            file.type === "drawing" ||
-                            file.name?.match(/\.(jpg|jpeg|png|gif|webp)$/i)
-                          const isVideo =
-                            file.type?.startsWith("video/") ||
-                            file.type === "video" ||
-                            file.name?.match(/\.(mp4|webm|mov)$/i)
-                          const isAudio =
-                            file.type?.startsWith("audio/") ||
-                            file.type === "audio" ||
-                            file.name?.match(/\.(mp3|wav|ogg)$/i)
-                          const mediaUrl = file.url || file.data
+                  <div className="flex gap-1 flex-shrink-0 relative z-10">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        exportToCalendar(schedule)
+                      }}
+                      className="p-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md transition-colors flex items-center justify-center"
+                      title={t("add_to_phone_calendar")}
+                    >
+                      <Download className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        handleEdit(schedule)
+                      }}
+                      className="p-2 hover:bg-gray-100 rounded-md transition-colors flex items-center justify-center"
+                      title={t("edit")}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        handleDelete(schedule.id)
+                      }}
+                      className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors flex items-center justify-center"
+                      title={t("delete")}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+                {schedule.description && (
+                  <p className="mt-3 text-sm text-gray-700 dark:text-gray-300">{schedule.description}</p>
+                )}
+                {schedule.alarmEnabled && (
+                  <p className="text-xs text-amber-600 mt-1">
+                    🔔 {t("alarm")} {schedule.alarmMinutesBefore}
+                    {t("minutes_before")}
+                  </p>
+                )}
+                {schedule.attachments && schedule.attachments.length > 0 && (
+                  <div className="mt-4 space-y-2">
+                    <p className="text-sm font-medium">
+                      {t("attachments_label")} ({schedule.attachments.length}개)
+                    </p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {schedule.attachments.map((file: any, idx: number) => {
+                        const isImage =
+                          file.type?.startsWith("image/") ||
+                          file.type === "image" ||
+                          file.type === "drawing" ||
+                          file.name?.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+                        const isVideo =
+                          file.type?.startsWith("video/") ||
+                          file.type === "video" ||
+                          file.name?.match(/\.(mp4|webm|mov)$/i)
+                        const isAudio =
+                          file.type?.startsWith("audio/") ||
+                          file.type === "audio" ||
+                          file.name?.match(/\.(mp3|wav|ogg)$/i)
+                        const mediaUrl = file.url || file.data
 
-                          if (isImage) {
-                            return (
-                              <div key={idx} className="relative border rounded overflow-hidden bg-gray-100">
-                                <img
-                                  src={mediaUrl || "/placeholder.svg"}
-                                  alt={file.name || "첨부파일"}
-                                  className="w-full h-24 object-cover cursor-pointer hover:opacity-90"
-                                  onClick={() => window.open(mediaUrl, "_blank")}
-                                  onError={(e) => {
-                                    e.currentTarget.src = "/placeholder.svg?height=96&width=96"
-                                  }}
-                                />
-                              </div>
-                            )
-                          }
-                          if (isVideo) {
-                            return (
-                              <div key={idx} className="border rounded overflow-hidden bg-black">
-                                <video
-                                  src={mediaUrl}
-                                  controls
-                                  className="w-full h-24 object-cover"
-                                  preload="metadata"
-                                />
-                              </div>
-                            )
-                          }
-                          if (isAudio) {
-                            return (
-                              <div
-                                key={idx}
-                                className="flex items-center justify-center h-24 bg-gray-100 border rounded p-2"
-                              >
-                                <audio src={mediaUrl} controls className="w-full" preload="metadata" />
-                              </div>
-                            )
-                          }
+                        if (isImage) {
+                          return (
+                            <div key={idx} className="relative border rounded overflow-hidden bg-gray-100">
+                              <img
+                                src={mediaUrl || "/placeholder.svg"}
+                                alt={file.name || "첨부파일"}
+                                className="w-full h-24 object-cover cursor-pointer hover:opacity-90"
+                                onClick={() => window.open(mediaUrl, "_blank")}
+                                onError={(e) => {
+                                  e.currentTarget.src = "/placeholder.svg?height=96&width=96"
+                                }}
+                              />
+                            </div>
+                          )
+                        }
+                        if (isVideo) {
+                          return (
+                            <div key={idx} className="border rounded overflow-hidden bg-black">
+                              <video src={mediaUrl} controls className="w-full h-24 object-cover" preload="metadata" />
+                            </div>
+                          )
+                        }
+                        if (isAudio) {
                           return (
                             <div
                               key={idx}
-                              className="flex items-center justify-center h-24 bg-gray-200 border rounded p-2"
+                              className="flex items-center justify-center h-24 bg-gray-100 border rounded p-2"
                             >
-                              <p className="text-xs text-center truncate">{file.name || "파일"}</p>
+                              <audio src={mediaUrl} controls className="w-full" preload="metadata" />
                             </div>
                           )
-                        })}
-                      </div>
+                        }
+                        return (
+                          <div
+                            key={idx}
+                            className="flex items-center justify-center h-24 bg-gray-200 border rounded p-2"
+                          >
+                            <p className="text-xs text-center truncate">{file.name || "파일"}</p>
+                          </div>
+                        )
+                      })}
                     </div>
-                  )}
-                </Card>
-              ))}
+                  </div>
+                )}
+              </Card>
+            ))}
           </div>
         </div>
       )}

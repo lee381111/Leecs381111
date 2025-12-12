@@ -41,6 +41,8 @@ export interface ScheduleEvent {
   alarmEnabled?: boolean
   alarmMinutesBefore?: number
   isSpecialEvent?: boolean // Added flag to identify special events
+  repeatType?: "none" | "daily" | "weekly" | "monthly" // Adding repeat functionality to schedules
+  repeatEndDate?: string // Optional end date for repeating schedules
   createdAt: string
   user_id?: string
 }
