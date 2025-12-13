@@ -20,7 +20,7 @@ type TranslationKey =
   | "krw_unit"
   | "file_upload"
   | "take_photo"
-  | "shoot"
+  | "shoot" // Added shoot translation key for camera capture button
   | "ocr_camera"
   | "ocr_upload"
   | "handwriting"
@@ -69,717 +69,6 @@ type TranslationKey =
   | "repeat_frequency"
   | "repeat_until"
   | "repeat_schedule"
-  | "organize_meeting_minutes"
-  | "organizing_meeting"
-  | "content_required_for_organize"
-  | "confirm_organize_meeting"
-  | "meeting_organized_success"
-  | "meeting_organize_failed"
-  | "summarize_note"
-  | "summarizing"
-  | "content_required_for_summary"
-  | "note_summarized_success"
-  | "note_summary_failed"
-  | "summary_result"
-  | "replace_with_summary"
-  | "add_summary_below"
-  | "translate_note"
-  | "translating"
-  | "content_required_for_translation"
-  | "translation_result"
-  | "replace_with_translation"
-  | "add_translation_below"
-  | "select_target_language"
-  | "translate_to_korean"
-  | "translate_to_english"
-  | "translate_to_chinese"
-  | "translate_to_japanese"
-  | "translation_failed"
-  | "health_record"
-  | "health_record_btn"
-  | "add_health_record"
-  | "medication_management_title"
-  | "medication_management"
-  | "medication_management_btn"
-  | "health_statistics"
-  | "health_graph"
-  | "view_graph"
-  | "recent_records"
-  | "vital_signs"
-  | "exercise"
-  | "medical_expenses"
-  | "record_type"
-  | "blood_pressure"
-  | "blood_sugar"
-  | "temperature"
-  | "weight"
-  | "steps"
-  | "distance"
-  | "medical_expense"
-  | "medication_expense"
-  | "medication_cost"
-  | "memo"
-  | "medication_name"
-  | "dosage"
-  | "frequency"
-  | "time"
-  | "start_date"
-  | "end_date"
-  | "add_time"
-  | "add_medication"
-  | "save_medication_schedule"
-  | "enable_alarm"
-  | "date_label"
-  | "systolic_bp"
-  | "diastolic_bp"
-  | "systolic_placeholder"
-  | "diastolic_placeholder"
-  | "blood_sugar_placeholder"
-  | "temperature_placeholder"
-  | "weight_placeholder"
-  | "steps_placeholder"
-  | "distance_placeholder"
-  | "medical_expense_placeholder"
-  | "medication_expense_placeholder"
-  | "memo_additional"
-  | "medicine_name"
-  | "medicine_name_placeholder"
-  | "dosage_placeholder"
-  | "frequency_placeholder"
-  | "medication_times"
-  | "end_date_optional"
-  | "add_medication_schedule"
-  | "dosage_label"
-  | "frequency_label"
-  | "today_medication_times"
-  | "systolic"
-  | "diastolic"
-  | "no_health_records_message"
-  | "medical_and_medication_expenses"
-  | "total_expense"
-  | "medical_contacts"
-  | "medical_contacts_btn"
-  | "manage_medical_contacts"
-  | "add_medical_contact"
-  | "contact_type"
-  | "hospital"
-  | "clinic"
-  | "pharmacy"
-  | "contact_name"
-  | "contact_phone"
-  | "contact_address"
-  | "contact_notes"
-  | "contact_name_placeholder"
-  | "contact_phone_placeholder"
-  | "contact_address_placeholder"
-  | "contact_notes_placeholder"
-  | "no_medical_contacts_message"
-  | "save_contact"
-  | "todo"
-  | "todo_list"
-  | "add_todo"
-  | "todo_title"
-  | "todo_title_required"
-  | "todo_description"
-  | "todo_priority"
-  | "priority_low"
-  | "priority_medium"
-  | "priority_high"
-  | "todo_due_date"
-  | "todo_repeat"
-  | "repeat_none"
-  | "repeat_daily"
-  | "repeat_weekly"
-  | "repeat_monthly"
-  | "todo_alarm"
-  | "todo_alarm_notification"
-  | "invalid_alarm_time"
-  | "todo_completed"
-  | "todo_incomplete"
-  | "mark_as_completed"
-  | "mark_as_incomplete"
-  | "no_todos_message"
-  | "voice_input_todo"
-  | "voice_input_active"
-  | "total_todos"
-  | "completed_todos"
-  | "pending_todos"
-  | "filter_all"
-  | "filter_active"
-  | "filter_completed"
-  | "confirm_delete"
-  | "delete_success"
-  | "delete_failed"
-  | "special_days"
-  | "general_schedule"
-  | "special_day_reminder"
-  | "event_name"
-  | "category"
-  | "birthday"
-  | "anniversary"
-  | "holiday"
-  | "vacation"
-  | "meeting"
-  | "other"
-  | "alarm_time"
-  | "alarm_settings"
-  | "enable_alarm_before_event"
-  | "minutes_before"
-  | "5_min_before"
-  | "10_min_before"
-  | "15_min_before"
-  | "minutes_before_30"
-  | "hours_before_1"
-  | "hours_before_3"
-  | "day_before_1"
-  | "days_before_3"
-  | "week_before_1"
-  | "special_days_batch_title"
-  | "special_days_batch_description"
-  | "schedule_number"
-  | "save_schedules_count"
-  | "special_day_name_placeholder"
-  | "alarm"
-  | "day_off"
-  | "30_min_before"
-  | "1_hour_before"
-  | "2_hours_before"
-  | "12_hours_before"
-  | "1_day_before"
-  | "2_days_before"
-  | "1_week_before"
-  | "add_schedule"
-  | "download_ics_description"
-  | "title_label"
-  | "category_label"
-  | "description_label"
-  | "attachments_label"
-  | "travel_map"
-  | "map_zoom_instruction"
-  | "map_drag_instruction"
-  | "map_button_instruction"
-  | "destination_label"
-  | "destination_placeholder"
-  | "latitude_label"
-  | "longitude_label"
-  | "auto_or_manual_input"
-  | "select_location_cancel"
-  | "select_location_on_map"
-  | "select_location_instruction"
-  | "location_selected_message"
-  | "start_date_label"
-  | "end_date_label"
-  | "city_category"
-  | "nature_category"
-  | "mountain_category"
-  | "sea_category"
-  | "historic_category"
-  | "restaurant_category"
-  | "cafe_category"
-  | "travel_expense_label"
-  | "travel_expense_placeholder"
-  | "expense_auto_save_notice"
-  | "enter_destination"
-  | "enter_dates"
-  | "travel_saved"
-  | "travel_delete_confirm"
-  | "no_travel_records"
-  | "add_first_travel"
-  | "file"
-  | "close_image"
-  | "close"
-  | "new_travel_record"
-  | "edit_travel_record"
-  | "coordinates_calculated"
-  | "attachments_count_label"
-  | "travel_expense_with_unit"
-  | "ai_travel_optimizer"
-  | "ai_travel_optimizer_description"
-  | "start_date_label"
-  | "end_date_label"
-  | "budget_label"
-  | "budget_placeholder"
-  | "travel_style_label"
-  | "select_style"
-  | "sightseeing"
-  | "relaxation"
-  | "food_tour"
-  | "adventure"
-  | "cultural"
-  | "generate_itinerary"
-  | "optimizing"
-  | "trip_summary"
-  | "day"
-  | "recommendations"
-  | "recommended_restaurants"
-  | "recommended_attractions"
-  | "travel_tips"
-  | "budget_breakdown"
-  | "accommodation"
-  | "food"
-  | "transportation"
-  | "activities"
-  | "total"
-  | "apply_to_schedule"
-  | "regenerate"
-  | "itinerary_applied"
-  | "optimization_failed"
-  | "please_fill_required_fields"
-  | "loading_weather"
-  | "refresh"
-  | "current_temp"
-  | "weather_status"
-  | "feels_like"
-  | "humidity"
-  | "wind_speed"
-  | "air_quality"
-  | "pm25"
-  | "pm10"
-  | "yellow_dust"
-  | "large_particles"
-  | "air_good"
-  | "air_moderate"
-  | "air_bad"
-  | "air_very_bad"
-  | "air_high"
-  | "air_low"
-  | "weekly_forecast"
-  | "max_temp"
-  | "min_temp"
-  | "latitude"
-  | "longitude"
-  | "loading_stats"
-  | "total_records"
-  | "precious_memories"
-  | "backup_restore_title"
-  | "backup_description"
-  | "export_data"
-  | "restore_backup"
-  | "restoring"
-  | "json_format"
-  | "csv_format"
-  | "excel_format"
-  | "login_required"
-  | "csv_downloaded"
-  | "csv_export_failed"
-  | "excel_downloaded"
-  | "excel_export_failed"
-  | "backup_downloaded"
-  | "backup_error"
-  | "restore_success"
-  | "restore_error"
-  | "not_logged_in"
-  | "logged_in"
-  | "user_guide_title"
-  | "user_guide"
-  | "open_guide"
-  | "connection_status_title"
-  | "connection_label"
-  | "privacy_policy"
-  | "privacy_policy_description"
-  | "privacy_last_updated"
-  | "privacy_section1_title"
-  | "privacy_section1_intro"
-  | "privacy_purpose1"
-  | "privacy_purpose2"
-  | "privacy_purpose3"
-  | "privacy_section2_title"
-  | "privacy_collected1"
-  | "privacy_collected2"
-  | "privacy_section3_title"
-  | "privacy_storage_desc"
-  | "privacy_supabase_desc"
-  | "privacy_section4_title"
-  | "privacy_retention_desc"
-  | "privacy_section5_title"
-  | "privacy_right1"
-  | "privacy_right2"
-  | "privacy_right3"
-  | "privacy_section6_title"
-  | "privacy_section7_title"
-  | "privacy_termination_desc"
-  | "privacy_data_deletion"
-  | "terms_of_service"
-  | "terms_of_service_description"
-  | "terms_last_updated"
-  | "terms_section1_title"
-  | "terms_section1_desc"
-  | "terms_section2_title"
-  | "terms_section2_desc"
-  | "terms_section3_title"
-  | "terms_service1"
-  | "terms_service2"
-  | "terms_service3"
-  | "terms_service4"
-  | "terms_service5"
-  | "terms_section4_title"
-  | "terms_obligation1"
-  | "terms_obligation2"
-  | "terms_obligation3"
-  | "terms_section5_title"
-  | "terms_section5_desc"
-  | "terms_section6_title"
-  | "terms_termination1"
-  | "terms_termination2"
-  | "terms_termination3"
-  | "terms_termination4"
-  | "personal_information"
-  | "view"
-  | "hide"
-  | "account_information"
-  | "user_id"
-  | "account_created"
-  | "change_email"
-  | "update_email"
-  | "new_email"
-  | "enter_password"
-  | "updating"
-  | "data_management"
-  | "data_management_description"
-  | "view_data"
-  | "data_export_description"
-  | "fill_all_fields"
-  | "email_updated_success"
-  | "email_update_error"
-  | "danger_zone"
-  | "account_deletion_warning"
-  | "data_deletion_report"
-  | "data_deletion_report_desc"
-  | "generate_report"
-  | "generating_report"
-  | "report_generated"
-  | "report_generation_failed"
-  | "delete_account"
-  | "delete_account_title"
-  | "delete_account_warning_title"
-  | "delete_warning_1"
-  | "delete_warning_2"
-  | "delete_warning_3"
-  | "delete_account_confirm_instruction"
-  | "delete_account_confirm_phrase"
-  | "delete_account_phrase_mismatch"
-  | "account_deleted_success"
-  | "account_deletion_failed"
-  | "deleting"
-  | "delete_permanently"
-  | "delete_account_email_reuse_info"
-  | "announcement_management"
-  | "new_announcement"
-  | "edit_announcement"
-  | "announcement_message"
-  | "announcement_message_placeholder"
-  | "announcement_type"
-  | "type_info"
-  | "type_warning"
-  | "type_success"
-  | "expires_at"
-  | "active_announcements"
-  | "no_announcements"
-  | "expires"
-  | "save_success"
-  | "save_failed"
-  | "update"
-  | "app_developer"
-  | "developer_info"
-  | "app_designer"
-  | "designer_info"
-  | "customer_support"
-  | "customer_support_description"
-  | "support_email"
-  | "app_introduction"
-  | "app_introduction_description"
-  | "notes_description"
-  | "diaries_description"
-  | "schedules_description"
-  | "travel_records_description"
-  | "vehicle_records_description"
-  | "health_records_description"
-  | "budget_description"
-  | "business_cards_description"
-  | "weather_description"
-  | "radio_description"
-  | "data_backup"
-  | "data_backup_description"
-  | "diaries"
-  | "schedules"
-  | "travel_records"
-  | "vehicle_records"
-  | "health_records"
-  | "legal_information"
-  | "set_diary_password"
-  | "password_description"
-  | "new_password"
-  | "password_placeholder"
-  | "confirm_password"
-  | "confirm_password_placeholder"
-  | "set_password"
-  | "skip"
-  | "locked_diary"
-  | "enter_password_to_unlock"
-  | "password"
-  | "unlock"
-  | "password_too_short"
-  | "password_mismatch"
-  | "password_set"
-  | "unlocked"
-  | "wrong_password"
-  | "password_changed"
-  | "confirm_remove_password"
-  | "password_removed"
-  | "lock_diary"
-  | "security_question"
-  | "security_not_set"
-  | "enter_security_answer"
-  | "security_answer_placeholder"
-  | "reset_password_description"
-  | "wrong_security_answer"
-  | "password_reset_success"
-  | "security_answer_help"
-  | "diary_password_management"
-  | "diary_password_description"
-  | "add_vehicle"
-  | "first_vehicle"
-  | "vehicle_list"
-  | "new_vehicle"
-  | "edit_vehicle"
-  | "vehicle_name_placeholder"
-  | "license_plate_placeholder"
-  | "vehicle_type_placeholder"
-  | "vehicle_model_placeholder"
-  | "purchase_year_placeholder"
-  | "insurance_placeholder"
-  | "vehicle_type"
-  | "vehicle_model"
-  | "purchase_year"
-  | "insurance"
-  | "insurance_fee"
-  | "register"
-  | "vehicle_name_and_plate_required"
-  | "vehicle_saved"
-  | "save_error"
-  | "delete_vehicle_confirm"
-  | "deleted"
-  | "delete_error"
-  | "no_vehicles"
-  | "records_count"
-  | "schedules_count"
-  | "records_unit"
-  | "tap_to_add_maintenance_and_schedule"
-  | "add_maintenance"
-  | "maintenance_input"
-  | "maintenance_category"
-  | "maintenance_date"
-  | "engine_oil"
-  | "tire"
-  | "filter"
-  | "repair"
-  | "parts"
-  | "mileage"
-  | "km_unit"
-  | "mileage_placeholder"
-  | "amount"
-  | "won_unit"
-  | "amount_placeholder"
-  | "save_maintenance"
-  | "date_required"
-  | "maintenance_saved"
-  | "delete_maintenance_confirm"
-  | "maintenance_history"
-  | "attachments_count"
-  | "no_records"
-  | "preventive_schedule"
-  | "preventive_input"
-  | "scheduled_date"
-  | "estimated_mileage"
-  | "estimated_mileage_placeholder"
-  | "description"
-  | "description_placeholder"
-  | "alarm_setting"
-  | "alarm_days_before"
-  | "days_before_2"
-  | "days_before_7"
-  | "days_before_14"
-  | "days_before_30"
-  | "save_schedule"
-  | "scheduled_date_required"
-  | "schedule_saved"
-  | "delete_schedule_confirm"
-  | "maintenance_alarm_title"
-  | "maintenance_alarm_message"
-  | "storage_usage"
-  | "storage_used"
-  | "used"
-  | "used_lowercase"
-  | "remaining"
-  | "storage_full"
-  | "storage_warning"
-  | "premium"
-  | "upgrade_to_premium"
-  | "premium_benefits"
-  | "benefit_500mb"
-  | "benefit_no_ads"
-  | "benefit_priority_support"
-  | "upgrade_for_1_pi"
-  | "upgrade_coming_soon"
-  | "email_user_storage_info"
-  | "admin_storage_info"
-  | "announcement_welcome"
-  | "announcement_maintenance"
-  | "announcement_update"
-  | "announcement_event"
-  | "app_title"
-  | "welcome_message"
-  | "logout"
-  | "my_forest"
-  | "note_title_placeholder"
-  | "note_content_placeholder"
-  | "no_notes_message"
-  | "event_title_placeholder"
-  | "start_time"
-  | "end_time"
-  | "location"
-  | "location_placeholder"
-  | "no_events_message"
-  | "search_location"
-  | "weather_loading"
-  | "weather_error"
-  | "precipitation"
-  | "weather_description"
-  | "visibility"
-  | "pressure"
-  | "today"
-  | "tomorrow"
-  | "travel_destination"
-  | "travel_destination_placeholder"
-  | "no_travels_message"
-  | "vehicle_name"
-  | "vehicle_name_placeholder"
-  | "license_plate"
-  | "car"
-  | "motorcycle"
-  | "bicycle"
-  | "no_vehicles_message"
-  | "add_maintenance"
-  | "cost_placeholder"
-  | "no_maintenance_records"
-  | "diary_content_placeholder"
-  | "no_diary_entries"
-  | "todo_title_placeholder"
-  | "completed"
-  | "in_progress"
-  | "not_started"
-  | "radio_station_placeholder"
-  | "radio_url_placeholder"
-  | "add_station"
-  | "no_stations_message"
-  | "play"
-  | "stop"
-  | "of"
-  | "upgrade_storage"
-  | "free_plan"
-  | "storage_full_warning"
-  | "no_location_permission"
-  | "getting_location"
-  | "height"
-  | "height_placeholder"
-  | "blood_pressure_placeholder"
-  | "blood_sugar_placeholder"
-  | "heart_rate"
-  | "heart_rate_placeholder"
-  | "notes_optional"
-  | "notes_placeholder"
-  | "record_date"
-  | "no_health_records"
-  | "health_metrics"
-  | "medication_name_placeholder"
-  | "dosage_placeholder"
-  | "frequency_placeholder"
-  | "no_medications"
-  | "add_medication"
-  | "add_contact"
-  | "contact_notes_placeholder"
-  | "status"
-  | "priority"
-  | "high"
-  | "medium"
-  | "low"
-  | "due_date"
-  | "back_to_list"
-  | "mark_as_in_progress"
-  | "no_description"
-  | "created"
-  | "last_updated"
-  | "agree_to_terms"
-  | "sign_up"
-  | "already_have_account"
-  | "sign_in"
-  | "email_placeholder"
-  | "signing_up"
-  | "signing_in"
-  | "forgot_password"
-  | "or_continue_with"
-  | "google"
-  | "dont_have_account"
-  | "enter_email_for_reset"
-  | "send_reset_link"
-  | "sending"
-  | "back_to_sign_in"
-  | "reset_password"
-  | "admin"
-  | "consent_logs"
-  | "user"
-  | "terms_version"
-  | "privacy_version"
-  | "agreed_at"
-  | "user_agent"
-  | "no_consent_logs"
-  | "tos_title"
-  | "tos_effective_date"
-  | "tos_last_updated"
-  | "tos_acceptance"
-  | "tos_acceptance_content"
-  | "tos_1_title"
-  | "tos_1_content"
-  | "tos_2_title"
-  | "tos_2_content"
-  | "tos_3_title"
-  | "tos_3_content"
-  | "tos_4_title"
-  | "tos_4_content"
-  | "tos_5_title"
-  | "tos_5_content"
-  | "tos_6_title"
-  | "tos_6_content"
-  | "tos_7_title"
-  | "tos_7_content"
-  | "pp_effective_date"
-  | "pp_intro"
-  | "pp_1_title"
-  | "pp_1_content"
-  | "pp_2_title"
-  | "pp_2_content"
-  | "pp_3_title"
-  | "pp_3_content"
-  | "pp_4_title"
-  | "pp_4_content"
-  | "pp_5_title"
-  | "pp_5_content"
-  | "pp_6_title"
-  | "pp_6_content"
-  | "pp_7_title"
-  | "pp_7_content"
-  | "pp_contact"
-  | "analyze_emotion"
-  | "analyzing_emotion"
-  | "emotion_analysis_result"
-  | "emotion_analysis_failed"
-  | "diary_too_short_for_analysis"
-  | "emotion_positive"
-  | "emotion_negative"
-  | "emotion_neutral"
-  | "emotion_score"
-  | "main_emotions"
-  | "ai_advice"
 
 const translations: Record<Language, Record<TranslationKey, string>> = {
   ko: {
@@ -1284,7 +573,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     account_deletion_failed: "계정 삭제 중 오류가 발생했습니다",
     deleting: "삭제 중...",
     delete_permanently: "영구 삭제",
-    delete_account_email_reuse_info: "참고: 계정 삭제 후 동일한 이메일로 다시 회원가입할 수 있습니다.",
 
     // Announcement Management
     announcement_management: "공지사항 관리",
@@ -1498,6 +786,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     car: "승용차",
     motorcycle: "오토바이",
     bicycle: "자전거",
+    other: "기타",
     no_vehicles_message: "차량 기록이 없습니다. 차량을 등록하세요!",
     mileage_placeholder: "주행 거리를 입력하세요",
     add_maintenance: "정비 추가",
@@ -2155,12 +1444,11 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     delete_warning_3: "Recovery is impossible after deletion.",
     delete_account_confirm_instruction: "To proceed, please type the following phrase exactly:",
     delete_account_confirm_phrase: "Permanently delete my account",
-    delete_account_phrase_mismatch: "The phrase you entered does not match",
-    account_deleted_success: "Account successfully deleted",
-    account_deletion_failed: "An error occurred while deleting your account",
+    delete_account_phrase_mismatch: "The typed phrase does not match.",
+    account_deleted_success: "Account deleted successfully",
+    account_deletion_failed: "An error occurred during account deletion",
     deleting: "Deleting...",
     delete_permanently: "Delete Permanently",
-    delete_account_email_reuse_info: "Note: After deletion, you can sign up again with the same email address.",
 
     // Announcement Management
     announcement_management: "Announcement Management",
@@ -2374,6 +1662,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     car: "Car",
     motorcycle: "Motorcycle",
     bicycle: "Bicycle",
+    other: "Other",
     no_vehicles_message: "No vehicle records. Register a vehicle!",
     mileage_placeholder: "Enter mileage",
     add_maintenance: "Add Maintenance",
@@ -3025,13 +2314,12 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     delete_warning_2: "アカウント情報が完全に削除されます。",
     delete_warning_3: "削除後の復元は不可能です。",
     delete_account_confirm_instruction: "続行するには、以下のフレーズを正確に入力してください:",
-    delete_account_confirm_phrase: "アカウントを完全に削除します",
+    delete_account_confirm_phrase: "アカウントを永久に削除します",
     delete_account_phrase_mismatch: "入力したフレーズが一致しません",
     account_deleted_success: "アカウントが正常に削除されました",
     account_deletion_failed: "アカウント削除中にエラーが発生しました",
     deleting: "削除中...",
     delete_permanently: "永久削除",
-    delete_account_email_reuse_info: "注意: 削除後、同じメールアドレスで再度登録できます。",
 
     // Announcement Management
     announcement_management: "お知らせ管理",
@@ -3102,288 +2390,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     confirm_remove_password: "本当にパスワードを削除しますか？",
     password_removed: "パスワードが削除されました",
     lock_diary: "日記をロック",
-    security_question: "セキュリティの質問: 生まれた都市?",
-    security_not_set: "セキュリティが設定されていません。パスワードを完全に削除するには、設定から削除してください。",
-    enter_security_answer: "セキュリティの回答",
-    security_answer_placeholder: "生まれた都市",
-    reset_password_description: "新しいパスワードにリセット",
-    wrong_security_answer: "セキュリティの回答が正しくありません",
-    password_reset_success: "パスワードがリセットされました",
-    security_answer_help: "パスワードを忘れた時に使用されます",
-    diary_password_management: "日記パスワード管理",
-    diary_password_description: "日記のパスワードを削除またはリセットします",
-
-    // Vehicle Section Translations
-    add_vehicle: "차량 추가",
-    first_vehicle: "첫 차량 등록",
-    vehicle_list: "차량 목록",
-    new_vehicle: "새 차량",
-    edit_vehicle: "차량 수정",
-    vehicle_name_placeholder: "차량 이름 (예: 내 소나타)",
-    license_plate_placeholder: "차량 번호",
-    vehicle_type_placeholder: "차종 (예: 세단, SUV)",
-    vehicle_model_placeholder: "모델명 (예: 2023년형)",
-    purchase_year_placeholder: "구매년도 (예: 2023)",
-    insurance_placeholder: "보험사 (예: 삼성화재)",
-    vehicle_type: "차종",
-    vehicle_model: "모델",
-    purchase_year: "구매년도",
-    insurance: "보험",
-    insurance_fee: "보험료",
-    register: "등록",
-    update: "수정",
-    vehicle_name_and_plate_required: "차량 이름과 번호를 입력해주세요",
-    vehicle_saved: "차량이 저장되었습니다",
-    save_error: "저장 중 오류가 발생했습니다",
-    delete_vehicle_confirm: "이 차량을 삭제하시겠습니까?",
-    deleted: "삭제되었습니다",
-    delete_error: "삭제 중 오류가 발생했습니다",
-    no_vehicles: "등록된 차량이 없습니다",
-    records_count: "정비 기록",
-    schedules_count: "정비 일정",
-    records_unit: "건",
-    tap_to_add_maintenance_and_schedule: "터치하여 정비 기록 및 일정 추가",
-    add_maintenance: "정비 기록 추가",
-    maintenance_input: "정비 기록 입력",
-    maintenance_category: "정비 항목",
-    maintenance_date: "정비 날짜",
-    engine_oil: "엔진오일",
-    tire: "타이어",
-    filter: "필터",
-    repair: "수리",
-    parts: "부품",
-    mileage: "주행거리",
-    km_unit: "km",
-    mileage_placeholder: "주행거리 입력",
-    amount: "비용",
-    won_unit: "원",
-    amount_placeholder: "비용 입력",
-    memo_placeholder: "메모 입력",
-    save_maintenance: "정비 기록 저장",
-    date_required: "날짜를 입력해주세요",
-    maintenance_saved: "정비 기록이 저장되었습니다",
-    delete_maintenance_confirm: "이 정비 기록을 삭제하시겠습니까?",
-    maintenance_history: "정비 이력",
-    attachments_count: "첨부",
-    no_records: "기록이 없습니다",
-    preventive_schedule: "예방 정비 일정",
-    preventive_input: "예방 정비 입력",
-    scheduled_date: "예정일",
-    estimated_mileage: "예상 주행거리",
-    estimated_mileage_placeholder: "예상 주행거리 입력",
-    description: "설명",
-    description_placeholder: "정비 내용 입력",
-    alarm_setting: "알림 설정",
-    alarm_days_before: "일 전 알림",
-    days_before_2: "2일 전",
-    days_before_7: "7일 전",
-    days_before_14: "14일 전",
-    days_before_30: "30일 전",
-    save_schedule: "일정 저장",
-    scheduled_date_required: "예정일을 입력해주세요",
-    schedule_saved: "일정이 저장되었습니다",
-    delete_schedule_confirm: "이 일정을 삭제하시겠습니까?",
-    maintenance_alarm_title: "차량 정비 알림",
-    maintenance_alarm_message: "예정된 정비 일정",
-
-    // Storage Quota Translations
-    storage_usage: "저장 용량",
-    storage_used: "사용 중",
-    used: "사용됨",
-    used_lowercase: "사용됨",
-    remaining: "남음",
-    storage_full: "저장 공간이 거의 찼습니다! 파일을 삭제하거나 프리미엄으로 업그레이드하세요.",
-    storage_warning: "저장 공간이 80%를 초과했습니다. 공간을 확보해주세요.",
-    premium: "프리미엄",
-    upgrade_to_premium: "프리미엄으로 업그레이드",
-    premium_benefits: "500MB 저장 공간과 더 많은 기능을 이용하세요",
-    benefit_500mb: "500MB 저장 공간",
-    benefit_no_ads: "광고 없음",
-    benefit_priority_support: "우선 지원",
-    upgrade_for_1_pi: "월 1 Pi로 업그레이드",
-    upgrade_coming_soon: "프리미엄 업그레이드 기능이 곧 추가됩니다!",
-    email_user_storage_info: "이메일 사용자는 500MB를 무료로 사용할 수 있습니다",
-    admin_storage_info: "관리자 계정은 1GB 저장 공간을 사용할 수 있습니다",
-
-    // Announcement Translations
-    announcement_welcome: "Pi Life Manager에 오신 것을 환영합니다!",
-    announcement_maintenance: "시스템 점검이 예정되어 있습니다. 서비스 이용에 참고해주세요.",
-    announcement_update: "새로운 기능이 추가되었습니다. 확인해보세요!",
-    announcement_event: "특별 이벤트가 진행 중입니다!",
-
-    // New Translations
-    app_title: "기록의 숲",
-    welcome_message: "기록의 숲에 오신 것을 환영합니다!",
-    logout: "로그아웃",
-    my_forest: "나의 숲",
-    note_title_placeholder: "제목을 입력하세요",
-    note_content_placeholder: "내용을 입력하세요",
-    no_notes_message: "기록할 노트를 추가하세요!",
-    event_title_placeholder: "이벤트 제목",
-    start_time: "시작 시간",
-    end_time: "종료 시간",
-    location: "장소",
-    location_placeholder: "장소를 입력하세요",
-    no_events_message: "이벤트가 없습니다. 일정을 추가하세요!",
-    search_location: "장소 검색",
-    weather_loading: "날씨 로딩 중...",
-    weather_error: "날씨 정보를 가져오는데 실패했습니다.",
-    precipitation: "강수량",
-    weather_description: "날씨 설명",
-    visibility: "시야",
-    pressure: "기압",
-    today: "오늘",
-    tomorrow: "내일",
-    travel_destination: "여행 목적지",
-    travel_destination_placeholder: "예: 제주도, 강원도",
-    no_travels_message: "여행 기록이 없습니다. 여행을 추가하세요!",
-    vehicle_name: "차량 이름",
-    vehicle_name_placeholder: "예: 내 아반떼",
-    license_plate: "차량 번호",
-    license_plate_placeholder: "예: 12가 1234",
-    vehicle_type: "차종",
-    car: "승용차",
-    motorcycle: "오토바이",
-    bicycle: "자전거",
-    no_vehicles_message: "차량 기록이 없습니다. 차량을 등록하세요!",
-    mileage_placeholder: "주행 거리를 입력하세요",
-    add_maintenance: "정비 추가",
-    cost_placeholder: "비용을 입력하세요",
-    no_maintenance_records: "정비 기록이 없습니다.",
-    diary_content_placeholder: "오늘 하루 어땠나요?",
-    no_diary_entries: "일기 항목이 없습니다. 일기를 작성하세요!",
-    todo_title_placeholder: "할일을 입력하세요",
-    completed: "완료",
-    in_progress: "진행 중",
-    not_started: "시작 전",
-    radio_station_placeholder: "라디오 방송국 이름",
-    radio_url_placeholder: "라디오 스트리밍 URL",
-    add_station: "방송국 추가",
-    no_stations_message: "등록된 방송국이 없습니다.",
-    play: "재생",
-    stop: "정지",
-    of: "/",
-    upgrade_storage: "스토리지 업그레이드",
-    free_plan: "무료 플랜",
-    storage_full_warning: "스토리지 공간이 부족합니다. 불필요한 파일을 삭제하거나 업그레이드해주세요.",
-    no_location_permission: "위치 접근 권한이 없습니다.",
-    getting_location: "위치 정보 가져오는 중...",
-    update: "업데이트",
-    height: "키",
-    height_placeholder: "키를 입력하세요 (cm)",
-    weight: "몸무게",
-    blood_pressure_placeholder: "예: 120/80",
-    blood_sugar_placeholder: "예: 90",
-    heart_rate: "심박수",
-    heart_rate_placeholder: "심박수를 입력하세요",
-    notes_optional: "메모 (선택 사항)",
-    notes_placeholder: "추가 메모를 입력하세요",
-    record_date: "기록 날짜",
-    no_health_records: "건강 기록이 없습니다.",
-    health_metrics: "건강 지표",
-    medication_name_placeholder: "약 이름을 입력하세요",
-    dosage_placeholder: "복용량을 입력하세요",
-    frequency_placeholder: "복용 빈도를 입력하세요",
-    no_medications: "등록된 약이 없습니다.",
-    add_medication: "약 추가",
-    medical_contacts: "의료 연락처",
-    add_contact: "연락처 추가",
-    contact_notes_placeholder: "메모를 입력하세요",
-    todo_list: "할일 목록",
-    status: "상태",
-    priority: "우선순위",
-    high: "높음",
-    medium: "보통",
-    low: "낮음",
-    due_date: "마감일",
-    description: "설명",
-    back_to_list: "목록으로 돌아가기",
-    mark_as_completed: "완료로 표시",
-    mark_as_in_progress: "진행 중으로 표시",
-    no_description: "설명 없음",
-    created: "생성일",
-    last_updated: "마지막 업데이트",
-    terms_of_service: "이용약관",
-    privacy_policy: "개인정보 처리방침",
-    agree_to_terms: "이용약관 및 개인정보 처리방침에 동의합니다",
-    sign_up: "회원가입",
-    already_have_account: "이미 계정이 있나요?",
-    sign_in: "로그인",
-    email_placeholder: "이메일 주소",
-    signing_up: "회원가입 중...",
-    signing_in: "로그인 중...",
-    forgot_password: "비밀번호 재설정",
-    or_continue_with: "또는 다음으로 계속",
-    google: "Google",
-    dont_have_account: "계정이 없으신가요?",
-    enter_email_for_reset: "비밀번호 재설정을 위해 이메일을 입력해주세요",
-    send_reset_link: "재설정 링크 보내기",
-    sending: "전송 중...",
-    back_to_sign_in: "로그인으로 돌아가기",
-    reset_password: "비밀번호 재설정",
-    admin: "관리자",
-    consent_logs: "동의 기록",
-    user: "사용자",
-    terms_version: "이용약관 버전",
-    privacy_version: "개인정보 처리방침 버전",
-    agreed_at: "동의 일시",
-    user_agent: "사용자 에이전트",
-    no_consent_logs: "동의 기록이 없습니다",
-    tos_title: "이용약관",
-    tos_effective_date: "시행일",
-    tos_last_updated: "최종 수정일",
-    tos_acceptance: "이용약관 동의",
-    tos_acceptance_content: "본인은 위 이용약관에 동의합니다.",
-    tos_1_title: "제1조 (목적)",
-    tos_1_content: "본 약관은 ...",
-    tos_2_title: "제2조 (정의)",
-    tos_2_content: "본 약관에서 사용하는 용어의 정의는 다음과 같습니다. ...",
-    tos_3_title: "제3조 (이용 계약)",
-    tos_3_content: "이용 계약은 이용자가 본 약관의 내용에 대하여 동의함을 표시함으로써 체결됩니다. ...",
-    tos_4_title: "제4조 (이용자의 의무)",
-    tos_4_content: "이용자는 다음 각 호의 행위를 하여서는 안 됩니다. ...",
-    tos_5_title: "제5조 (서비스 제공 및 중단)",
-    tos_5_content: "회사는 이용자에게 안정적인 서비스를 제공합니다. ...",
-    tos_6_title: "제6조 (개인정보 보호)",
-    tos_6_content: "회사는 개인정보 보호법 등 관련 법령을 준수합니다. ...",
-    tos_7_title: "제7조 (면책조항)",
-    tos_7_content:
-      "회사는 천재지변, 파업, 관련 법령의 제정/개폐 등 불가항력적인 사유로 서비스를 제공할 수 없는 경우에는 서비스 제공에 대한 책임이 면제됩니다. ...",
-    pp_title: "개인정보 처리방침",
-    pp_effective_date: "시행일",
-    pp_last_updated: "최종 수정일",
-    pp_intro: "본 개인정보 처리방침은 ...",
-    pp_1_title: "제1조 (수집하는 개인정보 항목 및 수집 방법)",
-    pp_1_content:
-      "회사는 이용계약의 이행, 서비스 제공, 이용자 식별, 서비스 개선을 위하여 다음과 같은 개인정보를 수집합니다. ...",
-    pp_2_title: "제2조 (개인정보의 수집 및 이용 목적)",
-    pp_2_content: "회사는 수집한 개인정보를 다음의 목적을 위하여만 이용합니다. ...",
-    pp_3_title: "제3조 (개인정보의 보유 및 이용기간)",
-    pp_3_content:
-      "회사는 법령에 따른 개인정보 보유·이용기간 또는 정보주체로부터 개인정보를 수집 시에 동의받은 개인정보 보유·이용기간 내에서 개인정보를 보유·이용합니다. ...",
-    pp_4_title: "제4조 (개인정보의 제3자 제공)",
-    pp_4_content: "회사는 이용자의 개인정보를 원칙적으로 제3자에게 제공하지 않습니다. ...",
-    pp_5_title: "제5조 (개인정보의 파기)",
-    pp_5_content:
-      "회사는 개인정보 보유기간의 경과, 처리목적 달성 등 그 개인정보가 불필요하게 되었을 때에는 지체 없이 해당 개인정보를 파기합니다. ...",
-    pp_6_title: "제6조 (이용자 및 법정대리인의 권리와 그 행사 방법)",
-    pp_6_content: "이용자는 언제든지 등록되어 있는 자신의 개인정보를 열람하거나 수정할 수 있습니다. ...",
-    pp_7_title: "제7조 (개인정보에 관한 민원 서비스)",
-    pp_7_content:
-      "회사는 개인정보 처리에 관한 질문, 의견, 불만 등을 처리하기 위하여 아래와 같이 담당 부서 및 개인정보 보호책임자를 지정하고 있습니다. ...",
-    pp_contact: "개인정보 보호책임자",
-
-    analyze_emotion: "感情分析",
-    analyzing_emotion: "分析中...",
-    emotion_analysis_result: "感情分析結果",
-    emotion_analysis_failed: "感情分析に失敗しました",
-    diary_too_short_for_analysis: "日記が短すぎて分析できません",
-    emotion_positive: "肯定的",
-    emotion_negative: "否定的",
-    emotion_neutral: "中立",
-    emotion_score: "感情スコア",
-    main_emotions: "主な感情",
-    ai_advice: "AIアドバイス",
     security_question: "セキュリティの質問: 生まれた都市?",
     security_not_set: "セキュリティが設定されていません。パスワードを完全に削除するには、設定から削除してください。",
     enter_security_answer: "セキュリティの回答",
@@ -3893,12 +2899,11 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     delete_warning_3: "删除后无法恢复。",
     delete_account_confirm_instruction: "继续操作，请输入以下短语：",
     delete_account_confirm_phrase: "永久删除我的账户",
-    delete_account_phrase_mismatch: "您输入的短语不匹配。",
+    delete_account_phrase_mismatch: "输入的短语不匹配。",
     account_deleted_success: "账户已成功删除",
     account_deletion_failed: "删除账户时出错",
     deleting: "删除中...",
     delete_permanently: "永久删除",
-    delete_account_email_reuse_info: "注意: 删除后，您可以使用相同的电子邮件地址重新注册。",
 
     // Announcement Management
     announcement_management: "公告管理",
@@ -3981,287 +2986,292 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     diary_password_description: "删除或重置您的日记密码",
 
     // Vehicle Section Translations
-    add_vehicle: "添加车辆",
-    first_vehicle: "注册您的第一辆车",
-    vehicle_list: "车辆列表",
-    new_vehicle: "新车辆",
-    edit_vehicle: "编辑车辆",
-    vehicle_name_placeholder: "车辆名称 (例如：我的索纳塔)",
-    license_plate_placeholder: "车牌号",
-    vehicle_type_placeholder: "车辆类型 (例如：轿车, SUV)",
-    vehicle_model_placeholder: "型号年份 (例如：2023款)",
-    purchase_year_placeholder: "购买年份 (例如：2023)",
-    insurance_placeholder: "保险公司 (例如：太平洋保险)",
-    vehicle_type: "车辆类型",
-    vehicle_model: "型号",
-    purchase_year: "购买年份",
-    insurance: "保险",
-    insurance_fee: "保险费",
-    register: "注册",
-    update: "更新",
-    vehicle_name_and_plate_required: "需要车辆名称和车牌号",
-    vehicle_saved: "车辆已成功保存",
-    save_error: "保存车辆时发生错误",
-    delete_vehicle_confirm: "确定要删除此车辆吗？",
-    deleted: "已删除",
-    delete_error: "删除车辆时发生错误",
-    no_vehicles: "未注册车辆",
-    records_count: "保养记录",
-    schedules_count: "保养计划",
-    records_unit: "条",
-    tap_to_add_maintenance_and_schedule: "点击添加保养记录和计划",
-    add_maintenance: "添加保养记录",
-    maintenance_input: "保养记录输入",
-    maintenance_category: "保养类别",
-    maintenance_date: "保养日期",
-    engine_oil: "发动机油",
-    tire: "轮胎",
-    filter: "滤清器",
-    repair: "维修",
-    parts: "零件",
-    mileage: "里程",
-    km_unit: "公里",
-    mileage_placeholder: "输入里程",
-    amount: "费用",
-    won_unit: "元",
-    amount_placeholder: "输入费用",
-    memo_placeholder: "输入备注",
-    save_maintenance: "保存保养记录",
-    date_required: "日期是必需的",
-    maintenance_saved: "保养记录已保存",
-    delete_maintenance_confirm: "确定要删除此保养记录吗？",
-    maintenance_history: "保养历史",
-    attachments_count: "附件",
-    no_records: "无记录",
-    preventive_schedule: "预防性保养计划",
-    preventive_input: "预防性保养输入",
-    scheduled_date: "计划日期",
-    estimated_mileage: "预计里程",
-    estimated_mileage_placeholder: "输入预计里程",
-    description: "描述",
-    description_placeholder: "输入保养描述",
-    alarm_setting: "闹钟设置",
-    alarm_days_before: "提前X天提醒",
-    days_before_2: "提前2天",
-    days_before_7: "提前7天",
-    days_before_14: "提前14天",
-    days_before_30: "提前30天",
-    save_schedule: "保存计划",
-    scheduled_date_required: "计划日期是必需的",
-    schedule_saved: "计划已保存",
-    delete_schedule_confirm: "确定要删除此计划吗？",
-    maintenance_alarm_title: "车辆保养提醒",
-    maintenance_alarm_message: "即将到来的计划保养",
+    add_vehicle: "Add Vehicle",
+    first_vehicle: "Register Your First Vehicle",
+    vehicle_list: "Vehicle List",
+    new_vehicle: "New Vehicle",
+    edit_vehicle: "Edit Vehicle",
+    vehicle_name_placeholder: "Vehicle Name (e.g., My Sonata)",
+    license_plate_placeholder: "License Plate Number",
+    vehicle_type_placeholder: "Vehicle Type (e.g., Sedan, SUV)",
+    vehicle_model_placeholder: "Model Year (e.g., 2023)",
+    purchase_year_placeholder: "Year of Purchase (e.g., 2023)",
+    insurance_placeholder: "Insurance Company (e.g., Samsung Fire & Marine)",
+    vehicle_type: "Vehicle Type",
+    vehicle_model: "Model",
+    purchase_year: "Purchase Year",
+    insurance: "Insurance",
+    insurance_fee: "Insurance Fee",
+    register: "Register",
+    update: "Update",
+    vehicle_name_and_plate_required: "Vehicle name and license plate are required",
+    vehicle_saved: "Vehicle saved successfully",
+    save_error: "An error occurred while saving the vehicle",
+    delete_vehicle_confirm: "Do you want to delete this vehicle?",
+    deleted: "Deleted",
+    delete_error: "An error occurred while deleting the vehicle",
+    no_vehicles: "No vehicles registered",
+    records_count: "Maintenance Records",
+    schedules_count: "Maintenance Schedules",
+    records_unit: "records",
+    tap_to_add_maintenance_and_schedule: "Tap to add maintenance records and schedules",
+    add_maintenance: "Add Maintenance Record",
+    maintenance_input: "Maintenance Input",
+    maintenance_category: "Maintenance Category",
+    maintenance_date: "Maintenance Date",
+    engine_oil: "Engine Oil",
+    tire: "Tire",
+    filter: "Filter",
+    repair: "Repair",
+    parts: "Parts",
+    mileage: "Mileage",
+    km_unit: "km",
+    mileage_placeholder: "Enter mileage",
+    amount: "Cost",
+    won_unit: "₩",
+    amount_placeholder: "Enter cost",
+    memo_placeholder: "Enter memo",
+    save_maintenance: "Save Maintenance Record",
+    date_required: "Date is required",
+    maintenance_saved: "Maintenance record saved",
+    delete_maintenance_confirm: "Do you want to delete this maintenance record?",
+    maintenance_history: "Maintenance History",
+    attachments_count: "Attachments",
+    no_records: "No records",
+    preventive_schedule: "Preventive Maintenance Schedule",
+    preventive_input: "Preventive Maintenance Input",
+    scheduled_date: "Scheduled Date",
+    estimated_mileage: "Estimated Mileage",
+    estimated_mileage_placeholder: "Enter estimated mileage",
+    description: "Description",
+    description_placeholder: "Enter maintenance description",
+    alarm_setting: "Alarm Setting",
+    alarm_days_before: "Alarm X days before",
+    days_before_2: "2 days before",
+    days_before_7: "7 days before",
+    days_before_14: "14 days before",
+    days_before_30: "30 days before",
+    save_schedule: "Save Schedule",
+    scheduled_date_required: "Scheduled date is required",
+    schedule_saved: "Schedule saved",
+    delete_schedule_confirm: "Do you want to delete this schedule?",
+    maintenance_alarm_title: "Vehicle Maintenance Reminder",
+    maintenance_alarm_message: "Upcoming scheduled maintenance",
 
     // Storage Quota Translations
-    storage_usage: "存储使用情况",
-    storage_used: "已用",
-    used: "已用",
-    used_lowercase: "已用",
-    remaining: "剩余",
-    storage_full: "存储空间几乎满了！删除文件或升级到高级版。",
-    storage_warning: "存储空间已超过80%。请释放空间。",
-    premium: "高级版",
-    upgrade_to_premium: "升级到高级版",
-    premium_benefits: "获取500MB存储空间和更多功能",
-    benefit_500mb: "500MB存储空间",
-    benefit_no_ads: "无广告",
-    benefit_priority_support: "优先支持",
-    upgrade_for_1_pi: "每月1 Pi升级",
-    upgrade_coming_soon: "高级版升级功能即将推出！",
-    email_user_storage_info: "邮箱用户可免费获得500MB存储空间",
-    admin_storage_info: "管理员账户可获得1GB存储空间",
+    storage_usage: "Storage Usage",
+    storage_used: "Used",
+    used: "Used",
+    used_lowercase: "used",
+    remaining: "Remaining",
+    storage_full: "Storage is almost full! Delete files or upgrade to Premium.",
+    storage_warning: "Storage usage has exceeded 80%. Please free up space.",
+    premium: "Premium",
+    upgrade_to_premium: "Upgrade to Premium",
+    premium_benefits: "Get 500MB storage and more features",
+    benefit_500mb: "500MB Storage",
+    benefit_no_ads: "No Ads",
+    benefit_priority_support: "Priority Support",
+    upgrade_for_1_pi: "Upgrade for $1 Pi/month",
+    upgrade_coming_soon: "Premium upgrade feature coming soon!",
+    email_user_storage_info: "Email users get 500MB free storage",
+    admin_storage_info: "Admin accounts get 1GB storage",
 
     // Announcement Translations
-    announcement_welcome: "欢迎来到Pi Life Manager！",
-    announcement_maintenance: "计划系统维护。请注意服务使用。",
-    announcement_update: "已添加新功能。快来看看吧！",
-    announcement_event: "特别活动正在进行中！",
+    announcement_welcome: "Welcome to Pi Life Manager!",
+    announcement_maintenance: "Scheduled system maintenance. Please note for service usage.",
+    announcement_update: "New features have been added. Check them out!",
+    announcement_event: "A special event is happening!",
 
     // New Translations
-    app_title: "记录森林",
-    welcome_message: "欢迎来到记录森林！",
-    logout: "登出",
-    my_forest: "我的森林",
-    note_title_placeholder: "输入标题",
-    note_content_placeholder: "输入内容",
-    no_notes_message: "添加一条记录！",
-    event_title_placeholder: "事件标题",
-    start_time: "开始时间",
-    end_time: "结束时间",
-    location: "地点",
-    location_placeholder: "输入地点",
-    no_events_message: "没有事件。添加日程！",
-    search_location: "搜索地点",
-    weather_loading: "正在加载天气...",
-    weather_error: "获取天气信息失败。",
-    precipitation: "降水量",
-    weather_description: "天气描述",
-    visibility: "能见度",
-    pressure: "气压",
-    today: "今天",
-    tomorrow: "明天",
-    travel_destination: "旅行目的地",
-    travel_destination_placeholder: "例如：海南三亚、云南丽江",
-    no_travels_message: "没有旅行记录。添加一次旅行！",
-    vehicle_name: "车辆名称",
-    vehicle_name_placeholder: "例如：我的朗逸",
-    license_plate: "车牌号",
-    license_plate_placeholder: "例如：京A12345",
-    vehicle_type: "车辆类型",
-    car: "轿车",
-    motorcycle: "摩托车",
-    bicycle: "自行车",
-    no_vehicles_message: "没有车辆记录。注册一辆车！",
-    mileage_placeholder: "输入里程",
-    add_maintenance: "添加保养",
-    cost_placeholder: "输入费用",
-    no_maintenance_records: "没有找到保养记录。",
-    diary_content_placeholder: "你今天过得怎么样？",
-    no_diary_entries: "没有日记条目。写日记吧！",
-    todo_title_placeholder: "输入待办事项",
-    completed: "已完成",
-    in_progress: "进行中",
-    not_started: "未开始",
-    radio_station_placeholder: "电台名称",
-    radio_url_placeholder: "电台流媒体URL",
-    add_station: "添加电台",
-    no_stations_message: "未添加电台。",
-    play: "播放",
-    stop: "停止",
+    app_title: "Forest of Records",
+    welcome_message: "Welcome to the Forest of Records!",
+    logout: "Logout",
+    my_forest: "My Forest",
+    note_title_placeholder: "Enter title",
+    note_content_placeholder: "Enter content",
+    no_notes_message: "Add a note to record!",
+    event_title_placeholder: "Event Title",
+    start_time: "Start Time",
+    end_time: "End Time",
+    location: "Location",
+    location_placeholder: "Enter location",
+    no_events_message: "No events. Add a schedule!",
+    search_location: "Search Location",
+    weather_loading: "Loading weather...",
+    weather_error: "Failed to fetch weather information.",
+    precipitation: "Precipitation",
+    weather_description: "Weather Description",
+    visibility: "Visibility",
+    pressure: "Pressure",
+    today: "Today",
+    tomorrow: "Tomorrow",
+    travel_destination: "Travel Destination",
+    travel_destination_placeholder: "e.g., Jeju Island, Gangwon Province",
+    no_travels_message: "No travel records. Add a trip!",
+    vehicle_name: "Vehicle Name",
+    vehicle_name_placeholder: "e.g., My Avante",
+    license_plate: "License Plate",
+    license_plate_placeholder: "e.g., 12A 1234",
+    vehicle_type: "Vehicle Type",
+    car: "Car",
+    motorcycle: "Motorcycle",
+    bicycle: "Bicycle",
+    other: "Other",
+    no_vehicles_message: "No vehicle records. Register a vehicle!",
+    mileage_placeholder: "Enter mileage",
+    add_maintenance: "Add Maintenance",
+    cost_placeholder: "Enter cost",
+    no_maintenance_records: "No maintenance records found.",
+    diary_content_placeholder: "How was your day?",
+    no_diary_entries: "No diary entries. Write a diary!",
+    todo_title_placeholder: "Enter todo",
+    completed: "Completed",
+    in_progress: "In Progress",
+    not_started: "Not Started",
+    radio_station_placeholder: "Radio Station Name",
+    radio_url_placeholder: "Radio Streaming URL",
+    add_station: "Add Station",
+    no_stations_message: "No stations added.",
+    play: "Play",
+    stop: "Stop",
     of: "/",
-    upgrade_storage: "升级存储空间",
-    free_plan: "免费计划",
-    storage_full_warning: "存储空间已满。请删除不必要的文件或升级。",
-    no_location_permission: "未授予位置访问权限。",
-    getting_location: "正在获取位置...",
-    update: "更新",
-    height: "身高",
-    height_placeholder: "输入身高 (cm)",
-    weight: "体重",
-    blood_pressure_placeholder: "例如：120/80",
-    blood_sugar_placeholder: "例如：90",
-    heart_rate: "心率",
-    heart_rate_placeholder: "输入心率",
-    notes_optional: "备注 (可选)",
-    notes_placeholder: "输入附加备注",
-    record_date: "记录日期",
-    no_health_records: "未找到健康记录。",
-    health_metrics: "健康指标",
-    medication_name_placeholder: "输入药品名称",
-    dosage_placeholder: "输入剂量",
-    frequency_placeholder: "输入频率",
-    no_medications: "未添加药品。",
-    add_medication: "添加药品",
-    medical_contacts: "医疗联系人",
-    add_contact: "添加联系人",
-    contact_notes_placeholder: "输入备注",
-    todo_list: "待办事项列表",
-    status: "状态",
-    priority: "优先级",
-    high: "高",
-    medium: "中",
-    low: "低",
-    due_date: "截止日期",
-    description: "描述",
-    back_to_list: "返回列表",
-    mark_as_completed: "标记为已完成",
-    mark_as_in_progress: "标记为进行中",
-    no_description: "无描述",
-    created: "创建于",
-    last_updated: "最后更新于",
-    terms_of_service: "服务条款",
-    privacy_policy: "隐私政策",
-    agree_to_terms: "我同意服务条款和隐私政策",
-    sign_up: "注册",
-    already_have_account: "已有账户？",
-    sign_in: "登录",
-    email_placeholder: "电子邮件地址",
-    signing_up: "注册中...",
-    signing_in: "登录中...",
-    forgot_password: "忘记密码",
-    or_continue_with: "或使用以下方式继续",
+    upgrade_storage: "Upgrade Storage",
+    free_plan: "Free Plan",
+    storage_full_warning: "Storage is full. Please delete unnecessary files or upgrade.",
+    no_location_permission: "Location access permission is denied.",
+    getting_location: "Getting location...",
+    update: "Update",
+    height: "Height",
+    height_placeholder: "Enter height (cm)",
+    weight: "Weight",
+    blood_pressure_placeholder: "e.g., 120/80",
+    blood_sugar_placeholder: "e.g., 90",
+    heart_rate: "Heart Rate",
+    heart_rate_placeholder: "Enter heart rate",
+    notes_optional: "Notes (Optional)",
+    notes_placeholder: "Enter additional notes",
+    record_date: "Record Date",
+    no_health_records: "No health records found.",
+    health_metrics: "Health Metrics",
+    medication_name_placeholder: "Enter medication name",
+    dosage_placeholder: "Enter dosage",
+    frequency_placeholder: "Enter frequency",
+    no_medications: "No medications added.",
+    add_medication: "Add Medication",
+    medical_contacts: "Medical Contacts",
+    add_contact: "Add Contact",
+    contact_notes_placeholder: "Enter notes",
+    todo_list: "Todo List",
+    status: "Status",
+    priority: "Priority",
+    high: "High",
+    medium: "Medium",
+    low: "Low",
+    due_date: "Due Date",
+    description: "Description",
+    back_to_list: "Back to List",
+    mark_as_completed: "Mark as Completed",
+    mark_as_in_progress: "Mark as In Progress",
+    no_description: "No description",
+    created: "Created",
+    last_updated: "Last Updated",
+    terms_of_service: "Terms of Service",
+    privacy_policy: "Privacy Policy",
+    agree_to_terms: "I agree to the Terms of Service and Privacy Policy",
+    sign_up: "Sign Up",
+    already_have_account: "Already have an account?",
+    sign_in: "Sign In",
+    email_placeholder: "Email Address",
+    signing_up: "Signing up...",
+    signing_in: "Signing in...",
+    forgot_password: "Forgot Password",
+    or_continue_with: "Or continue with",
     google: "Google",
-    dont_have_account: "没有账户？",
-    enter_email_for_reset: "请输入您的电子邮件地址以重置密码",
-    send_reset_link: "发送重置链接",
-    sending: "发送中...",
-    back_to_sign_in: "返回登录",
-    reset_password: "重置密码",
-    admin: "管理员",
-    consent_logs: "同意记录",
-    user: "用户",
-    terms_version: "服务条款版本",
-    privacy_version: "隐私政策版本",
-    agreed_at: "同意时间",
-    user_agent: "用户代理",
-    no_consent_logs: "无同意记录",
-    tos_title: "服务条款",
-    tos_effective_date: "生效日期",
-    tos_last_updated: "最后更新日期",
-    tos_acceptance: "同意服务条款",
-    tos_acceptance_content: "我同意以上服务条款。",
-    tos_1_title: "第一条 (目的)",
-    tos_1_content: "本条款旨在...",
-    tos_2_title: "第二条 (定义)",
-    tos_2_content: "本条款中使用的术语定义如下：...",
-    tos_3_title: "第三条 (服务协议)",
-    tos_3_content: "服务协议在用户表示同意本条款内容时成立。...",
-    tos_4_title: "第四条 (用户义务)",
-    tos_4_content: "用户不得进行以下行为。...",
-    tos_5_title: "第五条 (服务提供与中断)",
-    tos_5_content: "公司向用户提供稳定的服务。...",
-    tos_6_title: "第六条 (个人信息保护)",
-    tos_6_content: "公司遵守个人信息保护法等相关法律。...",
-    tos_7_title: "第七条 (免责声明)",
+    dont_have_account: "Don't have an account?",
+    enter_email_for_reset: "Enter your email for password reset",
+    send_reset_link: "Send Reset Link",
+    sending: "Sending...",
+    back_to_sign_in: "Back to Sign In",
+    reset_password: "Reset Password",
+    admin: "Admin",
+    consent_logs: "Consent Logs",
+    user: "User",
+    terms_version: "Terms Version",
+    privacy_version: "Privacy Version",
+    agreed_at: "Agreed At",
+    user_agent: "User Agent",
+    no_consent_logs: "No consent logs found",
+    tos_title: "Terms of Service",
+    tos_effective_date: "Effective Date",
+    tos_last_updated: "Last Updated",
+    tos_acceptance: "Acceptance of Terms",
+    tos_acceptance_content: "I agree to the above Terms of Service.",
+    tos_1_title: "Article 1 (Purpose)",
+    tos_1_content: "These terms are for...",
+    tos_2_title: "Article 2 (Definitions)",
+    tos_2_content: "The terms used in these terms are defined as follows: ...",
+    tos_3_title: "Article 3 (Service Agreement)",
+    tos_3_content:
+      "The service agreement is concluded when the user expresses their agreement to the contents of these terms. ...",
+    tos_4_title: "Article 4 (User Obligations)",
+    tos_4_content: "The user shall not engage in the following acts. ...",
+    tos_5_title: "Article 5 (Service Provision and Interruption)",
+    tos_5_content: "The company provides stable services to users. ...",
+    tos_6_title: "Article 6 (Personal Information Protection)",
+    tos_6_content: "The company complies with relevant laws such as the Personal Information Protection Act. ...",
+    tos_7_title: "Article 7 (Disclaimer)",
     tos_7_content:
-      "因不可抗力事件（如自然灾害、罢工、相关法律法规的制定/废止等）导致无法提供服务时，公司免除服务提供责任。...",
-    pp_title: "隐私政策",
-    pp_effective_date: "生效日期",
-    pp_last_updated: "最后更新日期",
-    pp_intro: "本隐私政策...",
-    pp_1_title: "第一条 (收集的个人信息项目及方法)",
-    pp_1_content: "公司为履行用户协议、提供服务、识别用户、改进服务而收集以下个人信息。...",
-    pp_2_title: "第二条 (个人信息的收集及使用目的)",
-    pp_2_content: "公司仅为以下目的使用收集的个人信息。...",
-    pp_3_title: "第三条 (个人信息的保留及使用期间)",
+      "The company is exempt from responsibility for service provision in cases where service cannot be provided to due to force majeure events such as natural disasters, strikes, or enactment/amendment of relevant laws. ...",
+    pp_title: "Privacy Policy",
+    pp_effective_date: "Effective Date",
+    pp_last_updated: "Last Updated",
+    pp_intro: "This Privacy Policy is ...",
+    pp_1_title: "Article 1 (Items and Methods of Personal Information Collection)",
+    pp_1_content:
+      "The company collects the following personal information for contract fulfillment, service provision, user identification, and service improvement. ...",
+    pp_2_title: "Article 2 (Purpose of Personal Information Collection and Use)",
+    pp_2_content: "The company uses the collected personal information only for the following purposes. ...",
+    pp_3_title: "Article 3 (Personal Information Retention Period)",
     pp_3_content:
-      "公司根据法律法规规定的个人信息保留·使用期间，或根据信息主体在收集个人信息时同意的保留·使用期间内保留·使用个人信息。...",
-    pp_4_title: "第四条 (向第三方提供个人信息)",
-    pp_4_content: "原则上，公司不向第三方提供用户的个人信息。...",
-    pp_5_title: "第五条 (个人信息的销毁)",
-    pp_5_content: "当个人信息超过保留期限、处理目的达成等不再需要时，公司将立即销毁该个人信息。...",
-    pp_6_title: "第六条 (用户及法定代理人的权利及行使方法)",
-    pp_6_content: "用户可以随时查阅或修改其注册的个人信息。...",
-    pp_7_title: "第七条 (关于个人信息的民事服务)",
-    pp_7_content: "公司指定以下部门及个人信息保护负责人，以处理关于个人信息处理的咨询、意见、投诉等。...",
-    pp_contact: "个人信息保护负责人",
+      "The company retains and uses personal information within the period of retention and use of personal information according to laws and regulations, or within the period of personal information retention and use consented to by the data subject at the time of collection. ...",
+    pp_4_title: "Article 4 (Provision of Personal Information to Third Parties)",
+    pp_4_content: "The company does not provide users' personal information to third parties in principle. ...",
+    pp_5_title: "Article 5 (Destruction of Personal Information)",
+    pp_5_content:
+      "The company shall destroy the personal information without delay when it becomes unnecessary, such as upon expiration of the retention period or achievement of the processing purpose. ...",
+    pp_6_title: "Article 6 (User Rights and Methods of Exercise)",
+    pp_6_content: "Users can view or modify their registered personal information at any time. ...",
+    pp_7_title: "Article 7 (Civil Service Regarding Personal Information)",
+    pp_7_content:
+      "The company designates the following departments and personal information protection officer to handle inquiries, opinions, and complaints regarding personal information processing. ...",
+    pp_contact: "Personal Information Protection Officer",
 
-    analyze_emotion: "情感分析",
-    analyzing_emotion: "分析中...",
-    emotion_analysis_result: "情感分析结果",
-    emotion_analysis_failed: "情感分析失败",
-    diary_too_short_for_analysis: "日记太短，无法分析",
-    emotion_positive: "积极",
-    emotion_negative: "消极",
-    emotion_neutral: "中性",
-    emotion_score: "情感分数",
-    main_emotions: "主要情感",
-    ai_advice: "AI建议",
-    security_question: "安全问题: 出生城市?",
-    security_not_set: "未设置安全性。要完全删除密码，请在设置中删除。",
-    enter_security_answer: "安全问题答案",
-    security_answer_placeholder: "出生城市",
-    reset_password_description: "重置为新密码",
-    wrong_security_answer: "安全答案不正确",
-    password_reset_success: "密码已重置",
-    security_answer_help: "忘记密码时使用",
-    diary_password_management: "日记密码管理",
-    diary_password_description: "删除或重置您的日记密码",
+    analyze_emotion: "Analyze Emotion",
+    analyzing_emotion: "Analyzing...",
+    emotion_analysis_result: "Emotion Analysis Result",
+    emotion_analysis_failed: "Emotion analysis failed",
+    diary_too_short_for_analysis: "Diary is too short to analyze",
+    emotion_positive: "Positive",
+    emotion_negative: "Negative",
+    emotion_neutral: "Neutral",
+    emotion_score: "Emotion Score",
+    main_emotions: "Main Emotions",
+    ai_advice: "AI Advice",
+    security_question: "Security Question",
+    security_not_set: "Security not set. To completely remove the password, remove it in Settings.",
+    enter_security_answer: "Security Answer",
+    security_answer_placeholder: "City where you were born",
+    reset_password_description: "Reset to New Password",
+    wrong_security_answer: "Security answer is incorrect",
+    password_reset_success: "Password has been reset",
+    security_answer_help: "Used when you forget your password",
+    diary_password_management: "Diary Password Management",
+    diary_password_description: "Remove or reset your diary password",
 
-    repeat_frequency: "重复频率",
-    repeat_until: "重复结束日期",
-    repeat_schedule: "重复日程",
+    repeat_frequency: "Repeat Frequency",
+    repeat_until: "Repeat Until",
+    repeat_schedule: "Repeat Schedule",
   },
 }
 
