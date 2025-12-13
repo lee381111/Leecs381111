@@ -641,13 +641,28 @@ export function MediaTools({
 
       {isCameraPreviewOpen && (
         <div className="fixed inset-0 z-50 bg-black flex flex-col">
-          <video ref={cameraVideoRef} className="flex-1 w-full object-cover" playsInline autoPlay />
-          <div className="flex gap-2 p-4 bg-black">
-            <Button variant="default" size="lg" onClick={capturePhoto} className="flex-1">
-              <Camera className="h-5 w-5 mr-2" />
+          <video
+            ref={cameraVideoRef}
+            className="flex-1 w-full h-[calc(100vh-120px)] object-cover"
+            playsInline
+            autoPlay
+          />
+          <div className="flex gap-4 p-6 bg-black/90 backdrop-blur-sm">
+            <Button
+              variant="default"
+              size="lg"
+              onClick={capturePhoto}
+              className="flex-1 h-14 text-lg bg-blue-600 hover:bg-blue-700"
+            >
+              <Camera className="h-6 w-6 mr-2" />
               {t("take_photo")}
             </Button>
-            <Button variant="outline" size="lg" onClick={closeCameraPreview}>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={closeCameraPreview}
+              className="h-14 px-8 text-lg border-white/50 text-white hover:bg-white/10 bg-transparent"
+            >
               {t("cancel")}
             </Button>
           </div>
