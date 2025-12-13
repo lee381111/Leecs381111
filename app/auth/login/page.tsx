@@ -159,19 +159,6 @@ export default function Page() {
                 )}
               </CardContent>
             </Card>
-            <div className="mt-4 rounded-lg border-2 border-blue-500 bg-blue-50 p-4">
-              <div className="flex items-start gap-2">
-                <Info className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <div className="text-sm">
-                  <p className="font-semibold text-blue-900">
-                    {getTranslation(currentLanguage, "email_verification_notice_title")}
-                  </p>
-                  <p className="text-blue-700 mt-1">
-                    {getTranslation(currentLanguage, "email_verification_notice_desc")}
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -233,14 +220,14 @@ export default function Page() {
               </form>
             </CardContent>
           </Card>
-          <div className="mt-4 rounded-lg border-2 border-blue-500 bg-blue-50 p-4">
-            <div className="flex items-start gap-2">
-              <Info className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+          <div className="rounded-lg border-2 border-blue-500 bg-blue-50 p-4 shadow-sm">
+            <div className="flex items-start gap-3">
+              <Info className="h-6 w-6 text-blue-600 flex-shrink-0 mt-0.5" />
               <div className="text-sm">
-                <p className="font-semibold text-blue-900">
+                <p className="font-bold text-blue-900 text-base">
                   {getTranslation(currentLanguage, "email_verification_notice_title")}
                 </p>
-                <p className="text-blue-700 mt-1">
+                <p className="text-blue-800 mt-1.5 leading-relaxed">
                   {getTranslation(currentLanguage, "email_verification_notice_desc")}
                 </p>
               </div>
