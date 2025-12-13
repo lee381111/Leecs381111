@@ -272,6 +272,8 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
 
     setIsDeleting(true)
     try {
+      console.log("[v0] Starting account deletion for user:", user.id)
+
       const response = await fetch("/api/delete-account", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -279,8 +281,13 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
       })
 
       if (!response.ok) {
-        throw new Error("Failed to delete account")
+        const errorData = await response.json().catch(() => ({}))
+        console.error("[v0] Delete account API error:", errorData)
+        throw new Error(errorData.error || "Failed to delete account")
       }
+
+      const result = await response.json()
+      console.log("[v0] Account deletion response:", result)
 
       alert(getTranslation(lang, "account_deleted_success"))
 
@@ -291,7 +298,8 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
     } catch (err) {
       console.error("[v0] Account deletion error:", err)
       const lang = currentLanguage as Language
-      alert(getTranslation(lang, "account_deletion_failed"))
+      const errorMsg = err instanceof Error ? err.message : "Unknown error"
+      alert(`${getTranslation(lang, "account_deletion_failed")}: ${errorMsg}`)
     } finally {
       setIsDeleting(false)
     }
