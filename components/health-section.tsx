@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, Plus, Trash2, TrendingUp, Pill, Bell, Pencil, Save, Phone, Edit2 } from "lucide-react"
+import { ArrowLeft, Plus, Trash2, TrendingUp, Pill, Bell, Pencil, Save, Phone } from "lucide-react"
 import { saveHealthRecords, loadHealthRecords, saveMedications, loadMedications } from "@/lib/storage"
 import { saveMedicalContacts, loadMedicalContacts, deleteMedicalContact } from "@/lib/storage"
 import type { MedicalContact } from "@/lib/types"
@@ -1194,8 +1194,6 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
 
       <h2 className="text-lg font-bold mt-6">{t("recent_records")}</h2>
 
-      {/* 이전에 여기에 있던 의료연락처 추가 버튼과 리스트는 상단의 "연락처 관리" 버튼으로 접근 가능 */}
-
       <div className="grid gap-4">
         {records.slice(0, 10).map((record) => (
           <Card key={record.id} className="p-4">
@@ -1316,72 +1314,6 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
           </Card>
         ))}
       </div>
-
-      <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
-        <div className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold flex items-center gap-2">
-              <Phone className="h-5 w-5 text-emerald-600" />
-              {t("medical_contacts")}
-            </h3>
-            <Button
-              onClick={() => {
-                resetContactForm()
-                setEditingContactId(null)
-                setViewMode("add_contact")
-              }}
-              size="sm"
-              variant="outline"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              {t("add_contact")}
-            </Button>
-          </div>
-
-          {medicalContacts.length === 0 ? (
-            <p className="text-muted-foreground text-sm text-center py-4">{t("no_medical_contacts")}</p>
-          ) : (
-            <div className="space-y-2">
-              {medicalContacts.map((contact) => (
-                <div
-                  key={contact.id}
-                  className="flex items-center justify-between p-3 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-slate-700 dark:to-slate-600 rounded-lg"
-                >
-                  <div className="flex-1">
-                    <div className="font-semibold">{contact.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {t(contact.type)} • {contact.phone}
-                    </div>
-                    {contact.address && <div className="text-xs text-muted-foreground mt-1">{contact.address}</div>}
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        setContactFormData({
-                          name: contact.name,
-                          type: contact.type,
-                          phone: contact.phone,
-                          address: contact.address || "",
-                          notes: contact.notes || "",
-                        })
-                        setEditingContactId(contact.id)
-                        setViewMode("add_contact")
-                      }}
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={() => handleDeleteContact(contact.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </Card>
     </div>
   )
 }
