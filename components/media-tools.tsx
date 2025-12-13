@@ -40,6 +40,9 @@ export function MediaTools({
   const [recognizedText, setRecognizedText] = useState("")
   const [isProcessingOCR, setIsProcessingOCR] = useState(false)
   const [ocrProgress, setOcrProgress] = useState(0)
+  const [isCameraPreviewOpen, setIsCameraPreviewOpen] = useState(false)
+  const cameraVideoRef = useRef<HTMLVideoElement | null>(null)
+  const cameraStreamRef = useRef<MediaStream | null>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
@@ -188,7 +191,7 @@ export function MediaTools({
     }
   }
 
-  const takePhoto = async () => {
+  const openCameraPreview = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
@@ -197,46 +200,56 @@ export function MediaTools({
           height: { ideal: 1080 },
         },
       })
-      const video = document.createElement("video")
-      video.setAttribute("playsinline", "true")
-      video.srcObject = stream
+      cameraStreamRef.current = stream
+      setIsCameraPreviewOpen(true)
 
-      await new Promise<void>((resolve) => {
-        video.onloadedmetadata = () => {
-          video.play()
-          setTimeout(() => resolve(), 500)
-        }
-      })
+      await new Promise((resolve) => setTimeout(resolve, 100))
 
-      const canvas = document.createElement("canvas")
-      canvas.width = video.videoWidth
-      canvas.height = video.videoHeight
-      const ctx = canvas.getContext("2d")
-
-      if (ctx) {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+      if (cameraVideoRef.current) {
+        cameraVideoRef.current.srcObject = stream
+        await cameraVideoRef.current.play()
       }
-
-      stream.getTracks().forEach((track) => track.stop())
-
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.9)
-      onAttachmentsChange([
-        ...attachments,
-        {
-          type: "image",
-          name: `photo_${Date.now()}.jpg`,
-          data: dataUrl,
-          url: dataUrl,
-        },
-      ])
     } catch (error) {
       console.error("[v0] Camera error:", error)
       alert(t("camera_permission_required") + ": " + (error as Error).message)
     }
   }
 
-  const removeAttachment = (index: number) => {
-    onAttachmentsChange(attachments.filter((_, i) => i !== index))
+  const capturePhoto = () => {
+    if (!cameraVideoRef.current) return
+
+    const video = cameraVideoRef.current
+    const canvas = document.createElement("canvas")
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+    const ctx = canvas.getContext("2d")
+
+    if (ctx) {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+    }
+
+    if (cameraStreamRef.current) {
+      cameraStreamRef.current.getTracks().forEach((track) => track.stop())
+    }
+    setIsCameraPreviewOpen(false)
+
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.9)
+    onAttachmentsChange([
+      ...attachments,
+      {
+        type: "image",
+        name: `photo_${Date.now()}.jpg`,
+        data: dataUrl,
+        url: dataUrl,
+      },
+    ])
+  }
+
+  const closeCameraPreview = () => {
+    if (cameraStreamRef.current) {
+      cameraStreamRef.current.getTracks().forEach((track) => track.stop())
+    }
+    setIsCameraPreviewOpen(false)
   }
 
   const startDrawing = () => {
@@ -272,6 +285,12 @@ export function MediaTools({
         ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height)
       }
     }
+  }
+
+  const removeAttachment = (index: number) => {
+    const newAttachments = [...attachments]
+    newAttachments.splice(index, 1)
+    onAttachmentsChange(newAttachments)
   }
 
   useEffect(() => {
@@ -620,6 +639,21 @@ export function MediaTools({
         </div>
       )}
 
+      {isCameraPreviewOpen && (
+        <div className="fixed inset-0 z-50 bg-black flex flex-col">
+          <video ref={cameraVideoRef} className="flex-1 w-full object-cover" playsInline autoPlay />
+          <div className="flex gap-2 p-4 bg-black">
+            <Button variant="default" size="lg" onClick={capturePhoto} className="flex-1">
+              <Camera className="h-5 w-5 mr-2" />
+              {t("take_photo")}
+            </Button>
+            <Button variant="outline" size="lg" onClick={closeCameraPreview}>
+              {t("cancel")}
+            </Button>
+          </div>
+        </div>
+      )}
+
       {isOCRCameraOpen && (
         <div className="space-y-2 bg-purple-50 p-4 rounded-lg border-2 border-purple-500">
           <div className="flex items-center justify-between">
@@ -682,7 +716,7 @@ export function MediaTools({
         </div>
       )}
 
-      {!isRecordingVideo && !isRecognizing && !isOCRCameraOpen && !isProcessingOCR && (
+      {!isRecordingVideo && !isRecognizing && !isOCRCameraOpen && !isProcessingOCR && !isCameraPreviewOpen && (
         <div className="flex flex-wrap gap-2">
           <input
             type="file"
@@ -697,7 +731,7 @@ export function MediaTools({
             <ImageIcon className="h-4 w-4 mr-2" />
             {t("file_upload")}
           </Button>
-          <Button variant="outline" size="sm" onClick={takePhoto}>
+          <Button variant="outline" size="sm" onClick={openCameraPreview}>
             <Camera className="h-4 w-4 mr-2" />
             {t("take_photo")}
           </Button>
