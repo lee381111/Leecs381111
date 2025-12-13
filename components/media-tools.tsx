@@ -198,6 +198,7 @@ export function MediaTools({
           facingMode: "environment",
           width: { ideal: 1920 },
           height: { ideal: 1080 },
+          aspectRatio: { ideal: 16 / 9 },
         },
       })
       cameraStreamRef.current = stream
@@ -215,7 +216,7 @@ export function MediaTools({
     }
   }
 
-  const capturePhoto = () => {
+  const capturePhotoFromPreview = () => {
     if (!cameraVideoRef.current) return
 
     const video = cameraVideoRef.current
@@ -640,28 +641,28 @@ export function MediaTools({
       )}
 
       {isCameraPreviewOpen && (
-        <div className="fixed inset-0 z-50 bg-black flex flex-col">
+        <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center">
           <video
             ref={cameraVideoRef}
-            className="flex-1 w-full h-[calc(100vh-120px)] object-cover"
-            playsInline
             autoPlay
+            playsInline
+            muted
+            className="w-full max-w-4xl object-cover"
+            style={{ aspectRatio: "16/9" }}
           />
-          <div className="flex gap-4 p-6 bg-black/90 backdrop-blur-sm">
+          <div className="flex gap-4 mt-6 mb-8">
             <Button
-              variant="default"
+              onClick={capturePhotoFromPreview}
               size="lg"
-              onClick={capturePhoto}
-              className="flex-1 h-14 text-lg bg-blue-600 hover:bg-blue-700"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg"
             >
-              <Camera className="h-6 w-6 mr-2" />
-              {t("take_photo")}
+              {t("capture")}
             </Button>
             <Button
+              onClick={closeCameraPreview}
               variant="outline"
               size="lg"
-              onClick={closeCameraPreview}
-              className="h-14 px-8 text-lg border-white/50 text-white hover:bg-white/10 bg-transparent"
+              className="border-white text-white hover:bg-white/10 px-8 py-6 text-lg bg-transparent"
             >
               {t("cancel")}
             </Button>
