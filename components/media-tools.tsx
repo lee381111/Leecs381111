@@ -68,6 +68,23 @@ export function MediaTools({
     })
   }
 
+  const handleCameraCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    files.forEach((file) => {
+      const reader = new FileReader()
+      reader.onload = () => {
+        const newAttachment: Attachment = {
+          type: "image",
+          name: file.name || `photo_${Date.now()}.jpg`,
+          data: reader.result as string,
+          url: reader.result as string,
+        }
+        onAttachmentsChange([...attachments, newAttachment])
+      }
+      reader.readAsDataURL(file)
+    })
+  }
+
   const startAudioRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -185,53 +202,6 @@ export function MediaTools({
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       mediaRecorderRef.current.stop()
       setIsRecordingVideo(false)
-    }
-  }
-
-  const takePhoto = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: "environment",
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
-        },
-      })
-      const video = document.createElement("video")
-      video.setAttribute("playsinline", "true")
-      video.srcObject = stream
-
-      await new Promise<void>((resolve) => {
-        video.onloadedmetadata = () => {
-          video.play()
-          setTimeout(() => resolve(), 500)
-        }
-      })
-
-      const canvas = document.createElement("canvas")
-      canvas.width = video.videoWidth
-      canvas.height = video.videoHeight
-      const ctx = canvas.getContext("2d")
-
-      if (ctx) {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-      }
-
-      stream.getTracks().forEach((track) => track.stop())
-
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.9)
-      onAttachmentsChange([
-        ...attachments,
-        {
-          type: "image",
-          name: `photo_${Date.now()}.jpg`,
-          data: dataUrl,
-          url: dataUrl,
-        },
-      ])
-    } catch (error) {
-      console.error("[v0] Camera error:", error)
-      alert(t("camera_permission_required") + ": " + (error as Error).message)
     }
   }
 
@@ -651,96 +621,97 @@ export function MediaTools({
               <div className="w-3 h-3 bg-blue-600 rounded-full animate-pulse" />
               <p className="text-sm font-medium text-blue-600 dark:text-blue-400">{t("speech_recognition")}</p>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={stopSpeechRecognition}
-              className="text-blue-600 hover:text-blue-700 dark:text-blue-400 bg-transparent"
-            >
-              {t("stop_recognition")}
+            <Button variant="outline" size="sm" onClick={stopSpeechRecognition}>
+              {t("stop")}
             </Button>
           </div>
-          {recognizedText && <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{recognizedText}</p>}
+          {recognizedText && (
+            <p className="mt-2 text-sm text-muted-foreground bg-white dark:bg-gray-900 p-2 rounded">{recognizedText}</p>
+          )}
         </Card>
       )}
 
-      {isRecordingVideo && (
-        <div className="space-y-2 bg-red-50 p-4 rounded-lg border-2 border-red-500">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-red-600">{t("video_recording")}</p>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={stopVideoRecording}
-              className="bg-red-600 hover:bg-red-700 text-white"
-            >
-              <Video className="h-4 w-4 mr-2" />
-              {t("stop_recording")}
-            </Button>
-          </div>
-          <video ref={videoRef} className="w-full h-64 bg-black rounded" playsInline autoPlay muted />
-        </div>
-      )}
-
-      {!isRecordingVideo && !isRecognizing && !isOCRCameraOpen && !isProcessingOCR && (
-        <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2">
+        <div className="relative">
           <input
             type="file"
-            id="file-upload"
-            multiple
-            accept="image/*,video/*,audio/*"
-            className="hidden"
-            onChange={handleFileUpload}
+            accept="image/*"
+            capture="environment"
+            onChange={handleCameraCapture}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            id="camera-input"
           />
-          <input type="file" id="ocr-file-upload" accept="image/*" className="hidden" onChange={handleOCRFileUpload} />
-          <Button variant="outline" size="sm" onClick={() => document.getElementById("file-upload")?.click()}>
-            <ImageIcon className="h-4 w-4 mr-2" />
-            {t("file_upload")}
-          </Button>
-          <Button variant="outline" size="sm" onClick={takePhoto}>
-            <Camera className="h-4 w-4 mr-2" />
-            {t("take_photo")}
-          </Button>
-          <Button variant="outline" size="sm" onClick={openOCRCamera}>
-            <FileImage className="h-4 w-4 mr-2" />
-            {t("ocr_camera")}
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => document.getElementById("ocr-file-upload")?.click()}>
-            <FileImage className="h-4 w-4 mr-2" />
-            {t("ocr_upload")}
-          </Button>
-          <Button variant="outline" size="sm" onClick={startDrawing}>
-            <PenTool className="h-4 w-4 mr-2" />
-            {t("handwriting")}
-          </Button>
-          {onTextFromSpeech && (
-            <Button variant="outline" size="sm" onClick={startSpeechRecognition}>
-              <MessageSquare className="h-4 w-4 mr-2" />
-              {t("speech_to_text")}
-            </Button>
-          )}
-          {isRecordingAudio ? (
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={stopAudioRecording}
-              className="bg-red-600 hover:bg-red-700 text-white"
-            >
-              <Mic className="h-4 w-4 mr-2" />
-              {t("stop_recording")}
-            </Button>
-          ) : (
-            <Button variant="outline" size="sm" onClick={startAudioRecording}>
-              <Mic className="h-4 w-4 mr-2" />
-              {t("audio_recording")}
-            </Button>
-          )}
-          <Button variant="outline" size="sm" onClick={startVideoRecording}>
-            <Video className="h-4 w-4 mr-2" />
-            {t("video_recording")}
+          <Button variant="outline" size="sm" className="relative bg-transparent" asChild>
+            <label htmlFor="camera-input" className="cursor-pointer flex items-center gap-2">
+              <Camera className="h-4 w-4" />
+              {t("take_photo")}
+            </label>
           </Button>
         </div>
-      )}
+
+        <Button variant="outline" size="sm" onClick={isRecordingAudio ? stopAudioRecording : startAudioRecording}>
+          <Mic className="h-4 w-4 mr-2" />
+          {isRecordingAudio ? t("stop_recording") : t("record_audio")}
+        </Button>
+
+        <Button variant="outline" size="sm" onClick={isRecordingVideo ? stopVideoRecording : startVideoRecording}>
+          <Video className="h-4 w-4 mr-2" />
+          {isRecordingVideo ? t("stop_recording") : t("record_video")}
+        </Button>
+
+        <div className="relative">
+          <input
+            type="file"
+            multiple
+            onChange={handleFileUpload}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            id="file-input"
+          />
+          <Button variant="outline" size="sm" asChild>
+            <label htmlFor="file-input" className="cursor-pointer flex items-center gap-2">
+              <ImageIcon className="h-4 w-4" />
+              {t("upload_file")}
+            </label>
+          </Button>
+        </div>
+
+        <Button variant="outline" size="sm" onClick={startDrawing}>
+          <PenTool className="h-4 w-4 mr-2" />
+          {t("draw")}
+        </Button>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={isRecognizing ? stopSpeechRecognition : startSpeechRecognition}
+          disabled={isProcessingOCR}
+        >
+          <MessageSquare className="h-4 w-4 mr-2" />
+          {isRecognizing ? t("stop_speech") : t("speech_to_text")}
+        </Button>
+
+        <Button variant="outline" size="sm" onClick={openOCRCamera} disabled={isProcessingOCR || isOCRCameraOpen}>
+          <FileImage className="h-4 w-4 mr-2" />
+          {t("ocr_extract_text")}
+        </Button>
+
+        <div className="relative">
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleOCRFileUpload}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            id="ocr-file-input"
+            disabled={isProcessingOCR}
+          />
+          <Button variant="outline" size="sm" disabled={isProcessingOCR} asChild>
+            <label htmlFor="ocr-file-input" className="cursor-pointer flex items-center gap-2">
+              <FileImage className="h-4 w-4" />
+              {t("ocr_from_gallery")}
+            </label>
+          </Button>
+        </div>
+      </div>
 
       {isDrawing && (
         <div className="fixed inset-0 bg-black z-50 flex items-center justify-center p-4">
