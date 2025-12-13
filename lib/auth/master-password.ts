@@ -2,7 +2,7 @@
 // This provides the first layer of authentication
 
 const HARDCODED_MASTER_PASSWORD = "lee381111" // 여기서 비밀번호를 변경하세요
-const ENABLE_MASTER_PASSWORD = true // false로 설정하면 마스터 비밀번호 기능 비활성화
+const ENABLE_MASTER_PASSWORD = false // false로 설정하면 마스터 비밀번호 기능 비활성화
 
 const MASTER_SESSION_KEY = "app_master_session"
 const SESSION_DURATION = 10 * 365 * 24 * 60 * 60 * 1000 // 10 years
