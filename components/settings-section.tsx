@@ -272,28 +272,20 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
 
     setIsDeleting(true)
     try {
-      const { createClient } = await import("@/lib/supabase")
-      const supabase = createClient()
+      const response = await fetch("/api/delete-account", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id }),
+      })
 
-      await Promise.all([
-        supabase.from("notes").delete().eq("user_id", user.id),
-        supabase.from("diaries").delete().eq("user_id", user.id),
-        supabase.from("schedules").delete().eq("user_id", user.id),
-        supabase.from("todo_items").delete().eq("user_id", user.id),
-        supabase.from("travel_records").delete().eq("user_id", user.id),
-        supabase.from("health_records").delete().eq("user_id", user.id),
-        supabase.from("medications").delete().eq("user_id", user.id),
-        supabase.from("budget_transactions").delete().eq("user_id", user.id),
-        supabase.from("business_cards").delete().eq("user_id", user.id),
-        supabase.from("vehicles").delete().eq("user_id", user.id),
-      ])
-
-      const { error } = await supabase.auth.admin.deleteUser(user.id)
-
-      if (error) throw error
+      if (!response.ok) {
+        throw new Error("Failed to delete account")
+      }
 
       alert(getTranslation(lang, "account_deleted_success"))
 
+      const { createClient } = await import("@/lib/supabase")
+      const supabase = createClient()
       await supabase.auth.signOut()
       window.location.href = "/"
     } catch (err) {
@@ -1039,6 +1031,9 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
                 className="w-full p-2 border rounded-lg dark:bg-slate-800"
                 placeholder={getTranslation(currentLanguage, "delete_account_confirm_phrase")}
               />
+              <p className="text-xs text-muted-foreground mt-2">
+                {getTranslation(currentLanguage, "delete_account_email_reuse_info")}
+              </p>
             </div>
 
             <div className="flex gap-2">
@@ -1056,7 +1051,7 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
               <Button
                 onClick={handleDeleteAccount}
                 variant="destructive"
-                className="flex-1"
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={
                   isDeleting || deleteConfirmText !== getTranslation(currentLanguage, "delete_account_confirm_phrase")
                 }
