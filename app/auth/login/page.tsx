@@ -152,6 +152,9 @@ export default function Page() {
                         회원가입
                       </Link>
                     </div>
+                    <div className="mt-2 text-center text-xs text-muted-foreground">
+                      회원가입 후 이메일 확인이 필요합니다
+                    </div>
                   </form>
                 )}
               </CardContent>
@@ -213,6 +216,9 @@ export default function Page() {
                   <Link href="/auth/sign-up" className="underline underline-offset-4">
                     회원가입
                   </Link>
+                </div>
+                <div className="mt-2 text-center text-xs text-muted-foreground">
+                  회원가입 후 이메일 확인이 필요합니다
                 </div>
               </form>
             </CardContent>
