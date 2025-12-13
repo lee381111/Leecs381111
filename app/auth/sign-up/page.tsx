@@ -196,29 +196,22 @@ export default function Page() {
       }
 
       if (data.user) {
-        console.log("[v0] ===== USER CREATED, CREATING PROFILE =====")
+        console.log("[v0] ===== USER CREATED SUCCESSFULLY =====")
 
-        try {
-          await createUserProfile(data.user.id, email)
-          console.log("[v0] Profile created successfully")
-        } catch (profileError) {
-          console.error("[v0] Failed to create profile:", profileError)
-        }
+        setShowEmailNotice(true)
+        setIsLoading(false)
 
-        try {
-          await saveUserConsent(data.user.id, "v1.0_2025-12", "v1.0_2025-12", undefined, navigator.userAgent)
-          console.log("[v0] Sign up consent saved successfully")
-        } catch (consentError) {
-          console.error("[v0] Failed to save consent log:", consentError)
-        }
+        createUserProfile(data.user.id, email)
+          .then(() => console.log("[v0] Profile created successfully"))
+          .catch((profileError) => console.error("[v0] Failed to create profile:", profileError))
+
+        saveUserConsent(data.user.id, "v1.0_2025-12", "v1.0_2025-12", undefined, navigator.userAgent)
+          .then(() => console.log("[v0] Sign up consent saved successfully"))
+          .catch((consentError) => console.error("[v0] Failed to save consent log:", consentError))
       }
-
-      console.log("[v0] ===== SHOWING EMAIL NOTICE =====")
-      setShowEmailNotice(true)
     } catch (error: unknown) {
       console.error("[v0] ===== SIGN UP EXCEPTION =====", error)
       setError(error instanceof Error ? error.message : t[language].signUpError)
-    } finally {
       setIsLoading(false)
     }
   }
