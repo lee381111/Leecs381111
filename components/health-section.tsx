@@ -1194,6 +1194,8 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
 
       <h2 className="text-lg font-bold mt-6">{t("recent_records")}</h2>
 
+      {/* 이전에 여기에 있던 의료연락처 추가 버튼과 리스트는 상단의 "연락처 관리" 버튼으로 접근 가능 */}
+
       <div className="grid gap-4">
         {records.slice(0, 10).map((record) => (
           <Card key={record.id} className="p-4">
