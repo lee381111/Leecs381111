@@ -105,6 +105,24 @@ export default function Page() {
                         재설정하기
                       </Link>
                     </div>
+                    <div className="mt-3 flex items-center justify-center gap-2 text-sm text-blue-600 bg-blue-50 rounded-md p-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 16v-4" />
+                        <path d="M12 8h.01" />
+                      </svg>
+                      <span className="font-medium">회원가입 후 이메일 확인이 필요합니다</span>
+                    </div>
                   </div>
                 ) : (
                   <form onSubmit={handleEmailLogin}>
@@ -152,8 +170,23 @@ export default function Page() {
                         회원가입
                       </Link>
                     </div>
-                    <div className="mt-2 text-center text-xs text-muted-foreground">
-                      회원가입 후 이메일 확인이 필요합니다
+                    <div className="mt-3 flex items-center justify-center gap-2 text-sm text-blue-600 bg-blue-50 rounded-md p-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 16v-4" />
+                        <path d="M12 8h.01" />
+                      </svg>
+                      <span className="font-medium">회원가입 후 이메일 확인이 필요합니다</span>
                     </div>
                   </form>
                 )}
@@ -217,8 +250,23 @@ export default function Page() {
                     회원가입
                   </Link>
                 </div>
-                <div className="mt-2 text-center text-xs text-muted-foreground">
-                  회원가입 후 이메일 확인이 필요합니다
+                <div className="mt-3 flex items-center justify-center gap-2 text-sm text-blue-600 bg-blue-50 rounded-md p-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 16v-4" />
+                    <path d="M12 8h.01" />
+                  </svg>
+                  <span className="font-medium">회원가입 후 이메일 확인이 필요합니다</span>
                 </div>
               </form>
             </CardContent>
