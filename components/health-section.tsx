@@ -1168,10 +1168,10 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
         </Button>
         <Button
           onClick={() => setViewMode("medications")}
-          className="h-20 bg-purple-600 hover:bg-purple-700 text-white text-sm"
+          className="h-20 bg-purple-600 hover:bg-purple-700 text-white flex flex-col items-center justify-center gap-1 px-2"
         >
-          <Pill className="mr-2 h-5 w-5 flex-shrink-0" />
-          <span className="break-words">{t("medication_management_btn")}</span>
+          <Pill className="h-5 w-5 flex-shrink-0" />
+          <span className="text-xs leading-tight text-center">{t("medication_management_btn")}</span>
         </Button>
         <Button
           onClick={() => setViewMode("charts")}
