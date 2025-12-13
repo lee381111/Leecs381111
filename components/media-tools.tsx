@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Camera, Mic, Video, ImageIcon, Trash2, Save, PenTool, X, MessageSquare, FileImage } from "lucide-react"
 import type { Attachment } from "@/lib/types"
-import { getTranslation } from "@/lib/i18n"
 
 // Using browser-based OCR with Tesseract.js workaround
 declare global {
@@ -22,6 +21,7 @@ interface MediaToolsProps {
   saving?: boolean
   onTextFromSpeech?: (text: string) => void
   language?: string // Added language prop
+  t: (key: string) => string // Translation function
 }
 
 export function MediaTools({
@@ -31,6 +31,7 @@ export function MediaTools({
   saving,
   onTextFromSpeech,
   language = "ko", // Default to Korean
+  t,
 }: MediaToolsProps) {
   const [isRecordingAudio, setIsRecordingAudio] = useState(false)
   const [isRecordingVideo, setIsRecordingVideo] = useState(false)
@@ -47,9 +48,16 @@ export function MediaTools({
   const [lastPos, setLastPos] = useState<{ x: number; y: number } | null>(null)
   const recognitionRef = useRef<any>(null)
   const ocrVideoRef = useRef<HTMLVideoElement | null>(null)
+  const [showOCRCamera, setShowOCRCamera] = useState(false)
+  const [extractedText, setExtractedText] = useState<string>("")
+  const [showCameraPreview, setShowCameraPreview] = useState(false)
+  const cameraVideoRef = useRef<HTMLVideoElement | null>(null)
+  const cameraStreamRef = useRef<MediaStream | null>(null)
+  const chunksRef = useRef<Blob[]>([])
+  const [recordingTime, setRecordingTime] = useState(0)
+  const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [isOCRCameraOpen, setIsOCRCameraOpen] = useState(false)
-
-  const t = (key: string) => getTranslation(language, key)
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
@@ -188,7 +196,7 @@ export function MediaTools({
     }
   }
 
-  const takePhoto = async () => {
+  const startCameraPreview = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
@@ -197,42 +205,56 @@ export function MediaTools({
           height: { ideal: 1080 },
         },
       })
-      const video = document.createElement("video")
-      video.setAttribute("playsinline", "true")
-      video.srcObject = stream
+      cameraStreamRef.current = stream
+      setShowCameraPreview(true)
 
-      await new Promise<void>((resolve) => {
-        video.onloadedmetadata = () => {
-          video.play()
-          setTimeout(() => resolve(), 500)
-        }
-      })
+      await new Promise((resolve) => setTimeout(resolve, 100))
 
-      const canvas = document.createElement("canvas")
-      canvas.width = video.videoWidth
-      canvas.height = video.videoHeight
-      const ctx = canvas.getContext("2d")
-
-      if (ctx) {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+      if (cameraVideoRef.current) {
+        cameraVideoRef.current.srcObject = stream
+        await cameraVideoRef.current.play()
       }
-
-      stream.getTracks().forEach((track) => track.stop())
-
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.9)
-      onAttachmentsChange([
-        ...attachments,
-        {
-          type: "image",
-          name: `photo_${Date.now()}.jpg`,
-          data: dataUrl,
-          url: dataUrl,
-        },
-      ])
     } catch (error) {
       console.error("[v0] Camera error:", error)
-      alert(t("camera_permission_required") + ": " + (error as Error).message)
+      alert(t("camera_permission_required"))
     }
+  }
+
+  const capturePhoto = () => {
+    if (!cameraVideoRef.current || !cameraStreamRef.current) return
+
+    const video = cameraVideoRef.current
+    const canvas = document.createElement("canvas")
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+    const ctx = canvas.getContext("2d")
+
+    if (ctx) {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+    }
+
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.9)
+    onAttachmentsChange([
+      ...attachments,
+      {
+        type: "image",
+        name: `photo_${Date.now()}.jpg`,
+        data: dataUrl,
+        url: dataUrl,
+      },
+    ])
+    closeCameraPreview()
+  }
+
+  const closeCameraPreview = () => {
+    if (cameraStreamRef.current) {
+      cameraStreamRef.current.getTracks().forEach((track) => track.stop())
+      cameraStreamRef.current = null
+    }
+    if (cameraVideoRef.current) {
+      cameraVideoRef.current.srcObject = null
+    }
+    setShowCameraPreview(false)
   }
 
   const removeAttachment = (index: number) => {
@@ -608,7 +630,40 @@ export function MediaTools({
   }
 
   return (
-    <Card className="p-4 space-y-4">
+    <>
+      {showCameraPreview && (
+        <div className="fixed inset-0 bg-black z-50 flex flex-col">
+          <div className="flex-1 flex items-center justify-center bg-black p-4">
+            <div className="relative w-full max-w-4xl" style={{ aspectRatio: "16/9" }}>
+              <video
+                ref={cameraVideoRef}
+                className="w-full h-full object-cover rounded-lg border-4 border-blue-500"
+                playsInline
+                autoPlay
+              />
+              <div className="absolute inset-4 border-2 border-dashed border-white/50 rounded-lg pointer-events-none flex items-center justify-center">
+                <p className="text-white text-sm bg-black/50 px-4 py-2 rounded">
+                  {t("align_subject_in_frame") || "프레임 안에 피사체를 맞춰주세요"}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-black/90 p-6 flex gap-4 justify-center">
+            <Button
+              variant="outline"
+              onClick={closeCameraPreview}
+              className="px-8 py-6 text-lg bg-gray-800 text-white border-gray-600 hover:bg-gray-700"
+            >
+              {t("cancel")}
+            </Button>
+            <Button onClick={capturePhoto} className="px-8 py-6 text-lg bg-blue-600 hover:bg-blue-700 text-white">
+              <Camera className="mr-2 h-6 w-6" />
+              {t("take_photo")}
+            </Button>
+          </div>
+        </div>
+      )}
+
       {isProcessingOCR && (
         <div className="space-y-2 bg-purple-50 dark:bg-purple-950 p-4 rounded-lg border-2 border-purple-500">
           <p className="text-sm font-medium text-purple-600 dark:text-purple-400">
@@ -682,7 +737,7 @@ export function MediaTools({
         </div>
       )}
 
-      {!isRecordingVideo && !isRecognizing && !isOCRCameraOpen && !isProcessingOCR && (
+      {!isRecordingVideo && !isRecognizing && !isOCRCameraOpen && !isProcessingOCR && !showCameraPreview && (
         <div className="flex flex-wrap gap-2">
           <input
             type="file"
@@ -697,7 +752,7 @@ export function MediaTools({
             <ImageIcon className="h-4 w-4 mr-2" />
             {t("file_upload")}
           </Button>
-          <Button variant="outline" size="sm" onClick={takePhoto}>
+          <Button variant="outline" size="sm" onClick={startCameraPreview}>
             <Camera className="h-4 w-4 mr-2" />
             {t("take_photo")}
           </Button>
@@ -858,6 +913,6 @@ export function MediaTools({
           {saving ? t("saving") : t("save")}
         </Button>
       )}
-    </Card>
+    </>
   )
 }
