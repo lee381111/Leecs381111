@@ -105,24 +105,6 @@ export default function Page() {
                         재설정하기
                       </Link>
                     </div>
-                    <div className="mt-3 flex items-center justify-center gap-2 text-sm text-blue-600 bg-blue-50 rounded-md p-2">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <circle cx="12" cy="12" r="10" />
-                        <path d="M12 16v-4" />
-                        <path d="M12 8h.01" />
-                      </svg>
-                      <span className="font-medium">회원가입 후 이메일 확인이 필요합니다</span>
-                    </div>
                   </div>
                 ) : (
                   <form onSubmit={handleEmailLogin}>
@@ -169,24 +151,6 @@ export default function Page() {
                       <Link href="/auth/sign-up" className="underline underline-offset-4">
                         회원가입
                       </Link>
-                    </div>
-                    <div className="mt-3 flex items-center justify-center gap-2 text-sm text-blue-600 bg-blue-50 rounded-md p-2">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <circle cx="12" cy="12" r="10" />
-                        <path d="M12 16v-4" />
-                        <path d="M12 8h.01" />
-                      </svg>
-                      <span className="font-medium">회원가입 후 이메일 확인이 필요합니다</span>
                     </div>
                   </form>
                 )}
@@ -250,23 +214,31 @@ export default function Page() {
                     회원가입
                   </Link>
                 </div>
-                <div className="mt-3 flex items-center justify-center gap-2 text-sm text-blue-600 bg-blue-50 rounded-md p-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M12 16v-4" />
-                    <path d="M12 8h.01" />
-                  </svg>
-                  <span className="font-medium">회원가입 후 이메일 확인이 필요합니다</span>
+                <div className="mt-4 border-2 border-blue-400 bg-blue-50 rounded-lg p-3">
+                  <div className="flex items-start gap-3">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-blue-600 flex-shrink-0 mt-0.5"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 16v-4" />
+                      <path d="M12 8h.01" />
+                    </svg>
+                    <div className="text-left">
+                      <p className="text-sm font-bold text-blue-900">이메일 인증 필요</p>
+                      <p className="text-xs text-blue-700 mt-1">
+                        회원가입 후 이메일로 전송된 인증 링크를 클릭해야 로그인할 수 있습니다.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </form>
             </CardContent>
