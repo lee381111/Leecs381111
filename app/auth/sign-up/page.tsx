@@ -12,6 +12,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { Mail, CheckCircle } from "lucide-react"
+import { createUserProfile } from "./actions"
 
 export default function Page() {
   const [email, setEmail] = useState("")
@@ -175,6 +176,15 @@ export default function Page() {
       if (error) throw error
 
       if (data.user) {
+        try {
+          console.log("[v0] Creating profile for user:", data.user.id)
+          await createUserProfile(data.user.id, email)
+          console.log("[v0] Profile created successfully")
+        } catch (profileError) {
+          console.error("[v0] Failed to create profile:", profileError)
+          // Continue even if profile creation fails - user can still login
+        }
+
         try {
           console.log("[v0] Saving consent during sign up for user:", data.user.id)
           await saveUserConsent(data.user.id, "v1.0_2025-12", "v1.0_2025-12", undefined, navigator.userAgent)
