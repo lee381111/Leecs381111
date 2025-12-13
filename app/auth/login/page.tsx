@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-
+import { Info } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -10,6 +10,8 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/auth-context"
+import { getTranslation } from "@/lib/i18n"
+import { useLanguage } from "@/lib/language-context"
 
 export default function Page() {
   const [email, setEmail] = useState("")
@@ -19,6 +21,7 @@ export default function Page() {
   const [showEmailLogin, setShowEmailLogin] = useState(false)
   const router = useRouter()
   const { login, loginWithPi, isPiMode } = useAuth()
+  const { currentLanguage } = useLanguage()
 
   useEffect(() => {
     if (isPiMode) {
@@ -156,6 +159,19 @@ export default function Page() {
                 )}
               </CardContent>
             </Card>
+            <div className="mt-4 rounded-lg border-2 border-blue-500 bg-blue-50 p-4">
+              <div className="flex items-start gap-2">
+                <Info className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div className="text-sm">
+                  <p className="font-semibold text-blue-900">
+                    {getTranslation(currentLanguage, "email_verification_notice_title")}
+                  </p>
+                  <p className="text-blue-700 mt-1">
+                    {getTranslation(currentLanguage, "email_verification_notice_desc")}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -214,35 +230,22 @@ export default function Page() {
                     회원가입
                   </Link>
                 </div>
-                <div className="mt-4 border-2 border-blue-400 bg-blue-50 rounded-lg p-3">
-                  <div className="flex items-start gap-3">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="text-blue-600 flex-shrink-0 mt-0.5"
-                    >
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="M12 16v-4" />
-                      <path d="M12 8h.01" />
-                    </svg>
-                    <div className="text-left">
-                      <p className="text-sm font-bold text-blue-900">이메일 인증 필요</p>
-                      <p className="text-xs text-blue-700 mt-1">
-                        회원가입 후 이메일로 전송된 인증 링크를 클릭해야 로그인할 수 있습니다.
-                      </p>
-                    </div>
-                  </div>
-                </div>
               </form>
             </CardContent>
           </Card>
+          <div className="mt-4 rounded-lg border-2 border-blue-500 bg-blue-50 p-4">
+            <div className="flex items-start gap-2">
+              <Info className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="text-sm">
+                <p className="font-semibold text-blue-900">
+                  {getTranslation(currentLanguage, "email_verification_notice_title")}
+                </p>
+                <p className="text-blue-700 mt-1">
+                  {getTranslation(currentLanguage, "email_verification_notice_desc")}
+                </p>
+              </div>
+            </div>
+          </div>
           <div className="text-center text-sm text-muted-foreground">개인당 500MB 무료 저장소 제공</div>
         </div>
       </div>
