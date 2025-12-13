@@ -144,25 +144,35 @@ export default function Page() {
     setIsLoading(true)
     setError(null)
 
+    console.log("[v0] ===== SIGN UP BUTTON CLICKED =====")
+    console.log("[v0] Email:", email)
+    console.log("[v0] Password length:", password.length)
+    console.log("[v0] Terms agreed:", agreeTerms)
+    console.log("[v0] Privacy agreed:", agreePrivacy)
+
     if (!agreeTerms || !agreePrivacy) {
+      console.log("[v0] Sign up failed: Terms not agreed")
       setError(t[language].mustAgree)
       setIsLoading(false)
       return
     }
 
     if (password !== repeatPassword) {
+      console.log("[v0] Sign up failed: Passwords don't match")
       setError(t[language].passwordMismatch)
       setIsLoading(false)
       return
     }
 
     if (password.length < 6) {
+      console.log("[v0] Sign up failed: Password too short")
       setError(language === "ko" ? "비밀번호는 최소 6자 이상이어야 합니다" : "Password must be at least 6 characters")
       setIsLoading(false)
       return
     }
 
     try {
+      console.log("[v0] ===== CALLING SUPABASE SIGNUP =====")
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -173,20 +183,29 @@ export default function Page() {
           },
         },
       })
-      if (error) throw error
+
+      console.log("[v0] ===== SUPABASE SIGNUP RESPONSE =====")
+      console.log("[v0] Has data:", !!data)
+      console.log("[v0] Has user:", !!data?.user)
+      console.log("[v0] User ID:", data?.user?.id)
+      console.log("[v0] Error:", error?.message)
+
+      if (error) {
+        console.error("[v0] Sign up error:", error)
+        throw error
+      }
 
       if (data.user) {
+        console.log("[v0] ===== USER CREATED, CREATING PROFILE =====")
+
         try {
-          console.log("[v0] Creating profile for user:", data.user.id)
           await createUserProfile(data.user.id, email)
           console.log("[v0] Profile created successfully")
         } catch (profileError) {
           console.error("[v0] Failed to create profile:", profileError)
-          // Continue even if profile creation fails - user can still login
         }
 
         try {
-          console.log("[v0] Saving consent during sign up for user:", data.user.id)
           await saveUserConsent(data.user.id, "v1.0_2025-12", "v1.0_2025-12", undefined, navigator.userAgent)
           console.log("[v0] Sign up consent saved successfully")
         } catch (consentError) {
@@ -194,8 +213,10 @@ export default function Page() {
         }
       }
 
+      console.log("[v0] ===== SHOWING EMAIL NOTICE =====")
       setShowEmailNotice(true)
     } catch (error: unknown) {
+      console.error("[v0] ===== SIGN UP EXCEPTION =====", error)
       setError(error instanceof Error ? error.message : t[language].signUpError)
     } finally {
       setIsLoading(false)
