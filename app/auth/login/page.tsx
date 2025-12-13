@@ -10,7 +10,6 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/auth-context"
-import { getTranslation } from "@/lib/i18n"
 import { useLanguage } from "@/lib/language-context"
 
 export default function Page() {
@@ -224,11 +223,9 @@ export default function Page() {
             <div className="flex items-start gap-3">
               <Info className="h-6 w-6 text-blue-600 flex-shrink-0 mt-0.5" />
               <div className="text-sm">
-                <p className="font-bold text-blue-900 text-base">
-                  {getTranslation(currentLanguage, "email_verification_notice_title")}
-                </p>
+                <p className="font-bold text-blue-900 text-base">✉️ 이메일 인증이 필요합니다</p>
                 <p className="text-blue-800 mt-1.5 leading-relaxed">
-                  {getTranslation(currentLanguage, "email_verification_notice_desc")}
+                  회원가입 후 이메일로 전송된 인증 링크를 클릭해주세요
                 </p>
               </div>
             </div>
