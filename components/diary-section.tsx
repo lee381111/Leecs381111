@@ -1,834 +1,777 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import type React from "react"
+
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Plus, Edit, Trash2, Lock, X, Sparkles, Key } from "lucide-react"
-import { saveDiaries, loadDiaries } from "@/lib/storage"
-import { useAuth } from "@/lib/auth-context"
-import type { DiaryEntry, Attachment } from "@/lib/types"
-import { MediaTools } from "@/components/media-tools"
-import { Spinner } from "@/components/ui/spinner"
-import { getTranslation } from "@/lib/i18n"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
+import {
+  Plus,
+  Trash2,
+  Paperclip,
+  Mic,
+  Lock,
+  Unlock,
+  X,
+  ImageIcon,
+  Pencil,
+  PenTool,
+  ArrowUpDown,
+  Loader2,
+} from "lucide-react"
+import type { DiaryEntry } from "./personal-organizer-app"
+import { useLanguage } from "@/lib/language-context"
+import { AttachmentList } from "./attachment-list"
+import { HandwritingCanvas } from "./handwriting-canvas"
+import { createBrowserClient } from "@/lib/supabase/client"
+import { useToast } from "@/hooks/use-toast"
+import { saveDiary, updateDiary, deleteDiary } from "@/app/actions/diary-actions"
 
-interface DiarySectionProps {
-  onBack: () => void
-  language: string
+type UploadedFile = {
+  name: string
+  url: string
+  type: string
 }
 
-const moods = ["😊 좋음", "😐 보통", "😢 나쁨", "😍 최고", "😤 화남"]
-const weathers = ["☀️ 맑음", "☁️ 흐림", "🌧️ 비", "⛈️ 폭우", "❄️ 눈"]
-
-async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder()
-  const data = encoder.encode(password)
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data)
-  const hashArray = Array.from(new Uint8Array(hashBuffer))
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
+type DiarySectionProps = {
+  diaries: DiaryEntry[]
+  setDiaries: (diaries: DiaryEntry[]) => void
+  userId?: string
 }
 
-export function DiarySection({ onBack, language }: DiarySectionProps) {
-  const { user } = useAuth()
-  const [diaries, setDiaries] = useState<DiaryEntry[]>([])
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+const weatherEmojis = ["☀️", "⛅", "☁️", "🌧️", "⛈️", "🌨️", "🌫️"]
+const moodEmojis = ["😊", "😃", "😢", "😡", "😴", "🤔", "😍", "😰", "🤗", "😎"]
+
+export function DiarySection({ diaries, setDiaries, userId }: DiarySectionProps) {
   const [isAdding, setIsAdding] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [formData, setFormData] = useState({
-    date: new Date().toISOString().split("T")[0],
+  const [selectedDiary, setSelectedDiary] = useState<DiaryEntry | null>(null)
+  const [unlockedDiaries, setUnlockedDiaries] = useState<Set<string>>(new Set())
+  const [passwordInput, setPasswordInput] = useState("")
+  const [newDiary, setNewDiary] = useState({
     content: "",
-    mood: moods[0],
-    weather: weathers[0],
-    attachments: [] as Attachment[],
+    weatherEmoji: "☀️",
+    moodEmoji: "😊",
+    isLocked: true,
+    password: "",
   })
-  const [selectedImage, setSelectedImage] = useState<{ url: string; name: string } | null>(null)
-
-  const [isLocked, setIsLocked] = useState(true)
-  const [password, setPassword] = useState("")
-  const [isSettingPassword, setIsSettingPassword] = useState(false)
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [isResettingPassword, setIsResettingPassword] = useState(false)
-  const [securityAnswer, setSecurityAnswer] = useState("")
-
-  const [emotionAnalysis, setEmotionAnalysis] = useState<{
-    emotion: string
-    score: number
-    mainEmotions: string[]
-    advice: string
-  } | null>(null)
-  const [analyzingEmotion, setAnalyzingEmotion] = useState(false)
-
-  const t = (key: string) => getTranslation(language, key)
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([])
+  const [existingAttachments, setExistingAttachments] = useState<UploadedFile[]>([])
+  const [isRecording, setIsRecording] = useState(false)
+  const [isHandwritingOpen, setIsHandwritingOpen] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const recognitionRef = useRef<any>(null)
+  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest")
+  const { t, language } = useLanguage()
+  const [isLoading, setIsLoading] = useState(false)
+  const [hasLoadedData, setHasLoadedData] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const supabase = createBrowserClient()
+  const { toast } = useToast()
 
   useEffect(() => {
-    const savedPasswordHash = localStorage.getItem("diary_password_hash")
-    if (!savedPasswordHash) {
-      setIsSettingPassword(true)
-      setIsLocked(false)
-    } else {
-      setIsLocked(true)
-    }
-  }, [])
+    if (!userId || hasLoadedData) return
 
-  useEffect(() => {
-    if (!isLocked) {
-      loadData()
-    }
-  }, [user, isLocked])
+    const fetchDiaries = async () => {
+      setIsLoading(true)
+      try {
+        console.log("[v0] Fetching diaries for user:", userId)
+        const { data, error } = await supabase
+          .from("diaries")
+          .select("*")
+          .eq("user_id", userId)
+          .order("date", { ascending: false })
+          .limit(50) // Limit to 50 most recent diaries for faster loading
 
-  const loadData = async () => {
-    if (!user?.id) return
+        if (error) {
+          console.error("[v0] Error fetching diaries:", error)
+          throw error
+        }
+
+        if (data) {
+          console.log("[v0] Fetched diaries:", data.length)
+          const formattedDiaries = data.map((d: any) => ({
+            ...d,
+            date: new Date(d.date),
+          }))
+          setDiaries(formattedDiaries)
+          setHasLoadedData(true)
+        }
+      } catch (error) {
+        console.error("[v0] Error fetching diaries:", error)
+        toast({
+          title: "오류",
+          description: "일기를 불러오는데 실패했습니다.",
+          variant: "destructive",
+        })
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchDiaries()
+  }, [userId, hasLoadedData])
+
+  const handleFileAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files)
+      setAttachedFiles([...attachedFiles, ...newFiles])
+    }
+  }
+
+  const handleRemoveFile = (index: number) => {
+    setAttachedFiles(attachedFiles.filter((_, i) => i !== index))
+  }
+
+  const handleVoiceInput = () => {
+    if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
+      const messages = {
+        ko: "음성 인식이 지원되지 않는 브라우저입니다.",
+        en: "Speech recognition is not supported in this browser.",
+        zh: "此浏览器不支持语音识别。",
+        ja: "このブラウザは音声認識をサポートしていません。",
+      }
+      toast({
+        title: "오류",
+        description: messages[language],
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (isRecording) {
+      recognitionRef.current?.stop()
+      setIsRecording(false)
+      return
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    const recognition = new SpeechRecognition()
+    const langCodes = { ko: "ko-KR", en: "en-US", zh: "zh-CN", ja: "ja-JP" }
+    recognition.lang = langCodes[language]
+
+    recognition.onstart = () => {
+      setIsRecording(true)
+    }
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript
+      setNewDiary({ ...newDiary, content: newDiary.content + " " + transcript })
+    }
+
+    recognition.onerror = (event: any) => {
+      console.error("[v0] Speech recognition error:", event.error)
+      setIsRecording(false)
+    }
+
+    recognition.onend = () => {
+      setIsRecording(false)
+    }
+
+    recognitionRef.current = recognition
+    recognition.start()
+  }
+
+  const convertFilesToDataUrls = async (files: File[]): Promise<UploadedFile[]> => {
+    const results: UploadedFile[] = []
+
+    for (const file of files) {
+      try {
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = (e) => resolve(e.target?.result as string)
+          reader.onerror = reject
+          reader.readAsDataURL(file)
+        })
+
+        results.push({
+          name: file.name,
+          url: dataUrl,
+          type: file.type,
+        })
+      } catch (error) {
+        console.error("[v0] Failed to process file:", file.name, error)
+        toast({
+          title: "파일 처리 실패",
+          description: `${file.name} 처리 중 오류가 발생했습니다.`,
+          variant: "destructive",
+        })
+      }
+    }
+
+    return results
+  }
+
+  const handleAddDiary = async () => {
+    if (!userId) {
+      console.error("[v0] No userId provided")
+      toast({
+        title: "오류",
+        description: "사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!newDiary.content.trim()) {
+      toast({
+        title: "오류",
+        description: "일기 내용을 입력해주세요.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (newDiary.isLocked && !newDiary.password) {
+      toast({
+        title: "오류",
+        description: "비밀번호를 입력해주세요.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsSaving(true)
+    console.log("[v0] Starting diary save process...")
 
     try {
-      setLoading(true)
-      const data = await loadDiaries(user.id)
-      console.log("[v0] Loaded diaries:", data.length, "items")
-      data.forEach((d, i) => {
-        console.log(`[v0] Diary ${i}: ${d.attachments?.length || 0} attachments`)
+      // Process files if any
+      let uploadedFiles: UploadedFile[] = []
+      if (attachedFiles.length > 0) {
+        console.log("[v0] Processing", attachedFiles.length, "attached files...")
+        toast({
+          title: "파일 처리 중",
+          description: `${attachedFiles.length}개의 파일을 처리하고 있습니다...`,
+        })
+        uploadedFiles = await convertFilesToDataUrls(attachedFiles)
+        console.log("[v0] Processed files:", uploadedFiles.length)
+      }
+
+      // Save using server action
+      const result = await saveDiary({
+        content: newDiary.content,
+        weather_emoji: newDiary.weatherEmoji,
+        mood_emoji: newDiary.moodEmoji,
+        password: newDiary.isLocked ? newDiary.password : null,
+        user_id: userId,
+        attachments: uploadedFiles.length > 0 ? uploadedFiles : null,
       })
-      setDiaries(data)
+
+      if (!result.success) {
+        console.error("[v0] Server action failed:", result.error)
+        toast({
+          title: "저장 실패",
+          description: result.error || "알 수 없는 오류",
+          variant: "destructive",
+        })
+        return
+      }
+
+      console.log("[v0] Diary saved successfully:", result.data.id)
+      // Add to local state
+      const diary: DiaryEntry = {
+        ...result.data,
+        date: new Date(result.data.date),
+        weatherEmoji: result.data.weather_emoji,
+        moodEmoji: result.data.mood_emoji,
+        isLocked: !!result.data.password,
+        attachments: result.data.attachments,
+      }
+      setDiaries([diary, ...diaries])
+      setNewDiary({ content: "", weatherEmoji: "☀️", moodEmoji: "😊", isLocked: true, password: "" })
+      setAttachedFiles([])
+      setIsAdding(false)
+
+      toast({
+        title: "성공",
+        description: "일기가 저장되었습니다.",
+      })
+    } catch (error) {
+      console.error("[v0] Error adding diary:", error)
+      const errorMsg = error instanceof Error ? error.message : "알 수 없는 오류"
+      toast({
+        title: "오류",
+        description: `일기 저장 중 오류가 발생했습니다: ${errorMsg}`,
+        variant: "destructive",
+      })
     } finally {
-      setLoading(false)
+      setIsSaving(false)
+      console.log("[v0] Diary save process completed")
     }
   }
 
-  const handleSetPassword = async () => {
-    if (!password || password.length < 4) {
-      alert(t("password_too_short") || "비밀번호는 최소 4자 이상이어야 합니다")
-      return
-    }
-    if (password !== confirmPassword) {
-      alert(t("password_mismatch") || "비밀번호가 일치하지 않습니다")
-      return
-    }
-    if (!securityAnswer || securityAnswer.length < 2) {
-      alert(t("security_answer_required") || "보안 질문 답변을 입력하세요 (최소 2자)")
-      return
-    }
+  const handleDelete = async (id: string) => {
+    try {
+      const result = await deleteDiary(id)
 
-    const hash = await hashPassword(password)
-    const answerHash = await hashPassword(securityAnswer.toLowerCase().trim())
-    localStorage.setItem("diary_password_hash", hash)
-    localStorage.setItem("diary_security_answer", answerHash)
-    setIsSettingPassword(false)
-    setIsLocked(false)
-    setPassword("")
-    setConfirmPassword("")
-    setSecurityAnswer("")
-    alert(t("password_set") || "일기 비밀번호가 설정되었습니다")
-  }
-
-  const handleUnlock = async () => {
-    if (!password) {
-      alert(t("enter_password") || "비밀번호를 입력하세요")
-      return
-    }
-
-    const savedHash = localStorage.getItem("diary_password_hash")
-    const inputHash = await hashPassword(password)
-
-    if (inputHash === savedHash) {
-      setIsLocked(false)
-      setPassword("")
-      alert(t("unlocked") || "잠금이 해제되었습니다")
-    } else {
-      alert(t("wrong_password") || "비밀번호가 틀렸습니다")
-      setPassword("")
-    }
-  }
-
-  const handleChangePassword = async () => {
-    const savedHash = localStorage.getItem("diary_password_hash")
-    const currentHash = await hashPassword(password)
-
-    if (currentHash !== savedHash) {
-      alert(t("wrong_password") || "현재 비밀번호가 틀렸습니다")
-      return
-    }
-
-    if (!confirmPassword || confirmPassword.length < 4) {
-      alert(t("password_too_short") || "새 비밀번호는 최소 4자 이상이어야 합니다")
-      return
-    }
-
-    const newHash = await hashPassword(confirmPassword)
-    localStorage.setItem("diary_password_hash", newHash)
-    alert(t("password_changed") || "비밀번호가 변경되었습니다")
-    setPassword("")
-    setConfirmPassword("")
-  }
-
-  const handleRemovePassword = async () => {
-    const savedHash = localStorage.getItem("diary_password_hash")
-    const inputHash = await hashPassword(password)
-
-    if (inputHash !== savedHash) {
-      alert(t("wrong_password") || "비밀번호가 틀렸습니다")
-      return
-    }
-
-    if (confirm(t("confirm_remove_password") || "정말 비밀번호를 제거하시겠습니까?")) {
-      localStorage.removeItem("diary_password_hash")
-      localStorage.removeItem("diary_security_answer")
-      setIsLocked(false)
-      setPassword("")
-      alert(t("password_removed") || "비밀번호가 제거되었습니다")
-    }
-  }
-
-  const handleResetPassword = async () => {
-    if (!securityAnswer || securityAnswer.length < 2) {
-      alert(t("enter_security_answer") || "보안 답변을 입력하세요")
-      return
-    }
-
-    const savedAnswerHash = localStorage.getItem("diary_security_answer")
-    if (!savedAnswerHash) {
-      alert(
-        t("security_not_set") || "보안 질문이 설정되지 않았습니다. 비밀번호를 완전히 제거하려면 설정에서 진행하세요.",
-      )
-      return
-    }
-
-    const inputAnswerHash = await hashPassword(securityAnswer.toLowerCase().trim())
-
-    if (inputAnswerHash === savedAnswerHash) {
-      if (!password || password.length < 4) {
-        alert(t("password_too_short") || "새 비밀번호는 최소 4자 이상이어야 합니다")
-        return
-      }
-      if (password !== confirmPassword) {
-        alert(t("password_mismatch") || "비밀번호가 일치하지 않습니다")
+      if (!result.success) {
+        console.error("[v0] Server action failed:", result.error)
+        toast({
+          title: "오류",
+          description: result.error || "삭제 실패",
+          variant: "destructive",
+        })
         return
       }
 
-      const newHash = await hashPassword(password)
-      localStorage.setItem("diary_password_hash", newHash)
-      setIsResettingPassword(false)
-      setIsLocked(false)
-      setPassword("")
-      setConfirmPassword("")
-      setSecurityAnswer("")
-      alert(t("password_reset_success") || "비밀번호가 재설정되었습니다")
+      setDiaries(diaries.filter((d) => d.id !== id))
+      if (selectedDiary?.id === id) {
+        setSelectedDiary(null)
+      }
+
+      toast({
+        title: "성공",
+        description: "일기가 삭제되었습니다.",
+      })
+    } catch (error) {
+      console.error("[v0] Error deleting diary:", error)
+      toast({
+        title: "오류",
+        description: "일기 삭제에 실패했습니다",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleUnlock = (diary: DiaryEntry) => {
+    if (passwordInput === diary.password) {
+      setUnlockedDiaries(new Set([...unlockedDiaries, diary.id]))
+      setSelectedDiary(diary)
+      setPasswordInput("")
     } else {
-      alert(t("wrong_security_answer") || "보안 답변이 틀렸습니다")
-      setSecurityAnswer("")
+      const messages = {
+        ko: "비밀번호가 틀렸습니다",
+        en: "Incorrect password",
+        zh: "密码错误",
+        ja: "パスワードが間違っています",
+      }
+      toast({
+        title: "오류",
+        description: messages[language],
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleLock = (diary: DiaryEntry) => {
+    const newUnlockedDiaries = new Set(unlockedDiaries)
+    newUnlockedDiaries.delete(diary.id)
+    setUnlockedDiaries(newUnlockedDiaries)
+    if (selectedDiary?.id === diary.id) {
+      setSelectedDiary(null)
     }
   }
 
   const handleEdit = (diary: DiaryEntry) => {
-    console.log("[v0] Editing diary, attachments:", diary.attachments?.length || 0)
     setEditingId(diary.id)
-    const loadedAttachments = (diary.attachments || []).map((att) => ({
-      type: att.type || "image",
-      name: att.name || "attachment",
-      url: att.url || att.data || "",
-      data: att.data || att.url || "",
-    }))
-    console.log("[v0] Loaded attachments for editing:", loadedAttachments.length)
-    setFormData({
-      date: diary.date,
+    setNewDiary({
       content: diary.content,
-      mood: diary.mood,
-      weather: diary.weather,
-      attachments: loadedAttachments,
+      weatherEmoji: diary.weatherEmoji,
+      moodEmoji: diary.moodEmoji,
+      isLocked: diary.isLocked,
+      password: diary.password || "",
     })
+    setExistingAttachments((diary.attachments as UploadedFile[]) || [])
+    setAttachedFiles([])
     setIsAdding(true)
+    setSelectedDiary(null)
   }
 
-  const handleDelete = async (id: string) => {
-    if (!user?.id) {
-      alert("로그인이 필요합니다")
-      return
-    }
+  const handleUpdate = async () => {
+    if (!editingId || !newDiary.content || !userId) return
 
-    if (!confirm(t("confirmDelete") || "정말 삭제하시겠습니까?")) return
+    setIsSaving(true)
 
     try {
-      const updated = diaries.filter((d) => d.id !== id)
-      setDiaries(updated)
-      await saveDiaries(updated, user.id)
-      alert(t("deleteSuccess") || "삭제되었습니다!")
-    } catch (error) {
-      console.error("[v0] Error deleting diary:", error)
-      alert("삭제 실패: " + error)
-    }
-  }
-
-  const handleSave = async (attachments: Attachment[]) => {
-    if (!user?.id) {
-      alert("로그인이 필요합니다")
-      return
-    }
-
-    if (!formData.content.trim()) {
-      alert("내용을 입력해주세요")
-      return
-    }
-
-    try {
-      setSaving(true)
-      console.log("[v0] Saving diary with", attachments.length, "attachments")
-
-      let updated: DiaryEntry[]
-      if (editingId) {
-        updated = diaries.map((d) =>
-          d.id === editingId
-            ? {
-                ...d,
-                date: formData.date,
-                content: formData.content,
-                mood: formData.mood,
-                weather: formData.weather,
-                attachments,
-              }
-            : d,
-        )
-      } else {
-        const diary: DiaryEntry = {
-          id: crypto.randomUUID(),
-          date: formData.date,
-          content: formData.content,
-          mood: formData.mood,
-          weather: formData.weather,
-          attachments,
-          createdAt: new Date().toISOString(),
-          user_id: user.id,
-        }
-        updated = [diary, ...diaries]
+      let uploadedFiles: UploadedFile[] = [...existingAttachments]
+      if (attachedFiles.length > 0) {
+        toast({
+          title: "파일 처리 중",
+          description: "첨부파일을 처리하고 있습니다...",
+        })
+        const newFiles = await convertFilesToDataUrls(attachedFiles)
+        uploadedFiles = [...existingAttachments, ...newFiles]
       }
 
-      setDiaries(updated)
-      await saveDiaries(updated, user.id)
-
-      console.log("[v0] Diary saved successfully with", attachments.length, "attachments")
-      alert(`일기가 저장되었습니다! (첨부파일 ${attachments.length}개)`)
-
-      setFormData({
-        date: new Date().toISOString().split("T")[0],
-        content: "",
-        mood: moods[0],
-        weather: weathers[0],
-        attachments: [],
+      const result = await updateDiary(editingId, {
+        content: newDiary.content,
+        weather_emoji: newDiary.weatherEmoji,
+        mood_emoji: newDiary.moodEmoji,
+        password: newDiary.isLocked ? newDiary.password : null,
+        attachments: uploadedFiles.length > 0 ? uploadedFiles : null,
       })
+
+      if (!result.success) {
+        console.error("[v0] Server action failed:", result.error)
+        toast({
+          title: "수정 실패",
+          description: result.error || "알 수 없는 오류",
+          variant: "destructive",
+        })
+        return
+      }
+
+      console.log("[v0] Diary updated successfully:", result.data.id)
+      const updatedDiary: DiaryEntry = {
+        id: editingId,
+        date: diaries.find((d) => d.id === editingId)?.date || new Date(),
+        content: newDiary.content,
+        weatherEmoji: newDiary.weatherEmoji,
+        moodEmoji: newDiary.moodEmoji,
+        isLocked: !!newDiary.password,
+        password: newDiary.password,
+        user_id: userId || null,
+        attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
+      }
+
+      setDiaries(diaries.map((d) => (d.id === editingId ? updatedDiary : d)))
+      setNewDiary({ content: "", weatherEmoji: "☀️", moodEmoji: "😊", isLocked: true, password: "" })
+      setAttachedFiles([])
+      setExistingAttachments([])
       setEditingId(null)
       setIsAdding(false)
-    } catch (error) {
-      console.error("[v0] Error saving diary:", error)
-      alert("저장 실패: " + error)
-      loadData() // Reload on error
-    } finally {
-      setSaving(false)
-    }
-  }
 
-  const handleAttachmentsChange = (attachments: Attachment[]) => {
-    setFormData({ ...formData, attachments })
-    console.log("[v0] Diary attachments updated:", attachments.length)
-  }
-
-  const handleTranscriptReceived = (text: string) => {
-    setFormData({ ...formData, content: formData.content + text })
-  }
-
-  const handleAnalyzeEmotion = async () => {
-    if (!formData.content || formData.content.trim().length < 20) {
-      alert(t("diary_too_short_for_analysis"))
-      return
-    }
-
-    try {
-      setAnalyzingEmotion(true)
-      const response = await fetch("/api/analyze-diary-emotion", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          content: formData.content,
-          language,
-        }),
+      toast({
+        title: "성공",
+        description: "일기가 수정되었습니다.",
       })
-
-      if (!response.ok) throw new Error("Analysis failed")
-
-      const analysis = await response.json()
-      setEmotionAnalysis(analysis)
     } catch (error) {
-      console.error("[v0] Emotion analysis error:", error)
-      alert(t("emotion_analysis_failed"))
+      console.error("[v0] Error updating diary:", error)
+      const errorMsg = error instanceof Error ? error.message : "알 수 없는 오류"
+      toast({
+        title: "오류",
+        description: `일기 수정 중 오류가 발생했습니다: ${errorMsg}`,
+        variant: "destructive",
+      })
     } finally {
-      setAnalyzingEmotion(false)
+      setIsSaving(false)
     }
   }
 
-  if (isSettingPassword) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 flex items-center justify-center">
-        <Card className="max-w-md w-full p-8 space-y-6">
-          <div className="text-center space-y-2">
-            <Lock className="h-12 w-12 mx-auto text-green-600" />
-            <h2 className="text-2xl font-bold">{t("set_diary_password") || "일기 비밀번호 설정"}</h2>
-            <p className="text-sm text-muted-foreground">
-              {t("password_description") || "일기를 보호하기 위한 비밀번호를 설정하세요"}
-            </p>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">{t("new_password") || "비밀번호"}</label>
-              <Input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={t("password_placeholder") || "최소 4자 이상"}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">{t("confirm_password") || "비밀번호 확인"}</label>
-              <Input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder={t("confirm_password_placeholder") || "비밀번호 재입력"}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">{t("security_question") || "보안 질문: 태어난 도시는?"}</label>
-              <Input
-                type="text"
-                value={securityAnswer}
-                onChange={(e) => setSecurityAnswer(e.target.value)}
-                placeholder={t("security_answer_placeholder") || "예: 서울"}
-                className="mt-1"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                {t("security_answer_help") || "비밀번호를 잊어버렸을 때 사용됩니다"}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={handleSetPassword} className="flex-1 bg-green-600 hover:bg-green-700">
-                {t("set_password") || "설정"}
-              </Button>
-              <Button variant="outline" onClick={onBack} className="flex-1 bg-transparent">
-                {t("skip") || "건너뛰기"}
-              </Button>
-            </div>
-          </div>
-          <MediaTools
-            language={language}
-            attachments={formData.attachments || []}
-            onAttachmentsChange={handleAttachmentsChange}
-            onSave={(attachments) => handleSave(attachments)}
-            saving={saving}
-            onTextFromSpeech={handleTranscriptReceived}
-          />
-          {formData.content && formData.content.trim().length >= 20 && (
-            <Button
-              onClick={handleAnalyzeEmotion}
-              disabled={analyzingEmotion}
-              variant="outline"
-              className="w-full border-purple-300 dark:border-purple-700 hover:bg-purple-50 dark:hover:bg-purple-950 bg-transparent"
-            >
-              <Sparkles className="mr-2 h-4 w-4" />
-              {analyzingEmotion ? t("analyzing_emotion") : t("analyze_emotion")}
-            </Button>
-          )}
-          {emotionAnalysis && (
-            <Card className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 border-purple-200 dark:border-purple-800">
-              <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-purple-600" />
-                {t("emotion_analysis_result")}
-              </h3>
-              <div className="space-y-2 text-sm">
-                <p>
-                  <span className="font-medium">{t("emotion_positive")}:</span>{" "}
-                  {emotionAnalysis.emotion === "긍정적" || emotionAnalysis.emotion === "positive"
-                    ? t("emotion_positive")
-                    : emotionAnalysis.emotion === "부정적" || emotionAnalysis.emotion === "negative"
-                      ? t("emotion_negative")
-                      : t("emotion_neutral")}
-                </p>
-                <p>
-                  <span className="font-medium">{t("emotion_score")}:</span> {emotionAnalysis.score}/10
-                </p>
-                <p>
-                  <span className="font-medium">{t("main_emotions")}:</span> {emotionAnalysis.mainEmotions.join(", ")}
-                </p>
-                <div className="mt-3 p-3 bg-white/50 dark:bg-slate-900/50 rounded">
-                  <p className="font-medium mb-1">{t("ai_advice")}:</p>
-                  <p className="text-muted-foreground">{emotionAnalysis.advice}</p>
-                </div>
-              </div>
-            </Card>
-          )}
-        </Card>
-      </div>
-    )
+  const handleCancel = () => {
+    setIsAdding(false)
+    setEditingId(null)
+    setNewDiary({ content: "", weatherEmoji: "☀️", moodEmoji: "😊", isLocked: true, password: "" })
+    setAttachedFiles([])
+    setExistingAttachments([])
   }
 
-  if (isResettingPassword) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 flex items-center justify-center">
-        <Card className="max-w-md w-full p-8 space-y-6">
-          <div className="text-center space-y-2">
-            <Key className="h-12 w-12 mx-auto text-orange-600" />
-            <h2 className="text-2xl font-bold">{t("reset_password") || "비밀번호 재설정"}</h2>
-            <p className="text-sm text-muted-foreground">
-              {t("reset_password_description") || "보안 질문에 답하고 새 비밀번호를 설정하세요"}
-            </p>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">{t("security_question") || "보안 질문: 태어난 도시는?"}</label>
-              <Input
-                type="text"
-                value={securityAnswer}
-                onChange={(e) => setSecurityAnswer(e.target.value)}
-                placeholder={t("enter_security_answer") || "답변 입력"}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">{t("new_password") || "새 비밀번호"}</label>
-              <Input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={t("password_placeholder") || "최소 4자 이상"}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">{t("confirm_password") || "비밀번호 확인"}</label>
-              <Input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder={t("confirm_password_placeholder") || "비밀번호 재입력"}
-                className="mt-1"
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={handleResetPassword} className="flex-1 bg-orange-600 hover:bg-orange-700">
-                {t("reset_password") || "재설정"}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsResettingPassword(false)
-                  setPassword("")
-                  setConfirmPassword("")
-                  setSecurityAnswer("")
-                }}
-                className="flex-1 bg-transparent"
-              >
-                {t("cancel") || "취소"}
-              </Button>
-            </div>
-          </div>
-        </Card>
-      </div>
-    )
+  const handleHandwritingSave = async (imageBlob: Blob) => {
+    const file = new File([imageBlob], `handwriting-${Date.now()}.png`, { type: "image/png" })
+    setAttachedFiles([...attachedFiles, file])
   }
 
-  if (isLocked) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 flex items-center justify-center">
-        <Card className="max-w-md w-full p-8 space-y-6">
-          <div className="text-center space-y-2">
-            <Lock className="h-12 w-12 mx-auto text-green-600" />
-            <h2 className="text-2xl font-bold">{t("locked_diary") || "잠긴 일기"}</h2>
-            <p className="text-sm text-muted-foreground">
-              {t("enter_password_to_unlock") || "비밀번호를 입력하여 일기를 확인하세요"}
-            </p>
-          </div>
-          <div className="space-y-4">
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder={t("password") || "비밀번호"}
-              onKeyPress={(e) => {
-                if (e.key === "Enter") handleUnlock()
-              }}
-            />
-            <div className="flex gap-2">
-              <Button onClick={handleUnlock} className="flex-1 bg-green-600 hover:bg-green-700">
-                {t("unlock") || "잠금 해제"}
-              </Button>
-              <Button variant="outline" onClick={onBack} className="flex-1 bg-transparent">
-                {t("back") || "뒤로"}
-              </Button>
-            </div>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setIsResettingPassword(true)
-                setPassword("")
-              }}
-              className="w-full text-sm text-orange-600 hover:text-orange-700 hover:bg-orange-50"
-            >
-              {t("forgot_password") || "비밀번호를 잊으셨나요?"}
-            </Button>
-          </div>
-        </Card>
-      </div>
-    )
+  const handleRemoveExistingAttachment = (index: number) => {
+    setExistingAttachments(existingAttachments.filter((_, i) => i !== index))
   }
 
-  if (loading) {
+  const isDiaryUnlocked = (diary: DiaryEntry) => {
+    return !diary.isLocked || unlockedDiaries.has(diary.id)
+  }
+
+  const sortedDiaries = [...diaries].sort((a, b) => {
+    if (sortOrder === "newest") {
+      return b.date.getTime() - a.date.getTime()
+    } else {
+      return a.date.getTime() - b.date.getTime()
+    }
+  })
+
+  if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center space-y-4">
-          <Spinner className="h-12 w-12 mx-auto" />
-          <p className="text-muted-foreground">{t("loading")}</p>
+      <div className="rounded-lg border bg-card p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <div className="h-7 w-32 animate-pulse rounded bg-muted" />
+          <div className="h-9 w-24 animate-pulse rounded bg-muted" />
         </div>
-      </div>
-    )
-  }
-
-  if (isAdding) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
-        <Button
-          variant="ghost"
-          onClick={() => {
-            setIsAdding(false)
-            setEditingId(null)
-          }}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" /> {t("cancel")}
-        </Button>
-        <div className="space-y-4">
-          <input
-            type="date"
-            value={formData.date}
-            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-            className="w-full p-2 border rounded"
-          />
-          <div className="grid grid-cols-2 gap-4">
-            <Select value={formData.mood} onValueChange={(mood) => setFormData({ ...formData, mood })}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-700 shadow-xl z-50">
-                {moods.map((m) => (
-                  <SelectItem
-                    key={m}
-                    value={m}
-                    className="bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800"
-                  >
-                    {m}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={formData.weather} onValueChange={(weather) => setFormData({ ...formData, weather })}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-white dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-700 shadow-xl z-50">
-                {weathers.map((w) => (
-                  <SelectItem
-                    key={w}
-                    value={w}
-                    className="bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800"
-                  >
-                    {w}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <Textarea
-            placeholder={
-              language === "ko"
-                ? "오늘 하루는 어땠나요?"
-                : language === "en"
-                  ? "How was your day?"
-                  : language === "zh"
-                    ? "今天过得怎么样?"
-                    : "今日はどうでしたか?"
-            }
-            value={formData.content}
-            onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-            rows={10}
-          />
-          {formData.attachments && formData.attachments.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-sm font-medium">첨부파일:</p>
-              {formData.attachments.map((file, idx) => (
-                <div key={idx} className="text-sm text-muted-foreground">
-                  {file.name}
-                </div>
-              ))}
-            </div>
-          )}
-          <MediaTools
-            language={language}
-            attachments={formData.attachments || []}
-            onAttachmentsChange={handleAttachmentsChange}
-            onSave={(attachments) => handleSave(attachments)}
-            saving={saving}
-            onTextFromSpeech={handleTranscriptReceived}
-          />
-          {formData.content && formData.content.trim().length >= 20 && (
-            <Button
-              onClick={handleAnalyzeEmotion}
-              disabled={analyzingEmotion}
-              variant="outline"
-              className="w-full border-purple-300 dark:border-purple-700 hover:bg-purple-50 dark:hover:bg-purple-950 bg-transparent"
-            >
-              <Sparkles className="mr-2 h-4 w-4" />
-              {analyzingEmotion ? t("analyzing_emotion") : t("analyze_emotion")}
-            </Button>
-          )}
-          {emotionAnalysis && (
-            <Card className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 border-purple-200 dark:border-purple-800">
-              <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-purple-600" />
-                {t("emotion_analysis_result")}
-              </h3>
-              <div className="space-y-2 text-sm">
-                <p>
-                  <span className="font-medium">{t("emotion_positive")}:</span>{" "}
-                  {emotionAnalysis.emotion === "긍정적" || emotionAnalysis.emotion === "positive"
-                    ? t("emotion_positive")
-                    : emotionAnalysis.emotion === "부정적" || emotionAnalysis.emotion === "negative"
-                      ? t("emotion_negative")
-                      : t("emotion_neutral")}
-                </p>
-                <p>
-                  <span className="font-medium">{t("emotion_score")}:</span> {emotionAnalysis.score}/10
-                </p>
-                <p>
-                  <span className="font-medium">{t("main_emotions")}:</span> {emotionAnalysis.mainEmotions.join(", ")}
-                </p>
-                <div className="mt-3 p-3 bg-white/50 dark:bg-slate-900/50 rounded">
-                  <p className="font-medium mb-1">{t("ai_advice")}:</p>
-                  <p className="text-muted-foreground">{emotionAnalysis.advice}</p>
-                </div>
-              </div>
-            </Card>
-          )}
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-24 animate-pulse rounded-lg bg-muted" />
+          ))}
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <Button variant="ghost" onClick={onBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> {t("title")}
+    <div className="rounded-lg border bg-card p-6">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-xl font-semibold">{t("diaryTitle")}</h2>
+        <Button onClick={() => setIsAdding(!isAdding)} size="sm">
+          <Plus className="mr-2 h-4 w-4" />
+          {t("addDiary")}
         </Button>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setIsLocked(true)}
-            title={t("lock_diary") || "일기 잠그기"}
-          >
-            <Lock className="h-4 w-4" />
-          </Button>
-          <Button onClick={() => setIsAdding(true)} className="bg-green-600 hover:bg-green-700">
-            <Plus className="mr-2 h-4 w-4" /> {t("add")} {t("diary")}
-          </Button>
-        </div>
       </div>
 
-      <div className="grid gap-4">
-        {diaries.map((diary) => (
-          <Card key={diary.id} className="p-4">
-            <div className="flex justify-between items-start mb-2">
-              <div className="text-sm text-muted-foreground">{diary.date}</div>
-              <div className="flex gap-2 items-center">
-                <span>{diary.mood}</span>
-                <span>{diary.weather}</span>
-                <Button variant="ghost" size="icon" onClick={() => handleEdit(diary)}>
-                  <Edit className="h-4 w-4" />
+      {isAdding && (
+        <div className="mb-6 space-y-4 rounded-lg border bg-muted/50 p-4">
+          <h3 className="font-medium">{editingId ? t("editDiary") : t("addDiary")}</h3>
+          <div className="space-y-2">
+            <Label>{t("selectWeather")}</Label>
+            <div className="flex flex-wrap gap-2">
+              {weatherEmojis.map((emoji) => (
+                <Button
+                  key={emoji}
+                  type="button"
+                  variant={newDiary.weatherEmoji === emoji ? "default" : "outline"}
+                  size="sm"
+                  className="text-2xl"
+                  onClick={() => setNewDiary({ ...newDiary, weatherEmoji: emoji })}
+                >
+                  {emoji}
                 </Button>
-                <Button variant="ghost" size="icon" onClick={() => handleDelete(diary.id)}>
-                  <Trash2 className="h-4 w-4 text-red-500" />
+              ))}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>{t("selectMood")}</Label>
+            <div className="flex flex-wrap gap-2">
+              {moodEmojis.map((emoji) => (
+                <Button
+                  key={emoji}
+                  type="button"
+                  variant={newDiary.moodEmoji === emoji ? "default" : "outline"}
+                  size="sm"
+                  className="text-2xl"
+                  onClick={() => setNewDiary({ ...newDiary, moodEmoji: emoji })}
+                >
+                  {emoji}
                 </Button>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="diary-content">{t("diaryContent")}</Label>
+            <Textarea
+              id="diary-content"
+              value={newDiary.content}
+              onChange={(e) => setNewDiary({ ...newDiary, content: e.target.value })}
+              placeholder={t("diaryContent")}
+              rows={6}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Switch
+              id="lock-diary"
+              checked={newDiary.isLocked}
+              onCheckedChange={(checked) => setNewDiary({ ...newDiary, isLocked: checked })}
+            />
+            <Label htmlFor="lock-diary">{t("passwordLock")}</Label>
+          </div>
+          {newDiary.isLocked && (
+            <div className="space-y-2">
+              <Label htmlFor="diary-password">{t("password")}</Label>
+              <Input
+                id="diary-password"
+                type="password"
+                value={newDiary.password}
+                onChange={(e) => setNewDiary({ ...newDiary, password: e.target.value })}
+                placeholder={t("password")}
+              />
+            </div>
+          )}
+          {existingAttachments.length > 0 && (
+            <div className="space-y-2">
+              <Label>{t("existingAttachments")}</Label>
+              <div className="flex flex-wrap gap-2">
+                {existingAttachments.map((file, index) => (
+                  <div key={index} className="flex items-center gap-2 rounded-md border bg-background px-3 py-2">
+                    <ImageIcon className="h-4 w-4" />
+                    <span className="text-sm">{file.name}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-5 w-5 p-0"
+                      onClick={() => handleRemoveExistingAttachment(index)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
               </div>
             </div>
-            <p className="whitespace-pre-wrap">{diary.content}</p>
-            {diary.attachments && diary.attachments.length > 0 && (
-              <div className="mt-4 space-y-2">
-                <p className="text-sm font-medium">첨부파일 ({diary.attachments.length}개)</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {diary.attachments.map((file: any, idx: number) => {
-                    const isImage =
-                      file.type?.startsWith("image/") ||
-                      file.type === "image" ||
-                      file.type === "drawing" ||
-                      file.name?.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)
-                    const isVideo =
-                      file.type?.startsWith("video/") ||
-                      file.type === "video" ||
-                      file.name?.match(/\.(mp4|webm|mov|avi)$/i)
-                    const isAudio =
-                      file.type?.startsWith("audio/") ||
-                      file.type === "audio" ||
-                      file.name?.match(/\.(mp3|wav|ogg|m4a)$/i)
-                    const mediaUrl = file.url || file.data
-
-                    return (
-                      <div key={idx} className="border rounded overflow-hidden bg-muted dark:bg-muted">
-                        {isImage && (
-                          <img
-                            src={mediaUrl || "/placeholder.svg"}
-                            alt={file.name || `첨부 ${idx + 1}`}
-                            className="w-full h-32 object-cover cursor-pointer hover:opacity-90 transition"
-                            onClick={() => setSelectedImage({ url: mediaUrl, name: file.name || `첨부 ${idx + 1}` })}
-                            onError={(e) => {
-                              e.currentTarget.src = "/placeholder.svg?height=128&width=128"
-                            }}
-                          />
-                        )}
-                        {isVideo && <video src={mediaUrl} controls playsInline className="w-full h-32 bg-black" />}
-                        {isAudio && (
-                          <div className="flex items-center justify-center h-20 bg-gray-100">
-                            <audio src={mediaUrl} controls className="w-full px-2" />
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
+          )}
+          {attachedFiles.length > 0 && (
+            <div className="space-y-2">
+              <Label>{t("attachedFiles")}</Label>
+              <div className="flex flex-wrap gap-2">
+                {attachedFiles.map((file, index) => (
+                  <div key={index} className="flex items-center gap-2 rounded-md border bg-background px-3 py-2">
+                    <ImageIcon className="h-4 w-4" />
+                    <span className="text-sm">{file.name}</span>
+                    <Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={() => handleRemoveFile(index)}>
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
               </div>
-            )}
-          </Card>
-        ))}
-      </div>
-
-      {selectedImage && (
-        <div
-          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
-          onClick={() => setSelectedImage(null)}
-        >
-          <div className="relative max-w-4xl max-h-screen">
-            <img
-              src={selectedImage.url || "/placeholder.svg"}
-              alt={selectedImage.name}
-              className="max-w-full max-h-screen object-contain"
-              onClick={(e) => e.stopPropagation()}
+            </div>
+          )}
+          <div className="flex flex-wrap gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*,video/*"
+              className="hidden"
+              onChange={handleFileAttach}
             />
+            <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={isSaving}>
+              <Paperclip className="mr-2 h-4 w-4" />
+              {t("attachFile")}
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setIsHandwritingOpen(true)} disabled={isSaving}>
+              <PenTool className="mr-2 h-4 w-4" />
+              {t("handwriting")}
+            </Button>
             <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-4 right-4 bg-white/20 hover:bg-white/30 text-white"
-              onClick={() => setSelectedImage(null)}
+              variant="outline"
+              size="sm"
+              onClick={handleVoiceInput}
+              disabled={isSaving}
+              className={isRecording ? "bg-red-500 text-white hover:bg-red-600" : ""}
             >
-              <X className="h-6 w-6" />
+              <Mic className="mr-2 h-4 w-4" />
+              {isRecording ? t("recording") : t("voiceInput")}
+            </Button>
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={editingId ? handleUpdate : handleAddDiary} disabled={isSaving}>
+              {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {editingId ? t("edit") : t("save")}
+            </Button>
+            <Button variant="outline" onClick={handleCancel} disabled={isSaving}>
+              {t("cancel")}
             </Button>
           </div>
         </div>
       )}
+
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="font-medium">{t("diaryList")}</h3>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSortOrder(sortOrder === "newest" ? "oldest" : "newest")}
+            className="gap-2"
+          >
+            <ArrowUpDown className="h-4 w-4" />
+            <span className="text-xs">{sortOrder === "newest" ? t("sortNewest") : t("sortOldest")}</span>
+          </Button>
+        </div>
+        {sortedDiaries.length === 0 ? (
+          <p className="text-center text-muted-foreground">{t("noDiaries")}</p>
+        ) : (
+          sortedDiaries.map((diary) => (
+            <div key={diary.id}>
+              {/* Diary entry card */}
+              <div
+                className={`cursor-pointer rounded-lg border p-3 transition-colors hover:bg-muted/50 ${
+                  selectedDiary?.id === diary.id ? "border-primary bg-muted/50" : ""
+                }`}
+                onClick={() => {
+                  setSelectedDiary(selectedDiary?.id === diary.id ? null : diary)
+                }}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">{diary.weatherEmoji}</span>
+                      <span className="text-xl">{diary.moodEmoji}</span>
+                      {diary.isLocked && !unlockedDiaries.has(diary.id) && (
+                        <Lock className="h-3 w-3 text-muted-foreground" />
+                      )}
+                      {diary.isLocked && unlockedDiaries.has(diary.id) && <Unlock className="h-3 w-3 text-green-600" />}
+                    </div>
+                    <p className="text-xs text-muted-foreground">{diary.date.toLocaleDateString()}</p>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleEdit(diary)
+                      }}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDelete(diary.id)
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {selectedDiary?.id === diary.id && (
+                <div className="mt-2 rounded-lg border bg-muted/30 p-4">
+                  {isDiaryUnlocked(selectedDiary) ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-3xl">{selectedDiary.weatherEmoji}</span>
+                          <span className="text-3xl">{selectedDiary.moodEmoji}</span>
+                        </div>
+                        {selectedDiary.isLocked && (
+                          <Button variant="outline" size="sm" onClick={() => handleLock(selectedDiary)}>
+                            <Lock className="mr-2 h-4 w-4" />
+                            {t("lock")}
+                          </Button>
+                        )}
+                      </div>
+                      <p className="whitespace-pre-wrap text-sm">{selectedDiary.content}</p>
+                      {selectedDiary.attachments && selectedDiary.attachments.length > 0 && (
+                        <div className="space-y-2">
+                          <Label>{t("attachedFiles")}</Label>
+                          <AttachmentList attachments={selectedDiary.attachments as UploadedFile[]} />
+                        </div>
+                      )}
+                      <p className="text-xs text-muted-foreground">
+                        {t("created")}: {selectedDiary.date.toLocaleString()}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <Lock className="h-5 w-5" />
+                        <h3 className="font-semibold">{t("locked")}</h3>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="unlock-password">{t("password")}</Label>
+                        <Input
+                          id="unlock-password"
+                          type="password"
+                          value={passwordInput}
+                          onChange={(e) => setPasswordInput(e.target.value)}
+                          placeholder={t("password")}
+                        />
+                      </div>
+                      <Button onClick={() => handleUnlock(selectedDiary)}>{t("unlock")}</Button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))
+        )}
+      </div>
+
+      <HandwritingCanvas
+        isOpen={isHandwritingOpen}
+        onClose={() => setIsHandwritingOpen(false)}
+        onSave={handleHandwritingSave}
+      />
     </div>
   )
 }

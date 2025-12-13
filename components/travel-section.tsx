@@ -1,651 +1,658 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import type React from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Card } from "@/components/ui/card"
-import { ArrowLeft, Plus, Pencil, Trash2 } from "lucide-react"
-import { saveTravelRecords, loadTravelRecords } from "@/lib/storage"
-import { useAuth } from "@/lib/auth-context"
-import type { TravelRecord, Attachment } from "@/lib/types"
-import { MediaTools } from "@/components/media-tools"
-import { getCoordinates } from "@/lib/geocoding"
-import { Spinner } from "@/components/ui/spinner"
-import { getTranslation } from "@/lib/i18n"
-import dynamic from "next/dynamic"
+import { Plus, Trash2, Paperclip, Mic, MapPinIcon, X, ImageIcon, Pencil, PenTool, ArrowUpDown } from "lucide-react"
+import type { TravelLocation } from "./personal-organizer-app"
+import { useLanguage } from "@/lib/language-context"
+import { HandwritingCanvas } from "./handwriting-canvas"
+import { AttachmentList } from "./attachment-list"
+import { uploadFileToStorage } from "@/lib/storage"
 
-const TravelMap = dynamic(() => import("@/components/travel-map").then((mod) => mod.TravelMap), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-[600px] flex items-center justify-center bg-gray-100 rounded-lg">
-      <Spinner className="h-12 w-12" />
-    </div>
-  ),
-})
-
-interface TravelSectionProps {
-  onBack: () => void
-  language: string
+type UploadedFile = {
+  name: string
+  url: string
+  type: string
 }
 
-export function TravelSection({ onBack, language }: TravelSectionProps) {
-  console.log("[v0] TravelSection rendering")
+type TravelSectionProps = {
+  travelLocations: TravelLocation[]
+  setTravelLocations: (locations: TravelLocation[]) => void
+  userId?: string
+}
 
-  const { user } = useAuth()
-  const [travels, setTravels] = useState<TravelRecord[]>([])
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+export function TravelSection({ travelLocations, setTravelLocations, userId }: TravelSectionProps) {
   const [isAdding, setIsAdding] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [selectedTravel, setSelectedTravel] = useState<TravelRecord | null>(null)
-  const [zoomLevel, setZoomLevel] = useState(1)
-  const [isSelectingLocation, setIsSelectingLocation] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [selectedImage, setSelectedImage] = useState<string | null>(null)
-  const [formData, setFormData] = useState({
-    destination: "",
-    startDate: "",
-    endDate: "",
+  const [newLocation, setNewLocation] = useState({
+    name: "",
+    travelDate: "",
+    locationType: "",
     notes: "",
-    category: "기타" as "도시" | "자연" | "산" | "바다" | "유적지" | "맛집" | "카페" | "기타",
-    latitude: "",
-    longitude: "",
-    expense: "",
-    attachments: [] as Attachment[],
   })
-
-  const t = (key: string) => getTranslation(language as any, key)
+  const [mapLoaded, setMapLoaded] = useState(false)
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([])
+  const [existingAttachments, setExistingAttachments] = useState<UploadedFile[]>([])
+  const [isRecording, setIsRecording] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const recognitionRef = useRef<any>(null)
+  const [isHandwritingOpen, setIsHandwritingOpen] = useState(false)
+  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest")
+  const [locationTypeFilter, setLocationTypeFilter] = useState<string>("all")
+  const { t, language } = useLanguage()
 
   useEffect(() => {
-    console.log("[v0] useEffect: Loading travel data")
-    loadData()
-  }, [user])
+    const link = document.createElement("link")
+    link.rel = "stylesheet"
+    link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    document.head.appendChild(link)
 
-  const loadData = async () => {
-    try {
-      console.log("[v0] loadData: Starting")
-      setLoading(true)
-      setError(null)
+    setMapLoaded(true)
 
-      if (!user?.id) return
+    return () => {
+      document.head.removeChild(link)
+    }
+  }, [])
 
-      const data = await loadTravelRecords(user.id)
-      console.log("[v0] loadData: Loaded", data.length, "travels")
-
-      const updatedData = data.map((travel) => {
-        if (!travel.latitude || !travel.longitude) {
-          const coords = getCoordinates(travel.destination)
-          return { ...travel, latitude: coords?.lat, longitude: coords?.lon }
-        }
-        return travel
-      })
-
-      setTravels(updatedData)
-
-      if (JSON.stringify(data) !== JSON.stringify(updatedData)) {
-        await saveTravelRecords(updatedData, user.id)
-      }
-    } catch (err) {
-      console.error("[v0] Error loading travel records:", err)
-      setError(t("load_error"))
-    } finally {
-      setLoading(false)
-      console.log("[v0] loadData: Finished")
+  const handleFileAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files)
+      setAttachedFiles([...attachedFiles, ...newFiles])
     }
   }
 
-  const handleSave = async (attachments: Attachment[] = []) => {
-    if (!user?.id) {
-      alert(t("login_required"))
+  const handleRemoveFile = (index: number) => {
+    setAttachedFiles(attachedFiles.filter((_, i) => i !== index))
+  }
+
+  const handleVoiceInput = () => {
+    if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
+      const messages = {
+        ko: "음성 인식이 지원되지 않는 브라우저입니다.",
+        en: "Speech recognition is not supported in this browser.",
+        zh: "此浏览器不支持语音识别。",
+        ja: "このブラウザは音声認識をサポートしていません。",
+      }
+      alert(messages[language])
       return
     }
 
-    if (!formData.destination.trim()) {
-      alert(t("enter_destination"))
+    if (isRecording) {
+      recognitionRef.current?.stop()
+      setIsRecording(false)
       return
     }
 
-    // Validate dates
-    if (!formData.startDate || !formData.endDate) {
-      alert(t("enter_dates"))
-      return
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    const recognition = new SpeechRecognition()
+    const langCodes = { ko: "ko-KR", en: "en-US", zh: "zh-CN", ja: "ja-JP" }
+    recognition.lang = langCodes[language]
+
+    recognition.onstart = () => {
+      setIsRecording(true)
     }
 
-    try {
-      setSaving(true)
-      console.log("[v0] 💾 Saving travel with", attachments.length, "attachments")
-      attachments.forEach((att, idx) => {
-        console.log(`[v0] Attachment ${idx + 1}:`, {
-          type: att.type,
-          hasUrl: !!att.url,
-          hasData: !!att.data,
-          dataLength: att.data?.length || 0,
-        })
-      })
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript
+      setNewLocation({ ...newLocation, notes: newLocation.notes + " " + transcript })
+    }
 
-      let updated: TravelRecord[]
-      if (editingId) {
-        updated = travels.map((t) =>
-          t.id === editingId
-            ? {
-                ...t,
-                destination: formData.destination,
-                startDate: formData.startDate,
-                endDate: formData.endDate,
-                notes: formData.notes,
-                category: formData.category,
-                latitude: formData.latitude,
-                longitude: formData.longitude,
-                expense: formData.expense ? Number(formData.expense) : undefined,
-                attachments,
-              }
-            : t,
-        )
+    recognition.onerror = (event: any) => {
+      console.error("[v0] Speech recognition error:", event.error)
+      setIsRecording(false)
+    }
+
+    recognition.onend = () => {
+      setIsRecording(false)
+    }
+
+    recognitionRef.current = recognition
+    recognition.start()
+  }
+
+  const convertFilesToDataUrls = async (files: File[], userId: string): Promise<UploadedFile[]> => {
+    const results: UploadedFile[] = []
+
+    for (const file of files) {
+      const isAudioOrVideo = file.type.startsWith("audio/") || file.type.startsWith("video/")
+
+      if (isAudioOrVideo) {
+        // Upload to Storage via Server Action
+        const storageFile = await uploadFileToStorage(file, userId)
+        if (storageFile) {
+          results.push({
+            name: storageFile.name,
+            url: storageFile.url,
+            type: storageFile.type,
+          })
+        } else {
+          console.error("[v0] Failed to upload file:", file.name)
+          const errorMessages = {
+            ko: `파일 업로드에 실패했습니다: ${file.name}`,
+            en: `Failed to upload file: ${file.name}`,
+            zh: `文件上传失败：${file.name}`,
+            ja: `ファイルのアップロードに失敗しました：${file.name}`,
+          }
+          alert(errorMessages[language])
+          continue
+        }
       } else {
-        const uuid = crypto.randomUUID()
-        const travel: TravelRecord = {
-          id: uuid,
-          destination: formData.destination,
-          startDate: formData.startDate,
-          endDate: formData.endDate,
-          notes: formData.notes,
-          description: formData.notes,
-          expenses: "",
-          category: formData.category || "기타",
-          latitude: formData.latitude,
-          longitude: formData.longitude,
-          expense: formData.expense ? Number(formData.expense) : undefined,
-          attachments,
-          createdAt: new Date().toISOString(),
-          user_id: user?.id,
-        }
-        console.log("[v0] 📝 New travel record created with UUID:", uuid)
-        updated = [travel, ...travels]
+        // Convert images to data URLs
+        const dataUrl = await new Promise<UploadedFile>((resolve) => {
+          const reader = new FileReader()
+          reader.onload = (e) => {
+            resolve({
+              name: file.name,
+              url: e.target?.result as string,
+              type: file.type,
+            })
+          }
+          reader.readAsDataURL(file)
+        })
+        results.push(dataUrl)
       }
+    }
 
-      setTravels(updated)
-      await saveTravelRecords(updated, user.id)
-      console.log("[v0] ✅ Travel records saved successfully")
+    return results
+  }
 
-      setIsAdding(false)
-      setEditingId(null)
-      setFormData({
-        destination: "",
-        startDate: "",
-        endDate: "",
-        notes: "",
-        category: "기타",
-        latitude: "",
-        longitude: "",
-        expense: "",
-        attachments: [],
-      })
+  const handleAddLocation = async () => {
+    if (newLocation.name) {
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(newLocation.name)}`,
+        )
+        const data = await response.json()
 
-      alert(t("travel_saved"))
-    } catch (error) {
-      console.error("[v0] Error saving travel:", error)
-      alert(t("save_error") + ": " + (error as Error).message)
-    } finally {
-      setSaving(false)
+        if (data && data.length > 0) {
+          let uploadedFiles: UploadedFile[] = []
+          if (attachedFiles.length > 0 && userId) {
+            uploadedFiles = await convertFilesToDataUrls(attachedFiles, userId)
+          }
+
+          const location: TravelLocation = {
+            id: Date.now().toString(),
+            name: newLocation.name,
+            date: new Date(),
+            travelDate: newLocation.travelDate,
+            locationType: newLocation.locationType,
+            notes: newLocation.notes,
+            lat: Number.parseFloat(data[0].lat),
+            lng: Number.parseFloat(data[0].lon),
+            user_id: userId || null,
+            attachments: uploadedFiles.length > 0 ? uploadedFiles : undefined,
+          }
+          setTravelLocations([...travelLocations, location])
+          setNewLocation({ name: "", travelDate: "", locationType: "", notes: "" })
+          setAttachedFiles([])
+          setIsAdding(false)
+        } else {
+          const messages = {
+            ko: "위치를 찾을 수 없습니다. 다른 이름으로 시도해주세요.",
+            en: "Location not found. Please try a different name.",
+            zh: "找不到位置。请尝试其他名称。",
+            ja: "場所が見つかりません。別の名前で試してください。",
+          }
+          alert(messages[language])
+        }
+      } catch (error) {
+        console.error("[v0] Error geocoding location:", error)
+        const messages = {
+          ko: "위치 검색 중 오류가 발생했습니다.",
+          en: "An error occurred while searching for the location.",
+          zh: "搜索位置时发生错误。",
+          ja: "場所の検索中にエラーが発生しました。",
+        }
+        alert(messages[language])
+      }
     }
   }
 
-  const handleEdit = (travel: TravelRecord) => {
-    setFormData({
-      destination: travel.destination,
-      startDate: travel.startDate,
-      endDate: travel.endDate,
-      notes: travel.notes || "",
-      category: travel.category || "기타",
-      latitude: travel.latitude?.toString() || "",
-      longitude: travel.longitude?.toString() || "",
-      expense: travel.expense?.toString() || "",
-      attachments: travel.attachments || [],
+  const handleEdit = (location: TravelLocation) => {
+    setEditingId(location.id)
+    setNewLocation({
+      name: location.name,
+      travelDate: location.travelDate || "",
+      locationType: location.locationType || "",
+      notes: location.notes || "",
     })
-    setEditingId(travel.id)
+    setExistingAttachments((location.attachments as UploadedFile[]) || [])
+    setAttachedFiles([])
     setIsAdding(true)
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm(t("travel_delete_confirm"))) return
-
-    if (!user?.id) {
-      alert(t("login_required"))
-      return
-    }
+  const handleUpdate = async () => {
+    if (!editingId || !newLocation.name) return
 
     try {
-      const updated = travels.filter((t) => t.id !== id)
-      setTravels(updated)
-      await saveTravelRecords(updated, user.id)
-      alert(t("deleted"))
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(newLocation.name)}`,
+      )
+      const data = await response.json()
+
+      if (data && data.length > 0) {
+        let uploadedFiles: UploadedFile[] = []
+        if (attachedFiles.length > 0 && userId) {
+          uploadedFiles = await convertFilesToDataUrls(attachedFiles, userId)
+        }
+
+        const allAttachments = [...existingAttachments, ...uploadedFiles]
+
+        const updatedLocation: TravelLocation = {
+          id: editingId,
+          name: newLocation.name,
+          date: new Date(),
+          travelDate: newLocation.travelDate,
+          locationType: newLocation.locationType,
+          notes: newLocation.notes,
+          lat: Number.parseFloat(data[0].lat),
+          lng: Number.parseFloat(data[0].lon),
+          attachments: allAttachments.length > 0 ? allAttachments : undefined,
+          user_id: userId || null,
+        }
+
+        setTravelLocations(travelLocations.map((loc) => (loc.id === editingId ? updatedLocation : loc)))
+        setNewLocation({ name: "", travelDate: "", locationType: "", notes: "" })
+        setAttachedFiles([])
+        setExistingAttachments([])
+        setEditingId(null)
+        setIsAdding(false)
+      } else {
+        const messages = {
+          ko: "위치를 찾을 수 없습니다. 다른 이름으로 시도해주세요.",
+          en: "Location not found. Please try a different name.",
+          zh: "找不到位置。请尝试其他名称。",
+          ja: "場所が見つかりません。別の名前で試してください。",
+        }
+        alert(messages[language])
+      }
     } catch (error) {
-      console.error("[v0] Error deleting travel:", error)
-      alert(t("delete_error"))
+      console.error("[v0] Error updating location:", error)
+      const messages = {
+        ko: "위치 업데이트 중 오류가 발생했습니다.",
+        en: "An error occurred while updating the location.",
+        zh: "更新位置时发生错误。",
+        ja: "場所の更新中にエラーが発生しました。",
+      }
+      alert(messages[language])
     }
   }
 
-  const calculateMapBounds = () => {
-    if (travels.length === 0) {
-      return { minLat: 33, maxLat: 38, minLon: 125, maxLon: 130 }
-    }
-
-    const validTravels = travels.filter((t) => t.latitude != null && t.longitude != null)
-    if (validTravels.length === 0) {
-      return { minLat: 33, maxLat: 38, minLon: 125, maxLon: 130 }
-    }
-
-    const lats = validTravels.map((t) => Number(t.latitude))
-    const lons = validTravels.map((t) => Number(t.longitude))
-
-    const minLat = Math.min(...lats)
-    const maxLat = Math.max(...lats)
-    const minLon = Math.min(...lons)
-    const maxLon = Math.max(...lons)
-
-    const baseLatRange = Math.max(maxLat - minLat, 0.5)
-    const baseLonRange = Math.max(maxLon - minLon, 0.5)
-
-    const latRange = baseLatRange / zoomLevel + 0.3
-    const lonRange = baseLonRange / zoomLevel + 0.3
-
-    const centerLat = (minLat + maxLat) / 2
-    const centerLon = (minLon + maxLon) / 2
-
-    return {
-      minLat: centerLat - latRange,
-      maxLat: centerLat + latRange,
-      minLon: centerLon - lonRange,
-      maxLon: centerLon + lonRange,
-    }
+  const handleRemoveExistingAttachment = (index: number) => {
+    setExistingAttachments(existingAttachments.filter((_, i) => i !== index))
   }
 
-  const bounds = calculateMapBounds()
-  const [mapCenter, setMapCenter] = useState({ lat: 37.5, lon: 127.0, zoom: 7 })
-
-  const handleAttachmentsChange = (attachments: Attachment[]) => {
-    setFormData({ ...formData, attachments })
+  const handleCancel = () => {
+    setIsAdding(false)
+    setEditingId(null)
+    setNewLocation({ name: "", travelDate: "", locationType: "", notes: "" })
+    setAttachedFiles([])
+    setExistingAttachments([])
   }
 
-  const handleTranscriptReceived = (text: string) => {
-    setFormData({ ...formData, notes: formData.notes + text })
+  const handleHandwritingSave = async (imageBlob: Blob) => {
+    const file = new File([imageBlob], `handwriting-${Date.now()}.png`, { type: "image/png" })
+    setAttachedFiles([...attachedFiles, file])
   }
 
-  if (error) {
-    console.log("[v0] Rendering error state")
-    return (
-      <div className="p-6 space-y-4">
-        <Button variant="ghost" onClick={onBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> {t("title")}
-        </Button>
-        <Card className="p-8 text-center bg-red-50 border-red-200">
-          <p className="text-red-600 font-semibold">{error}</p>
-          <Button onClick={loadData} className="mt-4">
-            {t("retry")}
-          </Button>
-        </Card>
-      </div>
-    )
+  const handleDelete = async (id: string) => {
+    setTravelLocations(travelLocations.filter((l) => l.id !== id))
   }
 
-  if (isAdding) {
-    console.log("[v0] Rendering add/edit form")
-    return (
-      <div className="p-6 space-y-4">
-        <Button
-          variant="ghost"
-          onClick={() => {
-            console.log("[v0] Cancelling add/edit")
-            setIsAdding(false)
-            setEditingId(null)
-            setIsSelectingLocation(false)
-            setFormData({
-              destination: "",
-              startDate: "",
-              endDate: "",
-              notes: "",
-              category: "기타",
-              latitude: "",
-              longitude: "",
-              expense: "",
-              attachments: [],
-            })
-          }}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" /> {t("title")}
-        </Button>
-        <h2 className="text-xl font-bold">{editingId ? t("edit_travel_record") : t("new_travel_record")}</h2>
+  const filteredAndSortedLocations = [...travelLocations]
+    .filter((location) => {
+      if (locationTypeFilter === "all") return true
+      return location.locationType === locationTypeFilter
+    })
+    .sort((a, b) => {
+      if (sortOrder === "newest") {
+        return b.date.getTime() - a.date.getTime()
+      } else {
+        return a.date.getTime() - b.date.getTime()
+      }
+    })
 
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">{t("destination_label")}</label>
-          <Input
-            placeholder={t("destination_placeholder")}
-            value={formData.destination}
-            onChange={(e) => {
-              const newDestination = e.target.value
-              setFormData({ ...formData, destination: newDestination })
+  const groupedLocations = filteredAndSortedLocations.reduce(
+    (groups, location) => {
+      const type = location.locationType || "other"
+      if (!groups[type]) {
+        groups[type] = []
+      }
+      groups[type].push(location)
+      return groups
+    },
+    {} as Record<string, TravelLocation[]>,
+  )
 
-              if (newDestination.trim()) {
-                const coords = getCoordinates(newDestination)
-                if (coords) {
-                  setFormData((prev) => ({
-                    ...prev,
-                    destination: newDestination,
-                    latitude: coords.lat.toFixed(4),
-                    longitude: coords.lon.toFixed(4),
-                  }))
-                  console.log(
-                    `[v0] ${t("coordinates_calculated")}: ${newDestination} → ${t("latitude_label")} ${coords.lat.toFixed(4)}, ${t("longitude_label")} ${coords.lon.toFixed(4)}`,
-                  )
-                }
-              }
-            }}
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-emerald-700">📍 {t("latitude_label")}</label>
-            <Input
-              placeholder={t("auto_or_manual_input")}
-              value={formData.latitude}
-              onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
-              className="bg-emerald-100 border-emerald-300 font-mono text-emerald-900 font-semibold"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-emerald-700">📍 {t("longitude_label")}</label>
-            <Input
-              placeholder={t("auto_or_manual_input")}
-              value={formData.longitude}
-              onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
-              className="bg-emerald-100 border-emerald-300 font-mono text-emerald-900 font-semibold"
-            />
-          </div>
-        </div>
-
-        <Button
-          onClick={() => setIsSelectingLocation(!isSelectingLocation)}
-          variant={isSelectingLocation ? "default" : "outline"}
-          className={`w-full ${isSelectingLocation ? "bg-yellow-500 hover:bg-yellow-600 text-black" : ""}`}
-        >
-          {isSelectingLocation ? `✖️ ${t("select_location_cancel")}` : `🗺️ ${t("select_location_on_map")}`}
-        </Button>
-
-        {isSelectingLocation && (
-          <Card className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-400">
-            <div className="mb-4 bg-yellow-100 border-2 border-yellow-400 rounded-lg p-3">
-              <p className="text-sm font-semibold text-yellow-900 text-center">💡 {t("select_location_instruction")}</p>
-            </div>
-            <TravelMap
-              travels={[]}
-              onMarkerClick={() => {}}
-              clickMode={true}
-              language={language}
-              onMapClick={(lat: number, lon: number) => {
-                console.log("[v0] Location selected from map:", lat, lon)
-                setFormData({
-                  ...formData,
-                  latitude: lat.toFixed(4),
-                  longitude: lon.toFixed(4),
-                })
-                setIsSelectingLocation(false)
-                console.log("[v0] Form updated with coordinates, selection mode closed")
-                alert(
-                  `✅ ${t("location_selected_message")}\n📍 ${t("latitude_label")}: ${lat.toFixed(4)}, ${t("longitude_label")}: ${lon.toFixed(4)}`,
-                )
-              }}
-            />
-          </Card>
-        )}
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="block text-sm font-medium">{t("start_date_label")}</label>
-            <Input
-              type="date"
-              value={formData.startDate}
-              onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-              className="p-2 border rounded"
-              placeholder={t("startDate")}
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="block text-sm font-medium">{t("end_date_label")}</label>
-            <Input
-              type="date"
-              value={formData.endDate}
-              onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-              className="p-2 border rounded"
-              placeholder={t("endDate")}
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">{t("category_label")}</label>
-          <select
-            value={formData.category}
-            onChange={(e) => setFormData({ ...formData, category: e.target.value as any })}
-            className="w-full p-2 border rounded bg-white"
-          >
-            <option value="도시">🏙️ {t("city_category")}</option>
-            <option value="자연">🌿 {t("nature_category")}</option>
-            <option value="산">⛰️ {t("mountain_category")}</option>
-            <option value="바다">🌊 {t("sea_category")}</option>
-            <option value="유적지">🏛️ {t("historic_category")}</option>
-            <option value="맛집">🍽️ {t("restaurant_category")}</option>
-            <option value="카페">☕ {t("cafe_category")}</option>
-            <option value="기타">📌 {t("other_category")}</option>
-          </select>
-        </div>
-
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">💰 {t("travel_expense_label")}</label>
-          <Input
-            type="number"
-            placeholder={t("travel_expense_placeholder")}
-            value={formData.expense}
-            onChange={(e) => setFormData({ ...formData, expense: e.target.value })}
-            className="p-2 border rounded"
-          />
-          <p className="text-xs text-muted-foreground">💡 {t("expense_auto_save_notice")}</p>
-        </div>
-
-        <Textarea
-          placeholder={t("notes")}
-          value={formData.notes}
-          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-          rows={5}
-        />
-
-        <MediaTools
-          language={language}
-          attachments={formData.attachments || []}
-          onAttachmentsChange={handleAttachmentsChange}
-          onSave={(attachments) => handleSave(attachments)}
-          saving={saving}
-          onTextFromSpeech={handleTranscriptReceived}
-        />
-      </div>
-    )
+  const getLangCode = () => {
+    const langCodes = { ko: "ko-KR", en: "en-US", zh: "zh-CN", ja: "ja-JP" }
+    return langCodes[language]
   }
 
-  console.log("[v0] Rendering main list view with", travels.length, "travels")
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <Button variant="ghost" onClick={onBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> {t("title")}
-        </Button>
-        <Button
-          onClick={() => {
-            console.log("[v0] Add button clicked")
-            setIsAdding(true)
-          }}
-          className="bg-green-600 hover:bg-green-700"
-        >
-          <Plus className="mr-2 h-4 w-4" /> {t("add")} {t("travel")}
+    <div className="rounded-lg border bg-card p-6">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-xl font-semibold">{t("travelTitle")}</h2>
+        <Button onClick={() => setIsAdding(!isAdding)} size="sm">
+          <Plus className="mr-2 h-4 w-4" />
+          {t("addTravel")}
         </Button>
       </div>
 
-      <Card className="p-4 bg-gradient-to-br from-emerald-50 to-teal-50">
-        <h3 className="font-semibold mb-4 text-lg">🗺️ {t("travel_map")}</h3>
-        <TravelMap travels={travels} onMarkerClick={(travel) => setSelectedTravel(travel)} language={language} />
-      </Card>
-
-      <div className="grid gap-4">
-        {travels.map((travel) => (
-          <Card key={travel.id} className={`p-4 ${selectedTravel?.id === travel.id ? "ring-2 ring-emerald-500" : ""}`}>
-            <div className="flex justify-between items-start mb-2">
-              <div>
-                <h3 className="font-semibold text-lg">
-                  {travel.category === "도시" && "🏙️"}
-                  {travel.category === "자연" && "🌿"}
-                  {travel.category === "산" && "⛰️"}
-                  {travel.category === "바다" && "🌊"}
-                  {travel.category === "유적지" && "🏛️"}
-                  {travel.category === "맛집" && "🍽️"}
-                  {travel.category === "카페" && "☕"}
-                  {(!travel.category || travel.category === "기타") && "📍"} {travel.destination}
-                </h3>
-                {travel.category && (
-                  <span className="text-xs text-gray-500">
-                    {travel.category === "도시" && t("city_category")}
-                    {travel.category === "자연" && t("nature_category")}
-                    {travel.category === "산" && t("mountain_category")}
-                    {travel.category === "바다" && t("sea_category")}
-                    {travel.category === "유적지" && t("historic_category")}
-                    {travel.category === "맛집" && t("restaurant_category")}
-                    {travel.category === "카페" && t("cafe_category")}
-                    {travel.category === "기타" && t("other_category")}
-                  </span>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <Button size="sm" variant="ghost" onClick={() => handleEdit(travel)}>
-                  <Pencil className="w-4 h-4" />
-                </Button>
-                <Button size="sm" variant="ghost" onClick={() => handleDelete(travel.id)}>
-                  <Trash2 className="w-4 h-4 text-red-500" />
-                </Button>
+      {isAdding && (
+        <div className="mb-6 space-y-4 rounded-lg border bg-muted/50 p-4">
+          <div className="space-y-2">
+            <Label htmlFor="location-name">{t("locationName")}</Label>
+            <Input
+              id="location-name"
+              value={newLocation.name}
+              onChange={(e) => setNewLocation({ ...newLocation, name: e.target.value })}
+              placeholder={
+                language === "ko"
+                  ? "예: 서울, 파리, 도쿄"
+                  : language === "en"
+                    ? "e.g., Seoul, Paris, Tokyo"
+                    : language === "zh"
+                      ? "例如：首尔、巴黎、东京"
+                      : "例：ソウル、パリ、東京"
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="travel-date">{t("travelDate")}</Label>
+            <Input
+              id="travel-date"
+              type="date"
+              lang={getLangCode()}
+              value={newLocation.travelDate}
+              onChange={(e) => setNewLocation({ ...newLocation, travelDate: e.target.value })}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="location-type">{t("locationType")}</Label>
+            <select
+              id="location-type"
+              value={newLocation.locationType}
+              onChange={(e) => setNewLocation({ ...newLocation, locationType: e.target.value })}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              <option value="">{t("selectLocationType")}</option>
+              <option value="city">{t("typeCity")}</option>
+              <option value="nature">{t("typeNature")}</option>
+              <option value="beach">{t("typeBeach")}</option>
+              <option value="mountain">{t("typeMountain")}</option>
+              <option value="historical">{t("typeHistorical")}</option>
+              <option value="themePark">{t("typeThemePark")}</option>
+              <option value="cafe">{t("typeCafe")}</option>
+              <option value="restaurant">{t("typeRestaurant")}</option>
+              <option value="other">{t("typeOther")}</option>
+            </select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="location-notes">{t("travelNotes")}</Label>
+            <Textarea
+              id="location-notes"
+              value={newLocation.notes}
+              onChange={(e) => setNewLocation({ ...newLocation, notes: e.target.value })}
+              placeholder={t("travelNotes")}
+              rows={4}
+            />
+          </div>
+          {existingAttachments.length > 0 && (
+            <div className="space-y-2">
+              <Label>{t("existingAttachments")}</Label>
+              <div className="flex flex-wrap gap-2">
+                {existingAttachments.map((file, index) => (
+                  <div key={index} className="flex items-center gap-2 rounded-md border bg-background px-3 py-2">
+                    <ImageIcon className="h-4 w-4" />
+                    <span className="text-sm">{file.name}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-5 w-5 p-0"
+                      onClick={() => handleRemoveExistingAttachment(index)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
               </div>
             </div>
-
-            <p className="text-sm text-muted-foreground mb-2">
-              📅 {travel.startDate} ~ {travel.endDate}
-            </p>
-
-            {travel.latitude && travel.longitude && (
-              <p className="text-xs text-emerald-600 mb-2">
-                📍 {t("latitude_label")}: {Number(travel.latitude).toFixed(4)}, {t("longitude_label")}:{" "}
-                {Number(travel.longitude).toFixed(4)}
-              </p>
-            )}
-
-            {travel.expense && travel.expense > 0 && (
-              <p className="text-sm font-semibold text-blue-600 mb-2">
-                💰 {t("travel_expense_with_unit")}: {travel.expense.toLocaleString()}원
-              </p>
-            )}
-
-            {travel.notes && <p className="text-sm mt-2">{travel.notes}</p>}
-
-            {travel.attachments && travel.attachments.length > 0 && (
-              <div className="mt-4 space-y-2">
-                <p className="text-sm font-medium">
-                  {t("attachments_count_label")} ({travel.attachments.length}개)
-                </p>
-                <div className="grid grid-cols-2 gap-2">
-                  {travel.attachments.map((file: any, idx: number) => {
-                    const isImage =
-                      file.type?.startsWith("image/") ||
-                      file.type === "image" ||
-                      file.type === "drawing" ||
-                      file.name?.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)
-                    const isVideo =
-                      file.type?.startsWith("video/") ||
-                      file.type === "video" ||
-                      file.name?.match(/\.(mp4|webm|mov|avi)$/i)
-                    const isAudio =
-                      file.type?.startsWith("audio/") ||
-                      file.type === "audio" ||
-                      file.name?.match(/\.(mp3|wav|ogg|m4a)$/i)
-
-                    if (isImage) {
-                      return (
-                        <div
-                          key={idx}
-                          className="relative border rounded overflow-hidden cursor-pointer hover:ring-2 hover:ring-emerald-500 transition-all"
-                          onClick={() => setSelectedImage(file.url || file.data)}
-                        >
-                          <img
-                            src={file.url || file.data}
-                            alt={file.name || t("attachments_count_label")}
-                            className="w-full h-32 object-cover"
-                            onError={(e) => {
-                              e.currentTarget.src = "/placeholder.svg?height=128&width=128"
-                            }}
-                          />
-                        </div>
-                      )
-                    }
-                    if (isVideo) {
-                      return (
-                        <div key={idx} className="border rounded overflow-hidden">
-                          <video src={file.url || file.data} controls playsInline className="w-full h-32 bg-black" />
-                        </div>
-                      )
-                    }
-                    if (isAudio) {
-                      return (
-                        <div key={idx} className="flex items-center justify-center h-20 bg-gray-100 border rounded">
-                          <audio src={file.url || file.data} controls className="w-full px-2" />
-                        </div>
-                      )
-                    }
-                    return (
-                      <div key={idx} className="flex items-center justify-center h-20 bg-gray-200 border rounded p-2">
-                        <p className="text-xs text-gray-600 text-center truncate">{file.name || t("file")}</p>
-                      </div>
-                    )
-                  })}
-                </div>
+          )}
+          {attachedFiles.length > 0 && (
+            <div className="space-y-2">
+              <Label>{t("attachedFiles")}</Label>
+              <div className="flex flex-wrap gap-2">
+                {attachedFiles.map((file, index) => (
+                  <div key={index} className="flex items-center gap-2 rounded-md border bg-background px-3 py-2">
+                    <ImageIcon className="h-4 w-4" />
+                    <span className="text-sm">{file.name}</span>
+                    <Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={() => handleRemoveFile(index)}>
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
               </div>
-            )}
-          </Card>
-        ))}
-
-        {travels.length === 0 && (
-          <Card className="p-8 text-center text-muted-foreground">
-            <p>{t("no_travel_records")}</p>
-            <p className="text-sm mt-2">{t("add_first_travel")}</p>
-          </Card>
-        )}
-      </div>
-
-      {selectedImage && (
-        <div
-          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
-          onClick={() => setSelectedImage(null)}
-        >
-          <div className="relative max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center">
-            <img
-              src={selectedImage || "/placeholder.svg"}
-              alt={t("close_image")}
-              className="max-w-full max-h-full object-contain"
-              onClick={(e) => e.stopPropagation()}
+            </div>
+          )}
+          <div className="flex flex-wrap gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*,video/*"
+              className="hidden"
+              onChange={handleFileAttach}
             />
-            <button
-              onClick={() => setSelectedImage(null)}
-              className="absolute top-4 right-4 bg-white/90 hover:bg-white text-black font-bold py-2 px-4 rounded-full shadow-lg"
+            <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+              <Paperclip className="mr-2 h-4 w-4" />
+              {t("attachFile")}
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setIsHandwritingOpen(true)}>
+              <PenTool className="mr-2 h-4 w-4" />
+              {t("handwriting")}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleVoiceInput}
+              className={isRecording ? "bg-red-500 text-white hover:bg-red-600" : ""}
             >
-              ✕ {t("close")}
-            </button>
+              <Mic className="mr-2 h-4 w-4" />
+              {isRecording ? t("recording") : t("voiceInput")}
+            </Button>
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={editingId ? handleUpdate : handleAddLocation}>
+              {editingId ? t("update") : t("save")}
+            </Button>
+            <Button variant="outline" onClick={handleCancel}>
+              {t("cancel")}
+            </Button>
           </div>
         </div>
       )}
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-3">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <h3 className="font-medium">{t("locationList")}</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSortOrder(sortOrder === "newest" ? "oldest" : "newest")}
+                className="gap-2"
+              >
+                <ArrowUpDown className="h-4 w-4" />
+                <span className="text-xs">{sortOrder === "newest" ? t("sortNewest") : t("sortOldest")}</span>
+              </Button>
+            </div>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="type-filter" className="text-sm whitespace-nowrap">
+                {t("filterByType")}:
+              </Label>
+              <select
+                id="type-filter"
+                value={locationTypeFilter}
+                onChange={(e) => setLocationTypeFilter(e.target.value)}
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="all">{t("allTypes")}</option>
+                <option value="city">{t("typeCity")}</option>
+                <option value="nature">{t("typeNature")}</option>
+                <option value="beach">{t("typeBeach")}</option>
+                <option value="mountain">{t("typeMountain")}</option>
+                <option value="historical">{t("typeHistorical")}</option>
+                <option value="themePark">{t("typeThemePark")}</option>
+                <option value="cafe">{t("typeCafe")}</option>
+                <option value="restaurant">{t("typeRestaurant")}</option>
+                <option value="other">{t("typeOther")}</option>
+              </select>
+            </div>
+          </div>
+          {filteredAndSortedLocations.length === 0 ? (
+            <p className="text-center text-muted-foreground">{t("noTravelLocations")}</p>
+          ) : (
+            filteredAndSortedLocations.map((location) => (
+              <div key={location.id} className="rounded-lg border bg-card p-3 space-y-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <MapPinIcon className="h-4 w-4 text-red-500 flex-shrink-0" />
+                      <h4 className="font-medium">{location.name}</h4>
+                    </div>
+                    {location.travelDate && (
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {t("travelDate")}: {location.travelDate}
+                      </p>
+                    )}
+                    {location.locationType && (
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {t("locationType")}:{" "}
+                        {t(`type${location.locationType.charAt(0).toUpperCase() + location.locationType.slice(1)}`)}
+                      </p>
+                    )}
+                    <p className="mt-1 text-sm text-muted-foreground">{location.notes}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{location.date.toLocaleDateString()}</p>
+                  </div>
+                  <div className="flex gap-2 flex-shrink-0">
+                    <Button variant="ghost" size="sm" onClick={() => handleEdit(location)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleDelete(location.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                {location.attachments && location.attachments.length > 0 && (
+                  <AttachmentList attachments={location.attachments as UploadedFile[]} compact />
+                )}
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="rounded-lg border bg-muted/30 p-4">
+          <h3 className="mb-3 font-medium">{t("map")}</h3>
+          {mapLoaded ? (
+            <TravelMap locations={filteredAndSortedLocations} />
+          ) : (
+            <div className="flex h-64 items-center justify-center">
+              <p className="text-muted-foreground">{t("loading")}</p>
+            </div>
+          )}
+        </div>
+      </div>
+      <HandwritingCanvas
+        isOpen={isHandwritingOpen}
+        onClose={() => setIsHandwritingOpen(false)}
+        onSave={handleHandwritingSave}
+      />
     </div>
   )
+}
+
+function TravelMap({ locations }: { locations: TravelLocation[] }) {
+  const [map, setMap] = useState<any>(null)
+  const [L, setL] = useState<any>(null)
+  const markersRef = useRef<any[]>([])
+
+  useEffect(() => {
+    import("leaflet").then((leaflet) => {
+      setL(leaflet.default)
+    })
+  }, [])
+
+  useEffect(() => {
+    if (!L || map) return
+
+    const mapInstance = L.map("travel-map").setView([37.5665, 126.978], 2)
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(mapInstance)
+
+    setMap(mapInstance)
+
+    return () => {
+      markersRef.current.forEach((marker) => {
+        try {
+          mapInstance.removeLayer(marker)
+        } catch (e) {
+          // Ignore errors during cleanup
+        }
+      })
+      markersRef.current = []
+      mapInstance.remove()
+    }
+  }, [L])
+
+  useEffect(() => {
+    if (!map || !L || locations.length === 0) return
+
+    markersRef.current.forEach((marker) => {
+      try {
+        map.removeLayer(marker)
+      } catch (e) {
+        // Ignore errors if marker is already removed
+      }
+    })
+    markersRef.current = []
+
+    const bounds: any[] = []
+    locations.forEach((location) => {
+      const redIcon = L.icon({
+        iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
+        shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41],
+      })
+
+      const marker = L.marker([location.lat, location.lng], { icon: redIcon }).addTo(map)
+      markersRef.current.push(marker)
+
+      const popupContent = `
+        <div style="min-width: 150px;">
+          <b>${location.name}</b><br>
+          ${location.travelDate ? `<small>날짜: ${location.travelDate}</small><br>` : ""}
+          ${location.notes ? `<small>메모: ${location.notes}</small>` : ""}
+        </div>
+      `
+      marker.bindPopup(popupContent)
+      bounds.push([location.lat, location.lng])
+    })
+
+    if (bounds.length > 0) {
+      map.fitBounds(bounds, { padding: [50, 50] })
+    }
+  }, [map, L, locations])
+
+  return <div id="travel-map" className="h-64 w-full rounded-md" />
 }

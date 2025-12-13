@@ -1,383 +1,656 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, FileText, BookOpen, Calendar, Plane, Car, Heart, TrendingUp, Wallet, Activity } from "lucide-react"
-import { useAuth } from "@/lib/auth-context"
+import { useLanguage } from "@/lib/language-context"
 import {
-  loadNotes,
-  loadDiaries,
-  loadSchedules,
-  loadTravelRecords,
-  loadVehicleRecords,
-  loadHealthRecords,
-  loadBudgetTransactions,
-  loadMedications,
-} from "@/lib/storage"
-import { getTranslation } from "@/lib/i18n"
-import type { Language } from "@/lib/types"
-import {
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts"
+  BarChart3,
+  TrendingUp,
+  Calendar,
+  MapPin,
+  BookOpen,
+  FileText,
+  CheckCircle2,
+  Car,
+  Wrench,
+  Heart,
+  Pill,
+} from "lucide-react"
+import type {
+  ScheduleEvent, // Schedule에서 ScheduleEvent로 변경
+  Note,
+  DiaryEntry,
+  TravelLocation,
+  Vehicle,
+  VehicleMaintenance,
+  HealthRecord,
+  Medication,
+} from "@/components/personal-organizer-app"
 
-export function StatisticsSection({ onBack, language }: { onBack: () => void; language: string }) {
-  const { user } = useAuth()
-  const [stats, setStats] = useState({
-    notes: 0,
-    diaries: 0,
-    schedules: 0,
-    travels: 0,
-    vehicles: 0,
-    health: 0,
-    total: 0,
+type StatisticsSectionProps = {
+  schedules: ScheduleEvent[] // Schedule[]에서 ScheduleEvent[]로 변경
+  notes: Note[]
+  diaries: DiaryEntry[]
+  travelLocations: TravelLocation[]
+  vehicles: Vehicle[]
+  vehicleMaintenance: VehicleMaintenance[]
+  healthRecords: HealthRecord[]
+  medications: Medication[]
+}
+
+export function StatisticsSection({
+  schedules,
+  notes,
+  diaries,
+  travelLocations,
+  vehicles,
+  vehicleMaintenance,
+  healthRecords,
+  medications,
+}: StatisticsSectionProps) {
+  const { t } = useLanguage()
+
+  // Calculate statistics
+  const totalSchedules = schedules.length
+  const completedSchedules = schedules.filter((s) => s.completed).length
+  const pendingSchedules = totalSchedules - completedSchedules
+  const completionRate = totalSchedules > 0 ? Math.round((completedSchedules / totalSchedules) * 100) : 0
+
+  const totalNotes = notes.length
+  const lockedNotes = notes.filter((n) => n.isLocked).length
+
+  const totalDiaries = diaries.length
+  const lockedDiaries = diaries.filter((d) => d.isLocked).length
+
+  // Count mood emojis
+  const moodCounts: { [key: string]: number } = {}
+  diaries.forEach((d) => {
+    if (d.moodEmoji) {
+      moodCounts[d.moodEmoji] = (moodCounts[d.moodEmoji] || 0) + 1
+    }
   })
-  const [monthlyActivity, setMonthlyActivity] = useState<any[]>([])
-  const [budgetSummary, setBudgetSummary] = useState({ income: 0, expense: 0, balance: 0 })
-  const [healthTrends, setHealthTrends] = useState<any[]>([])
-  const [categoryDistribution, setCategoryDistribution] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const topMoods = Object.entries(moodCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
 
-  useEffect(() => {
-    loadAllStats()
-  }, [user])
-
-  const loadAllStats = async () => {
-    setLoading(true)
-    try {
-      if (!user?.id) {
-        return
-      }
-
-      const [notes, diaries, schedules, travels, vehicles, health, budgetTransactions, medications] = await Promise.all(
-        [
-          loadNotes(user.id),
-          loadDiaries(user.id),
-          loadSchedules(user.id),
-          loadTravelRecords(user.id),
-          loadVehicleRecords(user.id),
-          loadHealthRecords(user.id),
-          loadBudgetTransactions(user.id),
-          loadMedications(user.id),
-        ],
-      )
-
-      const total = notes.length + diaries.length + schedules.length + travels.length + vehicles.length + health.length
-
-      setStats({
-        notes: notes.length,
-        diaries: diaries.length,
-        schedules: schedules.length,
-        travels: travels.length,
-        vehicles: vehicles.length,
-        health: health.length,
-        total,
-      })
-
-      const monthlyData = calculateMonthlyActivity(notes, diaries, schedules)
-      setMonthlyActivity(monthlyData)
-
-      const now = new Date()
-      const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
-      const currentMonthTransactions = budgetTransactions.filter((t: any) => t.date.startsWith(currentMonth))
-
-      const income = currentMonthTransactions
-        .filter((t: any) => t.type === "income")
-        .reduce((sum: number, t: any) => sum + t.amount, 0)
-
-      const expense = currentMonthTransactions
-        .filter((t: any) => t.type === "expense")
-        .reduce((sum: number, t: any) => sum + t.amount, 0)
-
-      setBudgetSummary({ income, expense, balance: income - expense })
-
-      const healthData = calculateHealthTrends(health)
-      setHealthTrends(healthData)
-
-      const CHART_COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ec4899", "#8b5cf6", "#ef4444"]
-
-      const distribution = [
-        { name: getText("notes"), value: notes.length, fill: CHART_COLORS[0] },
-        { name: getText("diary"), value: diaries.length, fill: CHART_COLORS[1] },
-        { name: getText("schedule"), value: schedules.length, fill: CHART_COLORS[2] },
-        { name: getText("travel"), value: travels.length, fill: CHART_COLORS[3] },
-        { name: getText("vehicle"), value: vehicles.length, fill: CHART_COLORS[4] },
-        { name: getText("health"), value: health.length, fill: CHART_COLORS[5] },
-      ].filter((item) => item.value > 0)
-
-      setCategoryDistribution(distribution)
-    } catch (err) {
-      console.error("[v0] Error loading statistics:", err)
-    } finally {
-      setLoading(false)
+  // Count weather emojis
+  const weatherCounts: { [key: string]: number } = {}
+  diaries.forEach((d) => {
+    if (d.weatherEmoji) {
+      weatherCounts[d.weatherEmoji] = (weatherCounts[d.weatherEmoji] || 0) + 1
     }
-  }
+  })
+  const topWeather = Object.entries(weatherCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
 
-  const calculateMonthlyActivity = (notes: any[], diaries: any[], schedules: any[]) => {
-    const months = []
-    const now = new Date()
+  const totalTravelLocations = travelLocations.length
 
-    for (let i = 5; i >= 0; i--) {
-      const date = new Date(now.getFullYear(), now.getMonth() - i, 1)
-      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`
-      const monthName = date.toLocaleDateString(language === "ko" ? "ko-KR" : "en-US", { month: "short" })
-
-      const notesCount = notes.filter((n: any) => n.createdAt?.startsWith(monthKey)).length
-      const diariesCount = diaries.filter((d: any) => d.createdAt?.startsWith(monthKey)).length
-      const schedulesCount = schedules.filter((s: any) => s.date?.startsWith(monthKey)).length
-
-      months.push({
-        month: monthName,
-        notes: notesCount,
-        diaries: diariesCount,
-        schedules: schedulesCount,
-        total: notesCount + diariesCount + schedulesCount,
-      })
+  // Count travel location types
+  const locationTypeCounts: { [key: string]: number } = {}
+  travelLocations.forEach((loc) => {
+    if (loc.locationType) {
+      locationTypeCounts[loc.locationType] = (locationTypeCounts[loc.locationType] || 0) + 1
     }
+  })
+  const topLocationTypes = Object.entries(locationTypeCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
 
-    return months
-  }
-
-  const calculateHealthTrends = (health: any[]) => {
-    const trends: { [key: string]: { weight?: number; steps?: number; date: string } } = {}
-
-    health.forEach((record: any) => {
-      const date = record.date
-      if (!trends[date]) {
-        trends[date] = { date }
-      }
-      if (record.weight) trends[date].weight = record.weight
-      if (record.steps) trends[date].steps = record.steps
-    })
-
-    return Object.values(trends)
-      .slice(-30)
-      .sort((a, b) => a.date.localeCompare(b.date))
-  }
-
-  const lang = language as Language
-
-  const getText = (key: string) => {
-    const translations: { [key: string]: { [lang in Language]: string } } = {
-      notes: { ko: "노트", en: "Notes", zh: "笔记", ja: "ノート" },
-      diary: { ko: "일기", en: "Diary", zh: "日记", ja: "日記" },
-      schedule: { ko: "일정", en: "Schedule", zh: "日程", ja: "スケジュール" },
-      travel: { ko: "여행", en: "Travel", zh: "旅行", ja: "旅行" },
-      vehicle: { ko: "차량", en: "Vehicle", zh: "车辆", ja: "車両" },
-      health: { ko: "건강", en: "Health", zh: "健康", ja: "健康" },
-      monthlyActivity: { ko: "월별 활동", en: "Monthly Activity", zh: "月度活动", ja: "月別活動" },
-      budgetThisMonth: { ko: "이번 달 가계부", en: "This Month's Budget", zh: "本月预算", ja: "今月の予算" },
-      income: { ko: "수입", en: "Income", zh: "收入", ja: "収入" },
-      expense: { ko: "지출", en: "Expense", zh: "支出", ja: "支出" },
-      balance: { ko: "잔액", en: "Balance", zh: "余额", ja: "残高" },
-      healthTrends: { ko: "건강 추이", en: "Health Trends", zh: "健康趋势", ja: "健康トレンド" },
-      categoryDistribution: { ko: "카테고리 분포", en: "Category Distribution", zh: "类别分布", ja: "カテゴリー分布" },
-      weight: { ko: "체중", en: "Weight", zh: "体重", ja: "体重" },
-      steps: { ko: "걸음수", en: "Steps", zh: "步数", ja: "歩数" },
-      total_records: { ko: "전체 기록", en: "Total Records", zh: "总记录", ja: "総記録" },
-      precious_memories: { ko: "귀중한 추억", en: "Precious Memories", zh: "珍贵的回忆", ja: "貴重な思い出" },
-      loading_stats: {
-        ko: "통계 로딩 중...",
-        en: "Loading Statistics...",
-        zh: "加载统计中...",
-        ja: "統計を読み込んでいます...",
-      },
+  // Get location type translation
+  const getLocationTypeTranslation = (type: string) => {
+    const typeMap: { [key: string]: string } = {
+      city: t("typeCity"),
+      nature: t("typeNature"),
+      beach: t("typeBeach"),
+      mountain: t("typeMountain"),
+      historical: t("typeHistorical"),
+      themePark: t("typeThemePark"),
+      cafe: t("typeCafe"),
+      restaurant: t("typeRestaurant"),
+      other: t("typeOther"),
     }
-    return translations[key]?.[lang] || getTranslation(lang, key)
+    return typeMap[type] || type
   }
 
-  const statCards = [
-    { icon: FileText, label: getText("notes"), count: stats.notes, color: "bg-emerald-500" },
-    { icon: BookOpen, label: getText("diary"), count: stats.diaries, color: "bg-green-500" },
-    { icon: Calendar, label: getText("schedule"), count: stats.schedules, color: "bg-teal-500" },
-    { icon: Plane, label: getText("travel"), count: stats.travels, color: "bg-cyan-500" },
-    { icon: Car, label: getText("vehicle"), count: stats.vehicles, color: "bg-blue-500" },
-    { icon: Heart, label: getText("health"), count: stats.health, color: "bg-rose-500" },
-  ]
+  // Calculate this month's activity
+  const now = new Date()
+  const thisMonth = now.getMonth()
+  const thisYear = now.getFullYear()
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat(language === "ko" ? "ko-KR" : "en-US", {
-      style: "currency",
-      currency: language === "ko" ? "KRW" : "USD",
-      minimumFractionDigits: 0,
-    }).format(amount)
+  const thisMonthDiaries = diaries.filter((d) => {
+    const date = new Date(d.date)
+    return date.getMonth() === thisMonth && date.getFullYear() === thisYear
+  }).length
+
+  const thisMonthNotes = notes.filter((n) => {
+    const date = new Date(n.createdAt)
+    return date.getMonth() === thisMonth && date.getFullYear() === thisYear
+  }).length
+
+  const thisMonthSchedules = schedules.filter((s) => {
+    const date = new Date(s.date)
+    return date.getMonth() === thisMonth && date.getFullYear() === thisYear
+  }).length
+
+  const thisMonthTravel = travelLocations.filter((t) => {
+    const date = new Date(t.date)
+    return date.getMonth() === thisMonth && date.getFullYear() === thisYear
+  }).length
+
+  const thisMonthMaintenance = vehicleMaintenance.filter((m) => {
+    const date = new Date(m.date)
+    return date.getMonth() === thisMonth && date.getFullYear() === thisYear
+  }).length
+
+  // Health statistics calculations
+  const totalHealthRecords = healthRecords.length
+  const totalMedications = medications.length
+
+  // Calculate active medications (within start and end date)
+  const today = new Date().toISOString().split("T")[0]
+  const activeMedications = medications.filter((m) => {
+    const isAfterStart = !m.startDate || m.startDate <= today
+    const isBeforeEnd = !m.endDate || m.endDate >= today
+    return isAfterStart && isBeforeEnd
+  }).length
+
+  // Calculate this month's health activity
+  const thisMonthHealthRecords = healthRecords.filter((h) => {
+    const date = new Date(h.date)
+    return date.getMonth() === thisMonth && date.getFullYear() === thisYear
+  }).length
+
+  // Calculate average health metrics (last 30 days)
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+  const recentHealthRecords = healthRecords.filter((h) => new Date(h.date) >= thirtyDaysAgo)
+
+  const avgBloodPressureSystolic =
+    recentHealthRecords.filter((h) => h.bloodPressureSystolic).length > 0
+      ? Math.round(
+          recentHealthRecords.reduce((sum, h) => sum + (h.bloodPressureSystolic || 0), 0) /
+            recentHealthRecords.filter((h) => h.bloodPressureSystolic).length,
+        )
+      : null
+
+  const avgBloodPressureDiastolic =
+    recentHealthRecords.filter((h) => h.bloodPressureDiastolic).length > 0
+      ? Math.round(
+          recentHealthRecords.reduce((sum, h) => sum + (h.bloodPressureDiastolic || 0), 0) /
+            recentHealthRecords.filter((h) => h.bloodPressureDiastolic).length,
+        )
+      : null
+
+  const avgBloodSugar =
+    recentHealthRecords.filter((h) => h.bloodSugar).length > 0
+      ? Math.round(
+          recentHealthRecords.reduce((sum, h) => sum + (h.bloodSugar || 0), 0) /
+            recentHealthRecords.filter((h) => h.bloodSugar).length,
+        )
+      : null
+
+  const avgPulse =
+    recentHealthRecords.filter((h) => h.pulse).length > 0
+      ? Math.round(
+          recentHealthRecords.reduce((sum, h) => sum + (h.pulse || 0), 0) /
+            recentHealthRecords.filter((h) => h.pulse).length,
+        )
+      : null
+
+  // Vehicle statistics calculations
+  const totalVehicles = vehicles.length
+  const totalMaintenanceRecords = vehicleMaintenance.length
+  const totalMaintenanceCost = vehicleMaintenance.reduce((sum, m) => sum + (m.cost || 0), 0)
+
+  // Count maintenance by category
+  const maintenanceCategoryCounts: { [key: string]: number } = {}
+  const maintenanceCategoryCosts: { [key: string]: number } = {}
+  vehicleMaintenance.forEach((m) => {
+    if (m.category) {
+      maintenanceCategoryCounts[m.category] = (maintenanceCategoryCounts[m.category] || 0) + 1
+      maintenanceCategoryCosts[m.category] = (maintenanceCategoryCosts[m.category] || 0) + (m.cost || 0)
+    }
+  })
+  const topMaintenanceCategories = Object.entries(maintenanceCategoryCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+
+  // Get upcoming maintenance (next service date within 30 days)
+  const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
+  const upcomingMaintenance = vehicleMaintenance.filter((m) => {
+    if (!m.next_service_date) return false
+    const nextDate = new Date(m.next_service_date)
+    return nextDate >= now && nextDate <= thirtyDaysFromNow
+  })
+
+  // Get category translation
+  const getCategoryTranslation = (category: string) => {
+    const categoryMap: { [key: string]: string } = {
+      engine: t("categoryEngine"),
+      transmission: t("categoryTransmission"),
+      brakes: t("categoryBrakes"),
+      tires: t("categoryTires"),
+      battery: t("categoryBattery"),
+      oilChange: t("categoryOilChange"),
+      filters: t("categoryFilters"),
+      suspension: t("categorySuspension"),
+      electrical: t("categoryElectrical"),
+      bodyPaint: t("categoryBodyPaint"),
+      interior: t("categoryInterior"),
+      other: t("categoryOther"),
+    }
+    return categoryMap[category] || category
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-6">
-      <Button variant="ghost" onClick={onBack}>
-        <ArrowLeft className="mr-2 h-4 w-4" /> {getTranslation(lang, "back_to_forest")}
-      </Button>
+    <div className="space-y-6 rounded-lg border bg-card p-6 shadow-lg">
+      <div className="flex items-center gap-2">
+        <BarChart3 className="h-6 w-6 text-primary" />
+        <h2 className="text-2xl font-bold">{t("statistics")}</h2>
+      </div>
 
-      <Card className="p-6 bg-card">
-        <h2 className="text-2xl font-bold mb-6">{getTranslation(lang, "statistics")}</h2>
-
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent" />
-            <p className="mt-4 text-muted-foreground">{getTranslation(lang, "loading_stats")}</p>
+      {/* Overview Statistics */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="rounded-full bg-blue-100 p-3 dark:bg-blue-900">
+              <Calendar className="h-5 w-5 text-blue-600 dark:text-blue-300" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">{t("schedule")}</p>
+              <p className="text-2xl font-bold">{totalSchedules}</p>
+            </div>
           </div>
-        ) : (
-          <div className="space-y-6">
-            {/* Total */}
-            <Card className="p-6 bg-gradient-to-br from-emerald-500 to-green-600 text-white">
-              <div className="text-center">
-                <p className="text-sm font-medium opacity-90">{getTranslation(lang, "total_records")}</p>
-                <p className="text-5xl font-bold mt-2">{stats.total}</p>
-                <p className="text-sm mt-2 opacity-75">{getTranslation(lang, "precious_memories")}</p>
-              </div>
-            </Card>
+        </Card>
 
-            {/* Category Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {statCards.map((stat) => (
-                <Card key={stat.label} className="p-4 bg-card">
-                  <div className="flex items-center gap-3">
-                    <div className={`${stat.color} p-3 rounded-lg text-white`}>
-                      <stat.icon className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">{stat.label}</p>
-                      <p className="text-2xl font-bold">{stat.count}</p>
-                    </div>
+        <Card className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="rounded-full bg-green-100 p-3 dark:bg-green-900">
+              <FileText className="h-5 w-5 text-green-600 dark:text-green-300" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">{t("notes")}</p>
+              <p className="text-2xl font-bold">{totalNotes}</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="rounded-full bg-purple-100 p-3 dark:bg-purple-900">
+              <BookOpen className="h-5 w-5 text-purple-600 dark:text-purple-300" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">{t("diary")}</p>
+              <p className="text-2xl font-bold">{totalDiaries}</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="rounded-full bg-orange-100 p-3 dark:bg-orange-900">
+              <MapPin className="h-5 w-5 text-orange-600 dark:text-orange-300" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">{t("travel")}</p>
+              <p className="text-2xl font-bold">{totalTravelLocations}</p>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Vehicle Overview Statistics */}
+      {totalVehicles > 0 && (
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="rounded-full bg-cyan-100 p-3 dark:bg-cyan-900">
+                <Car className="h-5 w-5 text-cyan-600 dark:text-cyan-300" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">{t("vehicle")}</p>
+                <p className="text-2xl font-bold">{totalVehicles}</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="rounded-full bg-amber-100 p-3 dark:bg-amber-900">
+                <Wrench className="h-5 w-5 text-amber-600 dark:text-amber-300" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">{t("maintenanceHistory")}</p>
+                <p className="text-2xl font-bold">{totalMaintenanceRecords}</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Health Overview Statistics */}
+      {(totalHealthRecords > 0 || totalMedications > 0) && (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="rounded-full bg-rose-100 p-3 dark:bg-rose-900">
+                <Heart className="h-5 w-5 text-rose-600 dark:text-rose-300" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">{t("healthRecords")}</p>
+                <p className="text-2xl font-bold">{totalHealthRecords}</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="rounded-full bg-indigo-100 p-3 dark:bg-indigo-900">
+                <Pill className="h-5 w-5 text-indigo-600 dark:text-indigo-300" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">{t("totalMedications")}</p>
+                <p className="text-2xl font-bold">{totalMedications}</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="rounded-full bg-emerald-100 p-3 dark:bg-emerald-900">
+                <Pill className="h-5 w-5 text-emerald-600 dark:text-emerald-300" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">{t("activeMedications")}</p>
+                <p className="text-2xl font-bold">{activeMedications}</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Schedule Completion */}
+      <Card className="p-4">
+        <h3 className="mb-3 flex items-center gap-2 font-semibold">
+          <CheckCircle2 className="h-5 w-5 text-green-600" />
+          {t("scheduleCompletion")}
+        </h3>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <span>{t("completed")}</span>
+            <span className="font-semibold text-green-600">
+              {completedSchedules} / {totalSchedules}
+            </span>
+          </div>
+          <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+            <div className="h-full bg-green-600 transition-all" style={{ width: `${completionRate}%` }} />
+          </div>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">{t("completionRate")}</span>
+            <span className="font-semibold">{completionRate}%</span>
+          </div>
+        </div>
+      </Card>
+
+      {/* This Month Activity */}
+      <Card className="p-4">
+        <h3 className="mb-3 flex items-center gap-2 font-semibold">
+          <TrendingUp className="h-5 w-5 text-blue-600" />
+          {t("thisMonthActivity")}
+        </h3>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+          <div className="rounded-lg bg-muted/50 p-3">
+            <p className="text-xs text-muted-foreground">{t("diary")}</p>
+            <p className="text-xl font-bold">{thisMonthDiaries}</p>
+          </div>
+          <div className="rounded-lg bg-muted/50 p-3">
+            <p className="text-xs text-muted-foreground">{t("notes")}</p>
+            <p className="text-xl font-bold">{thisMonthNotes}</p>
+          </div>
+          <div className="rounded-lg bg-muted/50 p-3">
+            <p className="text-xs text-muted-foreground">{t("schedule")}</p>
+            <p className="text-xl font-bold">{thisMonthSchedules}</p>
+          </div>
+          <div className="rounded-lg bg-muted/50 p-3">
+            <p className="text-xs text-muted-foreground">{t("travel")}</p>
+            <p className="text-xl font-bold">{thisMonthTravel}</p>
+          </div>
+          <div className="rounded-lg bg-muted/50 p-3">
+            <p className="text-xs text-muted-foreground">{t("maintenanceHistory")}</p>
+            <p className="text-xl font-bold">{thisMonthMaintenance}</p>
+          </div>
+          {/* Health records to this month activity */}
+          <div className="rounded-lg bg-muted/50 p-3">
+            <p className="text-xs text-muted-foreground">{t("healthRecords")}</p>
+            <p className="text-xl font-bold">{thisMonthHealthRecords}</p>
+          </div>
+        </div>
+      </Card>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* Top Moods */}
+        {topMoods.length > 0 && (
+          <Card className="p-4">
+            <h3 className="mb-3 font-semibold">{t("topMoods")}</h3>
+            <div className="space-y-2">
+              {topMoods.map(([emoji, count], index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">{emoji}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {count} {t("times")}
+                    </span>
                   </div>
-                </Card>
+                  <div className="h-2 w-24 overflow-hidden rounded-full bg-muted">
+                    <div
+                      className="h-full bg-purple-600 transition-all"
+                      style={{ width: `${(count / totalDiaries) * 100}%` }}
+                    />
+                  </div>
+                </div>
               ))}
             </div>
+          </Card>
+        )}
 
-            {/* Monthly Activity Chart */}
-            {monthlyActivity.length > 0 && (
-              <Card className="p-6 bg-card">
-                <div className="flex items-center gap-2 mb-4">
-                  <TrendingUp className="h-5 w-5 text-emerald-600" />
-                  <h3 className="text-lg font-semibold">{getText("monthlyActivity")}</h3>
+        {/* Top Weather */}
+        {topWeather.length > 0 && (
+          <Card className="p-4">
+            <h3 className="mb-3 font-semibold">{t("topWeather")}</h3>
+            <div className="space-y-2">
+              {topWeather.map(([emoji, count], index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">{emoji}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {count} {t("times")}
+                    </span>
+                  </div>
+                  <div className="h-2 w-24 overflow-hidden rounded-full bg-muted">
+                    <div
+                      className="h-full bg-blue-600 transition-all"
+                      style={{ width: `${(count / totalDiaries) * 100}%` }}
+                    />
+                  </div>
                 </div>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={monthlyActivity}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="notes" fill="#10b981" name={getText("notes")} />
-                    <Bar dataKey="diaries" fill="#22c55e" name={getText("diary")} />
-                    <Bar dataKey="schedules" fill="#14b8a6" name={getText("schedule")} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </Card>
-            )}
+              ))}
+            </div>
+          </Card>
+        )}
 
-            {/* Budget Summary */}
-            <Card className="p-6 bg-card">
-              <div className="flex items-center gap-2 mb-4">
-                <Wallet className="h-5 w-5 text-blue-600" />
-                <h3 className="text-lg font-semibold">{getText("budgetThisMonth")}</h3>
+        {/* Top Location Types */}
+        {topLocationTypes.length > 0 && (
+          <Card className="p-4">
+            <h3 className="mb-3 font-semibold">{t("topLocationTypes")}</h3>
+            <div className="space-y-2">
+              {topLocationTypes.map(([type, count], index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">{getLocationTypeTranslation(type)}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {count} {t("times")}
+                    </span>
+                  </div>
+                  <div className="h-2 w-24 overflow-hidden rounded-full bg-muted">
+                    <div
+                      className="h-full bg-orange-600 transition-all"
+                      style={{ width: `${(count / totalTravelLocations) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
+        {/* Vehicle Maintenance Statistics */}
+        {totalMaintenanceRecords > 0 && (
+          <>
+            {/* Top Maintenance Categories */}
+            <Card className="p-4">
+              <h3 className="mb-3 font-semibold">{t("topMaintenanceCategories")}</h3>
+              <div className="space-y-2">
+                {topMaintenanceCategories.map(([category, count], index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">{getCategoryTranslation(category)}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {count} {t("times")}
+                      </span>
+                    </div>
+                    <div className="h-2 w-24 overflow-hidden rounded-full bg-muted">
+                      <div
+                        className="h-full bg-cyan-600 transition-all"
+                        style={{ width: `${(count / totalMaintenanceRecords) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-1">{getText("income")}</p>
-                  <p className="text-xl md:text-2xl font-bold text-green-600 break-words">
-                    {formatCurrency(budgetSummary.income)}
-                  </p>
+            </Card>
+
+            {/* Total Maintenance Cost */}
+            <Card className="p-4">
+              <h3 className="mb-3 font-semibold">{t("totalMaintenanceCost")}</h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">{t("totalCost")}</span>
+                  <span className="text-2xl font-bold">
+                    {totalMaintenanceCost.toLocaleString()} {t("currency")}
+                  </span>
                 </div>
-                <div className="text-center p-4 bg-red-50 dark:bg-red-950/20 rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-1">{getText("expense")}</p>
-                  <p className="text-xl md:text-2xl font-bold text-red-600 break-words">
-                    {formatCurrency(budgetSummary.expense)}
-                  </p>
-                </div>
-                <div className="text-center p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-1">{getText("balance")}</p>
-                  <p
-                    className={`text-xl md:text-2xl font-bold break-words ${budgetSummary.balance >= 0 ? "text-blue-600" : "text-red-600"}`}
-                  >
-                    {formatCurrency(budgetSummary.balance)}
-                  </p>
+                <div className="space-y-2">
+                  {Object.entries(maintenanceCategoryCosts)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 5)
+                    .map(([category, cost], index) => (
+                      <div key={index} className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">{getCategoryTranslation(category)}</span>
+                        <span className="font-semibold">
+                          {cost.toLocaleString()} {t("currency")}
+                        </span>
+                      </div>
+                    ))}
                 </div>
               </div>
             </Card>
 
-            {/* Health Trends */}
-            {healthTrends.length > 0 && (healthTrends.some((d) => d.weight) || healthTrends.some((d) => d.steps)) && (
-              <Card className="p-6 bg-card">
-                <div className="flex items-center gap-2 mb-4">
-                  <Activity className="h-5 w-5 text-rose-600" />
-                  <h3 className="text-lg font-semibold">{getText("healthTrends")}</h3>
-                </div>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={healthTrends}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" tickFormatter={(date) => date.split("-")[2]} />
-                    <YAxis yAxisId="left" />
-                    <YAxis yAxisId="right" orientation="right" />
-                    <Tooltip />
-                    <Legend />
-                    {healthTrends.some((d) => d.weight) && (
-                      <Line yAxisId="left" type="monotone" dataKey="weight" stroke="#f43f5e" name={getText("weight")} />
-                    )}
-                    {healthTrends.some((d) => d.steps) && (
-                      <Line yAxisId="right" type="monotone" dataKey="steps" stroke="#3b82f6" name={getText("steps")} />
-                    )}
-                  </LineChart>
-                </ResponsiveContainer>
-              </Card>
-            )}
-
-            {/* Category Distribution */}
-            {categoryDistribution.length > 0 && (
-              <Card className="p-6 bg-card">
-                <h3 className="text-lg font-semibold mb-4">{getText("categoryDistribution")}</h3>
-                <ResponsiveContainer width="100%" height={450}>
-                  <PieChart>
-                    <Pie
-                      data={categoryDistribution}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
-                      outerRadius={90}
-                      innerRadius={0}
-                      dataKey="value"
-                    >
-                      {categoryDistribution.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} stroke="#fff" strokeWidth={2} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-6">
-                  {categoryDistribution.map((entry, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center gap-2 px-4 py-3 rounded-lg border-2"
-                      style={{ borderColor: entry.fill, backgroundColor: `${entry.fill}15` }}
-                    >
-                      <div className="w-5 h-5 rounded-full flex-shrink-0" style={{ backgroundColor: entry.fill }} />
-                      <div className="flex-1 min-w-0">
-                        <span className="text-sm font-semibold block truncate">{entry.name}</span>
-                        <span className="text-xs text-muted-foreground">{entry.value}개</span>
+            {/* Upcoming Maintenance */}
+            {upcomingMaintenance.length > 0 && (
+              <Card className="p-4 md:col-span-2">
+                <h3 className="mb-3 font-semibold">{t("upcomingMaintenanceAlert")}</h3>
+                <div className="space-y-2">
+                  {upcomingMaintenance.slice(0, 5).map((maintenance, index) => {
+                    const vehicle = vehicles.find((v) => v.id === maintenance.vehicle_id)
+                    return (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between rounded-lg bg-amber-50 p-3 dark:bg-amber-950"
+                      >
+                        <div>
+                          <p className="font-medium">{vehicle?.name || t("vehicle")}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {getCategoryTranslation(maintenance.category)}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium">
+                            {maintenance.next_service_date
+                              ? new Date(maintenance.next_service_date).toLocaleDateString()
+                              : ""}
+                          </p>
+                          {maintenance.next_service_mileage && (
+                            <p className="text-xs text-muted-foreground">
+                              {maintenance.next_service_mileage.toLocaleString()} km
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </Card>
             )}
-          </div>
+          </>
         )}
-      </Card>
+
+        {/* Health Statistics */}
+        {recentHealthRecords.length > 0 && (
+          <Card className="p-4 md:col-span-2">
+            <h3 className="mb-3 font-semibold">{t("recentHealthTrends")}</h3>
+            <p className="mb-3 text-xs text-muted-foreground">{t("last30DaysAverage")}</p>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {avgBloodPressureSystolic && avgBloodPressureDiastolic && (
+                <div className="rounded-lg bg-muted/50 p-3">
+                  <p className="text-xs text-muted-foreground">{t("averageBloodPressure")}</p>
+                  <p className="text-lg font-bold">
+                    {avgBloodPressureSystolic}/{avgBloodPressureDiastolic}
+                  </p>
+                  <p className="text-xs text-muted-foreground">mmHg</p>
+                </div>
+              )}
+              {avgBloodSugar && (
+                <div className="rounded-lg bg-muted/50 p-3">
+                  <p className="text-xs text-muted-foreground">{t("averageBloodSugar")}</p>
+                  <p className="text-lg font-bold">{avgBloodSugar}</p>
+                  <p className="text-xs text-muted-foreground">mg/dL</p>
+                </div>
+              )}
+              {avgPulse && (
+                <div className="rounded-lg bg-muted/50 p-3">
+                  <p className="text-xs text-muted-foreground">{t("averagePulse")}</p>
+                  <p className="text-lg font-bold">{avgPulse}</p>
+                  <p className="text-xs text-muted-foreground">bpm</p>
+                </div>
+              )}
+              <div className="rounded-lg bg-muted/50 p-3">
+                <p className="text-xs text-muted-foreground">{t("activeMedications")}</p>
+                <p className="text-lg font-bold">{activeMedications}</p>
+                <p className="text-xs text-muted-foreground">{t("medications")}</p>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Privacy Statistics */}
+        <Card className="p-4">
+          <h3 className="mb-3 font-semibold">{t("privacyStats")}</h3>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">{t("lockedNotes")}</span>
+              <span className="font-semibold">
+                {lockedNotes} / {totalNotes}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">{t("lockedDiaries")}</span>
+              <span className="font-semibold">
+                {lockedDiaries} / {totalDiaries}
+              </span>
+            </div>
+          </div>
+        </Card>
+      </div>
     </div>
   )
 }
