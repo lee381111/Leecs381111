@@ -221,12 +221,30 @@ export function MediaTools({
 
     const video = cameraVideoRef.current
     const canvas = document.createElement("canvas")
-    canvas.width = video.videoWidth
-    canvas.height = video.videoHeight
+
+    const videoWidth = video.videoWidth
+    const videoHeight = video.videoHeight
+
+    // Always save in landscape (width > height)
+    if (videoHeight > videoWidth) {
+      canvas.width = videoHeight
+      canvas.height = videoWidth
+    } else {
+      canvas.width = videoWidth
+      canvas.height = videoHeight
+    }
+
     const ctx = canvas.getContext("2d")
 
     if (ctx) {
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+      if (videoHeight > videoWidth) {
+        // Rotate 90 degrees for portrait video
+        ctx.translate(canvas.width / 2, canvas.height / 2)
+        ctx.rotate(Math.PI / 2)
+        ctx.drawImage(video, -videoWidth / 2, -videoHeight / 2, videoWidth, videoHeight)
+      } else {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+      }
     }
 
     if (cameraStreamRef.current) {
@@ -241,7 +259,6 @@ export function MediaTools({
         type: "image",
         name: `photo_${Date.now()}.jpg`,
         data: dataUrl,
-        url: dataUrl,
       },
     ])
   }
@@ -641,7 +658,7 @@ export function MediaTools({
       )}
 
       {isCameraPreviewOpen && (
-        <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center">
+        <div className="fixed inset-0 bg-black z-50 flex flex-col items-center justify-center">
           <video
             ref={cameraVideoRef}
             autoPlay
@@ -656,7 +673,7 @@ export function MediaTools({
               size="lg"
               className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg"
             >
-              {t("capture")}
+              {t("shoot")}
             </Button>
             <Button
               onClick={closeCameraPreview}

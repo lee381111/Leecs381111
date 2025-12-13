@@ -20,6 +20,7 @@ type TranslationKey =
   | "krw_unit"
   | "file_upload"
   | "take_photo"
+  | "shoot" // Added shoot translation key for camera capture button
   | "ocr_camera"
   | "ocr_upload"
   | "handwriting"
@@ -95,6 +96,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
 
     file_upload: "파일 업로드",
     take_photo: "사진 촬영",
+    shoot: "촬영", // Added Korean translation for shoot button
     ocr_camera: "촬영→텍스트",
     ocr_upload: "이미지→텍스트",
     handwriting: "손글씨",
@@ -957,15 +959,16 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     back_to_forest: "Back to Forest",
     email: "Email",
 
-    year: "",
-    month: "",
+    year: "Year",
+    month: "Month",
 
     steps_unit: "steps",
-    krw_unit: "$",
+    krw_unit: "KRW",
 
     file_upload: "Upload File",
     take_photo: "Take Photo",
-    ocr_camera: "Capture→Text",
+    shoot: "Capture", // Added English translation for shoot button
+    ocr_camera: "Camera→Text",
     ocr_upload: "Image→Text",
     handwriting: "Handwriting",
     speech_to_text: "Speech→Text",
@@ -1837,10 +1840,11 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     month: "月",
 
     steps_unit: "歩",
-    krw_unit: "円",
+    krw_unit: "₩",
 
     file_upload: "ファイルアップロード",
     take_photo: "写真撮影",
+    shoot: "撮影", // Added Japanese translation for shoot button
     ocr_camera: "撮影→テキスト",
     ocr_upload: "画像→テキスト",
     handwriting: "手書き",
@@ -2404,7 +2408,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
 
   zh: {
     // Common
-    title: "记录之森",
+    title: "记录森林",
     loading: "加载中...",
     saving: "保存中...",
     save: "保存",
@@ -2423,12 +2427,13 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     month: "月",
 
     steps_unit: "步",
-    krw_unit: "元",
+    krw_unit: "₩",
 
     file_upload: "上传文件",
     take_photo: "拍照",
-    ocr_camera: "拍摄→文本",
-    ocr_upload: "图像→文本",
+    shoot: "拍摄", // Added Chinese translation for shoot button
+    ocr_camera: "拍照→文本",
+    ocr_upload: "图片→文本",
     handwriting: "手写",
     speech_to_text: "语音→文本",
     speech_recognition: "语音识别中",
