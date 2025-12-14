@@ -4,7 +4,7 @@ import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Camera, Mic, Video, Trash2, Save, PenTool, X, MessageSquare, FileImage, Upload } from "lucide-react"
+import { Camera, Mic, Video, Trash2, Save, PenTool, X, FileImage, Upload } from "lucide-react"
 import type { Attachment } from "@/lib/types"
 import { getTranslation } from "@/lib/i18n"
 
@@ -385,114 +385,6 @@ export function MediaTools({
     setLastPos(null)
   }
 
-  const startSpeechRecognition = () => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-
-    if (!SpeechRecognition) {
-      alert(t("speech_recognition_not_supported"))
-      return
-    }
-
-    try {
-      const recognition = new SpeechRecognition()
-      const languageMap: Record<string, string> = {
-        ko: "ko-KR",
-        en: "en-US",
-        zh: "zh-CN",
-        ja: "ja-JP",
-      }
-      recognition.lang = languageMap[language] || "en-US"
-      recognition.continuous = false
-      recognition.interimResults = true
-      recognition.maxAlternatives = 1
-
-      recognition.onstart = () => {
-        console.log("[v0] Speech recognition started")
-        setIsRecognizing(true)
-        setRecognizedText("")
-      }
-
-      recognition.onresult = (event: any) => {
-        let finalTranscript = ""
-        let interimTranscript = ""
-
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcript = event.results[i][0].transcript
-          if (event.results[i].isFinal) {
-            finalTranscript += transcript + " "
-          } else {
-            interimTranscript += transcript
-          }
-        }
-
-        if (finalTranscript) {
-          const currentText = recognizedText + finalTranscript
-          setRecognizedText(currentText)
-          console.log("[v0] Final transcript:", finalTranscript)
-        } else if (interimTranscript) {
-          setRecognizedText(recognizedText + interimTranscript)
-          console.log("[v0] Interim transcript:", interimTranscript)
-        }
-      }
-
-      recognition.onerror = (event: any) => {
-        console.error("[v0] Speech recognition error:", event.error)
-        if (event.error === "no-speech") {
-          console.log("[v0] No speech detected, restarting...")
-          if (isRecognizing) {
-            setTimeout(() => {
-              if (recognitionRef.current) {
-                recognitionRef.current.start()
-              }
-            }, 100)
-          }
-        } else if (event.error === "not-allowed") {
-          alert(t("mic_permission_required"))
-          setIsRecognizing(false)
-        } else if (event.error === "aborted") {
-          console.log("[v0] Recognition aborted")
-        } else {
-          setIsRecognizing(false)
-        }
-      }
-
-      recognition.onend = () => {
-        console.log("[v0] Speech recognition ended")
-        if (isRecognizing && recognitionRef.current) {
-          console.log("[v0] Auto-restarting recognition...")
-          setTimeout(() => {
-            if (recognitionRef.current && isRecognizing) {
-              recognitionRef.current.start()
-            }
-          }, 100)
-        }
-      }
-
-      recognition.start()
-      recognitionRef.current = recognition
-    } catch (error) {
-      console.error("[v0] Speech recognition error:", error)
-      alert(t("speech_recognition_failed") + ": " + (error as Error).message)
-      setIsRecognizing(false)
-    }
-  }
-
-  const stopSpeechRecognition = () => {
-    setIsRecognizing(false)
-
-    if (recognitionRef.current) {
-      recognitionRef.current.stop()
-      recognitionRef.current = null
-    }
-
-    if (recognizedText.trim() && onTextFromSpeech) {
-      console.log("[v0] Applying recognized text:", recognizedText)
-      onTextFromSpeech(recognizedText.trim())
-    }
-
-    setRecognizedText("")
-  }
-
   const openOCRCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -742,26 +634,6 @@ export function MediaTools({
         </div>
       )}
 
-      {isRecognizing && (
-        <Card className="p-4 bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-blue-600 rounded-full animate-pulse" />
-              <p className="text-sm font-medium text-blue-600 dark:text-blue-400">{t("speech_recognition")}</p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={stopSpeechRecognition}
-              className="text-blue-600 hover:text-blue-700 dark:text-blue-400 bg-transparent"
-            >
-              {t("stop_recognition")}
-            </Button>
-          </div>
-          {recognizedText && <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{recognizedText}</p>}
-        </Card>
-      )}
-
       {isRecordingVideo && (
         <div className="space-y-2 bg-red-50 p-4 rounded-lg border-2 border-red-500">
           <div className="flex items-center justify-between">
@@ -780,7 +652,7 @@ export function MediaTools({
         </div>
       )}
 
-      {!isRecordingVideo && !isRecognizing && !isOCRCameraOpen && !isProcessingOCR && !isCameraPreviewOpen && (
+      {!isRecordingVideo && !isOCRCameraOpen && !isProcessingOCR && !isCameraPreviewOpen && (
         <div className="flex flex-wrap gap-2">
           {!hideFileUpload && (
             <>
@@ -815,12 +687,6 @@ export function MediaTools({
             <PenTool className="h-4 w-4 mr-2" />
             {t("handwriting")}
           </Button>
-          {onTextFromSpeech && (
-            <Button variant="outline" size="sm" onClick={startSpeechRecognition}>
-              <MessageSquare className="h-4 w-4 mr-2" />
-              {t("speech_to_text")}
-            </Button>
-          )}
           {isRecordingAudio ? (
             <Button
               variant="destructive"
