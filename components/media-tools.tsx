@@ -4,7 +4,7 @@ import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Camera, Mic, Video, Trash2, Save, PenTool, X, MessageSquare, FileImage } from "lucide-react"
+import { Camera, Mic, Video, Trash2, Save, PenTool, X, MessageSquare, FileImage, Upload } from "lucide-react"
 import type { Attachment } from "@/lib/types"
 import { getTranslation } from "@/lib/i18n"
 
@@ -627,6 +627,52 @@ export function MediaTools({
     reader.readAsDataURL(file)
   }
 
+  const handleDirectFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) {
+      alert("파일이 선택되지 않았습니다.")
+      return
+    }
+
+    alert(`파일 선택됨: ${files.length}개`)
+
+    const filePromises = Array.from(files).map((file) => {
+      return new Promise<Attachment>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = (event) => {
+          const newAttachment: Attachment = {
+            id: Date.now() + Math.random(),
+            name: file.name,
+            type: file.type.startsWith("image/")
+              ? "image"
+              : file.type.startsWith("video/")
+                ? "video"
+                : file.type.startsWith("audio/")
+                  ? "audio"
+                  : "other",
+            url: event.target?.result as string,
+            size: file.size,
+          }
+          resolve(newAttachment)
+        }
+        reader.onerror = () => reject(new Error(`Failed to read file: ${file.name}`))
+        reader.readAsDataURL(file)
+      })
+    })
+
+    Promise.all(filePromises)
+      .then((newAttachments) => {
+        const updated = [...attachments, ...newAttachments]
+        onAttachmentsChange(updated)
+        alert(`${newAttachments.length}개의 파일이 첨부되었습니다!`)
+        e.target.value = ""
+      })
+      .catch((error) => {
+        console.error("File upload error:", error)
+        alert("파일 업로드 중 오류가 발생했습니다.")
+      })
+  }
+
   return (
     <Card className="p-4 space-y-4">
       {isProcessingOCR && (
@@ -775,6 +821,22 @@ export function MediaTools({
           <Button variant="outline" size="sm" onClick={startVideoRecording}>
             <Video className="h-4 w-4 mr-2" />
             {t("video_recording")}
+          </Button>
+          <input
+            type="file"
+            id="media-tools-file-upload"
+            multiple
+            accept="image/*,video/*,audio/*"
+            className="hidden"
+            onChange={handleDirectFileUpload}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => document.getElementById("media-tools-file-upload")?.click()}
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            {t("file_upload")}
           </Button>
         </div>
       )}
