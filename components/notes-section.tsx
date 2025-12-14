@@ -1,13 +1,11 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, Plus, Search, Trash2, Edit2, Save, Tag, Eye, Share2, Sparkles, Upload } from "lucide-react"
+import { ArrowLeft, Plus, Search, Trash2, Edit2, Save, Tag, Eye, Share2, Sparkles } from "lucide-react"
 import { saveNotes, loadNotes } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import { getTranslation } from "@/lib/i18n"
@@ -372,54 +370,6 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
     setFormData({ ...formData, attachments })
   }
 
-  const handleDirectFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-
-    alert(`파일 선택됨: ${files?.length || 0}개`)
-
-    if (!files || files.length === 0) {
-      alert("파일이 선택되지 않았습니다")
-      return
-    }
-
-    console.log("[v0] Direct file upload - files selected:", files.length)
-
-    const filePromises = Array.from(files).map((file) => {
-      return new Promise<Attachment>((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onload = () => {
-          const newAttachment: Attachment = {
-            name: file.name,
-            type: file.type.startsWith("image/") ? "image" : file.type.startsWith("video/") ? "video" : "file",
-            url: reader.result as string,
-          }
-          console.log("[v0] File loaded:", file.name)
-          resolve(newAttachment)
-        }
-        reader.onerror = () => {
-          console.error("[v0] File read error:", file.name)
-          reject(new Error(`Failed to read ${file.name}`))
-        }
-        reader.readAsDataURL(file)
-      })
-    })
-
-    Promise.all(filePromises)
-      .then((newAttachments) => {
-        console.log("[v0] All files processed:", newAttachments.length)
-        const updatedAttachments = [...(formData.attachments || []), ...newAttachments]
-        setFormData({ ...formData, attachments: updatedAttachments })
-        alert(`✓ ${newAttachments.length}개의 파일이 첨부되었습니다!`)
-      })
-      .catch((error) => {
-        console.error("[v0] File processing error:", error)
-        alert("파일 처리 중 오류가 발생했습니다")
-      })
-
-    // Reset input
-    e.target.value = ""
-  }
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -571,24 +521,6 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
             value={formData.tags}
             onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
           />
-
-          <input
-            type="file"
-            id="notes-file-upload"
-            multiple
-            accept="image/*,video/*"
-            className="hidden"
-            onChange={handleDirectFileUpload}
-          />
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => document.getElementById("notes-file-upload")?.click()}
-          >
-            <Upload className="mr-2 h-4 w-4" />
-            {t("file_upload")}
-          </Button>
 
           <MediaTools
             language={language}

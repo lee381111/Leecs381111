@@ -22,15 +22,17 @@ interface MediaToolsProps {
   saving?: boolean
   onTextFromSpeech?: (text: string) => void
   language?: string // Added language prop
+  hideFileUpload?: boolean // Added prop to hide file upload button
 }
 
 export function MediaTools({
   attachments = [],
   onAttachmentsChange,
   onSave,
-  saving,
+  saving = false,
   onTextFromSpeech,
-  language = "ko", // Default to Korean
+  language,
+  hideFileUpload = false, // Destructure hideFileUpload prop
 }: MediaToolsProps) {
   const [isRecordingAudio, setIsRecordingAudio] = useState(false)
   const [isRecordingVideo, setIsRecordingVideo] = useState(false)
@@ -780,6 +782,22 @@ export function MediaTools({
 
       {!isRecordingVideo && !isRecognizing && !isOCRCameraOpen && !isProcessingOCR && !isCameraPreviewOpen && (
         <div className="flex flex-wrap gap-2">
+          {!hideFileUpload && (
+            <>
+              <input
+                type="file"
+                id="media-file-upload"
+                multiple
+                accept="image/*,video/*"
+                className="hidden"
+                onChange={handleDirectFileUpload}
+              />
+              <Button variant="outline" size="sm" onClick={() => document.getElementById("media-file-upload")?.click()}>
+                <Upload className="h-4 w-4 mr-2" />
+                {t("file_upload")}
+              </Button>
+            </>
+          )}
           <Button variant="outline" size="sm" onClick={openCameraPreview}>
             <Camera className="h-4 w-4 mr-2" />
             {t("take_photo")}
@@ -821,22 +839,6 @@ export function MediaTools({
           <Button variant="outline" size="sm" onClick={startVideoRecording}>
             <Video className="h-4 w-4 mr-2" />
             {t("video_recording")}
-          </Button>
-          <input
-            type="file"
-            id="media-tools-file-upload"
-            multiple
-            accept="image/*,video/*,audio/*"
-            className="hidden"
-            onChange={handleDirectFileUpload}
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => document.getElementById("media-tools-file-upload")?.click()}
-          >
-            <Upload className="h-4 w-4 mr-2" />
-            {t("file_upload")}
           </Button>
         </div>
       )}
