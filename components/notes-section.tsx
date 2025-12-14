@@ -572,32 +572,30 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
             onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
           />
 
-          <div className="flex gap-2 items-center">
-            <input
-              type="file"
-              id="notes-file-upload"
-              multiple
-              accept="image/*,video/*"
-              className="hidden"
-              onChange={handleDirectFileUpload}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => document.getElementById("notes-file-upload")?.click()}
-            >
-              <Upload className="mr-2 h-4 w-4" />
-              {t("file_upload")}
-            </Button>
+          <input
+            type="file"
+            id="notes-file-upload"
+            multiple
+            accept="image/*,video/*"
+            className="hidden"
+            onChange={handleDirectFileUpload}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => document.getElementById("notes-file-upload")?.click()}
+          >
+            <Upload className="mr-2 h-4 w-4" />
+            {t("file_upload")}
+          </Button>
 
-            <MediaTools
-              language={language}
-              attachments={formData.attachments || []}
-              onAttachmentsChange={handleAttachmentsChange}
-              onTextFromSpeech={handleTextFromSpeech}
-            />
-          </div>
+          <MediaTools
+            language={language}
+            attachments={formData.attachments || []}
+            onAttachmentsChange={handleAttachmentsChange}
+            onTextFromSpeech={handleTextFromSpeech}
+          />
 
           {formData.attachments && formData.attachments.length > 0 && (
             <div className="mt-4 space-y-2">
