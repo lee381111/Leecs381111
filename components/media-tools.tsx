@@ -798,6 +798,7 @@ export function MediaTools({
               </Button>
             </>
           )}
+          <input type="file" id="ocr-file-upload" accept="image/*" className="hidden" onChange={handleOCRFileUpload} />
           <Button variant="outline" size="sm" onClick={openCameraPreview}>
             <Camera className="h-4 w-4 mr-2" />
             {t("take_photo")}
