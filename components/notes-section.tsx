@@ -359,6 +359,11 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
     return matchesSearch && matchesTag
   })
 
+  const handleAttachmentsChange = (newAttachments: Attachment[]) => {
+    console.log("[v0] Notes attachments updated:", newAttachments.length)
+    setAttachments(newAttachments)
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -513,7 +518,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
           <MediaTools
             language={language}
             attachments={attachments}
-            onAttachmentsChange={setAttachments}
+            onAttachmentsChange={handleAttachmentsChange}
             onTextFromSpeech={handleTextFromSpeech}
           />
 
