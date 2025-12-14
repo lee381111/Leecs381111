@@ -56,7 +56,10 @@ export function MediaTools({
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
-    if (files.length === 0) return
+    if (files.length === 0) {
+      console.log("[v0] No files selected")
+      return
+    }
 
     console.log("[v0] File upload started, processing", files.length, "file(s)")
 
@@ -70,21 +73,36 @@ export function MediaTools({
             data: reader.result as string,
             url: reader.result as string,
           }
-          console.log("[v0] File loaded:", file.name)
+          console.log("[v0] File loaded:", file.name, "Type:", file.type)
           resolve(newAttachment)
+        }
+        reader.onerror = () => {
+          console.error("[v0] Failed to read file:", file.name)
+          resolve({
+            type: file.type,
+            name: file.name,
+            data: "",
+            url: "",
+          })
         }
         reader.readAsDataURL(file)
       })
     })
 
     Promise.all(filePromises).then((newAttachments) => {
+      const validAttachments = newAttachments.filter((att) => att.data !== "")
       console.log(
-        "[v0] All files loaded, adding to attachments. Current:",
+        "[v0] All files loaded. Current count:",
         attachments.length,
-        "New:",
-        newAttachments.length,
+        "Adding:",
+        validAttachments.length,
+        "Total will be:",
+        attachments.length + validAttachments.length,
       )
-      onAttachmentsChange([...attachments, ...newAttachments])
+      const updated = [...attachments, ...validAttachments]
+      console.log("[v0] Calling onAttachmentsChange with", updated.length, "attachments")
+      onAttachmentsChange(updated)
+      console.log("[v0] onAttachmentsChange called successfully")
       e.target.value = ""
     })
   }
@@ -778,7 +796,27 @@ export function MediaTools({
             onChange={handleFileUpload}
           />
           <input type="file" id="ocr-file-upload" accept="image/*" className="hidden" onChange={handleOCRFileUpload} />
-          <Button variant="outline" size="sm" onClick={() => document.getElementById("file-upload")?.click()}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              console.log("[v0] File upload button clicked")
+              console.log("[v0] Current states:", {
+                isRecordingVideo,
+                isRecognizing,
+                isOCRCameraOpen,
+                isProcessingOCR,
+                isCameraPreviewOpen,
+              })
+              const input = document.getElementById("file-upload")
+              if (input) {
+                console.log("[v0] Input element found, triggering click")
+                input.click()
+              } else {
+                console.error("[v0] Input element not found!")
+              }
+            }}
+          >
             <ImageIcon className="h-4 w-4 mr-2" />
             {t("file_upload")}
           </Button>
