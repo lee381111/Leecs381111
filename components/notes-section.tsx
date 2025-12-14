@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, Plus, Search, Trash2, Edit2, Save, Tag, Eye, Share2, Sparkles } from "lucide-react"
+import { ArrowLeft, Plus, Search, Trash2, Edit2, Save, Tag, Eye, Share2, Sparkles, Upload } from "lucide-react"
 import { saveNotes, loadNotes } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import { getTranslation } from "@/lib/i18n"
@@ -572,6 +572,13 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
             onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
           />
 
+          <MediaTools
+            language={language}
+            attachments={formData.attachments || []}
+            onAttachmentsChange={handleAttachmentsChange}
+            onTextFromSpeech={handleTextFromSpeech}
+          />
+
           <div className="flex gap-2">
             <input
               type="file"
@@ -584,19 +591,13 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
             <Button
               type="button"
               variant="outline"
+              size="sm"
               onClick={() => document.getElementById("notes-file-upload")?.click()}
-              className="flex-1"
             >
-              📎 {language === "ko" ? "파일 첨부" : "Attach Files"}
+              <Upload className="mr-2 h-4 w-4" />
+              {t("file_upload")}
             </Button>
           </div>
-
-          <MediaTools
-            language={language}
-            attachments={formData.attachments || []}
-            onAttachmentsChange={handleAttachmentsChange}
-            onTextFromSpeech={handleTextFromSpeech}
-          />
 
           {formData.attachments && formData.attachments.length > 0 && (
             <div className="mt-4 space-y-2">
