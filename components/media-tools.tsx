@@ -58,17 +58,18 @@ export function MediaTools({
     const files = Array.from(e.target.files || [])
 
     if (files.length === 0) {
-      console.log("[v0] No files selected")
+      alert(t("no_files_selected") || "파일이 선택되지 않았습니다")
       return
     }
 
-    console.log("[v0] Processing", files.length, "files for upload")
+    alert(`${files.length}개의 파일을 처리 중입니다...`)
 
     const newAttachments: Attachment[] = []
     let filesProcessed = 0
 
-    files.forEach((file) => {
+    files.forEach((file, index) => {
       const reader = new FileReader()
+
       reader.onload = () => {
         const newAttachment: Attachment = {
           type: file.type,
@@ -79,30 +80,26 @@ export function MediaTools({
         newAttachments.push(newAttachment)
         filesProcessed++
 
-        console.log("[v0] File processed:", file.name, "Total processed:", filesProcessed, "/", files.length)
-
-        // When all files are processed, update state once
         if (filesProcessed === files.length) {
-          const updatedAttachments = [...attachments, ...newAttachments]
-          console.log("[v0] All files processed. Total attachments:", updatedAttachments.length)
-          onAttachmentsChange(updatedAttachments)
+          onAttachmentsChange((prev) => [...prev, ...newAttachments])
+          alert(`✓ ${newAttachments.length}개의 파일이 첨부되었습니다!`)
         }
       }
-      reader.onerror = () => {
-        console.error("[v0] Error reading file:", file.name)
+
+      reader.onerror = (error) => {
+        console.error("[v0] Error reading file:", file.name, error)
+        alert(`⚠ ${file.name} 파일 읽기 실패`)
         filesProcessed++
 
-        // Continue even if one file fails
         if (filesProcessed === files.length && newAttachments.length > 0) {
-          const updatedAttachments = [...attachments, ...newAttachments]
-          console.log("[v0] Files processed with errors. Total attachments:", updatedAttachments.length)
-          onAttachmentsChange(updatedAttachments)
+          onAttachmentsChange((prev) => [...prev, ...newAttachments])
+          alert(`✓ ${newAttachments.length}개의 파일이 첨부되었습니다 (일부 실패)`)
         }
       }
+
       reader.readAsDataURL(file)
     })
 
-    // Reset input to allow selecting the same file again
     e.target.value = ""
   }
 
@@ -260,7 +257,6 @@ export function MediaTools({
     const videoWidth = video.videoWidth
     const videoHeight = video.videoHeight
 
-    // Always save in landscape (width > height)
     if (videoHeight > videoWidth) {
       canvas.width = videoHeight
       canvas.height = videoWidth
@@ -273,7 +269,6 @@ export function MediaTools({
 
     if (ctx) {
       if (videoHeight > videoWidth) {
-        // Rotate 90 degrees for portrait video
         ctx.translate(canvas.width / 2, canvas.height / 2)
         ctx.rotate(Math.PI / 2)
         ctx.drawImage(video, -videoWidth / 2, -videoHeight / 2, videoWidth, videoHeight)
