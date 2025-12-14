@@ -85,6 +85,7 @@ export function MediaTools({
         newAttachments.length,
       )
       onAttachmentsChange([...attachments, ...newAttachments])
+      e.target.value = ""
     })
   }
 
