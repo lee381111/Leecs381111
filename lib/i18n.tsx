@@ -46,7 +46,6 @@ type TranslationKey =
   | "speech_recognition_not_supported"
   | "mic_permission_required"
   | "speech_recognition_failed"
-  | "no_files_selected"
   | "notes"
   | "diary"
   | "schedule"
@@ -836,7 +835,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     speech_recognition_not_supported: "브라우저가 음성 인식을 지원하지 않습니다",
     mic_permission_required: "마이크 권한이 필요합니다",
     speech_recognition_failed: "음성 인식에 실패했습니다",
-    no_files_selected: "파일이 선택되지 않았습니다",
 
     // Sections
     notes: "노트",
@@ -873,6 +871,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     content_required_for_summary: "요약할 내용을 입력해주세요",
     note_summarized_success: "노트가 요약되었습니다!",
     note_summary_failed: "노트 요약에 실패했습니다",
+    summary_result: "요약 결과",
     replace_with_summary: "요약본으로 교체",
     add_summary_below: "아래에 추가",
     translate_note: "AI 번역",
@@ -1708,7 +1707,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     speech_recognition_not_supported: "Browser does not support speech recognition",
     mic_permission_required: "Microphone permission required",
     speech_recognition_failed: "Speech recognition failed",
-    no_files_selected: "No files selected",
 
     // Sections
     notes: "Notes",
@@ -2588,7 +2586,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     speech_recognition_not_supported: "ブラウザが音声認識をサポートしていません",
     mic_permission_required: "マイクの権限が必要です",
     speech_recognition_failed: "音声認識に失敗しました",
-    no_files_selected: "ファイルが選択されていません",
 
     // Sections
     notes: "ノート",
@@ -2625,6 +2622,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     content_required_for_summary: "要約する内容を入力してください",
     note_summarized_success: "ノートが要約されました！",
     note_summary_failed: "ノートの要約に失敗しました",
+    summary_result: "要約結果",
     replace_with_summary: "要約に置き換える",
     add_summary_below: "下に挿入",
     translate_note: "AI翻訳",
@@ -3124,7 +3122,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     // Vehicle Section Translations
     add_vehicle: "車両追加",
     first_vehicle: "初回車両登録",
-    vehicle_list: "車両 목록",
+    vehicle_list: "車両リスト",
     new_vehicle: "新規車両",
     edit_vehicle: "車両編集",
     vehicle_name_placeholder: "車両名（例：マイ・ソナタ）",
@@ -3459,7 +3457,6 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     speech_recognition_not_supported: "浏览器不支持语音识别",
     mic_permission_required: "需要麦克风权限",
     speech_recognition_failed: "语音识别失败",
-    no_files_selected: "未选择文件",
 
     // Sections
     notes: "笔记",

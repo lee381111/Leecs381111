@@ -55,76 +55,20 @@ export function MediaTools({
   const t = (key: string) => getTranslation(language, key)
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("[v0] ===== FILE UPLOAD EVENT TRIGGERED =====")
-    console.log("[v0] Event target:", e.target)
-    console.log("[v0] Files object:", e.target.files)
-
     const files = Array.from(e.target.files || [])
-    console.log("[v0] Files array:", files)
-    console.log("[v0] Number of files:", files.length)
-
-    if (files.length === 0) {
-      console.log("[v0] No files selected")
-      alert(language === "ko" ? "파일이 선택되지 않았습니다" : "No files selected")
-      return
-    }
-
-    console.log("[v0] File upload started:", files.length, "files")
-    console.log("[v0] Current attachments:", attachments.length)
-
-    alert(language === "ko" ? `${files.length}개의 파일을 처리 중입니다...` : `Processing ${files.length} file(s)...`)
-
-    const filePromises = files.map((file) => {
-      return new Promise<Attachment>((resolve, reject) => {
-        console.log("[v0] Processing file:", file.name, "type:", file.type, "size:", file.size)
-        const reader = new FileReader()
-
-        reader.onload = () => {
-          const dataUrl = reader.result as string
-          console.log("[v0] File loaded:", file.name, "data length:", dataUrl.length)
-
-          const newAttachment: Attachment = {
-            type: file.type || "image",
-            name: file.name,
-            data: dataUrl,
-            url: dataUrl,
-          }
-          resolve(newAttachment)
+    files.forEach((file) => {
+      const reader = new FileReader()
+      reader.onload = () => {
+        const newAttachment: Attachment = {
+          type: file.type,
+          name: file.name,
+          data: reader.result as string,
+          url: reader.result as string,
         }
-
-        reader.onerror = (error) => {
-          console.error("[v0] Error reading file:", file.name, error)
-          reject(error)
-        }
-
-        reader.readAsDataURL(file)
-      })
+        onAttachmentsChange([...attachments, newAttachment])
+      }
+      reader.readAsDataURL(file)
     })
-
-    Promise.all(filePromises)
-      .then((newAttachments) => {
-        console.log("[v0] All", newAttachments.length, "files processed successfully")
-        const updated = [...attachments, ...newAttachments]
-        console.log("[v0] Calling onAttachmentsChange with", updated.length, "attachments")
-        console.log(
-          "[v0] Attachments:",
-          updated.map((a) => ({ name: a.name, type: a.type })),
-        )
-        onAttachmentsChange(updated)
-
-        alert(
-          language === "ko"
-            ? `✓ ${newAttachments.length}개의 파일이 첨부되었습니다! 총 ${updated.length}개`
-            : `✓ ${newAttachments.length} file(s) attached! Total: ${updated.length}`,
-        )
-      })
-      .catch((error) => {
-        console.error("[v0] Error loading files:", error)
-        alert(language === "ko" ? "⚠ 파일 로드 중 오류 발생" : "⚠ Error loading files")
-      })
-
-    // Reset input value to allow selecting the same file again
-    e.target.value = ""
   }
 
   const startAudioRecording = async () => {
@@ -281,6 +225,7 @@ export function MediaTools({
     const videoWidth = video.videoWidth
     const videoHeight = video.videoHeight
 
+    // Always save in landscape (width > height)
     if (videoHeight > videoWidth) {
       canvas.width = videoHeight
       canvas.height = videoWidth
@@ -293,6 +238,7 @@ export function MediaTools({
 
     if (ctx) {
       if (videoHeight > videoWidth) {
+        // Rotate 90 degrees for portrait video
         ctx.translate(canvas.width / 2, canvas.height / 2)
         ctx.rotate(Math.PI / 2)
         ctx.drawImage(video, -videoWidth / 2, -videoHeight / 2, videoWidth, videoHeight)
@@ -547,7 +493,6 @@ export function MediaTools({
   }
 
   const stopSpeechRecognition = () => {
-    console.log("[v0] Stopping speech recognition, text length:", recognizedText.length)
     setIsRecognizing(false)
 
     if (recognitionRef.current) {
@@ -556,18 +501,8 @@ export function MediaTools({
     }
 
     if (recognizedText.trim() && onTextFromSpeech) {
-      const trimmedText = recognizedText.trim()
-      console.log("[v0] Sending recognized text to note:", trimmedText.length, "characters")
-      onTextFromSpeech(trimmedText)
-
-      alert(
-        language === "ko"
-          ? `✓ 음성이 노트에 추가되었습니다!\n(${trimmedText.length}자)\n\n아래 "저장" 버튼을 눌러 노트를 저장하세요.`
-          : `✓ Voice text added to note!\n(${trimmedText.length} chars)\n\nClick "Save" button below to save the note.`,
-      )
-    } else if (!recognizedText.trim()) {
-      console.log("[v0] No text recognized")
-      alert(language === "ko" ? "⚠ 인식된 텍스트가 없습니다" : "⚠ No text recognized")
+      console.log("[v0] Applying recognized text:", recognizedText)
+      onTextFromSpeech(recognizedText.trim())
     }
 
     setRecognizedText("")
@@ -710,12 +645,15 @@ export function MediaTools({
   }
 
   return (
-    <div className="space-y-4">
-      {(isRecordingVideo || isRecognizing || isOCRCameraOpen || isProcessingOCR || isCameraPreviewOpen) && (
-        <div className="bg-yellow-50 border border-yellow-200 p-2 rounded text-xs text-yellow-800">
-          {language === "ko" ? "다른 작업 진행 중..." : "Another operation in progress..."}
-          (Recording: {isRecordingVideo ? "Yes" : "No"}, Recognizing: {isRecognizing ? "Yes" : "No"}, Camera:{" "}
-          {isCameraPreviewOpen ? "Yes" : "No"}, OCR: {isOCRCameraOpen || isProcessingOCR ? "Yes" : "No"})
+    <Card className="p-4 space-y-4">
+      {isProcessingOCR && (
+        <div className="space-y-2 bg-purple-50 dark:bg-purple-950 p-4 rounded-lg border-2 border-purple-500">
+          <p className="text-sm font-medium text-purple-600 dark:text-purple-400">
+            🔍 {t("ocr_processing")}... {ocrProgress}%
+          </p>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="h-2 rounded-full bg-purple-600 transition-all" style={{ width: `${ocrProgress}%` }} />
+          </div>
         </div>
       )}
 
@@ -822,31 +760,7 @@ export function MediaTools({
             onChange={handleFileUpload}
           />
           <input type="file" id="ocr-file-upload" accept="image/*" className="hidden" onChange={handleOCRFileUpload} />
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              console.log("[v0] ===== FILE UPLOAD BUTTON CLICKED =====")
-              console.log("[v0] Current states:", {
-                isRecordingVideo,
-                isRecognizing,
-                isOCRCameraOpen,
-                isProcessingOCR,
-                isCameraPreviewOpen,
-                attachmentsCount: attachments.length,
-              })
-              const input = document.getElementById("file-upload") as HTMLInputElement
-              console.log("[v0] Input element:", input)
-              if (input) {
-                console.log("[v0] Triggering file input click...")
-                input.click()
-                console.log("[v0] Input click triggered")
-              } else {
-                console.log("[v0] ERROR: Input element not found!")
-                alert("ERROR: File input not found. Please refresh the page.")
-              }
-            }}
-          >
+          <Button variant="outline" size="sm" onClick={() => document.getElementById("file-upload")?.click()}>
             <ImageIcon className="h-4 w-4 mr-2" />
             {t("file_upload")}
           </Button>
@@ -1011,6 +925,6 @@ export function MediaTools({
           {saving ? t("saving") : t("save")}
         </Button>
       )}
-    </div>
+    </Card>
   )
 }

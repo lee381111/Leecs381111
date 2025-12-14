@@ -267,11 +267,6 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
     console.log("[v0] Added text from speech:", text.length, "characters")
   }
 
-  const handleAttachmentsChange = (attachments: Attachment[]) => {
-    console.log("[v0] Notes attachments updated:", attachments.length)
-    setAttachments(attachments)
-  }
-
   const handleShare = async (note: Note) => {
     const shareText = `${note.title}\n\n${note.content}\n\n${note.tags.length > 0 ? `#${note.tags.join(" #")}` : ""}`
     const shareData = {
@@ -518,7 +513,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
           <MediaTools
             language={language}
             attachments={attachments}
-            onAttachmentsChange={handleAttachmentsChange}
+            onAttachmentsChange={setAttachments}
             onTextFromSpeech={handleTextFromSpeech}
           />
 
