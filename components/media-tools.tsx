@@ -56,6 +56,17 @@ export function MediaTools({
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
+
+    if (files.length === 0) {
+      console.log("[v0] No files selected")
+      return
+    }
+
+    console.log("[v0] Processing", files.length, "files for upload")
+
+    const newAttachments: Attachment[] = []
+    let filesProcessed = 0
+
     files.forEach((file) => {
       const reader = new FileReader()
       reader.onload = () => {
@@ -65,10 +76,34 @@ export function MediaTools({
           data: reader.result as string,
           url: reader.result as string,
         }
-        onAttachmentsChange([...attachments, newAttachment])
+        newAttachments.push(newAttachment)
+        filesProcessed++
+
+        console.log("[v0] File processed:", file.name, "Total processed:", filesProcessed, "/", files.length)
+
+        // When all files are processed, update state once
+        if (filesProcessed === files.length) {
+          const updatedAttachments = [...attachments, ...newAttachments]
+          console.log("[v0] All files processed. Total attachments:", updatedAttachments.length)
+          onAttachmentsChange(updatedAttachments)
+        }
+      }
+      reader.onerror = () => {
+        console.error("[v0] Error reading file:", file.name)
+        filesProcessed++
+
+        // Continue even if one file fails
+        if (filesProcessed === files.length && newAttachments.length > 0) {
+          const updatedAttachments = [...attachments, ...newAttachments]
+          console.log("[v0] Files processed with errors. Total attachments:", updatedAttachments.length)
+          onAttachmentsChange(updatedAttachments)
+        }
       }
       reader.readAsDataURL(file)
     })
+
+    // Reset input to allow selecting the same file again
+    e.target.value = ""
   }
 
   const startAudioRecording = async () => {
