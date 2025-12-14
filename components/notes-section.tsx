@@ -374,37 +374,47 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
 
   const handleDirectFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
-    if (!files || files.length === 0) return
+
+    alert(`파일 선택됨: ${files?.length || 0}개`)
+
+    if (!files || files.length === 0) {
+      alert("파일이 선택되지 않았습니다")
+      return
+    }
 
     console.log("[v0] Direct file upload - files selected:", files.length)
 
-    const newAttachments: Attachment[] = []
-    let filesProcessed = 0
-
-    Array.from(files).forEach((file) => {
-      const reader = new FileReader()
-      reader.onload = () => {
-        const newAttachment: Attachment = {
-          name: file.name,
-          type: file.type.startsWith("image/") ? "image" : file.type.startsWith("video/") ? "video" : "file",
-          url: reader.result as string,
+    const filePromises = Array.from(files).map((file) => {
+      return new Promise<Attachment>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => {
+          const newAttachment: Attachment = {
+            name: file.name,
+            type: file.type.startsWith("image/") ? "image" : file.type.startsWith("video/") ? "video" : "file",
+            url: reader.result as string,
+          }
+          console.log("[v0] File loaded:", file.name)
+          resolve(newAttachment)
         }
-        newAttachments.push(newAttachment)
-        filesProcessed++
-
-        if (filesProcessed === files.length) {
-          console.log("[v0] All files processed:", newAttachments.length)
-          const updatedAttachments = [...(formData.attachments || []), ...newAttachments]
-          setFormData({ ...formData, attachments: updatedAttachments })
-          alert(`${newAttachments.length}개의 파일이 첨부되었습니다!`)
+        reader.onerror = () => {
+          console.error("[v0] File read error:", file.name)
+          reject(new Error(`Failed to read ${file.name}`))
         }
-      }
-      reader.onerror = () => {
-        console.error("[v0] File read error:", file.name)
-        filesProcessed++
-      }
-      reader.readAsDataURL(file)
+        reader.readAsDataURL(file)
+      })
     })
+
+    Promise.all(filePromises)
+      .then((newAttachments) => {
+        console.log("[v0] All files processed:", newAttachments.length)
+        const updatedAttachments = [...(formData.attachments || []), ...newAttachments]
+        setFormData({ ...formData, attachments: updatedAttachments })
+        alert(`✓ ${newAttachments.length}개의 파일이 첨부되었습니다!`)
+      })
+      .catch((error) => {
+        console.error("[v0] File processing error:", error)
+        alert("파일 처리 중 오류가 발생했습니다")
+      })
 
     // Reset input
     e.target.value = ""
