@@ -55,15 +55,25 @@ export function MediaTools({
   const t = (key: string) => getTranslation(language, key)
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("[v0] ===== FILE UPLOAD EVENT TRIGGERED =====")
+    console.log("[v0] Event target:", e.target)
+    console.log("[v0] Files object:", e.target.files)
+
     const files = Array.from(e.target.files || [])
+    console.log("[v0] Files array:", files)
+    console.log("[v0] Number of files:", files.length)
 
     if (files.length === 0) {
+      console.log("[v0] No files selected")
       alert(language === "ko" ? "파일이 선택되지 않았습니다" : "No files selected")
       return
     }
 
     console.log("[v0] File upload started:", files.length, "files")
     console.log("[v0] Current attachments:", attachments.length)
+
+    // Show immediate feedback to user
+    alert(language === "ko" ? `${files.length}개의 파일을 처리 중입니다...` : `Processing ${files.length} file(s)...`)
 
     const filePromises = files.map((file) => {
       return new Promise<Attachment>((resolve, reject) => {
@@ -96,7 +106,11 @@ export function MediaTools({
       .then((newAttachments) => {
         console.log("[v0] All", newAttachments.length, "files processed successfully")
         const updated = [...attachments, ...newAttachments]
-        console.log("[v0] Attachments updated from", attachments.length, "to", updated.length)
+        console.log("[v0] Calling onAttachmentsChange with", updated.length, "attachments")
+        console.log(
+          "[v0] Attachments:",
+          updated.map((a) => ({ name: a.name, type: a.type })),
+        )
         onAttachmentsChange(updated)
 
         alert(
@@ -812,7 +826,22 @@ export function MediaTools({
             onChange={handleFileUpload}
           />
           <input type="file" id="ocr-file-upload" accept="image/*" className="hidden" onChange={handleOCRFileUpload} />
-          <Button variant="outline" size="sm" onClick={() => document.getElementById("file-upload")?.click()}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              console.log("[v0] File upload button clicked")
+              const input = document.getElementById("file-upload") as HTMLInputElement
+              console.log("[v0] Input element:", input)
+              if (input) {
+                console.log("[v0] Clicking input element")
+                input.click()
+              } else {
+                console.log("[v0] ERROR: Input element not found!")
+                alert("ERROR: File input not found")
+              }
+            }}
+          >
             <ImageIcon className="h-4 w-4 mr-2" />
             {t("file_upload")}
           </Button>
