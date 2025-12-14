@@ -58,49 +58,69 @@ export function MediaTools({
     const files = Array.from(e.target.files || [])
 
     if (files.length === 0) {
-      alert(t("no_files_selected") || "파일이 선택되지 않았습니다")
+      alert(language === "ko" ? "파일이 선택되지 않았습니다" : "No files selected")
       return
     }
 
-    alert(`${files.length}개의 파일을 처리 중입니다...`)
-    console.log("[v0] Processing", files.length, "files for upload")
+    console.log("[v0] File upload started:", files.length, "files")
+    console.log("[v0] Current attachments:", attachments.length)
 
     const newAttachments: Attachment[] = []
     let filesProcessed = 0
 
-    files.forEach((file, index) => {
-      console.log("[v0] Reading file:", file.name, "type:", file.type)
+    files.forEach((file) => {
+      console.log("[v0] Processing file:", file.name, "type:", file.type, "size:", file.size)
       const reader = new FileReader()
 
       reader.onload = () => {
+        const dataUrl = reader.result as string
+        console.log("[v0] File loaded:", file.name, "data length:", dataUrl.length)
+
         const newAttachment: Attachment = {
-          type: file.type,
+          type: file.type || "image",
           name: file.name,
-          data: reader.result as string,
-          url: reader.result as string,
+          data: dataUrl,
+          url: dataUrl,
         }
         newAttachments.push(newAttachment)
         filesProcessed++
-        console.log("[v0] File processed:", file.name, "total:", filesProcessed, "/", files.length)
+        console.log("[v0] Files processed:", filesProcessed, "/", files.length)
 
         if (filesProcessed === files.length) {
-          const allAttachments = [...attachments, ...newAttachments]
-          console.log("[v0] All files processed! Total attachments:", allAttachments.length)
-          onAttachmentsChange(allAttachments)
-          alert(`✓ ${newAttachments.length}개의 파일이 첨부되었습니다!`)
+          const updatedAttachments = [...attachments, ...newAttachments]
+          console.log(
+            "[v0] All files processed! Updating attachments from",
+            attachments.length,
+            "to",
+            updatedAttachments.length,
+          )
+          onAttachmentsChange(updatedAttachments)
+
+          alert(
+            language === "ko"
+              ? `✓ ${newAttachments.length}개의 파일이 첨부되었습니다! (총 ${updatedAttachments.length}개)`
+              : `✓ ${newAttachments.length} file(s) attached! (Total: ${updatedAttachments.length})`,
+          )
         }
       }
 
       reader.onerror = (error) => {
         console.error("[v0] Error reading file:", file.name, error)
-        alert(`⚠ ${file.name} 파일 읽기 실패`)
         filesProcessed++
 
-        if (filesProcessed === files.length && newAttachments.length > 0) {
-          const allAttachments = [...attachments, ...newAttachments]
-          console.log("[v0] Files processed with errors. Total attachments:", allAttachments.length)
-          onAttachmentsChange(allAttachments)
-          alert(`✓ ${newAttachments.length}개의 파일이 첨부되었습니다 (일부 실패)`)
+        if (filesProcessed === files.length) {
+          if (newAttachments.length > 0) {
+            const updatedAttachments = [...attachments, ...newAttachments]
+            console.log("[v0] Some files processed with errors. Total:", updatedAttachments.length)
+            onAttachmentsChange(updatedAttachments)
+            alert(
+              language === "ko"
+                ? `⚠ ${newAttachments.length}개 파일 첨부 (일부 실패)`
+                : `⚠ ${newAttachments.length} file(s) attached (some failed)`,
+            )
+          } else {
+            alert(language === "ko" ? "❌ 파일 읽기 실패" : "❌ Failed to read files")
+          }
         }
       }
 
@@ -530,7 +550,7 @@ export function MediaTools({
   }
 
   const stopSpeechRecognition = () => {
-    console.log("[v0] Stopping speech recognition, text:", recognizedText)
+    console.log("[v0] Stopping speech recognition, text length:", recognizedText.length)
     setIsRecognizing(false)
 
     if (recognitionRef.current) {
@@ -539,12 +559,18 @@ export function MediaTools({
     }
 
     if (recognizedText.trim() && onTextFromSpeech) {
-      console.log("[v0] Applying recognized text to note:", recognizedText.length, "characters")
-      onTextFromSpeech(recognizedText.trim())
-      alert(`✓ 음성 텍스트가 노트에 추가되었습니다 (${recognizedText.length}자)`)
+      const trimmedText = recognizedText.trim()
+      console.log("[v0] Sending recognized text to note:", trimmedText.length, "characters")
+      onTextFromSpeech(trimmedText)
+
+      alert(
+        language === "ko"
+          ? `✓ 음성이 노트에 추가되었습니다!\n(${trimmedText.length}자)\n\n아래 "저장" 버튼을 눌러 노트를 저장하세요.`
+          : `✓ Voice text added to note!\n(${trimmedText.length} chars)\n\nClick "Save" button below to save the note.`,
+      )
     } else if (!recognizedText.trim()) {
       console.log("[v0] No text recognized")
-      alert("⚠ 인식된 텍스트가 없습니다")
+      alert(language === "ko" ? "⚠ 인식된 텍스트가 없습니다" : "⚠ No text recognized")
     }
 
     setRecognizedText("")
