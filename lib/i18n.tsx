@@ -35,6 +35,7 @@ type TranslationKey =
   | "ocr_error_occurred"
   | "clear"
   | "stop_recording"
+  | "stop_video_recording"
   | "audio_recording"
   | "video_recording"
   | "attachments"
@@ -824,6 +825,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     ocr_error_occurred: "인식 오류 발생",
     clear: "지우기",
     stop_recording: "녹음 중지",
+    stop_video_recording: "녹화 중지",
     audio_recording: "오디오 녹음",
     video_recording: "동영상 녹화",
     attachments: "첨부파일",
@@ -1696,6 +1698,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     ocr_error_occurred: "Recognition error occurred",
     clear: "Clear",
     stop_recording: "Stop Recording",
+    stop_video_recording: "Stop Recording",
     audio_recording: "Audio Recording",
     video_recording: "Video Recording",
     attachments: "Attachments",
@@ -2575,6 +2578,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     ocr_error_occurred: "認識エラーが発生しました",
     clear: "クリア",
     stop_recording: "録音停止",
+    stop_video_recording: "録画停止",
     audio_recording: "音声録音",
     video_recording: "動画録画",
     attachments: "添付ファイル",
@@ -3446,6 +3450,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     ocr_error_occurred: "识别错误发生",
     clear: "清除",
     stop_recording: "停止录音",
+    stop_video_recording: "停止录像",
     audio_recording: "音频录制",
     video_recording: "视频录制",
     attachments: "附件",

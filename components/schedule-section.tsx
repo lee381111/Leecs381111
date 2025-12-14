@@ -887,7 +887,6 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
           language={language}
           attachments={formData.attachments || []}
           onAttachmentsChange={handleAttachmentsChange}
-          onSave={(attachments) => handleSave(attachments)}
           saving={saving}
           onTextFromSpeech={handleTranscriptReceived}
         />

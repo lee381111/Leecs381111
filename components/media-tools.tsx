@@ -645,7 +645,7 @@ export function MediaTools({
               className="bg-red-600 hover:bg-red-700 text-white"
             >
               <Video className="h-4 w-4 mr-2" />
-              {t("stop_recording")}
+              {t("stop_video_recording")}
             </Button>
           </div>
           <video ref={videoRef} className="w-full h-64 bg-black rounded" playsInline autoPlay muted />
