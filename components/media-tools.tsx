@@ -4,7 +4,7 @@ import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Camera, Mic, Video, ImageIcon, Trash2, Save, PenTool, X, MessageSquare, FileImage } from "lucide-react"
+import { Camera, Mic, Video, Trash2, Save, PenTool, X, MessageSquare, FileImage } from "lucide-react"
 import type { Attachment } from "@/lib/types"
 import { getTranslation } from "@/lib/i18n"
 
@@ -53,62 +53,6 @@ export function MediaTools({
   const [isOCRCameraOpen, setIsOCRCameraOpen] = useState(false)
 
   const t = (key: string) => getTranslation(language, key)
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
-    if (files.length === 0) {
-      console.log("[v0] No files selected")
-      alert("파일이 선택되지 않았습니다")
-      return
-    }
-
-    console.log("[v0] File upload started, processing", files.length, "file(s)")
-    alert(`${files.length}개의 파일 처리 중...`)
-
-    const filePromises = files.map((file) => {
-      return new Promise<Attachment>((resolve) => {
-        const reader = new FileReader()
-        reader.onload = () => {
-          const newAttachment: Attachment = {
-            type: file.type,
-            name: file.name,
-            data: reader.result as string,
-            url: reader.result as string,
-          }
-          console.log("[v0] File loaded:", file.name, "Type:", file.type)
-          resolve(newAttachment)
-        }
-        reader.onerror = () => {
-          console.error("[v0] Failed to read file:", file.name)
-          resolve({
-            type: file.type,
-            name: file.name,
-            data: "",
-            url: "",
-          })
-        }
-        reader.readAsDataURL(file)
-      })
-    })
-
-    Promise.all(filePromises).then((newAttachments) => {
-      const validAttachments = newAttachments.filter((att) => att.data !== "")
-      console.log(
-        "[v0] All files loaded. Current count:",
-        attachments.length,
-        "Adding:",
-        validAttachments.length,
-        "Total will be:",
-        attachments.length + validAttachments.length,
-      )
-      const updated = [...attachments, ...validAttachments]
-      console.log("[v0] Calling onAttachmentsChange with", updated.length, "attachments")
-      onAttachmentsChange(updated)
-      console.log("[v0] onAttachmentsChange called successfully")
-      alert(`✓ ${validAttachments.length}개의 파일이 첨부되었습니다!`)
-      e.target.value = ""
-    })
-  }
 
   const startAudioRecording = async () => {
     try {
@@ -790,39 +734,6 @@ export function MediaTools({
 
       {!isRecordingVideo && !isRecognizing && !isOCRCameraOpen && !isProcessingOCR && !isCameraPreviewOpen && (
         <div className="flex flex-wrap gap-2">
-          <input
-            type="file"
-            id="file-upload"
-            multiple
-            accept="image/*,video/*,audio/*"
-            className="hidden"
-            onChange={handleFileUpload}
-          />
-          <input type="file" id="ocr-file-upload" accept="image/*" className="hidden" onChange={handleOCRFileUpload} />
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              console.log("[v0] File upload button clicked")
-              console.log("[v0] Current states:", {
-                isRecordingVideo,
-                isRecognizing,
-                isOCRCameraOpen,
-                isProcessingOCR,
-                isCameraPreviewOpen,
-              })
-              const input = document.getElementById("file-upload")
-              if (input) {
-                console.log("[v0] Input element found, triggering click")
-                input.click()
-              } else {
-                console.error("[v0] Input element not found!")
-              }
-            }}
-          >
-            <ImageIcon className="h-4 w-4 mr-2" />
-            {t("file_upload")}
-          </Button>
           <Button variant="outline" size="sm" onClick={openCameraPreview}>
             <Camera className="h-4 w-4 mr-2" />
             {t("take_photo")}
