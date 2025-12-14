@@ -72,7 +72,6 @@ export function MediaTools({
     console.log("[v0] File upload started:", files.length, "files")
     console.log("[v0] Current attachments:", attachments.length)
 
-    // Show immediate feedback to user
     alert(language === "ko" ? `${files.length}개의 파일을 처리 중입니다...` : `Processing ${files.length} file(s)...`)
 
     const filePromises = files.map((file) => {
@@ -711,15 +710,12 @@ export function MediaTools({
   }
 
   return (
-    <Card className="p-4 space-y-4">
-      {isProcessingOCR && (
-        <div className="space-y-2 bg-purple-50 dark:bg-purple-950 p-4 rounded-lg border-2 border-purple-500">
-          <p className="text-sm font-medium text-purple-600 dark:text-purple-400">
-            🔍 {t("ocr_processing")}... {ocrProgress}%
-          </p>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div className="h-2 rounded-full bg-purple-600 transition-all" style={{ width: `${ocrProgress}%` }} />
-          </div>
+    <div className="space-y-4">
+      {(isRecordingVideo || isRecognizing || isOCRCameraOpen || isProcessingOCR || isCameraPreviewOpen) && (
+        <div className="bg-yellow-50 border border-yellow-200 p-2 rounded text-xs text-yellow-800">
+          {language === "ko" ? "다른 작업 진행 중..." : "Another operation in progress..."}
+          (Recording: {isRecordingVideo ? "Yes" : "No"}, Recognizing: {isRecognizing ? "Yes" : "No"}, Camera:{" "}
+          {isCameraPreviewOpen ? "Yes" : "No"}, OCR: {isOCRCameraOpen || isProcessingOCR ? "Yes" : "No"})
         </div>
       )}
 
@@ -830,15 +826,24 @@ export function MediaTools({
             variant="outline"
             size="sm"
             onClick={() => {
-              console.log("[v0] File upload button clicked")
+              console.log("[v0] ===== FILE UPLOAD BUTTON CLICKED =====")
+              console.log("[v0] Current states:", {
+                isRecordingVideo,
+                isRecognizing,
+                isOCRCameraOpen,
+                isProcessingOCR,
+                isCameraPreviewOpen,
+                attachmentsCount: attachments.length,
+              })
               const input = document.getElementById("file-upload") as HTMLInputElement
               console.log("[v0] Input element:", input)
               if (input) {
-                console.log("[v0] Clicking input element")
+                console.log("[v0] Triggering file input click...")
                 input.click()
+                console.log("[v0] Input click triggered")
               } else {
                 console.log("[v0] ERROR: Input element not found!")
-                alert("ERROR: File input not found")
+                alert("ERROR: File input not found. Please refresh the page.")
               }
             }}
           >
@@ -1006,6 +1011,6 @@ export function MediaTools({
           {saving ? t("saving") : t("save")}
         </Button>
       )}
-    </Card>
+    </div>
   )
 }
