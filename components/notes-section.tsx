@@ -27,7 +27,12 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
   const [selectedTag, setSelectedTag] = useState<string>("")
   const [isAdding, setIsAdding] = useState(false)
   const [editingNote, setEditingNote] = useState<Note | null>(null)
-  const [formData, setFormData] = useState({ title: "", content: "", tags: "" })
+  const [formData, setFormData] = useState({
+    title: "",
+    content: "",
+    tags: "",
+    attachments: [] as Attachment[],
+  })
   const [attachments, setAttachments] = useState<Attachment[]>([])
   const [selectedImage, setSelectedImage] = useState<{ url: string; name: string } | null>(null)
   const [viewingAttachment, setViewingAttachment] = useState<{ url: string; name: string } | null>(null)
@@ -81,7 +86,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
           .split(",")
           .map((t) => t.trim())
           .filter(Boolean),
-        attachments: attachments.map((att) => ({
+        attachments: formData.attachments.map((att) => ({
           ...att,
           url: att.url || att.data,
           data: att.data || att.url,
@@ -100,7 +105,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
       // Save to database
       await saveNotes(updated, user.id)
 
-      setFormData({ title: "", content: "", tags: "" })
+      setFormData({ title: "", content: "", tags: "", attachments: [] })
       setAttachments([])
       setIsAdding(false)
       setEditingNote(null)
@@ -153,6 +158,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
       title: note.title,
       content: note.content,
       tags: note.tags.join(", "),
+      attachments: note.attachments || [],
     })
     const loadedAttachments = (note.attachments || []).map((att) => ({
       ...att,
@@ -359,9 +365,9 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
     return matchesSearch && matchesTag
   })
 
-  const handleAttachmentsChange = (newAttachments: Attachment[]) => {
-    console.log("[v0] Notes attachments updated:", newAttachments.length)
-    setAttachments(newAttachments)
+  const handleAttachmentsChange = (attachments: Attachment[]) => {
+    setFormData({ ...formData, attachments })
+    console.log("[v0] Notes attachments updated:", attachments.length)
   }
 
   if (loading) {
@@ -383,7 +389,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
           onClick={() => {
             setIsAdding(false)
             setEditingNote(null)
-            setFormData({ title: "", content: "", tags: "" })
+            setFormData({ title: "", content: "", tags: "", attachments: [] })
             setAttachments([])
           }}
         >
@@ -517,18 +523,18 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
           />
           <MediaTools
             language={language}
-            attachments={attachments}
+            attachments={formData.attachments || []}
             onAttachmentsChange={handleAttachmentsChange}
             onTextFromSpeech={handleTextFromSpeech}
           />
 
-          {attachments.length > 0 && (
+          {formData.attachments && formData.attachments.length > 0 && (
             <div className="mt-4 space-y-2">
               <p className="text-sm font-medium">
-                {language === "ko" ? "첨부된 파일" : "Attached Files"} ({attachments.length})
+                {language === "ko" ? "첨부된 파일" : "Attached Files"} ({formData.attachments.length})
               </p>
               <div className="grid grid-cols-3 gap-2">
-                {attachments.map((file, idx) => {
+                {formData.attachments.map((file, idx) => {
                   const isImage =
                     file.type?.startsWith("image/") ||
                     file.type === "image" ||
@@ -553,9 +559,9 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
                       )}
                       <button
                         onClick={() => {
-                          const newAttachments = attachments.filter((_, i) => i !== idx)
+                          const newAttachments = formData.attachments.filter((_, i) => i !== idx)
                           console.log("[v0] Removing attachment, remaining:", newAttachments.length)
-                          setAttachments(newAttachments)
+                          setFormData({ ...formData, attachments: newAttachments })
                         }}
                         className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
                       >
