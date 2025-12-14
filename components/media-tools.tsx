@@ -58,10 +58,12 @@ export function MediaTools({
     const files = Array.from(e.target.files || [])
     if (files.length === 0) {
       console.log("[v0] No files selected")
+      alert("파일이 선택되지 않았습니다")
       return
     }
 
     console.log("[v0] File upload started, processing", files.length, "file(s)")
+    alert(`${files.length}개의 파일 처리 중...`)
 
     const filePromises = files.map((file) => {
       return new Promise<Attachment>((resolve) => {
@@ -103,6 +105,7 @@ export function MediaTools({
       console.log("[v0] Calling onAttachmentsChange with", updated.length, "attachments")
       onAttachmentsChange(updated)
       console.log("[v0] onAttachmentsChange called successfully")
+      alert(`✓ ${validAttachments.length}개의 파일이 첨부되었습니다!`)
       e.target.value = ""
     })
   }
