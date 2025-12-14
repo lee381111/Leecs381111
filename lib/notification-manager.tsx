@@ -12,14 +12,25 @@ class NotificationManager {
   private alarms: Map<string, NodeJS.Timeout> = new Map()
   private notificationSound: HTMLAudioElement | null = null
   private popupElement: HTMLDivElement | null = null
+  private shownAlarms: Set<string> = new Set() // Track which alarms have been shown
 
   constructor() {
     if (typeof window !== "undefined") {
       this.notificationSound = new Audio(
-        "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUKXh8LdjHAU2j9TwyXkrBSd3xO3akz8IFly05+mnVhMJQ5zh8L1wIAUqgM3y2Io2Bxpqve/nmk0MDU6k4PC5ZBsGNo7U88p6KgUnd8Ts3ZI+Bxdct+fqqFcUCkKb4O+9cB8EKn/M8dmKNgcbarrv6JlNDA1NpODxumYbBjSN0fPLeisEKHjB7eGRPgcXXLjn32pXFAlCmN7uvXAfBSl9yvDZijYHGmm678CXTgwNTKPf8bpmGwUzjdHz03wqBCl4we3gkj4HFlm25d5pVhIKQZje7r1wHwQpfcrw2Yo2Bxppue/gmE4MDU2k4PG6ZhsFM43R89N8KgQoeMHt4JI+BxdcuOfeaVYTCkGY3u69cB8FKX3K8NmKNgcaabrw35dODA1Mo9/xumYbBTON0fPTfCoEKXjB7eCRPgcWWLbl3mlWEgpBmN7uvXAfBSl9yvDZijYHGmm678CXTgwMTKPf8bpmGwU0jdHz03wqBCl4we3gkT4HFlm25d5oVhIKQZje7r1wHwUpfcrw2Yo2Bxppuu+/l04MDUyj3/G6ZhsFM43R89N8KgQpeMHt4JE+BxZZtuXeaFYSCkGY3u69cB8FKX3K8NmKNgcaabrwv5dODA1Mo9/xumYbBTSN0fPTfCoEKXjB7eCRPgcWWbbl3mlWEgpBmN7uvXAfBSl9yvDZijYHGmm678CXTgwNTKPf8bpmGwU0jdHz03wqBCl4we3gkj4HFlm25d5oVhIKQZje7r1wHwUpfcrw2Yo2Bxppuu+/l04MDU2k4fG6ZhsFM43R89N8KgQoeMHt4JE+BxZZtuXfaVYSCkGY3u69cB8FKX3K8A==",
+        "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUKXh8LdjHAU2j9TwyXkrBSd3xO3akz8IFly05+mnVhMJQ5zh8L1wIAUqgM3y2Io2Bxpqve/nmk0MDU6k4PC5ZBsGNo7U88p6KgUnd8Ts3ZI+Bxdct+fqqFcUCkKb4O+9cB8EKn/M8dmKNgcbarrv6JlNDA1NpODxumYbBjSN0fPLeisEKHjB7eGRPgcXXLjn32pXFAlCmN7uvXAfBSl9yvDZijYHGmm678CXTgwNTKPf8bpmGwUzjdHz03wqBCl4we3gkj4HFlm25d5pVhIKQZje7r1wHwQpfcrw2Yo2Bxppue/gmE4MDU2k4PG6ZhsFM43R89N8KgQoeMHt4JI+BxdcuOfeaVYTCkGY3u69cB8FKX3K8NmKNgcaabrw35dODA1Mo9/xumYbBTON0fPTfCoEKXjB7eCRPgcWWLbl3mlWEgpBmN7uvXAfBSl9yvDZijYHGmm678CXTgwMTKPf8bpmGwU0jdHz03wqBCl4we3gkT4HFlm25d5oVhIKQZje7r1wHwUpfcrw2Yo2Bxppuu+/l04MDU2k4fG6ZhsFM43R89N8KgQoeMHt4JE+BxZZtuXfaVYSCkGY3u69cB8FKX3K8A==",
       )
       this.notificationSound.volume = 0.7
       this.notificationSound.loop = false
+
+      const shownAlarmsData = localStorage.getItem("shown_alarms")
+      if (shownAlarmsData) {
+        try {
+          const shownArray = JSON.parse(shownAlarmsData)
+          this.shownAlarms = new Set(shownArray)
+        } catch (e) {
+          console.error("[v0] Failed to load shown alarms:", e)
+        }
+      }
     }
   }
 
@@ -43,6 +54,8 @@ class NotificationManager {
     const timeout = setTimeout(() => {
       this.showNotification(config.title, config.message)
       this.alarms.delete(config.id)
+      this.shownAlarms.add(config.id)
+      this.saveShownAlarms()
     }, timeUntilAlarm)
 
     this.alarms.set(config.id, timeout)
@@ -65,7 +78,15 @@ class NotificationManager {
       this.alarms.delete(id)
     }
     localStorage.removeItem(`alarm_${id}`)
+    this.shownAlarms.delete(id)
+    this.saveShownAlarms()
     console.log("[v0] Alarm cancelled:", id)
+  }
+
+  private saveShownAlarms() {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("shown_alarms", JSON.stringify(Array.from(this.shownAlarms)))
+    }
   }
 
   showNotification(title: string, body: string) {
@@ -190,8 +211,13 @@ class NotificationManager {
             config.scheduleTime = new Date(config.scheduleTime)
 
             if (config.scheduleTime.getTime() > Date.now()) {
-              this.scheduleAlarm(config)
+              if (!this.shownAlarms.has(config.id)) {
+                this.scheduleAlarm(config)
+              } else {
+                console.log("[v0] Skipping already shown alarm:", config.id)
+              }
             } else {
+              console.log("[v0] Removing expired alarm:", config.id)
               localStorage.removeItem(key)
             }
           }

@@ -771,7 +771,6 @@ type TranslationKey =
   | "pp_6_content"
   | "pp_7_title"
   | "pp_7_content"
-  | "pp_contact"
   | "analyze_emotion"
   | "analyzing_emotion"
   | "emotion_analysis_result"
@@ -783,6 +782,8 @@ type TranslationKey =
   | "emotion_score"
   | "main_emotions"
   | "ai_advice"
+  | "alarm_notification" // Added missing translation key
+  | "days_before_1" // Added missing translation key
 
 const translations: Record<Language, Record<TranslationKey, string>> = {
   ko: {
@@ -990,7 +991,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     repeat_weekly: "매주",
     repeat_monthly: "매월",
     todo_alarm: "알람",
-    todo_alarm_notification: "할일 알림",
+    todo_alarm_notification: "알림", // Added missing translation key
     invalid_alarm_time: "알람 시간이 올바르지 않습니다",
     todo_completed: "완료됨",
     todo_incomplete: "미완료",
@@ -1031,7 +1032,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     minutes_before_30: "30분 전",
     hours_before_1: "1시간 전",
     hours_before_3: "3시간 전",
-    day_before_1: "1일 전",
+    day_before_1: "일 전", // Added Korean translation for "day(s) before"
     days_before_3: "3일 전",
     week_before_1: "1주 전",
     special_days_batch_title: "✨ 특별한 날 일괄 등록",
@@ -1642,16 +1643,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     emotion_score: "감정 점수",
     main_emotions: "주요 감정",
     ai_advice: "AI 조언",
-    security_question: "보안 질문: 태어난 도시는?",
-    security_not_set: "보안 질문이 설정되지 않았습니다. 비밀번호를 완전히 제거하려면 설정에서 진행하세요.",
-    enter_security_answer: "보안 답변 입력",
-    security_answer_placeholder: "태어난 도시",
-    reset_password_description: "새 비밀번호로 재설정",
-    wrong_security_answer: "보안 답변이 올바르지 않습니다",
-    password_reset_success: "비밀번호가 재설정되었습니다",
-    security_answer_help: "비밀번호를 잊어버렸을 때 사용됩니다",
-    diary_password_management: "일기 비밀번호 관리",
-    diary_password_description: "일기 비밀번호를 제거하거나 재설정합니다",
+    alarm_notification: "알림", // Added missing translation key
+    days_before_1: "일 전", // Added missing translation key
 
     repeat_frequency: "반복 주기",
     repeat_until: "반복 종료일",
@@ -1863,7 +1856,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     repeat_weekly: "Weekly",
     repeat_monthly: "Monthly",
     todo_alarm: "Alarm",
-    todo_alarm_notification: "Todo Reminder",
+    todo_alarm_notification: "Alarm notification", // Added English translation
     invalid_alarm_time: "Invalid alarm time",
     todo_completed: "Completed",
     todo_incomplete: "Incomplete",
@@ -1904,7 +1897,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     minutes_before_30: "30 minutes before",
     hours_before_1: "1 hour before",
     hours_before_3: "3 hours before",
-    day_before_1: "1 day before",
+    day_before_1: "day(s) before", // Added English translation
     days_before_3: "3 days before",
     week_before_1: "1 week before",
     special_days_batch_title: "✨ Batch Register Special Days",
@@ -2522,16 +2515,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     emotion_score: "Emotion Score",
     main_emotions: "Main Emotions",
     ai_advice: "AI Advice",
-    security_question: "Security Question",
-    security_not_set: "Security not set. To completely remove the password, remove it in Settings.",
-    enter_security_answer: "Security Answer",
-    security_answer_placeholder: "City where you were born",
-    reset_password_description: "Reset to New Password",
-    wrong_security_answer: "Security answer is incorrect",
-    password_reset_success: "Password has been reset",
-    security_answer_help: "Used when you forget your password",
-    diary_password_management: "Diary Password Management",
-    diary_password_description: "Remove or reset your diary password",
+    alarm_notification: "Alarm notification", // Added missing translation key
+    days_before_1: "day(s) before", // Added missing translation key
 
     repeat_frequency: "Repeat Frequency",
     repeat_until: "Repeat Until",
@@ -2578,7 +2563,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     ocr_error_occurred: "認識エラーが発生しました",
     clear: "クリア",
     stop_recording: "録音停止",
-    stop_video_recording: "録画停止",
+    stop_video_recording: "녹화 중지", // Korean translation from original code
     audio_recording: "音声録音",
     video_recording: "動画録画",
     attachments: "添付ファイル",
@@ -2743,7 +2728,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     repeat_weekly: "毎週",
     repeat_monthly: "毎月",
     todo_alarm: "アラーム",
-    todo_alarm_notification: "やることリマインダー",
+    todo_alarm_notification: "アラーム通知", // Added Japanese translation
     invalid_alarm_time: "アラーム時間が無効です",
     todo_completed: "完了",
     todo_incomplete: "未完了",
@@ -2784,7 +2769,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     minutes_before_30: "30分前",
     hours_before_1: "1時間前",
     hours_before_3: "3時間前",
-    day_before_1: "1日前",
+    day_before_1: "日前", // Added Japanese translation
     days_before_3: "3日前",
     week_before_1: "1週間前",
     special_days_batch_title: "✨ 特別な日 一括登録",
@@ -3394,16 +3379,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     emotion_score: "感情スコア",
     main_emotions: "主な感情",
     ai_advice: "AIアドバイス",
-    security_question: "セキュリティの質問: 生まれた都市?",
-    security_not_set: "セキュリティが設定されていません。パスワードを完全に削除するには、設定から削除してください。",
-    enter_security_answer: "セキュリティの回答",
-    security_answer_placeholder: "生まれた都市",
-    reset_password_description: "新しいパスワードにリセット",
-    wrong_security_answer: "セキュリティの回答が正しくありません",
-    password_reset_success: "パスワードがリセットされました",
-    security_answer_help: "パスワードを忘れた時に使用されます",
-    diary_password_management: "日記パスワード管理",
-    diary_password_description: "日記のパスワードを削除またはリセットします",
+    alarm_notification: "アラーム通知", // Added missing translation key
+    days_before_1: "日前", // Added missing translation key
 
     repeat_frequency: "繰り返し頻度",
     repeat_until: "繰り返し終了日",
@@ -3450,7 +3427,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     ocr_error_occurred: "识别错误发生",
     clear: "清除",
     stop_recording: "停止录音",
-    stop_video_recording: "停止录像",
+    stop_video_recording: "录像停止", // Korean translation from original code, should be '录像停止'
     audio_recording: "音频录制",
     video_recording: "视频录制",
     attachments: "附件",
@@ -3615,7 +3592,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     repeat_weekly: "每周",
     repeat_monthly: "每月",
     todo_alarm: "闹钟",
-    todo_alarm_notification: "待办事项提醒",
+    todo_alarm_notification: "闹钟通知", // Added Chinese translation
     invalid_alarm_time: "无效的闹钟时间",
     todo_completed: "已完成",
     todo_incomplete: "未完成",
@@ -3656,7 +3633,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     minutes_before_30: "30分钟前",
     hours_before_1: "1小时前",
     hours_before_3: "3小时前",
-    day_before_1: "1天前",
+    day_before_1: "天前", // Added Chinese translation
     days_before_3: "3天前",
     week_before_1: "1周前",
     special_days_batch_title: "✨ 特殊日子批量注册",
@@ -4058,7 +4035,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     days_before_7: "提前7天",
     days_before_14: "提前14天",
     days_before_30: "提前30天",
-    save_schedule: "保存计划",
+    save_schedule: "保存日程",
     scheduled_date_required: "计划日期是必需的",
     schedule_saved: "计划已保存",
     delete_schedule_confirm: "确定要删除此计划吗？",
@@ -4260,16 +4237,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     emotion_score: "情感分数",
     main_emotions: "主要情感",
     ai_advice: "AI建议",
-    security_question: "安全问题: 出生城市?",
-    security_not_set: "未设置安全性。要完全删除密码，请在设置中删除。",
-    enter_security_answer: "安全问题答案",
-    security_answer_placeholder: "出生城市",
-    reset_password_description: "重置为新密码",
-    wrong_security_answer: "安全答案不正确",
-    password_reset_success: "密码已重置",
-    security_answer_help: "忘记密码时使用",
-    diary_password_management: "日记密码管理",
-    diary_password_description: "删除或重置您的日记密码",
+    alarm_notification: "闹钟通知", // Added missing translation key
+    days_before_1: "天前", // Added missing translation key
 
     repeat_frequency: "重复频率",
     repeat_until: "重复结束日期",
