@@ -65,68 +65,54 @@ export function MediaTools({
     console.log("[v0] File upload started:", files.length, "files")
     console.log("[v0] Current attachments:", attachments.length)
 
-    const newAttachments: Attachment[] = []
-    let filesProcessed = 0
+    const filePromises = files.map((file) => {
+      return new Promise<Attachment>((resolve, reject) => {
+        console.log("[v0] Processing file:", file.name, "type:", file.type, "size:", file.size)
+        const reader = new FileReader()
 
-    files.forEach((file) => {
-      console.log("[v0] Processing file:", file.name, "type:", file.type, "size:", file.size)
-      const reader = new FileReader()
+        reader.onload = () => {
+          const dataUrl = reader.result as string
+          console.log("[v0] File loaded:", file.name, "data length:", dataUrl.length)
 
-      reader.onload = () => {
-        const dataUrl = reader.result as string
-        console.log("[v0] File loaded:", file.name, "data length:", dataUrl.length)
-
-        const newAttachment: Attachment = {
-          type: file.type || "image",
-          name: file.name,
-          data: dataUrl,
-          url: dataUrl,
-        }
-        newAttachments.push(newAttachment)
-        filesProcessed++
-        console.log("[v0] Files processed:", filesProcessed, "/", files.length)
-
-        if (filesProcessed === files.length) {
-          const updatedAttachments = [...attachments, ...newAttachments]
-          console.log(
-            "[v0] All files processed! Updating attachments from",
-            attachments.length,
-            "to",
-            updatedAttachments.length,
-          )
-          onAttachmentsChange(updatedAttachments)
-
-          alert(
-            language === "ko"
-              ? `✓ ${newAttachments.length}개의 파일이 첨부되었습니다! (총 ${updatedAttachments.length}개)`
-              : `✓ ${newAttachments.length} file(s) attached! (Total: ${updatedAttachments.length})`,
-          )
-        }
-      }
-
-      reader.onerror = (error) => {
-        console.error("[v0] Error reading file:", file.name, error)
-        filesProcessed++
-
-        if (filesProcessed === files.length) {
-          if (newAttachments.length > 0) {
-            const updatedAttachments = [...attachments, ...newAttachments]
-            console.log("[v0] Some files processed with errors. Total:", updatedAttachments.length)
-            onAttachmentsChange(updatedAttachments)
-            alert(
-              language === "ko"
-                ? `⚠ ${newAttachments.length}개 파일 첨부 (일부 실패)`
-                : `⚠ ${newAttachments.length} file(s) attached (some failed)`,
-            )
-          } else {
-            alert(language === "ko" ? "❌ 파일 읽기 실패" : "❌ Failed to read files")
+          const newAttachment: Attachment = {
+            type: file.type || "image",
+            name: file.name,
+            data: dataUrl,
+            url: dataUrl,
           }
+          resolve(newAttachment)
         }
-      }
 
-      reader.readAsDataURL(file)
+        reader.onerror = (error) => {
+          console.error("[v0] Error reading file:", file.name, error)
+          reject(error)
+        }
+
+        reader.readAsDataURL(file)
+      })
     })
 
+    Promise.all(filePromises)
+      .then((newAttachments) => {
+        console.log("[v0] All", newAttachments.length, "files processed successfully")
+        onAttachmentsChange((prev) => {
+          const updated = [...prev, ...newAttachments]
+          console.log("[v0] Attachments updated from", prev.length, "to", updated.length)
+          return updated
+        })
+
+        alert(
+          language === "ko"
+            ? `✓ ${newAttachments.length}개의 파일이 첨부되었습니다!`
+            : `✓ ${newAttachments.length} file(s) attached!`,
+        )
+      })
+      .catch((error) => {
+        console.error("[v0] Error loading files:", error)
+        alert(language === "ko" ? "⚠ 파일 로드 중 오류 발생" : "⚠ Error loading files")
+      })
+
+    // Reset input value to allow selecting the same file again
     e.target.value = ""
   }
 
