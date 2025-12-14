@@ -56,18 +56,35 @@ export function MediaTools({
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
-    files.forEach((file) => {
-      const reader = new FileReader()
-      reader.onload = () => {
-        const newAttachment: Attachment = {
-          type: file.type,
-          name: file.name,
-          data: reader.result as string,
-          url: reader.result as string,
+    if (files.length === 0) return
+
+    console.log("[v0] File upload started, processing", files.length, "file(s)")
+
+    const filePromises = files.map((file) => {
+      return new Promise<Attachment>((resolve) => {
+        const reader = new FileReader()
+        reader.onload = () => {
+          const newAttachment: Attachment = {
+            type: file.type,
+            name: file.name,
+            data: reader.result as string,
+            url: reader.result as string,
+          }
+          console.log("[v0] File loaded:", file.name)
+          resolve(newAttachment)
         }
-        onAttachmentsChange([...attachments, newAttachment])
-      }
-      reader.readAsDataURL(file)
+        reader.readAsDataURL(file)
+      })
+    })
+
+    Promise.all(filePromises).then((newAttachments) => {
+      console.log(
+        "[v0] All files loaded, adding to attachments. Current:",
+        attachments.length,
+        "New:",
+        newAttachments.length,
+      )
+      onAttachmentsChange([...attachments, ...newAttachments])
     })
   }
 
