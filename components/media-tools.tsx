@@ -63,11 +63,13 @@ export function MediaTools({
     }
 
     alert(`${files.length}개의 파일을 처리 중입니다...`)
+    console.log("[v0] Processing", files.length, "files for upload")
 
     const newAttachments: Attachment[] = []
     let filesProcessed = 0
 
     files.forEach((file, index) => {
+      console.log("[v0] Reading file:", file.name, "type:", file.type)
       const reader = new FileReader()
 
       reader.onload = () => {
@@ -79,9 +81,12 @@ export function MediaTools({
         }
         newAttachments.push(newAttachment)
         filesProcessed++
+        console.log("[v0] File processed:", file.name, "total:", filesProcessed, "/", files.length)
 
         if (filesProcessed === files.length) {
-          onAttachmentsChange((prev) => [...prev, ...newAttachments])
+          const allAttachments = [...attachments, ...newAttachments]
+          console.log("[v0] All files processed! Total attachments:", allAttachments.length)
+          onAttachmentsChange(allAttachments)
           alert(`✓ ${newAttachments.length}개의 파일이 첨부되었습니다!`)
         }
       }
@@ -92,7 +97,9 @@ export function MediaTools({
         filesProcessed++
 
         if (filesProcessed === files.length && newAttachments.length > 0) {
-          onAttachmentsChange((prev) => [...prev, ...newAttachments])
+          const allAttachments = [...attachments, ...newAttachments]
+          console.log("[v0] Files processed with errors. Total attachments:", allAttachments.length)
+          onAttachmentsChange(allAttachments)
           alert(`✓ ${newAttachments.length}개의 파일이 첨부되었습니다 (일부 실패)`)
         }
       }
@@ -523,6 +530,7 @@ export function MediaTools({
   }
 
   const stopSpeechRecognition = () => {
+    console.log("[v0] Stopping speech recognition, text:", recognizedText)
     setIsRecognizing(false)
 
     if (recognitionRef.current) {
@@ -531,8 +539,12 @@ export function MediaTools({
     }
 
     if (recognizedText.trim() && onTextFromSpeech) {
-      console.log("[v0] Applying recognized text:", recognizedText)
+      console.log("[v0] Applying recognized text to note:", recognizedText.length, "characters")
       onTextFromSpeech(recognizedText.trim())
+      alert(`✓ 음성 텍스트가 노트에 추가되었습니다 (${recognizedText.length}자)`)
+    } else if (!recognizedText.trim()) {
+      console.log("[v0] No text recognized")
+      alert("⚠ 인식된 텍스트가 없습니다")
     }
 
     setRecognizedText("")
