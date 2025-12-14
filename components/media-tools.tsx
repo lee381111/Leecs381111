@@ -95,16 +95,14 @@ export function MediaTools({
     Promise.all(filePromises)
       .then((newAttachments) => {
         console.log("[v0] All", newAttachments.length, "files processed successfully")
-        onAttachmentsChange((prev) => {
-          const updated = [...prev, ...newAttachments]
-          console.log("[v0] Attachments updated from", prev.length, "to", updated.length)
-          return updated
-        })
+        const updated = [...attachments, ...newAttachments]
+        console.log("[v0] Attachments updated from", attachments.length, "to", updated.length)
+        onAttachmentsChange(updated)
 
         alert(
           language === "ko"
-            ? `✓ ${newAttachments.length}개의 파일이 첨부되었습니다!`
-            : `✓ ${newAttachments.length} file(s) attached!`,
+            ? `✓ ${newAttachments.length}개의 파일이 첨부되었습니다! 총 ${updated.length}개`
+            : `✓ ${newAttachments.length} file(s) attached! Total: ${updated.length}`,
         )
       })
       .catch((error) => {
