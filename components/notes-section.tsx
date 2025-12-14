@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -366,8 +368,46 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
   })
 
   const handleAttachmentsChange = (attachments: Attachment[]) => {
+    console.log("[v0] Attachments changed:", attachments)
     setFormData({ ...formData, attachments })
-    console.log("[v0] Notes attachments updated:", attachments.length)
+  }
+
+  const handleDirectFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    console.log("[v0] Direct file upload - files selected:", files.length)
+
+    const newAttachments: Attachment[] = []
+    let filesProcessed = 0
+
+    Array.from(files).forEach((file) => {
+      const reader = new FileReader()
+      reader.onload = () => {
+        const newAttachment: Attachment = {
+          name: file.name,
+          type: file.type.startsWith("image/") ? "image" : file.type.startsWith("video/") ? "video" : "file",
+          url: reader.result as string,
+        }
+        newAttachments.push(newAttachment)
+        filesProcessed++
+
+        if (filesProcessed === files.length) {
+          console.log("[v0] All files processed:", newAttachments.length)
+          const updatedAttachments = [...(formData.attachments || []), ...newAttachments]
+          setFormData({ ...formData, attachments: updatedAttachments })
+          alert(`${newAttachments.length}개의 파일이 첨부되었습니다!`)
+        }
+      }
+      reader.onerror = () => {
+        console.error("[v0] File read error:", file.name)
+        filesProcessed++
+      }
+      reader.readAsDataURL(file)
+    })
+
+    // Reset input
+    e.target.value = ""
   }
 
   if (loading) {
@@ -521,6 +561,26 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
             value={formData.tags}
             onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
           />
+
+          <div className="flex gap-2">
+            <input
+              type="file"
+              id="notes-file-upload"
+              multiple
+              accept="image/*,video/*"
+              className="hidden"
+              onChange={handleDirectFileUpload}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => document.getElementById("notes-file-upload")?.click()}
+              className="flex-1"
+            >
+              📎 {language === "ko" ? "파일 첨부" : "Attach Files"}
+            </Button>
+          </div>
+
           <MediaTools
             language={language}
             attachments={formData.attachments || []}
