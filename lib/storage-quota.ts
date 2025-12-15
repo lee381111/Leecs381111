@@ -288,21 +288,3 @@ export function formatBytes(bytes: number): string {
 
   return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
 }
-
-export async function recalculateAndUpdateStorageUsage(userId: string): Promise<boolean> {
-  const actualUsage = await calculateRealTimeStorageUsage(userId)
-
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  )
-
-  const { error } = await supabase.from("profiles").update({ storage_used: actualUsage }).eq("id", userId)
-
-  if (error) {
-    console.error("[v0] Error updating storage usage:", error)
-    return false
-  }
-
-  return true
-}

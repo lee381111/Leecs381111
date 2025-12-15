@@ -14,7 +14,6 @@ import type {
   TodoItem,
   MedicalContact,
   Announcement, // Added Announcement import
-  Attachment,
 } from "./types"
 import { checkStorageAvailable, updateStorageUsage } from "./storage-quota"
 
@@ -222,46 +221,6 @@ export async function loadNotes(userId: string): Promise<Note[]> {
   })
 
   return notes
-}
-
-export async function saveNote(
-  formData: { title: string; content: string; tags: string[]; attachments?: Attachment[] },
-  editingId: string | null,
-  userId: string,
-): Promise<void> {
-  const supabase = createClient()
-
-  const noteId = editingId || crypto.randomUUID()
-  const now = new Date().toISOString()
-
-  const note = {
-    id: noteId,
-    user_id: userId,
-    title: formData.title,
-    content: formData.content,
-    category: formData.tags.join(","),
-    media_urls: formData.attachments || [],
-    created_at: now,
-    updated_at: now,
-  }
-
-  const { error } = await supabase.from("notes").upsert(note, { onConflict: "id" })
-
-  if (error) {
-    console.error("[v0] Error saving note:", error)
-    throw error
-  }
-}
-
-export async function deleteNote(noteId: string, userId: string): Promise<void> {
-  const supabase = createClient()
-
-  const { error } = await supabase.from("notes").delete().eq("id", noteId).eq("user_id", userId)
-
-  if (error) {
-    console.error("[v0] Error deleting note:", error)
-    throw error
-  }
 }
 
 // Diaries

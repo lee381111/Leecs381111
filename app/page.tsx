@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react"
 import dynamic from "next/dynamic"
 import { createClient } from "@/lib/supabase/client"
 import { loadSchedules, loadNotes, loadDiaries, loadTravelRecords, checkUserConsent } from "@/lib/storage"
-import { recalculateAndUpdateStorageUsage } from "@/lib/storage-quota"
 import { getTranslation } from "@/lib/i18n"
 import type { Language } from "@/lib/types"
 import { useAuth } from "@/lib/auth-context"
@@ -435,50 +434,6 @@ export default function ForestNotePage() {
     const interval = setInterval(calculateStorage, 60000) // Every 60 seconds
 
     return () => clearInterval(interval)
-  }, [user])
-
-  useEffect(() => {
-    if (!user) return
-
-    const loadData = async () => {
-      try {
-        // Get storage_used directly from profiles table for consistency with admin page
-        const supabase = createClient()
-        const { data: profile } = await supabase.from("profiles").select("storage_used").eq("id", user.id).single()
-
-        const profileStorageUsed = profile?.storage_used || 0
-
-        console.log(
-          "[v0] Storage used from profile:",
-          profileStorageUsed,
-          "bytes",
-          "(" + (profileStorageUsed / 1024 / 1024).toFixed(2) + " MB)",
-        )
-
-        setStorageUsed(profileStorageUsed)
-
-        if (profileStorageUsed === 0) {
-          recalculateAndUpdateStorageUsage(user.id).then(() => {
-            // Reload storage info after recalculation
-            supabase
-              .from("profiles")
-              .select("storage_used")
-              .eq("id", user.id)
-              .single()
-              .then(({ data }) => {
-                if (data) {
-                  setStorageUsed(data.storage_used || 0)
-                }
-              })
-          })
-        }
-      } catch (error) {
-        console.error("[v0] Error loading storage:", error)
-        setStorageUsed(0)
-      }
-    }
-
-    loadData()
   }, [user])
 
   useEffect(() => {
