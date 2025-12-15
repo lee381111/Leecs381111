@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { ArrowLeft, Plus, Search, Trash2, Edit2, Save, Tag, Eye, Share2, Sparkles } from "lucide-react"
 import { saveNotes, loadNotes } from "@/lib/storage"
@@ -12,6 +11,10 @@ import { getTranslation } from "@/lib/i18n"
 import type { Note, Language, Attachment } from "@/lib/types"
 import { MediaTools } from "@/components/media-tools"
 import { Spinner } from "@/components/ui/spinner"
+import dynamic from "next/dynamic"
+import "react-quill/dist/quill.snow.css"
+
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false })
 
 interface NotesSectionProps {
   onBack: () => void
@@ -401,11 +404,12 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
           />
-          <Textarea
-            placeholder={t("content")}
+          {/* Replace Textarea with ReactQuill for rich text editing */}
+          <ReactQuill
+            theme="snow"
             value={formData.content}
-            onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-            rows={10}
+            onChange={(content) => setFormData({ ...formData, content })}
+            placeholder={t("content")}
           />
 
           <Button
