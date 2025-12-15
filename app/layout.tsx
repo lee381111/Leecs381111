@@ -59,6 +59,19 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Forest Note" />
         <script src="https://sdk.minepi.com/pi-sdk.js" async />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.addEventListener('error', function(e) {
+                if (e.message === 'ResizeObserver loop completed with undelivered notifications.' || 
+                    e.message === 'ResizeObserver loop limit exceeded') {
+                  e.stopImmediatePropagation();
+                  return false;
+                }
+              });
+            `,
+          }}
+        />
       </head>
       <body
         className={`font-sans antialiased`}
