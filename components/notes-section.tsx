@@ -12,9 +12,23 @@ import type { Note, Language, Attachment } from "@/lib/types"
 import { MediaTools } from "@/components/media-tools"
 import { Spinner } from "@/components/ui/spinner"
 import dynamic from "next/dynamic"
-import "react-quill/dist/quill.snow.css"
 
-const ReactQuill = dynamic(() => import("react-quill"), { ssr: false })
+const ReactQuill = dynamic(
+  async () => {
+    const { default: RQ } = await import("react-quill")
+    // Import CSS inside the dynamic import
+    await import("react-quill/dist/quill.snow.css")
+    return RQ
+  },
+  {
+    ssr: false,
+    loading: () => (
+      <div className="border rounded-md p-3 bg-background min-h-[200px] flex items-center justify-center">
+        <Spinner className="h-6 w-6" />
+      </div>
+    ),
+  },
+)
 
 interface NotesSectionProps {
   onBack: () => void
@@ -405,12 +419,24 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
           />
           {/* Replace Textarea with ReactQuill for rich text editing */}
-          <ReactQuill
-            theme="snow"
-            value={formData.content}
-            onChange={(content) => setFormData({ ...formData, content })}
-            placeholder={t("content")}
-          />
+          <div className="relative">
+            <ReactQuill
+              theme="snow"
+              value={formData.content}
+              onChange={(content) => setFormData({ ...formData, content })}
+              placeholder={t("content")}
+              modules={{
+                toolbar: [
+                  [{ header: [1, 2, 3, false] }],
+                  ["bold", "italic", "underline", "strike"],
+                  [{ color: [] }, { background: [] }],
+                  [{ list: "ordered" }, { list: "bullet" }],
+                  ["clean"],
+                ],
+              }}
+              formats={["header", "bold", "italic", "underline", "strike", "color", "background", "list", "bullet"]}
+            />
+          </div>
 
           <Button
             onClick={handleOrganizeMeeting}
