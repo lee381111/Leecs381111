@@ -32,6 +32,7 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
   const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null)
   const [editingVehicleId, setEditingVehicleId] = useState<string | null>(null)
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null)
+  const [editingScheduleId, setEditingScheduleId] = useState<string | null>(null)
 
   const [vehicleForm, setVehicleForm] = useState({
     name: "",
@@ -263,19 +264,34 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
     try {
       setSaving(true)
 
-      const scheduleId = window.crypto.randomUUID()
-      const schedule: PreventiveMaintenanceSchedule = {
-        id: scheduleId,
-        vehicleId: selectedVehicleId,
-        ...scheduleForm,
-        isCompleted: false,
-        createdAt: new Date().toISOString(),
-        user_id: user.id,
+      let updated: PreventiveMaintenanceSchedule[]
+
+      if (editingScheduleId) {
+        updated = preventiveSchedules.map((s) =>
+          s.id === editingScheduleId
+            ? {
+                ...s,
+                ...scheduleForm,
+                user_id: user.id,
+              }
+            : s,
+        )
+
+        notificationManager.cancelAlarm(`maintenance_${editingScheduleId}`)
+      } else {
+        const scheduleId = window.crypto.randomUUID()
+        const schedule: PreventiveMaintenanceSchedule = {
+          id: scheduleId,
+          vehicleId: selectedVehicleId,
+          ...scheduleForm,
+          isCompleted: false,
+          createdAt: new Date().toISOString(),
+          user_id: user.id,
+        }
+        updated = [schedule, ...preventiveSchedules]
       }
 
-      const updated = [schedule, ...preventiveSchedules]
       setPreventiveSchedules(updated)
-
       localStorage.setItem(`preventive_schedules_${user?.id || "guest"}`, JSON.stringify(updated))
 
       if (scheduleForm.alarmEnabled && scheduleForm.scheduledDate) {
@@ -284,6 +300,7 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
 
         if (alarmTime.getTime() > Date.now()) {
           const vehicle = vehicles.find((v) => v.id === selectedVehicleId)
+          const scheduleId = editingScheduleId || updated[0].id
           notificationManager.scheduleAlarm({
             id: `maintenance_${scheduleId}`,
             title: `${t("maintenance_alarm_title")}: ${vehicle?.name || "차량"}`,
@@ -303,8 +320,9 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
         alarmDaysBefore: 1,
       })
       setShowScheduleForm(false)
+      setEditingScheduleId(null)
 
-      alert(t("schedule_saved"))
+      alert(editingScheduleId ? t("updated") : t("schedule_saved"))
     } catch (error) {
       console.error("[v0] Error saving schedule:", error)
       alert(t("save_error"))
@@ -498,7 +516,6 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
                 alert(t("please_select_vehicle"))
                 return
               }
-              console.log("[v0] 🔘 Toggle maintenance form. Current state:", showMaintenanceForm)
               setShowMaintenanceForm(!showMaintenanceForm)
               setShowScheduleForm(false)
             }}
@@ -514,7 +531,6 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
                 alert(t("please_select_vehicle"))
                 return
               }
-              console.log("[v0] 🔘 Toggle schedule form. Current state:", showScheduleForm)
               setShowScheduleForm(!showScheduleForm)
               setShowMaintenanceForm(false)
             }}
@@ -529,7 +545,6 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
 
         {showMaintenanceForm && (
           <>
-            {console.log("[v0] ✅ Rendering maintenance form")}
             <Card className="p-4 bg-emerald-50 border-emerald-200">
               <h3 className="text-lg font-semibold mb-4">{t("maintenance_input")}</h3>
               <div className="space-y-3">
@@ -605,7 +620,6 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
 
         {showScheduleForm && (
           <>
-            {console.log("[v0] ✅ Rendering schedule form")}
             <Card className="p-4 bg-teal-50 border-teal-200">
               <h3 className="text-lg font-semibold mb-4">{t("preventive_input")}</h3>
               <div className="space-y-3">
@@ -731,9 +745,29 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
                         </p>
                       )}
                     </div>
-                    <Button size="sm" variant="ghost" onClick={() => handleDeleteSchedule(schedule.id)}>
-                      <Trash2 className="w-4 h-4 text-red-500" />
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          setScheduleForm({
+                            type: schedule.type,
+                            scheduledDate: schedule.scheduledDate,
+                            mileage: schedule.mileage || 0,
+                            description: schedule.description || "",
+                            alarmEnabled: schedule.alarmEnabled || false,
+                            alarmDaysBefore: schedule.alarmDaysBefore || 1,
+                          })
+                          setEditingScheduleId(schedule.id)
+                          setShowScheduleForm(true)
+                        }}
+                      >
+                        <Pencil className="w-4 h-4 text-black" />
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => handleDeleteSchedule(schedule.id)}>
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                      </Button>
+                    </div>
                   </div>
                 </Card>
               ))}
