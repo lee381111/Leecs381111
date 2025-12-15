@@ -423,15 +423,41 @@ export function MediaTools({
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
       const data = imageData.data
 
+      // Step 1: Convert to grayscale
       for (let i = 0; i < data.length; i += 4) {
         const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114
+        data[i] = gray
+        data[i + 1] = gray
+        data[i + 2] = gray
+      }
 
-        const contrast = 1.2
-        const adjusted = (gray - 128) * contrast + 128
+      // Step 2: Apply adaptive thresholding for better text contrast
+      const threshold = 128
+      for (let i = 0; i < data.length; i += 4) {
+        const value = data[i] > threshold ? 255 : 0
+        data[i] = value
+        data[i + 1] = value
+        data[i + 2] = value
+      }
 
-        data[i] = adjusted // red
-        data[i + 1] = adjusted // green
-        data[i + 2] = adjusted // blue
+      // Step 3: Apply sharpening filter
+      const sharpenKernel = [0, -1, 0, -1, 5, -1, 0, -1, 0]
+      const tempData = new Uint8ClampedArray(data)
+
+      for (let y = 1; y < canvas.height - 1; y++) {
+        for (let x = 1; x < canvas.width - 1; x++) {
+          let sum = 0
+          for (let ky = -1; ky <= 1; ky++) {
+            for (let kx = -1; kx <= 1; kx++) {
+              const idx = ((y + ky) * canvas.width + (x + kx)) * 4
+              sum += tempData[idx] * sharpenKernel[(ky + 1) * 3 + (kx + 1)]
+            }
+          }
+          const idx = (y * canvas.width + x) * 4
+          data[idx] = Math.max(0, Math.min(255, sum))
+          data[idx + 1] = data[idx]
+          data[idx + 2] = data[idx]
+        }
       }
 
       ctx.putImageData(imageData, 0, 0)
@@ -443,7 +469,7 @@ export function MediaTools({
     }
     setIsOCRCameraOpen(false)
 
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.98)
+    const dataUrl = canvas.toDataURL("image/png")
     await performSimpleOCR(dataUrl)
   }
 
@@ -479,13 +505,17 @@ export function MediaTools({
         },
       })
 
+      await worker.setParameters({
+        tessedit_char_whitelist: "",
+        preserve_interword_spaces: "1",
+        tessedit_pageseg_mode: Tesseract.PSM.AUTO,
+      })
+
       console.log("[v0] Worker created, processing image...")
 
       const {
         data: { text },
-      } = await worker.recognize(imageData, {
-        tessedit_pageseg_mode: Tesseract.PSM.AUTO,
-      })
+      } = await worker.recognize(imageData)
 
       console.log("[v0] OCR completed, text length:", text.length)
 
