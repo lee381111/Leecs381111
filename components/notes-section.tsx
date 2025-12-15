@@ -1,875 +1,1521 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import type React from "react"
+import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Card } from "@/components/ui/card"
-import { ArrowLeft, Plus, Search, Trash2, Edit2, Save, Tag, Eye, Share2, Sparkles } from "lucide-react"
-import { saveNotes, loadNotes } from "@/lib/storage"
-import { useAuth } from "@/lib/auth-context"
-import { getTranslation } from "@/lib/i18n"
-import type { Note, Language, Attachment } from "@/lib/types"
-import { MediaTools } from "@/components/media-tools"
-import { Spinner } from "@/components/ui/spinner"
+import { Switch } from "@/components/ui/switch"
+import { Badge } from "@/components/ui/badge"
+import { useToast } from "@/hooks/use-toast"
+import {
+  Plus,
+  Trash2,
+  Paperclip,
+  Mic,
+  Lock,
+  Unlock,
+  X,
+  ImageIcon,
+  Pencil,
+  Search,
+  PenTool,
+  ArrowUpDown,
+  Upload,
+  Download,
+  ScanLine,
+  Star,
+  FileDown,
+  Sparkles,
+  Loader2,
+} from "lucide-react"
+import type { Note } from "./personal-organizer-app"
+import { useLanguage } from "@/lib/language-context"
+import { AttachmentList } from "./attachment-list"
+import { FormattingToolbar } from "./formatting-toolbar"
+import { MarkdownRenderer } from "./markdown-renderer"
+import { HandwritingCanvas } from "./handwriting-canvas"
+import { createClient } from "@/lib/supabase/client"
+import { extractTextFromImage, getOCRLanguage } from "@/lib/ocr"
+import { uploadFileToStorage } from "@/lib/storage"
+import { StorageSetupModal } from "./storage-setup-modal"
 
-interface NotesSectionProps {
-  onBack: () => void
-  language: Language
+type LocalFile = {
+  name: string
+  url: string
+  type: string
 }
 
-export function NotesSection({ onBack, language }: NotesSectionProps) {
-  const { user } = useAuth()
-  const [notes, setNotes] = useState<Note[]>([])
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedTag, setSelectedTag] = useState<string>("")
+type NotesSectionProps = {
+  notes: Note[]
+  setNotes: (notes: Note[]) => void
+  userId?: string
+}
+
+const TAG_COLORS: Record<string, string> = {
+  "전체 태그": "bg-gray-500 hover:bg-gray-600",
+  개인: "bg-red-500 hover:bg-red-600",
+  개인업무: "bg-orange-500 hover:bg-orange-600",
+  업무: "bg-purple-500 hover:bg-purple-600",
+}
+
+const getTagColor = (tag: string): string => {
+  return TAG_COLORS[tag] || "bg-blue-500 hover:bg-blue-600"
+}
+
+export function NotesSection({ notes, setNotes, userId }: NotesSectionProps) {
   const [isAdding, setIsAdding] = useState(false)
-  const [editingNote, setEditingNote] = useState<Note | null>(null)
-  const [formData, setFormData] = useState({
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [selectedNote, setSelectedNote] = useState<Note | null>(null)
+  const [unlockedNotes, setUnlockedNotes] = useState<Set<string>>(new Set())
+  const [passwordInput, setPasswordInput] = useState("")
+  const [showPreview, setShowPreview] = useState(false)
+  const [newNote, setNewNote] = useState({
     title: "",
     content: "",
-    tags: "",
-    attachments: [] as Attachment[],
+    isLocked: false,
+    password: "",
+    tags: [] as string[],
+    starred: false,
   })
-  const [attachments, setAttachments] = useState<Attachment[]>([])
-  const [selectedImage, setSelectedImage] = useState<{ url: string; name: string } | null>(null)
-  const [viewingAttachment, setViewingAttachment] = useState<{ url: string; name: string } | null>(null)
-  const [imageLoadErrors, setImageLoadErrors] = useState<Set<string>>(new Set())
-  const [isOrganizing, setIsOrganizing] = useState(false)
-  const [isSummarizing, setIsSummarizing] = useState(false)
-  const [noteSummary, setNoteSummary] = useState<string | null>(null)
-  const [isTranslating, setIsTranslating] = useState(false)
-  const [noteTranslation, setNoteTranslation] = useState<string | null>(null)
-  const [showLanguageSelect, setShowLanguageSelect] = useState(false)
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([])
+  const [existingAttachments, setExistingAttachments] = useState<LocalFile[]>([])
+  const [uploadedAttachments, setUploadedAttachments] = useState<LocalFile[]>([])
+  const [isRecording, setIsRecording] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const jsonImportRef = useRef<HTMLInputElement>(null)
+  const scanInputRef = useRef<HTMLInputElement>(null)
+  const recognitionRef = useRef<any>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [isHandwritingOpen, setIsHandwritingOpen] = useState(false)
+  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest")
+  const [selectedTag, setSelectedTag] = useState<string>("all")
+  const [newTag, setNewTag] = useState("")
+  const contentTextareaRef = useRef<HTMLTextAreaElement>(null)
+  const { t, language } = useLanguage()
 
-  const t = (key: string) => getTranslation(language, key)
+  const [summarizingNoteId, setSummarizingNoteId] = useState<string | null>(null)
+  const [noteSummaries, setNoteSummaries] = useState<Record<string, string>>({})
+  const [isProcessingOCR, setIsProcessingOCR] = useState(false)
+  const [pendingSaveOperation, setPendingSaveOperation] = useState<"add" | "update" | null>(null)
+  const [showStorageSetupModal, setShowStorageSetupModal] = useState(false)
+  const [pendingFiles, setPendingFiles] = useState<File[]>([])
+  const [storageSetupComplete, setStorageSetupComplete] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const { toast } = useToast()
 
-  useEffect(() => {
-    loadData()
-  }, [user])
+  const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB in bytes
 
-  const loadData = async () => {
-    if (!user?.id) return
+  const handleFileAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files)
 
-    try {
-      setLoading(true)
-      const data = await loadNotes(user.id)
-      setNotes(data)
-    } catch (err) {
-      console.error("[v0] Error loading notes:", err)
-    } finally {
-      setLoading(false)
+      const oversizedFiles = newFiles.filter((file) => file.size > MAX_FILE_SIZE)
+      if (oversizedFiles.length > 0) {
+        const messages = {
+          ko: `파일 크기는 50MB를 초과할 수 없습니다. 다음 파일이 너무 큽니다:\n${oversizedFiles.map((f) => f.name).join("\n")}`,
+          en: `File size cannot exceed 50MB. The following files are too large:\n${oversizedFiles.map((f) => f.name).join("\n")}`,
+          zh: `文件大小不能超过50MB。以下文件太大：\n${oversizedFiles.map((f) => f.name).join("\n")}`,
+          ja: `ファイルサイズは50MBを超えることはできません。次のファイルが大きすぎます：\n${oversizedFiles.map((f) => f.name).join("\n")}`,
+        }
+        alert(messages[language])
+        return
+      }
+
+      setAttachedFiles([...attachedFiles, ...newFiles])
     }
   }
 
-  const handleSave = async () => {
-    if (!formData.title.trim()) {
-      alert(t("title_required"))
+  const handleRemoveFile = (index: number) => {
+    setAttachedFiles(attachedFiles.filter((_, i) => i !== index))
+  }
+
+  const handleVoiceInput = () => {
+    if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
+      const messages = {
+        ko: "음성 인식이 지원되지 않는 브라우저입니다.",
+        en: "Speech recognition is not supported in this browser.",
+        zh: "此浏览器不支持语音识别。",
+        ja: "このブラウザは音声認識をサポートしていません。",
+      }
+      alert(messages[language])
       return
     }
 
-    if (!user?.id) {
-      alert(language === "ko" ? "로그인이 필요합니다" : "Login required")
+    if (isRecording) {
+      recognitionRef.current?.stop()
+      setIsRecording(false)
       return
     }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    const recognition = new SpeechRecognition()
+    const langCodes = { ko: "ko-KR", en: "en-US", zh: "zh-CN", ja: "ja-JP" }
+    recognition.lang = langCodes[language]
+
+    recognition.onstart = () => {
+      setIsRecording(true)
+    }
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript
+      setNewNote({ ...newNote, content: newNote.content + " " + transcript })
+    }
+
+    recognition.onerror = (event: any) => {
+      setIsRecording(false)
+    }
+
+    recognition.onend = () => {
+      setIsRecording(false)
+    }
+
+    recognitionRef.current = recognition
+    recognition.start()
+  }
+
+  const handleExportNotes = () => {
+    const dataStr = JSON.stringify(notes, null, 2)
+    const dataBlob = new Blob([dataStr], { type: "application/json" })
+    const url = URL.createObjectURL(dataBlob)
+    const link = document.createElement("a")
+    link.href = url
+    link.download = `notes-${new Date().toISOString().split("T")[0]}.json`
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const handleImportNotes = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      try {
+        const importedNotes = JSON.parse(event.target?.result as string)
+        const notesWithDates = importedNotes.map((note: any) => ({
+          ...note,
+          createdAt: new Date(note.createdAt),
+        }))
+        setNotes([...notes, ...notesWithDates])
+        alert(t("importSuccess") || "노트를 성공적으로 가져왔습니다")
+      } catch (error) {
+        alert(t("importError") || "노트 가져오기에 실패했습니다")
+      }
+    }
+    reader.readAsText(file)
+    e.target.value = ""
+  }
+
+  const handleToggleStar = async (noteId: string) => {
+    const note = notes.find((n) => n.id === noteId)
+    if (!note) return
+
+    const newStarredStatus = !note.starred
+
+    const supabase = createClient()
+    const { error } = await supabase.from("notes").update({ starred: newStarredStatus }).eq("id", noteId)
+
+    if (error) {
+      console.error("[v0] Error updating star status in Supabase:", error)
+      return
+    }
+
+    setNotes(notes.map((n) => (n.id === noteId ? { ...n, starred: newStarredStatus } : n)))
+  }
+
+  const handleAddTag = () => {
+    if (newTag.trim() && !newNote.tags.includes(newTag.trim())) {
+      setNewNote({ ...newNote, tags: [...newNote.tags, newTag.trim()] })
+      setNewTag("")
+    }
+  }
+
+  const handleRemoveTag = (tag: string) => {
+    setNewNote({ ...newNote, tags: newNote.tags.filter((t) => t !== tag) })
+  }
+
+  const allTags = Array.from(new Set(notes.flatMap((note) => note.tags || [])))
+
+  const handleAddNote = async () => {
+    if (!newNote.title || !newNote.content || !userId) {
+      toast({
+        title: "입력 오류",
+        description: "제목과 내용을 입력해주세요.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsSaving(true)
 
     try {
-      setSaving(true)
+      const videoAudioFiles = attachedFiles.filter((f) => f.type.startsWith("audio/") || f.type.startsWith("video/"))
+      const otherFiles = attachedFiles.filter((f) => !f.type.startsWith("audio/") && !f.type.startsWith("video/"))
 
-      const note: Note = {
-        id: editingNote?.id || crypto.randomUUID(),
-        title: formData.title,
-        content: formData.content,
-        tags: formData.tags
-          .split(",")
-          .map((t) => t.trim())
-          .filter(Boolean),
-        attachments: formData.attachments.map((att) => ({
-          ...att,
-          url: att.url || att.data,
-          data: att.data || att.url,
-        })),
-        createdAt: editingNote?.createdAt || new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        user_id: user?.id,
+      let uploadedFiles: LocalFile[] = [...uploadedAttachments]
+
+      if (otherFiles.length > 0) {
+        const dataUrlFiles = await Promise.all(
+          otherFiles.map(
+            (file) =>
+              new Promise<LocalFile>((resolve) => {
+                const reader = new FileReader()
+                reader.onload = (e) => {
+                  resolve({
+                    name: file.name,
+                    url: e.target?.result as string,
+                    type: file.type,
+                  })
+                }
+                reader.readAsDataURL(file)
+              }),
+          ),
+        )
+        uploadedFiles = [...uploadedFiles, ...dataUrlFiles]
       }
 
-      console.log("[v0] Saving note with", note.attachments?.length || 0, "attachments")
+      if (videoAudioFiles.length > 0) {
+        toast({
+          title: "파일 업로드 중",
+          description: `${videoAudioFiles.length}개의 파일을 업로드하고 있습니다...`,
+        })
 
-      const updated = editingNote ? notes.map((n) => (n.id === editingNote.id ? note : n)) : [note, ...notes]
+        const storageFiles = await convertFilesToDataUrls(videoAudioFiles, userId)
+        uploadedFiles = [...uploadedFiles, ...storageFiles]
 
-      setNotes(updated)
+        if (storageFiles.length < videoAudioFiles.length) {
+          toast({
+            title: "일부 파일 업로드 실패",
+            description: "일부 동영상/오디오 파일 업로드에 실패했습니다. 다른 내용은 저장됩니다.",
+            variant: "destructive",
+          })
+        }
+      }
 
-      // Save to database
-      await saveNotes(updated, user.id)
+      console.log("[v0] Saving note with attachments:", uploadedFiles)
 
-      setFormData({ title: "", content: "", tags: "", attachments: [] })
-      setAttachments([])
-      setIsAdding(false)
-      setEditingNote(null)
+      const noteData = {
+        user_id: userId,
+        title: newNote.title,
+        content: newNote.content,
+        is_locked: newNote.isLocked,
+        password: newNote.isLocked ? newNote.password : null,
+        attachments: uploadedFiles.length > 0 ? uploadedFiles : null,
+        tags: newNote.tags.length > 0 ? newNote.tags : null,
+        starred: newNote.starred,
+      }
 
-      alert(
-        language === "ko"
-          ? `저장 완료! (첨부파일 ${note.attachments?.length || 0}개)`
-          : `Saved! (${note.attachments?.length || 0} attachments)`,
-      )
-    } catch (err: any) {
-      console.error("[v0] Error saving note:", err)
-      alert(
-        language === "ko"
-          ? `저장 실패: ${err?.message || "알 수 없는 오류"}. 인터넷 연결을 확인해주세요.`
-          : `Save failed: ${err?.message || "Unknown error"}. Please check your internet connection.`,
-      )
-      // Revert UI change on error
-      loadData()
+      console.log("[v0] Note data being saved:", noteData)
+
+      const supabase = createClient()
+      const { data, error } = await supabase.from("notes").insert([noteData]).select().single()
+
+      if (error) {
+        console.error("[v0] Error saving note to Supabase:", error)
+        toast({
+          title: "저장 실패",
+          description: `노트 저장에 실패했습니다: ${error.message}`,
+          variant: "destructive",
+        })
+        return
+      }
+
+      if (data) {
+        console.log("[v0] Note saved, data returned from DB:", data)
+
+        const note: Note = {
+          id: data.id,
+          title: data.title,
+          content: data.content,
+          createdAt: new Date(data.created_at),
+          isLocked: data.is_locked || false,
+          password: data.password || undefined,
+          attachments: data.attachments || undefined,
+          tags: data.tags || undefined,
+          starred: data.starred || false,
+          user_id: data.user_id,
+        }
+
+        console.log("[v0] Note object being added to state:", note)
+
+        setNotes([note, ...notes])
+        setNewNote({ title: "", content: "", isLocked: false, password: "", tags: [], starred: false })
+        setAttachedFiles([])
+        setUploadedAttachments([])
+        setIsAdding(false)
+
+        toast({
+          title: "저장 완료",
+          description: "노트가 성공적으로 저장되었습니다.",
+        })
+      }
+    } catch (error) {
+      console.error("[v0] Exception in handleAddNote:", error)
+      toast({
+        title: "오류 발생",
+        description: "노트 저장 중 오류가 발생했습니다.",
+        variant: "destructive",
+      })
     } finally {
-      setSaving(false)
+      setIsSaving(false)
     }
   }
 
   const handleDelete = async (id: string) => {
-    if (!user?.id) {
-      alert(language === "ko" ? "로그인이 필요합니다" : "Login required")
+    const supabase = createClient()
+    const { error } = await supabase.from("notes").delete().eq("id", id)
+
+    if (error) {
+      console.error("[v0] Error deleting note from Supabase:", error)
+      alert("노트 삭제에 실패했습니다.")
       return
     }
 
-    if (!confirm(language === "ko" ? "정말 삭제하시겠습니까?" : "Are you sure you want to delete?")) {
-      return
-    }
-
-    try {
-      const updated = notes.filter((n) => n.id !== id)
-      setNotes(updated)
-      await saveNotes(updated, user.id)
-      alert(language === "ko" ? "삭제되었습니다" : "Deleted")
-    } catch (err) {
-      console.error("[v0] Delete failed:", err)
-      alert(language === "ko" ? "삭제 실패" : "Delete failed")
-      loadData() // Reload on error
+    setNotes(notes.filter((n) => n.id !== id))
+    if (selectedNote?.id === id) {
+      setSelectedNote(null)
     }
   }
 
   const handleEdit = (note: Note) => {
-    console.log("[v0] Editing note with attachments:", note.attachments?.length || 0)
-    setEditingNote(note)
-    setFormData({
+    console.log("[v0] Editing note:", note)
+    console.log("[v0] Note attachments:", note.attachments)
+
+    setEditingId(note.id)
+    setNewNote({
       title: note.title,
       content: note.content,
-      tags: note.tags.join(", "),
-      attachments: note.attachments || [],
+      isLocked: note.isLocked,
+      password: note.password || "",
+      tags: note.tags || [],
+      starred: note.starred || false,
     })
-    const loadedAttachments = (note.attachments || []).map((att) => ({
-      ...att,
-      url: att.url || att.data,
-      data: att.data || att.url,
-      type: att.type || "image",
-      name: att.name || "attachment",
-    }))
-    console.log("[v0] Loaded attachments for editing:", loadedAttachments.length)
-    setAttachments(loadedAttachments)
+    setExistingAttachments((note.attachments as LocalFile[]) || [])
+    setAttachedFiles([])
     setIsAdding(true)
+    setSelectedNote(null)
   }
 
-  const handleOrganizeMeeting = async () => {
-    if (!formData.content.trim()) {
-      alert(t("content_required_for_organize"))
-      return
-    }
+  const handleUpdate = async () => {
+    if (!editingId || !newNote.title || !newNote.content || !userId) return
 
-    const confirmed = confirm(t("confirm_organize_meeting"))
-    if (!confirmed) return
+    setIsSaving(true)
 
     try {
-      setIsOrganizing(true)
-      console.log("[v0] Organizing meeting minutes...")
+      const videoAudioFiles = attachedFiles.filter((f) => f.type.startsWith("audio/") || f.type.startsWith("video/"))
+      const otherFiles = attachedFiles.filter((f) => !f.type.startsWith("audio/") && !f.type.startsWith("video/"))
 
-      const response = await fetch("/api/organize-meeting", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          content: formData.content,
-          language,
-        }),
-      })
+      let uploadedFiles: LocalFile[] = [...uploadedAttachments]
 
-      if (!response.ok) {
-        throw new Error("Failed to organize meeting")
+      if (otherFiles.length > 0) {
+        const dataUrlFiles = await Promise.all(
+          otherFiles.map(
+            (file) =>
+              new Promise<LocalFile>((resolve) => {
+                const reader = new FileReader()
+                reader.onload = (e) => {
+                  resolve({
+                    name: file.name,
+                    url: e.target?.result as string,
+                    type: file.type,
+                  })
+                }
+                reader.readAsDataURL(file)
+              }),
+          ),
+        )
+        uploadedFiles = [...uploadedFiles, ...dataUrlFiles]
       }
 
-      const { organizedContent } = await response.json()
+      if (videoAudioFiles.length > 0) {
+        toast({
+          title: "파일 업로드 중",
+          description: `${videoAudioFiles.length}개의 파일을 업로드하고 있습니다...`,
+        })
 
-      setFormData({
-        ...formData,
-        content: organizedContent,
-      })
+        const storageFiles = await convertFilesToDataUrls(videoAudioFiles, userId)
+        uploadedFiles = [...uploadedFiles, ...storageFiles]
 
-      alert(t("meeting_organized_success"))
-    } catch (error) {
-      console.error("[v0] Error organizing meeting:", error)
-      alert(t("meeting_organize_failed"))
-    } finally {
-      setIsOrganizing(false)
-    }
-  }
-
-  const handleSummarizeNote = async () => {
-    if (!formData.content.trim()) {
-      alert(t("content_required_for_summary"))
-      return
-    }
-
-    try {
-      setIsSummarizing(true)
-      console.log("[v0] Summarizing note...")
-
-      const response = await fetch("/api/summarize-note", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          content: formData.content,
-          language,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to summarize note")
-      }
-
-      const { summary } = await response.json()
-
-      setNoteSummary(summary)
-    } catch (error) {
-      console.error("[v0] Error summarizing note:", error)
-      alert(t("note_summary_failed"))
-    } finally {
-      setIsSummarizing(false)
-    }
-  }
-
-  const handleApplySummary = (option: "replace" | "append") => {
-    if (!noteSummary) return
-
-    if (option === "replace") {
-      setFormData({ ...formData, content: noteSummary })
-    } else {
-      setFormData({ ...formData, content: formData.content + "\n\n---\n\n" + noteSummary })
-    }
-
-    setNoteSummary(null)
-  }
-
-  const searchImageOnBing = (imageUrl: string) => {
-    const bingSearchUrl = `https://www.bing.com/images/search?view=detailv2&iss=sbi&form=SBIHMP&sbisrc=UrlPaste&q=imgurl:${encodeURIComponent(imageUrl)}`
-    window.open(bingSearchUrl, "_blank")
-  }
-
-  const handleTextFromSpeech = (text: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      content: prev.content ? `${prev.content}\n${text}` : text,
-    }))
-    console.log("[v0] Added text from speech:", text.length, "characters")
-  }
-
-  const handleShare = async (note: Note) => {
-    const shareText = `${note.title}\n\n${note.content}\n\n${note.tags.length > 0 ? `#${note.tags.join(" #")}` : ""}`
-    const shareData = {
-      title: note.title,
-      text: shareText,
-    }
-
-    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-      try {
-        await navigator.share(shareData)
-        console.log("[v0] Note shared successfully")
-      } catch (err: any) {
-        if (err.name !== "AbortError") {
-          console.error("[v0] Share failed:", err)
-          fallbackCopyToClipboard(shareText)
+        if (storageFiles.length < videoAudioFiles.length) {
+          toast({
+            title: "일부 파일 업로드 실패",
+            description: "일부 동영상/오디오 파일 업로드에 실패했습니다. 다른 내용은 저장됩니다.",
+            variant: "destructive",
+          })
         }
       }
-    } else {
-      console.log("[v0] Web Share API not supported, using clipboard fallback")
-      fallbackCopyToClipboard(shareText)
-    }
-  }
 
-  const fallbackCopyToClipboard = (text: string) => {
-    navigator.clipboard
-      .writeText(text)
-      .then(() => {
-        alert(language === "ko" ? "클립보드에 복사되었습니다!" : "Copied to clipboard!")
-      })
-      .catch((err) => {
-        console.error("[v0] Clipboard copy failed:", err)
-        alert(language === "ko" ? "복사 실패" : "Copy failed")
-      })
-  }
+      const allAttachments = [...existingAttachments, ...uploadedFiles]
 
-  const handleTranslateNote = async (targetLanguage: Language) => {
-    if (!formData.content.trim()) {
-      alert(t("content_required_for_translation"))
-      return
-    }
-
-    try {
-      setIsTranslating(true)
-      setShowLanguageSelect(false)
-      console.log("[v0] Translating note to", targetLanguage)
-
-      const response = await fetch("/api/translate-note", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          content: formData.content,
-          sourceLanguage: language,
-          targetLanguage,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to translate note")
+      const noteData = {
+        title: newNote.title,
+        content: newNote.content,
+        is_locked: newNote.isLocked,
+        password: newNote.isLocked ? newNote.password : null,
+        attachments: allAttachments.length > 0 ? allAttachments : null,
+        tags: newNote.tags.length > 0 ? newNote.tags : null,
+        starred: newNote.starred,
       }
 
-      const { translatedContent } = await response.json()
-      setNoteTranslation(translatedContent)
+      const supabase = createClient()
+      const { data, error } = await supabase.from("notes").update(noteData).eq("id", editingId).select().single()
+
+      if (error) {
+        console.error("[v0] Error updating note in Supabase:", error)
+        toast({
+          title: "업데이트 실패",
+          description: `노트 업데이트에 실패했습니다: ${error.message}`,
+          variant: "destructive",
+        })
+        return
+      }
+
+      if (data) {
+        const updatedNote: Note = {
+          id: data.id,
+          title: data.title,
+          content: data.content,
+          createdAt: new Date(data.created_at),
+          isLocked: data.is_locked || false,
+          password: data.password || undefined,
+          attachments: data.attachments || undefined,
+          tags: data.tags || undefined,
+          starred: data.starred || false,
+          user_id: data.user_id,
+        }
+
+        setNotes(notes.map((n) => (n.id === editingId ? updatedNote : n)))
+        setNewNote({ title: "", content: "", isLocked: false, password: "", tags: [], starred: false })
+        setAttachedFiles([])
+        setExistingAttachments([])
+        setUploadedAttachments([])
+        setEditingId(null)
+        setIsAdding(false)
+
+        toast({
+          title: "업데이트 완료",
+          description: "노트가 성공적으로 업데이트되었습니다.",
+        })
+      }
     } catch (error) {
-      console.error("[v0] Error translating note:", error)
-      alert(t("translation_failed"))
+      console.error("[v0] Exception in handleUpdate:", error)
+      toast({
+        title: "오류 발생",
+        description: "노트 업데이트 중 오류가 발생했습니다.",
+        variant: "destructive",
+      })
     } finally {
-      setIsTranslating(false)
+      setIsSaving(false)
     }
   }
 
-  const handleApplyTranslation = (option: "replace" | "append") => {
-    if (!noteTranslation) return
+  const handleRemoveExistingAttachment = (index: number) => {
+    setExistingAttachments(existingAttachments.filter((_, i) => i !== index))
+  }
 
-    if (option === "replace") {
-      setFormData({ ...formData, content: noteTranslation })
+  const handleCancel = () => {
+    setIsAdding(false)
+    setEditingId(null)
+    setNewNote({ title: "", content: "", isLocked: false, password: "", tags: [], starred: false })
+    setAttachedFiles([])
+    setExistingAttachments([])
+    setUploadedAttachments([])
+  }
+
+  const handleHandwritingSave = async (imageBlob: Blob) => {
+    const file = new File([imageBlob], `handwriting-${Date.now()}.png`, { type: "image/png" })
+    setAttachedFiles([...attachedFiles, file])
+  }
+
+  const handleUnlock = (note: Note) => {
+    if (passwordInput === note.password) {
+      setUnlockedNotes(new Set([...unlockedNotes, note.id]))
+      setSelectedNote(note)
+      setPasswordInput("")
     } else {
-      setFormData({ ...formData, content: formData.content + "\n\n---\n\n" + noteTranslation })
+      const messages = {
+        ko: "비밀번호가 틀렸습니다",
+        en: "Incorrect password",
+        zh: "密码错误",
+        ja: "パスワードが間違っています",
+      }
+      alert(messages[language])
     }
-
-    setNoteTranslation(null)
   }
 
-  const allTags = Array.from(new Set(notes.flatMap((note) => note.tags))).sort()
+  const handleLock = (note: Note) => {
+    const newUnlockedNotes = new Set(unlockedNotes)
+    newUnlockedNotes.delete(note.id)
+    setUnlockedNotes(newUnlockedNotes)
+    if (selectedNote?.id === note.id) {
+      setSelectedNote(null)
+    }
+  }
+
+  const isNoteUnlocked = (note: Note) => {
+    return !note.isLocked || unlockedNotes.has(note.id)
+  }
 
   const filteredNotes = notes.filter((note) => {
     const matchesSearch =
+      !searchQuery ||
       note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       note.content.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesTag = !selectedTag || note.tags.includes(selectedTag)
+
+    const matchesTag = selectedTag === "all" || note.tags?.includes(selectedTag)
+
     return matchesSearch && matchesTag
   })
 
-  const handleAttachmentsChange = (attachments: Attachment[]) => {
-    console.log("[v0] Attachments changed:", attachments)
-    setFormData({ ...formData, attachments })
+  const sortedNotes = [...filteredNotes].sort((a, b) => {
+    if (sortOrder === "newest") {
+      return b.createdAt.getTime() - a.createdAt.getTime()
+    } else {
+      return a.createdAt.getTime() - b.createdAt.getTime()
+    }
+  })
+
+  const handleScanImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0]
+
+      const MAX_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
+      if (file.size > MAX_IMAGE_SIZE) {
+        const errorMessages = {
+          ko: "이미지 파일 크기는 10MB를 초과할 수 없습니다. 더 작은 이미지를 선택해주세요.",
+          en: "Image file size cannot exceed 10MB. Please select a smaller image.",
+          zh: "图片文件大小不能超过10MB。请选择较小的图片。",
+          ja: "画像ファイルのサイズは10MBを超えることはできません。より小さい画像を選択してください。",
+        }
+        toast({
+          title: "파일 크기 초과",
+          description: errorMessages[language],
+          variant: "destructive",
+        })
+        e.target.value = ""
+        return
+      }
+
+      try {
+        const compressedFile = await compressImage(file)
+        setAttachedFiles([...attachedFiles, compressedFile])
+      } catch (error) {
+        console.error("[v0] Image compression error:", error)
+        // If compression fails, use original file
+        setAttachedFiles([...attachedFiles, file])
+      }
+
+      // Open the note editor if not already open
+      if (!isAdding) {
+        setIsAdding(true)
+      }
+
+      // Perform OCR
+      setIsProcessingOCR(true)
+      try {
+        const ocrLanguage = getOCRLanguage(language)
+        const extractedText = await extractTextFromImage(file, ocrLanguage)
+
+        if (extractedText.trim()) {
+          // Add extracted text to note content
+          const separator = newNote.content ? "\n\n" : ""
+          setNewNote({
+            ...newNote,
+            content: newNote.content + separator + `[스캔된 텍스트]\n${extractedText.trim()}`,
+          })
+
+          toast({
+            title: "텍스트 추출 완료",
+            description: "이미지에서 텍스트를 추출했습니다!",
+          })
+        } else {
+          toast({
+            title: "텍스트 없음",
+            description: "이미지에서 텍스트를 찾을 수 없습니다. 이미지가 첨부되었습니다.",
+          })
+        }
+      } catch (error) {
+        console.error("[v0] OCR Error:", error)
+        toast({
+          title: "텍스트 추출 실패",
+          description: "텍스트 추출에 실패했습니다. 이미지는 첨부되었습니다.",
+          variant: "destructive",
+        })
+      } finally {
+        setIsProcessingOCR(false)
+      }
+    }
+    e.target.value = ""
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center space-y-4">
-          <Spinner className="h-12 w-12 mx-auto" />
-          <p className="text-muted-foreground">{t("loading")}</p>
-        </div>
-      </div>
-    )
+  const handleDownloadPDF = (note: Note) => {
+    const content = `
+${note.title}
+${"=".repeat(note.title.length)}
+
+작성일: ${note.createdAt.toLocaleDateString()}
+${note.tags && note.tags.length > 0 ? `태그: ${note.tags.join(", ")}` : ""}
+
+${note.content}
+
+${note.attachments && note.attachments.length > 0 ? `\n첨부파일: ${note.attachments.length}개` : ""}
+    `.trim()
+
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.download = `${note.title.replace(/[^a-zA-Z0-9가-힣]/g, "_")}.txt`
+    link.click()
+    URL.revokeObjectURL(url)
   }
 
-  if (isAdding) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
-        <Button
-          variant="ghost"
-          onClick={() => {
-            setIsAdding(false)
-            setEditingNote(null)
-            setFormData({ title: "", content: "", tags: "", attachments: [] })
-            setAttachments([])
-          }}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" /> {t("title")}
-        </Button>
-        <div className="space-y-4">
-          <Input
-            placeholder={t("title_label")}
-            value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          />
-          <Textarea
-            placeholder={t("content")}
-            value={formData.content}
-            onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-            rows={10}
-          />
+  const translateTag = (tag: string): string => {
+    const tagTranslations: Record<string, string> = {
+      개인: t("personal"),
+      업무: t("work"),
+      중요: t("important"),
+      개인업무: t("personalWork"),
+    }
+    return tagTranslations[tag] || tag
+  }
 
-          <Button
-            onClick={handleOrganizeMeeting}
-            disabled={isOrganizing || !formData.content.trim()}
-            variant="outline"
-            className="w-full bg-transparent"
-          >
-            {isOrganizing ? (
-              <>
-                <Spinner className="mr-2 h-4 w-4" />
-                {t("organizing_meeting")}
-              </>
-            ) : (
-              <>
-                <Tag className="mr-2 h-4 w-4" />
-                {t("organize_meeting_minutes")}
-              </>
-            )}
-          </Button>
+  const handleFormat = (format: string) => {
+    const textarea = contentTextareaRef.current
+    if (!textarea) return
 
-          <Button
-            onClick={handleSummarizeNote}
-            disabled={isSummarizing || !formData.content.trim()}
-            variant="outline"
-            className="w-full bg-transparent"
-          >
-            {isSummarizing ? (
-              <>
-                <Spinner className="mr-2 h-4 w-4" />
-                {t("summarizing")}
-              </>
-            ) : (
-              <>
-                <Sparkles className="mr-2 h-4 w-4" />
-                {t("summarize_note")}
-              </>
-            )}
-          </Button>
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+    const selectedText = newNote.content.substring(start, end)
+    const beforeText = newNote.content.substring(0, start)
+    const afterText = newNote.content.substring(end)
 
-          <Button
-            onClick={() => setShowLanguageSelect(!showLanguageSelect)}
-            disabled={isTranslating || !formData.content.trim()}
-            variant="outline"
-            className="w-full bg-transparent"
-          >
-            {isTranslating ? (
-              <>
-                <Spinner className="mr-2 h-4 w-4" />
-                {t("translating")}
-              </>
-            ) : (
-              <>
-                <Share2 className="mr-2 h-4 w-4" />
-                {t("translate_note")}
-              </>
-            )}
-          </Button>
+    let newText = ""
+    let cursorOffset = 0
 
-          {showLanguageSelect && (
-            <Card className="p-4 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 border-indigo-200">
-              <p className="text-sm font-medium text-indigo-900 mb-3">{t("select_target_language")}</p>
-              <div className="space-y-2">
-                {language !== "ko" && (
-                  <Button onClick={() => handleTranslateNote("ko")} variant="outline" className="w-full bg-white/80">
-                    {t("translate_to_korean")}
-                  </Button>
-                )}
-                {language !== "en" && (
-                  <Button onClick={() => handleTranslateNote("en")} variant="outline" className="w-full bg-white/80">
-                    {t("translate_to_english")}
-                  </Button>
-                )}
-                {language !== "zh" && (
-                  <Button onClick={() => handleTranslateNote("zh")} variant="outline" className="w-full bg-white/80">
-                    {t("translate_to_chinese")}
-                  </Button>
-                )}
-                {language !== "ja" && (
-                  <Button onClick={() => handleTranslateNote("ja")} variant="outline" className="w-full bg-white/80">
-                    {t("translate_to_japanese")}
-                  </Button>
-                )}
-              </div>
-            </Card>
-          )}
+    switch (format) {
+      case "bold":
+        newText = `${beforeText}**${selectedText || "텍스트"}**${afterText}`
+        cursorOffset = selectedText ? selectedText.length + 4 : 2
+        break
+      case "italic":
+        newText = `${beforeText}*${selectedText || "텍스트"}*${afterText}`
+        cursorOffset = selectedText ? selectedText.length + 2 : 1
+        break
+      case "strikethrough":
+        newText = `${beforeText}~~${selectedText || "텍스트"}~~${afterText}`
+        cursorOffset = selectedText ? selectedText.length + 4 : 2
+        break
+      case "h1":
+        newText = `${beforeText}# ${selectedText || "제목 1"}${afterText}`
+        cursorOffset = selectedText ? selectedText.length + 2 : 2
+        break
+      case "h2":
+        newText = `${beforeText}## ${selectedText || "제목 2"}${afterText}`
+        cursorOffset = selectedText ? selectedText.length + 3 : 3
+        break
+      case "h3":
+        newText = `${beforeText}### ${selectedText || "제목 3"}${afterText}`
+        cursorOffset = selectedText ? selectedText.length + 4 : 4
+        break
+      case "bulletList":
+        newText = `${beforeText}- ${selectedText || "항목"}${afterText}`
+        cursorOffset = selectedText ? selectedText.length + 2 : 2
+        break
+      case "numberedList":
+        newText = `${beforeText}1. ${selectedText || "항목"}${afterText}`
+        cursorOffset = selectedText ? selectedText.length + 3 : 3
+        break
+      case "checklist":
+        newText = `${beforeText}- [ ] ${selectedText || "할 일"}${afterText}`
+        cursorOffset = selectedText ? selectedText.length + 6 : 6
+        break
+      case "code":
+        newText = `${beforeText}\`${selectedText || "코드"}\`${afterText}`
+        cursorOffset = selectedText ? selectedText.length + 2 : 1
+        break
+      default:
+        return
+    }
 
-          {noteTranslation && (
-            <Card className="p-4 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 border-indigo-200">
-              <h4 className="font-semibold text-indigo-900 mb-2">{t("translation_result")}</h4>
-              <p className="text-sm text-indigo-800 whitespace-pre-wrap mb-4">{noteTranslation}</p>
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => handleApplyTranslation("replace")}
-                  variant="outline"
-                  className="flex-1 bg-white/80"
-                >
-                  {t("replace_with_translation")}
-                </Button>
-                <Button
-                  onClick={() => handleApplyTranslation("append")}
-                  variant="outline"
-                  className="flex-1 bg-white/80"
-                >
-                  {t("add_translation_below")}
-                </Button>
-              </div>
-            </Card>
-          )}
+    setNewNote({ ...newNote, content: newText })
 
-          <Input
-            placeholder={t("tags_placeholder")}
-            value={formData.tags}
-            onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-          />
+    setTimeout(() => {
+      textarea.focus()
+      const newCursorPos = start + cursorOffset
+      textarea.setSelectionRange(newCursorPos, newCursorPos)
+    }, 0)
+  }
 
-          <MediaTools
-            language={language}
-            attachments={formData.attachments || []}
-            onAttachmentsChange={handleAttachmentsChange}
-            onTextFromSpeech={handleTextFromSpeech}
-          />
+  const handleChecklistChange = async (noteId: string, newContent: string) => {
+    const supabase = createClient()
+    const { error } = await supabase.from("notes").update({ content: newContent }).eq("id", noteId)
 
-          {formData.attachments && formData.attachments.length > 0 && (
-            <div className="mt-4 space-y-2">
-              <p className="text-sm font-medium">
-                {language === "ko" ? "첨부된 파일" : "Attached Files"} ({formData.attachments.length})
-              </p>
-              <div className="grid grid-cols-3 gap-2">
-                {formData.attachments.map((file, idx) => {
-                  const isImage =
-                    file.type?.startsWith("image/") ||
-                    file.type === "image" ||
-                    file.type === "drawing" ||
-                    file.name?.match(/\.(jpg|jpeg|png|gif|webp)$/i)
-                  const mediaUrl = file.url || file.data
+    if (error) {
+      console.error("[v0] Error updating checklist in Supabase:", error)
+      return
+    }
 
-                  return (
-                    <div key={idx} className="relative border rounded overflow-hidden bg-card dark:bg-card">
-                      {isImage && (
-                        <img
-                          src={mediaUrl || "/placeholder.svg"}
-                          alt={file.name || `첨부 ${idx + 1}`}
-                          className="w-full h-24 object-cover cursor-pointer hover:opacity-80 transition"
-                          onClick={() => setViewingAttachment({ url: mediaUrl, name: file.name || `첨부 ${idx + 1}` })}
-                        />
-                      )}
-                      {!isImage && (
-                        <div className="flex items-center justify-center h-24 bg-gray-200">
-                          <p className="text-xs text-gray-600 truncate px-2">{file.name || "파일"}</p>
-                        </div>
-                      )}
-                      <button
-                        onClick={() => {
-                          const newAttachments = formData.attachments.filter((_, i) => i !== idx)
-                          console.log("[v0] Removing attachment, remaining:", newAttachments.length)
-                          setFormData({ ...formData, attachments: newAttachments })
-                        }}
-                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          )}
+    setNotes(notes.map((note) => (note.id === noteId ? { ...note, content: newContent } : note)))
+  }
 
-          {noteSummary && (
-            <div className="rounded-lg border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-4 dark:from-blue-950/30 dark:to-indigo-950/30">
-              <div className="mb-2 flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                <h4 className="font-medium text-blue-900 dark:text-blue-100">{t("summary_result")}</h4>
-              </div>
-              <p className="mb-3 whitespace-pre-wrap text-sm text-blue-800 dark:text-blue-200">{noteSummary}</p>
-              <div className="flex gap-2">
-                <Button type="button" size="sm" onClick={() => handleApplySummary("replace")} className="gap-1">
-                  {t("replace_with_summary")}
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleApplySummary("append")}
-                  className="gap-1"
-                >
-                  {t("add_summary_below")}
-                </Button>
-                <Button type="button" size="sm" variant="ghost" onClick={() => setNoteSummary(null)}>
-                  {t("cancel")}
-                </Button>
-              </div>
-            </div>
-          )}
+  const handleSummarizeNote = async (noteId: string) => {
+    const note = notes.find((n) => n.id === noteId)
+    if (!note) return
 
-          <Button onClick={handleSave} disabled={saving} className="w-full bg-green-600 hover:bg-green-700" size="lg">
-            <Save className="mr-2 h-4 w-4" />
-            {saving ? (language === "ko" ? "저장 중..." : "Saving...") : editingNote ? t("edit") : t("save")}
-          </Button>
-        </div>
+    setSelectedNote(note)
 
-        {viewingAttachment && (
-          <div
-            className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
-            onClick={() => setViewingAttachment(null)}
-          >
-            <div className="relative max-w-4xl max-h-screen">
-              <img
-                src={viewingAttachment.url || "/placeholder.svg"}
-                alt={viewingAttachment.name}
-                className="max-w-full max-h-screen object-contain"
-                onClick={(e) => e.stopPropagation()}
-              />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-4 right-4 bg-white/20 hover:bg-white/30 text-white"
-                onClick={() => setViewingAttachment(null)}
-              >
-                <Tag className="h-6 w-6 rotate-45" />
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
-    )
+    setSummarizingNoteId(noteId)
+
+    try {
+      const summary = extractiveSummary(note.content, note.title)
+      setNoteSummaries({ ...noteSummaries, [noteId]: summary })
+    } catch (error) {
+      console.error("[v0] Error summarizing note:", error)
+      alert("요약 생성에 실패했습니다.")
+    } finally {
+      setSummarizingNoteId(null)
+    }
+  }
+
+  const extractiveSummary = (content: string, title: string): string => {
+    const sentences = content
+      .split(/[.!?。！？]\s+/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 10)
+
+    if (sentences.length === 0) {
+      return "요약할 내용이 없습니다."
+    }
+
+    if (sentences.length <= 3) {
+      return sentences.join(". ") + "."
+    }
+
+    const words = content
+      .toLowerCase()
+      .replace(/[^\w\s가-힣]/g, "")
+      .split(/\s+/)
+      .filter((w) => w.length > 2)
+
+    const wordFreq: Record<string, number> = {}
+    words.forEach((word) => {
+      wordFreq[word] = (wordFreq[word] || 0) + 1
+    })
+
+    const stopWords = new Set([
+      "the",
+      "a",
+      "an",
+      "and",
+      "or",
+      "but",
+      "in",
+      "on",
+      "at",
+      "to",
+      "for",
+      "of",
+      "with",
+      "by",
+      "from",
+      "as",
+      "is",
+      "was",
+      "are",
+      "were",
+      "been",
+      "be",
+      "have",
+      "has",
+      "had",
+      "do",
+      "does",
+      "did",
+      "will",
+      "would",
+      "should",
+      "could",
+      "may",
+      "might",
+      "can",
+      "것",
+      "수",
+      "등",
+      "및",
+      "이",
+      "그",
+      "저",
+      "것이",
+      "있다",
+      "없다",
+      "하다",
+      "되다",
+      "이다",
+      "아니다",
+      "때문",
+      "통해",
+      "대한",
+      "위해",
+      "따라",
+      "관련",
+    ])
+
+    Object.keys(wordFreq).forEach((word) => {
+      if (stopWords.has(word)) {
+        delete wordFreq[word]
+      }
+    })
+
+    const sentenceScores = sentences.map((sentence) => {
+      const sentenceWords = sentence
+        .toLowerCase()
+        .replace(/[^\w\s가-힣]/g, "")
+        .split(/\s+/)
+      let score = 0
+      sentenceWords.forEach((word) => {
+        if (wordFreq[word]) {
+          score += wordFreq[word]
+        }
+      })
+      const titleWords = title.toLowerCase().split(/\s+/)
+      titleWords.forEach((titleWord) => {
+        if (sentence.toLowerCase().includes(titleWord)) {
+          score += 5
+        }
+      })
+      return { sentence, score }
+    })
+
+    const topSentences = sentenceScores.sort((a, b) => b.score - a.score).slice(0, 3)
+
+    const orderedSentences = topSentences
+      .sort((a, b) => sentences.indexOf(a.sentence) - sentences.indexOf(b.sentence))
+      .map((s) => s.sentence)
+
+    return orderedSentences.join(". ") + "."
+  }
+
+  const convertFilesToDataUrls = async (files: File[], userId: string): Promise<LocalFile[]> => {
+    const results: LocalFile[] = []
+
+    for (const file of files) {
+      const isAudioOrVideo = file.type.startsWith("audio/") || file.type.startsWith("video/")
+
+      if (isAudioOrVideo) {
+        try {
+          console.log("[v0] Uploading video/audio file:", file.name, file.size, "bytes")
+
+          const storageFile = await uploadFileToStorage(file, userId)
+
+          if (storageFile) {
+            console.log("[v0] File uploaded successfully:", storageFile)
+            results.push({
+              name: storageFile.name,
+              url: storageFile.url,
+              type: storageFile.type,
+            })
+          } else {
+            console.error("[v0] Failed to upload file to Storage:", file.name)
+            toast({
+              title: "파일 업로드 실패",
+              description: `${file.name} 업로드에 실패했습니다.`,
+              variant: "destructive",
+            })
+          }
+        } catch (error) {
+          console.error("[v0] Exception during file upload:", error)
+          toast({
+            title: "파일 업로드 오류",
+            description: `${file.name} 업로드 중 오류가 발생했습니다.`,
+            variant: "destructive",
+          })
+        }
+      } else {
+        // Use Data URLs for images
+        const dataUrl = await new Promise<LocalFile>((resolve) => {
+          const reader = new FileReader()
+          reader.onload = (e) => {
+            resolve({
+              name: file.name,
+              url: e.target?.result as string,
+              type: file.type,
+            })
+          }
+          reader.readAsDataURL(file)
+        })
+        results.push(dataUrl)
+      }
+    }
+
+    return results
+  }
+
+  const handleStorageSetupSuccess = async () => {
+    setStorageSetupComplete(true)
+
+    if (pendingFiles.length > 0 && userId) {
+      const uploadedFiles = await convertFilesToDataUrls(pendingFiles, userId)
+
+      if (uploadedFiles.length > 0) {
+        setUploadedAttachments(uploadedFiles)
+        setPendingFiles([])
+        setAttachedFiles([])
+
+        const successMessages = {
+          ko: "Storage 설정이 완료되었습니다! 파일을 업로드하고 노트를 저장합니다...",
+          en: "Storage setup complete! Uploading files and saving note...",
+          zh: "存储设置完成！正在上传文件并保存笔记...",
+          ja: "ストレージ設定が完了しました！ファイルをアップロードしてノートを保存しています...",
+        }
+
+        if (pendingSaveOperation === "add") {
+          setPendingSaveOperation(null)
+          await handleAddNote()
+        } else if (pendingSaveOperation === "update") {
+          setPendingSaveOperation(null)
+          await handleUpdate()
+        }
+      } else {
+        console.error("[v0] Failed to upload pending files after Storage setup")
+        const errorMessages = {
+          ko: "파일 업로드에 실패했습니다. 파일 크기나 네트워크 연결을 확인해주세요.",
+          en: "Failed to upload files. Please check file size or network connection.",
+          zh: "文件上传失败。请检查文件大小或网络连接。",
+          ja: "ファイルのアップロードに失敗しました。ファイルサイズまたはネットワーク接続を確認してください。",
+        }
+        alert(errorMessages[language])
+      }
+    }
+  }
+
+  const compressImage = async (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const img = new Image()
+        img.onload = () => {
+          const canvas = document.createElement("canvas")
+          let width = img.width
+          let height = img.height
+
+          // Resize if image is too large
+          const MAX_WIDTH = 1920
+          const MAX_HEIGHT = 1920
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height = (height * MAX_WIDTH) / width
+              width = MAX_WIDTH
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width = (width * MAX_HEIGHT) / height
+              height = MAX_HEIGHT
+            }
+          }
+
+          canvas.width = width
+          canvas.height = height
+
+          const ctx = canvas.getContext("2d")
+          if (!ctx) {
+            reject(new Error("Failed to get canvas context"))
+            return
+          }
+
+          ctx.drawImage(img, 0, 0, width, height)
+
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                reject(new Error("Failed to compress image"))
+                return
+              }
+
+              const compressedFile = new File([blob], file.name, {
+                type: "image/jpeg",
+                lastModified: Date.now(),
+              })
+
+              console.log(
+                `[v0] Image compressed: ${(file.size / 1024 / 1024).toFixed(2)}MB -> ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`,
+              )
+
+              resolve(compressedFile)
+            },
+            "image/jpeg",
+            0.8, // Quality: 0.8 = 80%
+          )
+        }
+        img.onerror = () => reject(new Error("Failed to load image"))
+        img.src = e.target?.result as string
+      }
+      reader.onerror = () => reject(new Error("Failed to read file"))
+      reader.readAsDataURL(file)
+    })
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <Button variant="ghost" onClick={onBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> {t("title")}
-        </Button>
-        <Button onClick={() => setIsAdding(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white">
-          <Plus className="mr-2 h-4 w-4" /> {t("add")} {t("notes")}
+    <div className="rounded-lg border bg-card p-6">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-xl font-semibold">{t("notesTitle")}</h2>
+        <Button onClick={() => setIsAdding(!isAdding)} size="sm">
+          <Plus className="mr-2 h-4 w-4" />
+          {t("addNote")}
         </Button>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder={t("search")}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10"
-        />
+      <div className="mb-4 flex flex-wrap gap-2">
+        <input ref={jsonImportRef} type="file" accept=".json" className="hidden" onChange={handleImportNotes} />
+        <input ref={scanInputRef} type="file" accept="image/*" className="hidden" onChange={handleScanImage} />
+
+        <Button variant="outline" size="sm" onClick={() => jsonImportRef.current?.click()}>
+          <Upload className="mr-2 h-4 w-4" />
+          {t("import")}
+        </Button>
+        <Button variant="outline" size="sm" onClick={handleExportNotes}>
+          <Download className="mr-2 h-4 w-4" />
+          {t("export")}
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => scanInputRef.current?.click()} disabled={isProcessingOCR}>
+          <ScanLine className={`mr-2 h-4 w-4 ${isProcessingOCR ? "animate-spin" : ""}`} />
+          {isProcessingOCR ? (language === "ko" ? "처리 중..." : "Processing...") : t("scan")}
+        </Button>
+      </div>
+
+      <div className="mb-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={t("searchNotesPlaceholder")}
+            className="pl-9"
+          />
+        </div>
       </div>
 
       {allTags.length > 0 && (
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Tag className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium">{t("filter_by_tag")}</span>
-          </div>
+        <div className="mb-4">
+          <Label className="mb-2 block text-sm font-medium">{t("filterByTag")}</Label>
           <div className="flex flex-wrap gap-2">
-            <Button variant={selectedTag === "" ? "default" : "outline"} size="sm" onClick={() => setSelectedTag("")}>
-              {t("all")}
-            </Button>
+            <Badge
+              variant={selectedTag === "all" ? "default" : "outline"}
+              className={`cursor-pointer px-3 py-1 ${selectedTag === "all" ? getTagColor("전체 태그") : "bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"}`}
+              onClick={() => setSelectedTag("all")}
+            >
+              {t("allTags")}
+            </Badge>
             {allTags.map((tag) => (
-              <Button
+              <Badge
                 key={tag}
-                variant={selectedTag === tag ? "default" : "outline"}
-                size="sm"
+                variant="default"
+                className={`cursor-pointer px-3 py-1 text-white ${getTagColor(tag)} ${selectedTag === tag ? "ring-2 ring-offset-2 ring-primary" : "opacity-80 hover:opacity-100"}`}
                 onClick={() => setSelectedTag(tag)}
               >
-                {tag}
-              </Button>
+                {translateTag(tag)}
+              </Badge>
             ))}
           </div>
         </div>
       )}
 
-      {selectedImage && (
-        <div
-          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
-          onClick={() => setSelectedImage(null)}
-        >
-          <Card
-            className="w-full max-w-md p-6 space-y-4 bg-white dark:bg-slate-900"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex justify-between items-center">
-              <h3 className="font-semibold">{language === "ko" ? "이미지 옵션" : "Image Options"}</h3>
-              <Button variant="ghost" size="icon" onClick={() => setSelectedImage(null)}>
-                <Tag className="h-4 w-4 rotate-45" />
-              </Button>
-            </div>
-            <img
-              src={selectedImage.url || "/placeholder.svg"}
-              alt={selectedImage.name}
-              className="w-full rounded border"
+      {isAdding && (
+        <div className="mb-6 space-y-4 rounded-lg border bg-muted/50 p-4">
+          <h3 className="font-medium">{editingId ? t("editNote") : t("addNote")}</h3>
+          <div className="flex items-center gap-2">
+            <Switch
+              id="star-note"
+              checked={newNote.starred}
+              onCheckedChange={(checked) => setNewNote({ ...newNote, starred: checked })}
             />
-            <div className="space-y-2">
+            <Label htmlFor="star-note" className="flex items-center gap-2">
+              <Star className="h-4 w-4" />
+              {t("favorite")}
+            </Label>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="note-title">{t("noteTitle")}</Label>
+            <Input
+              id="note-title"
+              value={newNote.title}
+              onChange={(e) => setNewNote({ ...newNote, title: e.target.value })}
+              placeholder={t("noteTitle")}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="note-content">{t("noteContent")}</Label>
+            <FormattingToolbar onFormat={handleFormat} />
+            <div className="flex gap-2 mb-2">
               <Button
-                variant="outline"
-                className="w-full justify-start bg-transparent"
-                onClick={() => {
-                  window.open(selectedImage.url, "_blank")
-                  setSelectedImage(null)
-                }}
+                type="button"
+                variant={!showPreview ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowPreview(false)}
               >
-                <Eye className="mr-2 h-4 w-4" />
-                {language === "ko" ? "새 창에서 보기" : "Open in new tab"}
+                {t("edit")}
               </Button>
               <Button
-                variant="outline"
-                className="w-full justify-start bg-transparent"
-                onClick={() => {
-                  searchImageOnBing(selectedImage.url)
-                  setSelectedImage(null)
-                }}
+                type="button"
+                variant={showPreview ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowPreview(true)}
               >
-                <Search className="mr-2 h-4 w-4" />
-                {language === "ko" ? "Bing으로 이미지 검색" : "Search with Bing"}
+                {t("preview")}
               </Button>
             </div>
-          </Card>
+            {!showPreview ? (
+              <Textarea
+                ref={contentTextareaRef}
+                id="note-content"
+                value={newNote.content}
+                onChange={(e) => setNewNote({ ...newNote, content: e.target.value })}
+                placeholder={t("noteContent")}
+                rows={6}
+              />
+            ) : (
+              <div className="min-h-[150px] rounded-md border bg-background p-4">
+                {newNote.content ? (
+                  <MarkdownRenderer content={newNote.content} onChecklistChange={() => {}} editable={false} />
+                ) : (
+                  <p className="text-sm text-muted-foreground">{t("noContentPreview")}</p>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label>{t("tags")}</Label>
+            <div className="flex gap-2">
+              <Input
+                value={newTag}
+                onChange={(e) => setNewTag(e.target.value)}
+                placeholder={t("enterTag")}
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault()
+                    handleAddTag()
+                  }
+                }}
+              />
+              <Button type="button" onClick={handleAddTag} size="sm">
+                {t("addTag")}
+              </Button>
+            </div>
+            {newNote.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {newNote.tags.map((tag) => (
+                  <Badge key={tag} variant="secondary" className="gap-1">
+                    {translateTag(tag)}
+                    <X className="h-3 w-3 cursor-pointer" onClick={() => handleRemoveTag(tag)} />
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <Switch
+              id="lock-note"
+              checked={newNote.isLocked}
+              onCheckedChange={(checked) => setNewNote({ ...newNote, isLocked: checked })}
+            />
+            <Label htmlFor="lock-note">{t("passwordLock")}</Label>
+          </div>
+          {newNote.isLocked && (
+            <div className="space-y-2">
+              <Label htmlFor="note-password">{t("password")}</Label>
+              <Input
+                id="note-password"
+                type="password"
+                value={newNote.password}
+                onChange={(e) => setNewNote({ ...newNote, password: e.target.value })}
+                placeholder={t("password")}
+              />
+            </div>
+          )}
+          {existingAttachments.length > 0 && (
+            <div className="space-y-2">
+              <Label>{t("existingFiles")}</Label>
+              <div className="flex flex-wrap gap-2">
+                {existingAttachments.map((file, index) => (
+                  <div key={index} className="flex items-center gap-2 rounded-md border bg-background px-3 py-2">
+                    <ImageIcon className="h-4 w-4" />
+                    <span className="text-sm">{file.name}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-5 w-5 p-0"
+                      onClick={() => handleRemoveExistingAttachment(index)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {attachedFiles.length > 0 && (
+            <div className="space-y-2">
+              <Label>{t("attachedFiles")}</Label>
+              <div className="flex flex-wrap gap-2">
+                {attachedFiles.map((file, index) => (
+                  <div key={index} className="flex items-center gap-2 rounded-md border bg-background px-3 py-2">
+                    <ImageIcon className="h-4 w-4" />
+                    <span className="text-sm">{file.name}</span>
+                    <Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={() => handleRemoveFile(index)}>
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {uploadedAttachments.length > 0 && (
+            <div className="space-y-2">
+              <Label>{t("uploadedFiles")}</Label>
+              <div className="flex flex-wrap gap-2">
+                {uploadedAttachments.map((file, index) => (
+                  <div key={index} className="flex items-center gap-2 rounded-md border bg-background px-3 py-2">
+                    <ImageIcon className="h-4 w-4" />
+                    <span className="text-sm">{file.name}</span>
+                    {/* No remove button here as these are already uploaded */}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          <div className="flex flex-wrap gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*,video/*,audio/*"
+              className="hidden"
+              onChange={handleFileAttach}
+            />
+            <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+              <Paperclip className="mr-2 h-4 w-4" />
+              {t("attachFile")}
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setIsHandwritingOpen(true)}>
+              <PenTool className="mr-2 h-4 w-4" />
+              {t("handwriting")}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleVoiceInput}
+              className={isRecording ? "bg-red-500 text-white hover:bg-red-600" : ""}
+            >
+              <Mic className="mr-2 h-4 w-4" />
+              {isRecording ? t("recording") : t("voiceInput")}
+            </Button>
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={editingId ? handleUpdate : handleAddNote} disabled={isSaving}>
+              {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {editingId ? t("update") : t("save")}
+            </Button>
+            <Button variant="outline" onClick={handleCancel} disabled={isSaving}>
+              {t("cancel")}
+            </Button>
+          </div>
         </div>
       )}
 
-      <div className="grid gap-4">
-        {filteredNotes.map((note) => (
-          <Card key={note.id} className="p-4">
-            <div className="space-y-3">
-              <div className="flex justify-between items-start">
-                <h3 className="font-semibold flex-1">{note.title}</h3>
-                <div className="flex gap-2 ml-2">
-                  <Button variant="ghost" size="icon" onClick={() => handleShare(note)}>
-                    <Share2 className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => handleEdit(note)}>
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => handleDelete(note.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-              <div className="w-full">
-                <p className="text-sm text-muted-foreground">{note.content}</p>
-                {note.tags.length > 0 && (
-                  <div className="flex gap-2 mt-2">
-                    {note.tags.map((tag) => (
-                      <span key={tag} className="text-xs bg-primary/10 px-2 py-1 rounded">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                {note.attachments && note.attachments.length > 0 && (
-                  <div className="mt-4 space-y-2">
-                    <p className="text-sm font-medium">
-                      {language === "ko" ? "첨부파일" : "Attachments"} ({note.attachments.length}개)
-                    </p>
-                    <div className="grid grid-cols-2 gap-2">
-                      {note.attachments.map((file: any, idx: number) => {
-                        const isImage =
-                          file.type?.startsWith("image/") ||
-                          file.type === "image" ||
-                          file.type === "drawing" ||
-                          file.name?.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)
-                        const isVideo =
-                          file.type?.startsWith("video/") ||
-                          file.type === "video" ||
-                          file.name?.match(/\.(mp4|webm|mov|avi)$/i)
-                        const isAudio =
-                          file.type?.startsWith("audio/") ||
-                          file.type === "audio" ||
-                          file.name?.match(/\.(mp3|wav|ogg|m4a)$/i)
-                        const mediaUrl = file.url || file.data
-                        const imageErrorKey = `${note.id}-${idx}`
-                        const hasError = imageLoadErrors.has(imageErrorKey)
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="font-medium">{t("noteList")}</h3>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSortOrder(sortOrder === "newest" ? "oldest" : "newest")}
+            className="gap-2"
+          >
+            <ArrowUpDown className="h-4 w-4" />
+            <span className="text-xs">{sortOrder === "newest" ? t("sortNewest") : t("sortOldest")}</span>
+          </Button>
+        </div>
 
-                        return (
-                          <div key={idx} className="border rounded overflow-hidden bg-muted dark:bg-muted">
-                            {isImage && !hasError && (
-                              <img
-                                src={mediaUrl || "/placeholder.svg"}
-                                alt={file.name || `첨부파일 ${idx + 1}`}
-                                className="w-full h-auto min-h-[128px] max-h-[300px] object-cover cursor-pointer hover:opacity-90"
-                                onClick={() =>
-                                  setSelectedImage({ url: mediaUrl, name: file.name || `첨부파일 ${idx + 1}` })
-                                }
-                                onError={(e) => {
-                                  console.log("[v0] Image load failed for:", file.name || `attachment ${idx}`)
-                                  setImageLoadErrors((prev) => new Set(prev).add(imageErrorKey))
-                                }}
-                              />
-                            )}
-                            {isImage && hasError && (
-                              <div className="flex flex-col items-center justify-center h-32 bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400 p-2">
-                                <p className="text-xs text-center">
-                                  {language === "ko" ? "이미지를 불러올 수 없습니다" : "Cannot load image"}
-                                </p>
-                                <p className="text-xs text-center mt-1 truncate w-full">{file.name}</p>
-                              </div>
-                            )}
-                            {isVideo && (
-                              <div className="relative bg-black">
-                                <video
-                                  src={mediaUrl}
-                                  controls
-                                  controlsList="nodownload"
-                                  preload="metadata"
-                                  playsInline
-                                  className="w-full h-auto min-h-[128px] max-h-[300px]"
-                                  style={{ display: "block" }}
-                                  onError={(e) => {
-                                    console.log("[v0] Video load failed:", file.name || `video ${idx}`)
-                                  }}
-                                >
-                                  {language === "ko" ? "영상을 재생할 수 없습니다" : "Cannot play video"}
-                                </video>
-                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent p-2">
-                                  <p className="text-xs text-white truncate">
-                                    {file.name || `${language === "ko" ? "동영상" : "Video"} ${idx + 1}`}
-                                  </p>
-                                </div>
-                              </div>
-                            )}
-                            {isAudio && (
-                              <div className="flex items-center justify-center h-20 bg-gray-100 dark:bg-gray-800 p-2">
-                                <audio
-                                  src={mediaUrl}
-                                  controls
-                                  preload="metadata"
-                                  className="w-full"
-                                  onError={(e) => {
-                                    console.log("[v0] Audio load failed:", file.name || `audio ${idx}`)
-                                  }}
-                                />
-                              </div>
-                            )}
-                            {!isImage && !isVideo && !isAudio && (
-                              <div className="flex items-center justify-center h-20 bg-gray-200 dark:bg-gray-800 p-2">
-                                <p className="text-xs text-gray-600 dark:text-gray-400 text-center truncate">
-                                  {file.name || `첨부파일 ${idx + 1}`}
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        )
-                      })}
+        {sortedNotes.length === 0 ? (
+          <p className="text-center text-muted-foreground">{searchQuery ? t("noSearchResults") : t("noNotes")}</p>
+        ) : (
+          sortedNotes.map((note) => (
+            <div key={note.id}>
+              <div
+                className={`cursor-pointer rounded-lg border p-4 transition-colors hover:bg-muted/50 ${
+                  selectedNote?.id === note.id ? "border-primary bg-muted/50" : ""
+                }`}
+                onClick={() => {
+                  setSelectedNote(selectedNote?.id === note.id ? null : note)
+                }}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      {note.starred && <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />}
+                      <h4 className="text-lg font-semibold">{note.title}</h4>
+                      {note.isLocked && !unlockedNotes.has(note.id) && (
+                        <Lock className="h-4 w-4 text-muted-foreground" />
+                      )}
+                      {note.isLocked && unlockedNotes.has(note.id) && <Unlock className="h-4 w-4 text-green-600" />}
                     </div>
+                    <p className="text-xs text-muted-foreground">{note.createdAt.toLocaleDateString()}</p>
+                    {note.tags && note.tags.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {note.tags.map((tag) => (
+                          <Badge key={tag} variant="outline" className={`text-xs ${getTagColor(tag)} text-white`}>
+                            {translateTag(tag)}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleToggleStar(note.id)
+                      }}
+                      title={note.starred ? "즐겨찾기 해제" : "즐겨찾기"}
+                    >
+                      <Star className={`h-4 w-4 ${note.starred ? "fill-yellow-400 text-yellow-400" : ""}`} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleSummarizeNote(note.id)
+                      }}
+                      disabled={summarizingNoteId === note.id}
+                      title="AI 요약"
+                    >
+                      <Sparkles
+                        className={`h-4 w-4 ${summarizingNoteId === note.id ? "animate-pulse" : ""} ${noteSummaries[note.id] ? "text-green-600 fill-green-600" : ""}`}
+                      />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDownloadPDF(note)
+                      }}
+                      title={t("downloadPDF")}
+                    >
+                      <FileDown className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleEdit(note)
+                      }}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDelete(note.id)
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {selectedNote?.id === note.id && (
+                  <div className="mt-2 rounded-lg border bg-muted/30 p-4">
+                    {isNoteUnlocked(note) ? (
+                      <div className="space-y-4">
+                        {note.isLocked && (
+                          <div className="flex justify-end">
+                            <Button variant="outline" size="sm" onClick={() => handleLock(note)}>
+                              <Lock className="mr-2 h-4 w-4" />
+                              {t("lock")}
+                            </Button>
+                          </div>
+                        )}
+                        {noteSummaries[note.id] && (
+                          <div className="rounded-lg border bg-blue-50 dark:bg-blue-950 p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Sparkles className="h-4 w-4 text-blue-600" />
+                              <h4 className="font-semibold text-blue-900 dark:text-blue-100">AI 요약</h4>
+                            </div>
+                            <p className="text-sm text-blue-800 dark:text-blue-200">{noteSummaries[note.id]}</p>
+                          </div>
+                        )}
+                        <MarkdownRenderer
+                          content={note.content}
+                          onChecklistChange={(newContent) => handleChecklistChange(note.id, newContent)}
+                          editable={true}
+                        />
+                        {note.attachments && note.attachments.length > 0 && (
+                          <div className="space-y-2">
+                            <Label>{t("attachedFiles")}</Label>
+                            <AttachmentList attachments={note.attachments as LocalFile[]} />
+                          </div>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          {t("created")}: {note.createdAt.toLocaleString()}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                          <Lock className="h-5 w-5" />
+                          <h3 className="font-semibold">{t("locked")}</h3>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`unlock-password-${note.id}`}>{t("password")}</Label>
+                          <Input
+                            id={`unlock-password-${note.id}`}
+                            type="password"
+                            value={passwordInput}
+                            onChange={(e) => setPasswordInput(e.target.value)}
+                            placeholder={t("password")}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </div>
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleUnlock(note)
+                          }}
+                        >
+                          {t("unlock")}
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
             </div>
-          </Card>
-        ))}
-        {filteredNotes.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground">
-            {searchQuery || selectedTag
-              ? language === "ko"
-                ? "검색 결과가 없습니다"
-                : "No results found"
-              : language === "ko"
-                ? "노트가 없습니다. 새로 만들어보세요!"
-                : "No notes. Create one!"}
-          </div>
+          ))
         )}
       </div>
+      <StorageSetupModal
+        isOpen={showStorageSetupModal}
+        onClose={() => {
+          setShowStorageSetupModal(false)
+          setPendingFiles([])
+        }}
+        onSuccess={handleStorageSetupSuccess}
+      />
+      <HandwritingCanvas
+        isOpen={isHandwritingOpen}
+        onClose={() => setIsHandwritingOpen(false)}
+        onSave={handleHandwritingSave}
+      />
     </div>
   )
 }
