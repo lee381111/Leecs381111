@@ -156,7 +156,7 @@ export async function getUserStorageInfo(userId: string): Promise<StorageInfo | 
   const isAdmin = profile.email === ADMIN_EMAIL
   const quota = isAdmin ? STORAGE_QUOTAS.ADMIN : profile.storage_quota || STORAGE_QUOTAS.EMAIL_USER
 
-  const used = await calculateRealTimeStorageUsage(userId)
+  const used = profile.storage_used || 0
   const remaining = Math.max(0, quota - used)
   const percentage = quota > 0 ? (used / quota) * 100 : 0
 
@@ -287,4 +287,22 @@ export function formatBytes(bytes: number): string {
   const i = Math.floor(Math.log(bytes) / Math.log(k))
 
   return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
+}
+
+export async function recalculateAndUpdateStorageUsage(userId: string): Promise<boolean> {
+  const actualUsage = await calculateRealTimeStorageUsage(userId)
+
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  )
+
+  const { error } = await supabase.from("profiles").update({ storage_used: actualUsage }).eq("id", userId)
+
+  if (error) {
+    console.error("[v0] Error updating storage usage:", error)
+    return false
+  }
+
+  return true
 }
