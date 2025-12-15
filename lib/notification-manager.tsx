@@ -114,24 +114,21 @@ class NotificationManager {
       }, 10000)
     }
 
-    this.showInAppPopup(title, body)
-
     if ("Notification" in window && Notification.permission === "granted") {
       const notification = new Notification(title, {
         body,
         icon: "/icon.svg",
-        requireInteraction: true,
+        requireInteraction: false, // Changed to false so it auto-dismisses
       })
 
       notification.onclick = () => {
         window.focus()
         notification.close()
       }
-    } else {
-      alert(`${title}\n\n${body}`)
     }
   }
 
+  // Kept for potential future use but not called
   private showInAppPopup(title: string, body: string) {
     if (this.popupElement) {
       document.body.removeChild(this.popupElement)
