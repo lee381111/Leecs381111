@@ -2,11 +2,20 @@
 
 import { useState, useEffect, useRef } from "react"
 import dynamic from "next/dynamic"
+import { createClient } from "@/lib/supabase/client"
+import { loadSchedules, loadNotes, loadDiaries, loadTravelRecords, checkUserConsent } from "@/lib/storage"
+import { getTranslation } from "@/lib/i18n"
+import type { Language } from "@/lib/types"
+import { useAuth } from "@/lib/auth-context"
+import { useLanguage } from "@/lib/language-context"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ForestCanvas } from "@/components/forest-canvas"
 import { AnnouncementBanner } from "@/components/announcement-banner"
+import { NotificationCenter } from "@/components/notification-center"
+import { TermsConsentModal } from "@/components/terms-consent-modal"
+import { LoginForm } from "@/components/login-form"
 import {
   FileText,
   BookOpen,
@@ -26,25 +35,6 @@ import {
   Settings,
   CheckSquare,
 } from "lucide-react"
-import { getTranslation } from "@/lib/i18n"
-import type { Language } from "@/lib/types"
-import { useAuth } from "@/lib/auth-context"
-import { useLanguage } from "@/lib/language-context" // Adding useLanguage import to use the language context properly
-import {
-  loadSchedules,
-  loadNotes,
-  loadDiaries,
-  loadTravelRecords,
-  loadHealthRecords,
-  loadMedications,
-  loadVehicles,
-  loadVehicleMaintenanceRecords,
-  loadBusinessCards,
-} from "@/lib/storage"
-import { NotificationCenter } from "@/components/notification-center"
-import { checkUserConsent } from "@/lib/storage"
-import { TermsConsentModal } from "@/components/terms-consent-modal"
-import { LoginForm } from "@/components/login-form" // Import LoginForm
 
 const NotesSection = dynamic(() => import("@/components/notes-section").then((m) => ({ default: m.NotesSection })), {
   loading: () => <LoadingSection />,
@@ -406,109 +396,31 @@ export default function ForestNotePage() {
 
   useEffect(() => {
     const calculateStorage = async () => {
-      if (!user) {
-        setStorageUsed(0)
-        return
-      }
-
-      if (isCalculatingRef.current) {
-        console.log("[v0] Storage calculation already in progress, skipping")
-        return
-      }
-
+      if (!user || isCalculatingRef.current) return
       isCalculatingRef.current = true
 
       try {
-        const fetchWithFallback = async (fn: () => Promise<any[]>, name: string): Promise<any[]> => {
-          try {
-            const result = await fn()
-            console.log(`[v0] Loaded ${name}:`, result.length, "items")
-            return Array.isArray(result) ? result : []
-          } catch (error) {
-            console.warn(`[v0] Failed to load ${name}, using empty array:`, error)
-            return []
-          }
-        }
+        const supabase = createClient()
 
-        const [notes, diaries, schedules, travels, health, medications, vehicles, maintenance, businessCards] =
-          await Promise.all([
-            fetchWithFallback(() => loadNotes(user.id), "notes"),
-            fetchWithFallback(() => loadDiaries(user.id), "diaries"),
-            fetchWithFallback(() => loadSchedules(user.id), "schedules"),
-            fetchWithFallback(() => loadTravelRecords(user.id), "travels"),
-            fetchWithFallback(() => loadHealthRecords(user.id), "health"),
-            fetchWithFallback(() => loadMedications(user.id), "medications"),
-            fetchWithFallback(() => loadVehicles(user.id), "vehicles"),
-            fetchWithFallback(() => loadVehicleMaintenanceRecords(user.id), "maintenance"),
-            fetchWithFallback(() => loadBusinessCards(user.id), "business_cards"),
-          ])
+        // Get storage_used directly from profiles table for consistency with admin page
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("storage_used")
+          .eq("user_id", user.id)
+          .single()
 
-        const jsonData = JSON.stringify({
-          notes: Array.isArray(notes) ? notes : [],
-          diaries: Array.isArray(diaries) ? diaries : [],
-          schedules: Array.isArray(schedules) ? schedules : [],
-          travels: Array.isArray(travels) ? travels : [],
-          health: Array.isArray(health) ? health : [],
-          medications: Array.isArray(medications) ? medications : [],
-          vehicles: Array.isArray(vehicles) ? vehicles : [],
-          maintenance: Array.isArray(maintenance) ? maintenance : [],
-          businessCards: Array.isArray(businessCards) ? businessCards : [],
-        })
-        const totalSize = new Blob([jsonData]).size
+        if (profileError) throw profileError
 
-        console.log("[v0] JSON data size:", totalSize, "bytes")
+        const profileStorageUsed = profile?.storage_used || 0
 
-        let mediaCount = 0
+        console.log(
+          "[v0] Storage used from profile:",
+          profileStorageUsed,
+          "bytes",
+          "(" + (profileStorageUsed / 1024 / 1024).toFixed(2) + " MB)",
+        )
 
-        if (Array.isArray(notes)) {
-          notes.forEach((note: any) => {
-            const urls = note.attachments || []
-            const count = Array.isArray(urls) ? urls.length : 0
-            mediaCount += count
-          })
-        }
-
-        if (Array.isArray(diaries)) {
-          diaries.forEach((diary: any) => {
-            const urls = diary.mediaUrls || diary.attachments || []
-            const count = Array.isArray(urls) ? urls.length : 0
-            mediaCount += count
-          })
-        }
-
-        if (Array.isArray(schedules)) {
-          schedules.forEach((schedule: any) => {
-            const urls = schedule.attachments || []
-            const count = Array.isArray(urls) ? urls.length : 0
-            mediaCount += count
-          })
-        }
-
-        if (Array.isArray(travels)) {
-          travels.forEach((travel: any) => {
-            const urls = travel.attachments || []
-            const count = Array.isArray(urls) ? urls.length : 0
-            mediaCount += count
-          })
-        }
-
-        if (Array.isArray(health)) {
-          health.forEach((record: any) => {
-            const urls = record.attachments || []
-            const count = Array.isArray(urls) ? urls.length : 0
-            mediaCount += count
-          })
-        }
-
-        const estimatedMediaSize = mediaCount * 500 * 1024 // 500KB per media
-
-        console.log("[v0] Media count:", mediaCount, "files")
-        console.log("[v0] Estimated media size:", estimatedMediaSize, "bytes")
-
-        const finalSize = totalSize + estimatedMediaSize
-        console.log("[v0] Total storage used:", finalSize, "bytes", "(" + (finalSize / 1024 / 1024).toFixed(2) + " MB)")
-
-        setStorageUsed(finalSize)
+        setStorageUsed(profileStorageUsed)
       } catch (error) {
         console.error("[v0] Storage calculation error:", error)
         setStorageUsed(0)
@@ -519,14 +431,10 @@ export default function ForestNotePage() {
 
     calculateStorage()
 
-    if (currentSection === "home") {
-      calculateStorage()
-    }
-
     const interval = setInterval(calculateStorage, 60000) // Every 60 seconds
 
     return () => clearInterval(interval)
-  }, [user, currentSection])
+  }, [user])
 
   useEffect(() => {
     const loadEvents = async () => {
