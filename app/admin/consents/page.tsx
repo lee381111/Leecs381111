@@ -19,12 +19,22 @@ interface ConsentLog {
   email?: string
 }
 
+interface UserStorage {
+  user_id: string
+  email: string
+  storage_used: number
+  storage_quota: number
+  display_name?: string
+}
+
 export default function AdminConsentsPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
   const [consents, setConsents] = useState<ConsentLog[]>([])
   const [generating, setGenerating] = useState(false)
+  const [storageData, setStorageData] = useState<UserStorage[]>([])
+  const [loadingStorage, setLoadingStorage] = useState(false)
 
   useEffect(() => {
     checkAdmin()
@@ -63,6 +73,49 @@ export default function AdminConsentsPage() {
     } catch (error) {
       console.error("[v0] Error loading consents:", error)
     }
+  }
+
+  async function loadStorageUsage() {
+    setLoadingStorage(true)
+    try {
+      const supabase = createClient()
+
+      // Get all profiles with storage information
+      const { data: profiles, error } = await supabase
+        .from("profiles")
+        .select("user_id, email, display_name, storage_used, storage_quota")
+        .order("storage_used", { ascending: false })
+
+      if (error) throw error
+
+      const storageList: UserStorage[] =
+        profiles?.map((profile) => ({
+          user_id: profile.user_id,
+          email: profile.email || "Unknown",
+          display_name: profile.display_name,
+          storage_used: profile.storage_used || 0,
+          storage_quota: profile.storage_quota || 1073741824, // Default 1GB
+        })) || []
+
+      setStorageData(storageList)
+      console.log("[v0] Loaded storage data for", storageList.length, "users")
+    } catch (error) {
+      console.error("[v0] Error loading storage usage:", error)
+    } finally {
+      setLoadingStorage(false)
+    }
+  }
+
+  function formatBytes(bytes: number): string {
+    if (bytes === 0) return "0 Bytes"
+    const k = 1024
+    const sizes = ["Bytes", "KB", "MB", "GB"]
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i]
+  }
+
+  function getUsagePercentage(used: number, quota: number): number {
+    return Math.round((used / quota) * 100)
   }
 
   async function handleGenerateReport() {
@@ -224,6 +277,80 @@ export default function AdminConsentsPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>사용자별 저장소 사용량</CardTitle>
+              <CardDescription>각 사용자의 데이터베이스 및 저장소 사용량을 확인할 수 있습니다.</CardDescription>
+            </div>
+            <Button variant="outline" onClick={loadStorageUsage} disabled={loadingStorage}>
+              {loadingStorage ? <Spinner className="mr-2 h-4 w-4" /> : null}
+              {loadingStorage ? "로딩 중..." : "새로고침"}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {storageData.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground mb-4">
+                저장소 사용량 데이터를 불러오려면 새로고침 버튼을 클릭하세요.
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="border-b">
+                  <tr className="text-left">
+                    <th className="p-2">사용자</th>
+                    <th className="p-2">사용량</th>
+                    <th className="p-2">할당량</th>
+                    <th className="p-2">사용률</th>
+                    <th className="p-2">진행률</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {storageData.map((user) => {
+                    const percentage = getUsagePercentage(user.storage_used, user.storage_quota)
+                    const isHigh = percentage > 80
+
+                    return (
+                      <tr key={user.user_id} className="border-b hover:bg-muted/50">
+                        <td className="p-2">
+                          <div className="flex flex-col gap-1">
+                            <span className="font-medium">{user.email}</span>
+                            {user.display_name && (
+                              <span className="text-xs text-muted-foreground">{user.display_name}</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-2 font-mono">{formatBytes(user.storage_used)}</td>
+                        <td className="p-2 font-mono">{formatBytes(user.storage_quota)}</td>
+                        <td className={`p-2 font-semibold ${isHigh ? "text-red-600" : "text-green-600"}`}>
+                          {percentage}%
+                        </td>
+                        <td className="p-2">
+                          <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                            <div
+                              className={`h-2 rounded-full transition-all ${isHigh ? "bg-red-600" : "bg-green-600"}`}
+                              style={{ width: `${Math.min(percentage, 100)}%` }}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+              <div className="mt-4 text-sm text-muted-foreground">
+                <p>총 {storageData.length}명의 사용자</p>
+                <p>전체 사용량: {formatBytes(storageData.reduce((sum, user) => sum + user.storage_used, 0))}</p>
+              </div>
             </div>
           )}
         </CardContent>
