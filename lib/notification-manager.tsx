@@ -45,17 +45,22 @@ class NotificationManager {
     const timeUntilAlarm = config.scheduleTime.getTime() - now
 
     if (timeUntilAlarm <= 0) {
-      console.log("[v0] Alarm time has already passed")
+      console.log("[v0] Alarm time has already passed, removing:", config.id)
+      localStorage.removeItem(`alarm_${config.id}`)
+      this.shownAlarms.add(config.id)
+      this.saveShownAlarms()
       return
     }
 
     this.cancelAlarm(config.id)
 
     const timeout = setTimeout(() => {
+      console.log("[v0] Alarm triggered at scheduled time:", config.id)
       this.showNotification(config.title, config.message)
       this.alarms.delete(config.id)
       this.shownAlarms.add(config.id)
       this.saveShownAlarms()
+      localStorage.removeItem(`alarm_${config.id}`)
     }, timeUntilAlarm)
 
     this.alarms.set(config.id, timeout)
@@ -198,7 +203,10 @@ class NotificationManager {
   }
 
   restoreAlarms() {
+    console.log("[v0] Restoring alarms from localStorage")
     const keys = Object.keys(localStorage)
+    const now = Date.now()
+
     keys.forEach((key) => {
       if (key.startsWith("alarm_")) {
         try {
@@ -207,19 +215,21 @@ class NotificationManager {
             const config = JSON.parse(data)
             config.scheduleTime = new Date(config.scheduleTime)
 
-            if (config.scheduleTime.getTime() > Date.now()) {
-              if (!this.shownAlarms.has(config.id)) {
-                this.scheduleAlarm(config)
-              } else {
-                console.log("[v0] Skipping already shown alarm:", config.id)
-              }
-            } else {
+            if (config.scheduleTime.getTime() <= now) {
               console.log("[v0] Removing expired alarm:", config.id)
               localStorage.removeItem(key)
+              this.shownAlarms.add(config.id)
+              this.saveShownAlarms()
+            } else if (!this.shownAlarms.has(config.id) && !this.alarms.has(config.id)) {
+              console.log("[v0] Restoring alarm:", config.id)
+              this.scheduleAlarm(config)
+            } else {
+              console.log("[v0] Skipping already shown/scheduled alarm:", config.id)
             }
           }
         } catch (error) {
           console.error("[v0] Failed to restore alarm:", key, error)
+          localStorage.removeItem(key)
         }
       }
     })
