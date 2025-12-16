@@ -313,7 +313,7 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="border-t border-green-200 p-4 bg-white rounded-b-lg">
+        <div className="border-t border-green-200 p-4 bg-transparent">
           <div className="flex gap-2">
             <Textarea
               value={input}
