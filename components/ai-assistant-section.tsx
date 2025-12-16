@@ -188,6 +188,16 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
         ),
       }
 
+      let preventiveSchedules = []
+      try {
+        const schedulesData = localStorage.getItem(`preventive_schedules_${user?.id}`)
+        if (schedulesData) {
+          preventiveSchedules = JSON.parse(schedulesData)
+        }
+      } catch (error) {
+        console.warn("[v0] Failed to load preventive schedules:", error)
+      }
+
       const response = await fetch("/api/ai-chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -197,6 +207,7 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
           userId: user?.id,
           timezone,
           clientDate,
+          preventiveSchedules, // Include preventive schedules in API request
         }),
       })
 
@@ -296,6 +307,16 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
         ),
       }
 
+      let preventiveSchedules = []
+      try {
+        const schedulesData = localStorage.getItem(`preventive_schedules_${user?.id}`)
+        if (schedulesData) {
+          preventiveSchedules = JSON.parse(schedulesData)
+        }
+      } catch (error) {
+        console.warn("[v0] Failed to load preventive schedules:", error)
+      }
+
       const response = await fetch("/api/ai-chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -305,6 +326,7 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
           userId: user?.id,
           timezone,
           clientDate,
+          preventiveSchedules, // Include preventive schedules in API request
         }),
       })
 

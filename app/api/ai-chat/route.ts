@@ -3,10 +3,11 @@ import { createClient } from "@/lib/supabase/server"
 
 export async function POST(request: Request) {
   try {
-    const { message, language, userId, timezone = "Asia/Seoul", clientDate } = await request.json()
+    const { message, language, userId, timezone = "Asia/Seoul", clientDate, preventiveSchedules } = await request.json()
 
     console.log("[v0] AI Chat - Received timezone:", timezone)
     console.log("[v0] AI Chat - Received clientDate:", clientDate)
+    console.log("[v0] AI Chat - Received preventive schedules:", preventiveSchedules?.length || 0)
 
     if (!message) {
       return NextResponse.json({ error: "Message is required" }, { status: 400 })
@@ -74,6 +75,7 @@ export async function POST(request: Request) {
         budget: "최근 예산 거래:",
         medications: "복용 중인 약:",
         medicalContacts: "의료 연락처:",
+        preventiveMaintenance: "예방 정비 일정:",
       },
       en: {
         schedules: "User's schedules:",
@@ -90,6 +92,7 @@ export async function POST(request: Request) {
         budget: "Recent budget transactions:",
         medications: "Current medications:",
         medicalContacts: "Medical contacts:",
+        preventiveMaintenance: "Vehicle preventive maintenance schedule:",
       },
       zh: {
         schedules: "用户日程:",
@@ -106,6 +109,7 @@ export async function POST(request: Request) {
         budget: "最近的预算交易:",
         medications: "当前用药:",
         medicalContacts: "医疗联系人:",
+        preventiveMaintenance: "车辆预防性维护计划:",
       },
       ja: {
         schedules: "ユーザーのスケジュール:",
@@ -122,6 +126,7 @@ export async function POST(request: Request) {
         budget: "最近の予算取引：",
         medications: "現在の薬：",
         medicalContacts: "医療連絡先：",
+        preventiveMaintenance: "車両予防メンテナンススケジュール：",
       },
     }
 
@@ -409,6 +414,47 @@ export async function POST(request: Request) {
           userContext += `- ${m.name}${m.type ? ` (${m.type})` : ""}${m.phone ? ` - ${m.phone}` : ""}\n`
         })
       }
+
+      if (preventiveSchedules && preventiveSchedules.length > 0) {
+        console.log("[v0] AI Chat - Processing preventive schedules:", preventiveSchedules.length)
+
+        const upcomingSchedules = preventiveSchedules.filter((s: any) => !s.isCompleted)
+        const overdueSchedules = upcomingSchedules.filter((s: any) => {
+          const scheduleDate = new Date(s.scheduledDate)
+          return scheduleDate < todayStart
+        })
+
+        userContext += `\n\n${labels.preventiveMaintenance}\n`
+        userContext += `총 ${preventiveSchedules.length}개의 예방 정비 일정이 있습니다 (${upcomingSchedules.length}개 진행 예정, ${overdueSchedules.length}개 지연됨).\n`
+
+        preventiveSchedules.forEach((s: any) => {
+          if (s.isCompleted) return
+
+          const scheduleDate = new Date(s.scheduledDate)
+          const dateStr = scheduleDate.toLocaleDateString(
+            language === "ko" ? "ko-KR" : language === "zh" ? "zh-CN" : language === "ja" ? "ja-JP" : "en-US",
+            { timeZone: timezone },
+          )
+
+          const vehicle = vehicles?.find((v: any) => v.id === s.vehicleId)
+          const vehicleName = vehicle?.name || "차량"
+
+          const isOverdue = scheduleDate < todayStart ? " [지연]" : ""
+
+          userContext += `- ${dateStr}: ${vehicleName} - ${s.type} 정비${isOverdue}\n`
+          if (s.mileage) {
+            userContext += `  예상 주행거리: ${s.mileage.toLocaleString()}km\n`
+          }
+          if (s.description) {
+            userContext += `  설명: ${s.description}\n`
+          }
+          if (s.alarmEnabled) {
+            userContext += `  알림 설정됨: ${s.alarmDaysBefore}일 전\n`
+          }
+        })
+
+        console.log("[v0] AI Chat - Preventive schedules context added:", userContext.includes("예방 정비 일정"))
+      }
     }
 
     const timezoneInfo =
@@ -425,9 +471,9 @@ export async function POST(request: Request) {
         ? `당신은 친절한 AI 비서입니다. 사용자의 일정, 노트, 차량 관리 및 정비, 할일, 건강 기록 등을 도와주는 개인 비서 역할을 합니다. 
           
 **중요:** 차량 관련 질문에 대해:
-- "차량 예방 정비 일정" = 앞으로 예정된 정비 일정 (일정 섹션에서 차량/정비 카테고리)
+- "차량 예방 정비 일정" 또는 "예방 정비 일정" = 앞으로 예정된 정비 일정 (예방 정비 일정 섹션)
 - "차량 정비 내역/기록" = 과거에 완료된 정비 기록 (차량 정비 내역 섹션)
-- 사용자가 "예방 정비 일정"을 물어보면 일정 섹션의 차량 관련 일정을 확인하세요.
+- 사용자가 "예방 정비 일정"을 물어보면 예방 정비 일정 섹션을 확인하세요.
 - 사용자가 "정비 내역" 또는 "정비 기록"을 물어보면 차량 정비 내역 섹션을 확인하세요.
 
 간결하고 명확하게 답변하세요. 반드시 한국어로 답변하세요.\n\n현재 날짜: ${currentDateStr} ${timezoneInfo}\n${userContext}`
@@ -435,9 +481,9 @@ export async function POST(request: Request) {
           ? `You are a friendly AI assistant. You help users manage their schedules, notes, vehicle maintenance, todos, health records, and more. 
           
 **Important:** For vehicle-related questions:
-- "Vehicle preventive maintenance schedule" = Upcoming maintenance appointments (from schedules section with vehicle/maintenance category)
+- "Vehicle preventive maintenance schedule" or "Preventive maintenance schedule" = Upcoming maintenance appointments (from preventive maintenance schedule section)
 - "Vehicle maintenance history/records" = Past completed maintenance (from vehicle maintenance history section)
-- If user asks about "preventive maintenance schedule", check vehicle-related schedules.
+- If user asks about "preventive maintenance schedule", check preventive maintenance schedule section.
 - If user asks about "maintenance history" or "service records", check vehicle maintenance history section.
 
 Provide concise and clear responses. IMPORTANT: Always respond in English only.\n\nCurrent date: ${currentDateStr} ${timezoneInfo}\n${userContext}`
@@ -445,18 +491,18 @@ Provide concise and clear responses. IMPORTANT: Always respond in English only.\
             ? `您是一位友好的AI助手。您帮助用户管理日程、笔记、车辆维护、待办事项、健康记录等。
 
 **重要：** 关于车辆相关问题：
-- "车辆预防性维护计划" = 即将到来的维护预约（来自日程部分的车辆/维护类别）
+- "车辆预防性维护计划"或"预防性维护计划" = 即将到来的维护预约（来自预防性维护计划部分）
 - "车辆维护历史/记录" = 过去完成的维护（来自车辆维护历史部分）
-- 如果用户询问"预防性维护计划"，请检查车辆相关日程。
+- 如果用户询问"预防性维护计划"，请检查预防性维护计划部分。
 - 如果用户询问"维护历史"或"服务记录"，请检查车辆维护历史部分。
 
 请提供简洁明了的回答。重要：请仅用中文回答。\n\n当前日期：${currentDateStr} ${timezoneInfo}\n${userContext}`
             : `あなたは親切なAIアシスタントです。ユーザーのスケジュール、ノート、車両管理、やること、健康記録などをサポートします。
 
 **重要：** 車両関連の質問について：
-- "車両予防メンテナンススケジュール" = 今後のメンテナンス予定（スケジュールセクションの車両/メンテナンスカテゴリから）
+- "車両予防メンテナンススケジュール"または"予防メンテナンススケジュール" = 今後のメンテナンス予定（予防メンテナンススケジュールセクションから）
 - "車両メンテナンス履歴/記録" = 過去に完了したメンテナンス（車両メンテナンス履歴セクションから）
-- ユーザーが「予防メンテナンススケジュール」について尋ねた場合、車両関連のスケジュールを確認してください。
+- ユーザーが「予防メンテナンススケジュール」について尋ねた場合、予防メンテナンススケジュールセクションを確認してください。
 - ユーザーが「メンテナンス履歴」または「サービス記録」について尋ねた場合、車両メンテナンス履歴セクションを確認してください。
 
 簡潔で明確な回答を提供してください。重要：必ず日本語で回答してください。\n\n現在の日付：${currentDateStr} ${timezoneInfo}\n${userContext}`
