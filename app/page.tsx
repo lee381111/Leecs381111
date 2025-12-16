@@ -16,24 +16,24 @@ import { AnnouncementBanner } from "@/components/announcement-banner"
 import { NotificationCenter } from "@/components/notification-center"
 import { TermsConsentModal } from "@/components/terms-consent-modal"
 import { LoginForm } from "@/components/login-form"
+import { AIAssistantSection } from "@/components/ai-assistant-section"
 import {
   FileText,
   BookOpen,
   CalendarIcon,
-  Cloud,
   Radio,
   Plane,
   Car,
   Heart,
-  BarChart3,
   LogOut,
   ChevronDown,
   Search,
   X,
-  User,
   Wallet,
   Settings,
   CheckSquare,
+  CreditCard,
+  Bot,
 } from "lucide-react"
 
 const NotesSection = dynamic(() => import("@/components/notes-section").then((m) => ({ default: m.NotesSection })), {
@@ -126,6 +126,7 @@ type Section =
   | "statistics"
   | "businessCard"
   | "settings"
+  | "aiAssistant"
 
 const LanguageSelector = ({ language, onChange }: { language: Language; onChange: (lang: Language) => void }) => {
   const [isOpen, setIsOpen] = useState(false)
@@ -513,13 +514,24 @@ export default function ForestNotePage() {
     {
       id: "businessCard",
       label: language === "ko" ? "명함" : language === "en" ? "Business Card" : language === "zh" ? "名片" : "名刺",
-      icon: User,
-      color: "violet",
+      icon: CreditCard,
+      color: "cyan",
     },
-    { id: "weather", label: getTranslation(language, "weather"), icon: Cloud, color: "cyan" },
-    { id: "radio", label: getTranslation(language, "radio"), icon: Radio, color: "purple" },
-    { id: "statistics", label: getTranslation(language, "statistics"), icon: BarChart3, color: "amber" },
-    { id: "settings", label: getTranslation(language, "settings"), icon: Settings, color: "gray" },
+    { id: "radio", label: getTranslation(language, "radio"), icon: Radio, color: "teal" },
+    {
+      id: "aiAssistant",
+      label:
+        language === "ko"
+          ? "AI 비서"
+          : language === "en"
+            ? "AI Assistant"
+            : language === "zh"
+              ? "AI 助手"
+              : "AI アシスタント",
+      icon: Bot,
+      color: "blue",
+    },
+    { id: "settings", label: getTranslation(language, "settings"), icon: Settings, color: "emerald" },
   ]
 
   const formatBytes = (bytes: number) => {
@@ -610,6 +622,10 @@ export default function ForestNotePage() {
 
   if (currentSection === "settings") {
     return <SettingsSection onBack={() => setCurrentSection("home")} language={language} />
+  }
+
+  if (currentSection === "aiAssistant") {
+    return <AIAssistantSection user={user} language={language} />
   }
 
   return (
