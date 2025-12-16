@@ -117,7 +117,7 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
   }
 
   return (
-    <div className="h-full flex flex-col bg-gradient-to-br from-green-50 to-emerald-50 p-4">
+    <div className="h-full flex flex-col bg-green-50 p-4">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           {onBack && (
