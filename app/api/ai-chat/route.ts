@@ -5,6 +5,9 @@ export async function POST(request: Request) {
   try {
     const { message, language, userId, timezone = "Asia/Seoul" } = await request.json()
 
+    console.log("[v0] AI Chat - Received timezone:", timezone)
+    console.log("[v0] AI Chat - Server time (UTC):", new Date().toISOString())
+
     if (!message) {
       return NextResponse.json({ error: "Message is required" }, { status: 400 })
     }
@@ -14,9 +17,19 @@ export async function POST(request: Request) {
     let userContext = ""
 
     const now = new Date()
-    const userTime = new Date(now.toLocaleString("en-US", { timeZone: timezone }))
-    const today = new Date(userTime.toISOString().split("T")[0]) // Start of today in user's timezone
+    const userTimeString = now.toLocaleString("en-US", { timeZone: timezone })
+    const userTime = new Date(userTimeString)
+
+    console.log("[v0] AI Chat - User time string:", userTimeString)
+    console.log("[v0] AI Chat - User time object:", userTime.toISOString())
+
+    // Get start of today in user's timezone
+    const todayStr = userTime.toLocaleDateString("en-CA", { timeZone: timezone }) // YYYY-MM-DD format
+    const today = new Date(todayStr + "T00:00:00")
     const thisWeekEnd = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
+
+    console.log("[v0] AI Chat - Today (user TZ):", todayStr)
+    console.log("[v0] AI Chat - This week end:", thisWeekEnd.toISOString())
 
     const currentDate = userTime.toLocaleDateString(
       language === "ko" ? "ko-KR" : language === "zh" ? "zh-CN" : language === "ja" ? "ja-JP" : "en-US",
@@ -28,6 +41,8 @@ export async function POST(request: Request) {
         timeZone: timezone,
       },
     )
+
+    console.log("[v0] AI Chat - Current date string:", currentDate)
 
     const contextLabels = {
       ko: {
@@ -74,7 +89,7 @@ export async function POST(request: Request) {
         diary: "最近日记:",
         travel: "旅行记录:",
         businessCards: "名片:",
-        budget: "最近预算交易:",
+        budget: "最近的预算交易:",
         medications: "当前用药:",
         medicalContacts: "医疗联系人:",
       },
