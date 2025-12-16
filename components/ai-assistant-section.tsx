@@ -313,7 +313,7 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
         )}
       </div>
 
-      <div className="flex-1 flex flex-col overflow-hidden px-4">
+      <div className="flex-1 flex flex-col overflow-hidden px-4 bg-green-50">
         <div className="flex-1 overflow-y-auto py-4 space-y-4">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-gray-500 space-y-4">
@@ -368,7 +368,7 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="border-t border-green-200 p-4">
+        <div className="border-t border-green-200 p-4 bg-green-50">
           <div className="flex gap-2">
             <Textarea
               value={input}
