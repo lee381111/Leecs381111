@@ -3,10 +3,10 @@
 import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
-import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Bot, Send, Trash2, Loader2, ArrowLeft, Mic, MicOff } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
 
 interface Message {
   id: string
@@ -28,6 +28,52 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
   const [isRecording, setIsRecording] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const recognitionRef = useRef<any>(null)
+
+  useEffect(() => {
+    if (user?.id) {
+      loadChatHistory()
+    }
+  }, [user?.id])
+
+  const loadChatHistory = async () => {
+    try {
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from("ai_chat_history")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: true })
+        .limit(100)
+
+      if (error) throw error
+
+      if (data) {
+        const loadedMessages: Message[] = data.map((msg: any) => ({
+          id: msg.id,
+          role: msg.role,
+          content: msg.content,
+          timestamp: new Date(msg.created_at),
+        }))
+        setMessages(loadedMessages)
+      }
+    } catch (error) {
+      console.error("[v0] Failed to load chat history:", error)
+    }
+  }
+
+  const saveChatMessage = async (message: Message) => {
+    try {
+      const supabase = createClient()
+      await supabase.from("ai_chat_history").insert({
+        user_id: user.id,
+        role: message.role,
+        content: message.content,
+        created_at: message.timestamp.toISOString(),
+      })
+    } catch (error) {
+      console.error("[v0] Failed to save chat message:", error)
+    }
+  }
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -51,7 +97,6 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
         setInput(transcript)
         setIsRecording(false)
 
-        // Auto-send after brief delay
         setTimeout(() => {
           if (transcript.trim()) {
             handleSendVoiceMessage(transcript.trim())
@@ -103,6 +148,7 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
     }
 
     setMessages((prev) => [...prev, userMessage])
+    saveChatMessage(userMessage)
     setInput("")
     setIsLoading(true)
 
@@ -129,6 +175,7 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
       }
 
       setMessages((prev) => [...prev, assistantMessage])
+      saveChatMessage(assistantMessage)
     } catch (error) {
       console.error("[v0] AI chat error:", error)
       const errorMessage: Message = {
@@ -150,7 +197,7 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
     }
   }
 
-  const handleClearChat = () => {
+  const handleClearChat = async () => {
     if (
       confirm(
         language === "ko"
@@ -162,7 +209,13 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
               : "すべてのチャット履歴を削除しますか？",
       )
     ) {
-      setMessages([])
+      try {
+        const supabase = createClient()
+        await supabase.from("ai_chat_history").delete().eq("user_id", user.id)
+        setMessages([])
+      } catch (error) {
+        console.error("[v0] Failed to clear chat history:", error)
+      }
     }
   }
 
@@ -184,6 +237,7 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
     }
 
     setMessages((prev) => [...prev, userMessage])
+    saveChatMessage(userMessage)
     setInput("")
     setIsLoading(true)
 
@@ -210,6 +264,7 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
       }
 
       setMessages((prev) => [...prev, assistantMessage])
+      saveChatMessage(assistantMessage)
     } catch (error) {
       console.error("[v0] AI chat error:", error)
       const errorMessage: Message = {
@@ -232,8 +287,8 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
   }
 
   return (
-    <div className="h-full flex flex-col bg-green-50 p-4">
-      <div className="flex items-center justify-between mb-4">
+    <div className="h-full flex flex-col bg-green-50">
+      <div className="flex items-center justify-between p-4 bg-green-50">
         <div className="flex items-center gap-2">
           {onBack && (
             <Button variant="ghost" size="sm" onClick={onBack} className="mr-2">
@@ -258,8 +313,8 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
         )}
       </div>
 
-      <Card className="flex-1 flex flex-col overflow-hidden bg-green-50 border-none shadow-none">
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 flex flex-col overflow-hidden px-4">
+        <div className="flex-1 overflow-y-auto py-4 space-y-4">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-gray-500 space-y-4">
               <Bot className="h-16 w-16 text-green-400" />
@@ -313,7 +368,7 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="border-t border-green-200 p-4 bg-transparent">
+        <div className="border-t border-green-200 p-4">
           <div className="flex gap-2">
             <Textarea
               value={input}
@@ -355,7 +410,7 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
                   : "Enterで送信、Shift+Enterで改行、🎤 音声入力"}
           </p>
         </div>
-      </Card>
+      </div>
     </div>
   )
 }
