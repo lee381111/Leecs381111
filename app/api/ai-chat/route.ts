@@ -112,16 +112,16 @@ export async function POST(request: Request) {
         thisWeek: "今週のスケジュール:",
         notes: "最近のノート:",
         vehicles: "車両情報:",
-        maintenance: "車両メンテナンス履歴:",
+        maintenance: "車両メンテナンス履歴：",
         todos: "やることリスト:",
         radio: "お気に入りのラジオ局:",
         health: "最近の健康記録:",
         diary: "最近の日記:",
-        travel: "旅行記録:",
-        businessCards: "名刺:",
-        budget: "最近の予算取引:",
-        medications: "現在の薬:",
-        medicalContacts: "医療連絡先:",
+        travel: "旅行記録：",
+        businessCards: "名刺：",
+        budget: "最近の予算取引：",
+        medications: "現在の薬：",
+        medicalContacts: "医療連絡先：",
       },
     }
 
@@ -259,6 +259,9 @@ export async function POST(request: Request) {
       }
 
       if (vehicleMaintenance && vehicleMaintenance.length > 0) {
+        console.log("[v0] AI Chat - Vehicle maintenance records found:", vehicleMaintenance.length)
+        console.log("[v0] AI Chat - Vehicle maintenance data:", JSON.stringify(vehicleMaintenance, null, 2))
+
         userContext += `\n\n${labels.maintenance}\n`
         userContext += `총 ${vehicleMaintenance.length}개의 차량 정비 기록이 있습니다.\n`
         vehicleMaintenance.forEach((m) => {
@@ -268,6 +271,11 @@ export async function POST(request: Request) {
           )
           userContext += `- ${dateStr}: ${m.type} - ${m.description || "설명 없음"} (비용: ${m.cost || 0}원, 주행거리: ${m.mileage || 0}km)\n`
         })
+
+        console.log(
+          "[v0] AI Chat - Vehicle maintenance context:",
+          userContext.split(labels.maintenance)[1]?.substring(0, 500),
+        )
       }
 
       if (todoItems && todoItems.length > 0) {
@@ -405,6 +413,9 @@ Provide concise and clear responses. IMPORTANT: Always respond in English only.\
 車両関連の質問（メンテナンススケジュール、サービス履歴、予防メンテナンス）に特に注意してください。車両メンテナンス記録は「車両メンテナンス履歴：」セクションのコンテキストに含まれています。
 
 簡潔で明確な回答を提供してください。重要：必ず日本語で回答してください。\n\n現在の日付：${currentDateStr} ${timezoneInfo}\n${userContext}`
+
+    console.log("[v0] AI Chat - System prompt (first 1000 chars):", systemPrompt.substring(0, 1000))
+    console.log("[v0] AI Chat - User context length:", userContext.length)
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
