@@ -36,7 +36,7 @@ export async function POST(request: Request) {
           .eq("completed", false)
           .order("start_time", { ascending: true })
           .limit(20),
-        supabase.from("notes").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(10),
+        supabase.from("notes").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
         supabase.from("vehicles").select("*").eq("user_id", userId).limit(5),
         supabase
           .from("vehicle_maintenance")
@@ -186,7 +186,8 @@ export async function POST(request: Request) {
 
       if (notes && notes.length > 0) {
         userContext += `\n\n${labels.notes}\n`
-        notes.slice(0, 5).forEach((n) => {
+        userContext += `총 ${notes.length}개의 노트가 있습니다.\n`
+        notes.forEach((n) => {
           userContext += `- ${n.title}: ${n.content.substring(0, 100)}...\n`
         })
       }
