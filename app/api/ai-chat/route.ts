@@ -260,12 +260,13 @@ export async function POST(request: Request) {
 
       if (vehicleMaintenance && vehicleMaintenance.length > 0) {
         userContext += `\n\n${labels.maintenance}\n`
+        userContext += `총 ${vehicleMaintenance.length}개의 차량 정비 기록이 있습니다.\n`
         vehicleMaintenance.forEach((m) => {
           const dateStr = new Date(m.date).toLocaleDateString(
             language === "ko" ? "ko-KR" : language === "zh" ? "zh-CN" : language === "ja" ? "ja-JP" : "en-US",
             { timeZone: timezone },
           )
-          userContext += `- ${dateStr}: ${m.type} - ${m.description || ""} (${m.cost || 0}원, ${m.mileage || 0}km)\n`
+          userContext += `- ${dateStr}: ${m.type} - ${m.description || "설명 없음"} (비용: ${m.cost || 0}원, 주행거리: ${m.mileage || 0}km)\n`
         })
       }
 
@@ -382,12 +383,28 @@ export async function POST(request: Request) {
 
     const systemPrompt =
       language === "ko"
-        ? `당신은 친절한 AI 비서입니다. 사용자의 일정, 노트, 차량 관리, 할일, 건강 기록 등을 도와주는 개인 비서 역할을 합니다. 간결하고 명확하게 답변하세요. 반드시 한국어로 답변하세요.\n\n현재 날짜: ${currentDateStr} ${timezoneInfo}\n${userContext}`
+        ? `당신은 친절한 AI 비서입니다. 사용자의 일정, 노트, 차량 관리 및 정비, 할일, 건강 기록 등을 도와주는 개인 비서 역할을 합니다. 
+          
+특히 차량 관련 질문(정비 일정, 정비 내역, 예방 정비 등)에 대해 상세하게 답변해주세요. 차량 정비 내역은 위의 컨텍스트에 "차량 정비 내역:" 섹션에 포함되어 있습니다.
+
+간결하고 명확하게 답변하세요. 반드시 한국어로 답변하세요.\n\n현재 날짜: ${currentDateStr} ${timezoneInfo}\n${userContext}`
         : language === "en"
-          ? `You are a friendly AI assistant. You help users manage their schedules, notes, vehicle maintenance, todos, health records, and more. Provide concise and clear responses. IMPORTANT: Always respond in English only.\n\nCurrent date: ${currentDateStr} ${timezoneInfo}\n${userContext}`
+          ? `You are a friendly AI assistant. You help users manage their schedules, notes, vehicle maintenance, todos, health records, and more. 
+          
+Pay special attention to vehicle-related questions (maintenance schedules, service history, preventive maintenance). Vehicle maintenance records are included in the context under "Vehicle maintenance history:".
+
+Provide concise and clear responses. IMPORTANT: Always respond in English only.\n\nCurrent date: ${currentDateStr} ${timezoneInfo}\n${userContext}`
           : language === "zh"
-            ? `您是一位友好的AI助手。您帮助用户管理日程、笔记、车辆维护、待办事项、健康记录等。请提供简洁明了的回答。重要：请仅用中文回答。\n\n当前日期：${currentDateStr} ${timezoneInfo}\n${userContext}`
-            : `あなたは親切なAIアシスタントです。ユーザーのスケジュール、ノート、車両管理、やること、健康記録などをサポートします。簡潔で明確な回答を提供してください。重要：必ず日本語で回答してください。\n\n現在の日付：${currentDateStr} ${timezoneInfo}\n${userContext}`
+            ? `您是一位友好的AI助手。您帮助用户管理日程、笔记、车辆维护、待办事项、健康记录等。
+
+特别注意车辆相关问题（维护计划、服务历史、预防性维护）。车辆维护记录包含在"车辆维护记录："部分的上下文中。
+
+请提供简洁明了的回答。重要：请仅用中文回答。\n\n当前日期：${currentDateStr} ${timezoneInfo}\n${userContext}`
+            : `あなたは親切なAIアシスタントです。ユーザーのスケジュール、ノート、車両管理、やること、健康記録などをサポートします。
+
+車両関連の質問（メンテナンススケジュール、サービス履歴、予防メンテナンス）に特に注意してください。車両メンテナンス記録は「車両メンテナンス履歴：」セクションのコンテキストに含まれています。
+
+簡潔で明確な回答を提供してください。重要：必ず日本語で回答してください。\n\n現在の日付：${currentDateStr} ${timezoneInfo}\n${userContext}`
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",

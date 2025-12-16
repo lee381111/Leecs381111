@@ -57,7 +57,13 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
         .order("created_at", { ascending: true })
         .limit(100)
 
-      if (error) throw error
+      if (error) {
+        if (error.message.includes("does not exist")) {
+          console.warn("[v0] Chat history table not created yet. Chat will work but history won't be saved.")
+          return
+        }
+        throw error
+      }
 
       if (data) {
         const loadedMessages: Message[] = data.map((msg: any) => ({
@@ -83,7 +89,7 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
         created_at: message.timestamp.toISOString(),
       })
     } catch (error) {
-      console.error("[v0] Failed to save chat message:", error)
+      console.warn("[v0] Failed to save chat message (table might not exist):", error)
     }
   }
 
