@@ -625,7 +625,7 @@ export default function ForestNotePage() {
   }
 
   if (currentSection === "aiAssistant") {
-    return <AIAssistantSection user={user} language={language} />
+    return <AIAssistantSection user={user} language={language} onBack={() => setCurrentSection("home")} />
   }
 
   return (

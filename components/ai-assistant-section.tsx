@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Bot, Send, Trash2, Loader2 } from "lucide-react"
+import { Bot, Send, Trash2, Loader2, ArrowLeft } from "lucide-react"
 
 interface Message {
   id: string
@@ -18,9 +18,10 @@ interface Message {
 interface AIAssistantSectionProps {
   user: any
   language: string
+  onBack?: () => void
 }
 
-export function AIAssistantSection({ user, language }: AIAssistantSectionProps) {
+export function AIAssistantSection({ user, language, onBack }: AIAssistantSectionProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -116,10 +117,15 @@ export function AIAssistantSection({ user, language }: AIAssistantSectionProps) 
   }
 
   return (
-    <div className="h-full flex flex-col bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
+    <div className="h-full flex flex-col bg-gradient-to-br from-green-50 to-emerald-50 p-4">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Bot className="h-6 w-6 text-blue-600" />
+          {onBack && (
+            <Button variant="ghost" size="sm" onClick={onBack} className="mr-2">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          )}
+          <Bot className="h-6 w-6 text-green-600" />
           <h2 className="text-xl font-bold text-gray-900">
             {language === "ko"
               ? "AI 비서"
@@ -141,7 +147,7 @@ export function AIAssistantSection({ user, language }: AIAssistantSectionProps) 
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-gray-500 space-y-4">
-              <Bot className="h-16 w-16 text-blue-400" />
+              <Bot className="h-16 w-16 text-green-400" />
               <div className="text-center space-y-2">
                 <p className="font-semibold">
                   {language === "ko"
@@ -168,11 +174,11 @@ export function AIAssistantSection({ user, language }: AIAssistantSectionProps) 
               <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div
                   className={`max-w-[80%] rounded-lg p-3 ${
-                    message.role === "user" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-900"
+                    message.role === "user" ? "bg-green-600 text-white" : "bg-gray-100 text-gray-900"
                   }`}
                 >
                   <p className="whitespace-pre-wrap break-words">{message.content}</p>
-                  <p className={`text-xs mt-1 ${message.role === "user" ? "text-blue-100" : "text-gray-500"}`}>
+                  <p className={`text-xs mt-1 ${message.role === "user" ? "text-green-100" : "text-gray-500"}`}>
                     {message.timestamp.toLocaleTimeString(language === "ko" ? "ko-KR" : "en-US", {
                       hour: "2-digit",
                       minute: "2-digit",
@@ -185,7 +191,7 @@ export function AIAssistantSection({ user, language }: AIAssistantSectionProps) 
           {isLoading && (
             <div className="flex justify-start">
               <div className="bg-gray-100 rounded-lg p-3">
-                <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+                <Loader2 className="h-5 w-5 animate-spin text-green-600" />
               </div>
             </div>
           )}
