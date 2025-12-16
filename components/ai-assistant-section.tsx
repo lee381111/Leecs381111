@@ -26,8 +26,20 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
+  const [timezone, setTimezone] = useState<string>("Asia/Seoul")
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const recognitionRef = useRef<any>(null)
+
+  useEffect(() => {
+    try {
+      const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+      setTimezone(detectedTimezone)
+      console.log("[v0] Detected timezone:", detectedTimezone)
+    } catch (error) {
+      console.warn("[v0] Failed to detect timezone, using default Asia/Seoul")
+      setTimezone("Asia/Seoul")
+    }
+  }, [])
 
   useEffect(() => {
     if (user?.id) {
@@ -160,6 +172,7 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
           message: input.trim(),
           language,
           userId: user?.id,
+          timezone,
         }),
       })
 
@@ -249,6 +262,7 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
           message: message,
           language,
           userId: user?.id,
+          timezone,
         }),
       })
 

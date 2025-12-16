@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server"
 
 export async function POST(request: Request) {
   try {
-    const { message, language, userId } = await request.json()
+    const { message, language, userId, timezone = "Asia/Seoul" } = await request.json()
 
     if (!message) {
       return NextResponse.json({ error: "Message is required" }, { status: 400 })
@@ -14,17 +14,20 @@ export async function POST(request: Request) {
     let userContext = ""
 
     const now = new Date()
-    const kstOffset = 9 * 60 // KST is UTC+9 hours in minutes
-    const kstTime = new Date(now.getTime() + kstOffset * 60 * 1000)
-    const today = new Date(kstTime.toISOString().split("T")[0]) // Start of today in KST
+    const userTime = new Date(now.toLocaleString("en-US", { timeZone: timezone }))
+    const today = new Date(userTime.toISOString().split("T")[0]) // Start of today in user's timezone
     const thisWeekEnd = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
 
-    const currentDateKST = kstTime.toLocaleDateString("ko-KR", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      weekday: "long",
-    })
+    const currentDate = userTime.toLocaleDateString(
+      language === "ko" ? "ko-KR" : language === "zh" ? "zh-CN" : language === "ja" ? "ja-JP" : "en-US",
+      {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        weekday: "long",
+        timeZone: timezone,
+      },
+    )
 
     const contextLabels = {
       ko: {
@@ -166,17 +169,25 @@ export async function POST(request: Request) {
       if (schedules && schedules.length > 0) {
         const thisWeekSchedules = schedules.filter((s) => {
           const scheduleDate = new Date(s.start_time)
-          return scheduleDate >= today && scheduleDate <= thisWeekEnd
+          const scheduleInUserTZ = new Date(scheduleDate.toLocaleString("en-US", { timeZone: timezone }))
+          return scheduleInUserTZ >= today && scheduleInUserTZ <= thisWeekEnd
         })
 
         userContext += `\n\n${labels.schedules}\n`
         schedules.forEach((s) => {
           const startTime = new Date(s.start_time)
-          const dateStr = startTime.toLocaleDateString(language === "ko" ? "ko-KR" : "en-US")
-          const timeStr = startTime.toLocaleTimeString(language === "ko" ? "ko-KR" : "en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
+          const dateStr = startTime.toLocaleDateString(
+            language === "ko" ? "ko-KR" : language === "zh" ? "zh-CN" : language === "ja" ? "ja-JP" : "en-US",
+            { timeZone: timezone },
+          )
+          const timeStr = startTime.toLocaleTimeString(
+            language === "ko" ? "ko-KR" : language === "zh" ? "zh-CN" : language === "ja" ? "ja-JP" : "en-US",
+            {
+              hour: "2-digit",
+              minute: "2-digit",
+              timeZone: timezone,
+            },
+          )
           userContext += `- ${dateStr} ${timeStr}: ${s.title}${s.description ? ` (${s.description})` : ""}\n`
         })
 
@@ -184,11 +195,18 @@ export async function POST(request: Request) {
           userContext += `\n${labels.thisWeek}\n`
           thisWeekSchedules.forEach((s) => {
             const startTime = new Date(s.start_time)
-            const dateStr = startTime.toLocaleDateString(language === "ko" ? "ko-KR" : "en-US")
-            const timeStr = startTime.toLocaleTimeString(language === "ko" ? "ko-KR" : "en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })
+            const dateStr = startTime.toLocaleDateString(
+              language === "ko" ? "ko-KR" : language === "zh" ? "zh-CN" : language === "ja" ? "ja-JP" : "en-US",
+              { timeZone: timezone },
+            )
+            const timeStr = startTime.toLocaleTimeString(
+              language === "ko" ? "ko-KR" : language === "zh" ? "zh-CN" : language === "ja" ? "ja-JP" : "en-US",
+              {
+                hour: "2-digit",
+                minute: "2-digit",
+                timeZone: timezone,
+              },
+            )
             userContext += `- ${dateStr} ${timeStr}: ${s.title}\n`
           })
         }
@@ -212,7 +230,10 @@ export async function POST(request: Request) {
       if (vehicleMaintenance && vehicleMaintenance.length > 0) {
         userContext += `\n\n${labels.maintenance}\n`
         vehicleMaintenance.forEach((m) => {
-          const dateStr = new Date(m.date).toLocaleDateString(language === "ko" ? "ko-KR" : "en-US")
+          const dateStr = new Date(m.date).toLocaleDateString(
+            language === "ko" ? "ko-KR" : language === "zh" ? "zh-CN" : language === "ja" ? "ja-JP" : "en-US",
+            { timeZone: timezone },
+          )
           userContext += `- ${dateStr}: ${m.type} - ${m.description || ""} (${m.cost || 0}원, ${m.mileage || 0}km)\n`
         })
       }
@@ -221,7 +242,10 @@ export async function POST(request: Request) {
         userContext += `\n\n${labels.todos}\n`
         todoItems.forEach((t) => {
           const dueDate = t.due_date
-            ? new Date(t.due_date).toLocaleDateString(language === "ko" ? "ko-KR" : "en-US")
+            ? new Date(t.due_date).toLocaleDateString(
+                language === "ko" ? "ko-KR" : language === "zh" ? "zh-CN" : language === "ja" ? "ja-JP" : "en-US",
+                { timeZone: timezone },
+              )
             : ""
           userContext += `- ${t.title}${dueDate ? ` (${dueDate})` : ""}${t.description ? `: ${t.description}` : ""}\n`
         })
@@ -237,7 +261,10 @@ export async function POST(request: Request) {
       if (healthRecords && healthRecords.length > 0) {
         userContext += `\n\n${labels.health}\n`
         healthRecords.forEach((h) => {
-          const dateStr = new Date(h.recorded_at).toLocaleDateString(language === "ko" ? "ko-KR" : "en-US")
+          const dateStr = new Date(h.recorded_at).toLocaleDateString(
+            language === "ko" ? "ko-KR" : language === "zh" ? "zh-CN" : language === "ja" ? "ja-JP" : "en-US",
+            { timeZone: timezone },
+          )
           let record = `- ${dateStr}: `
           if (h.type === "blood_pressure") {
             record += `혈압 ${h.blood_pressure_systolic}/${h.blood_pressure_diastolic}`
@@ -255,7 +282,10 @@ export async function POST(request: Request) {
       if (diaryEntries && diaryEntries.length > 0) {
         userContext += `\n\n${labels.diary}\n`
         diaryEntries.forEach((d) => {
-          const dateStr = new Date(d.created_at).toLocaleDateString(language === "ko" ? "ko-KR" : "en-US")
+          const dateStr = new Date(d.created_at).toLocaleDateString(
+            language === "ko" ? "ko-KR" : language === "zh" ? "zh-CN" : language === "ja" ? "ja-JP" : "en-US",
+            { timeZone: timezone },
+          )
           userContext += `- ${dateStr}: ${d.title || ""}${d.mood ? ` (${d.mood})` : ""} - ${d.content.substring(0, 100)}...\n`
         })
       }
@@ -263,9 +293,15 @@ export async function POST(request: Request) {
       if (travelRecords && travelRecords.length > 0) {
         userContext += `\n\n${labels.travel}\n`
         travelRecords.forEach((t) => {
-          const startDate = new Date(t.start_date).toLocaleDateString(language === "ko" ? "ko-KR" : "en-US")
+          const startDate = new Date(t.start_date).toLocaleDateString(
+            language === "ko" ? "ko-KR" : language === "zh" ? "zh-CN" : language === "ja" ? "ja-JP" : "en-US",
+            { timeZone: timezone },
+          )
           const endDate = t.end_date
-            ? new Date(t.end_date).toLocaleDateString(language === "ko" ? "ko-KR" : "en-US")
+            ? new Date(t.end_date).toLocaleDateString(
+                language === "ko" ? "ko-KR" : language === "zh" ? "zh-CN" : language === "ja" ? "ja-JP" : "en-US",
+                { timeZone: timezone },
+              )
             : ""
           userContext += `- ${t.destination}: ${startDate}${endDate ? ` ~ ${endDate}` : ""}${t.expense ? ` (${t.expense}원)` : ""}\n`
         })
@@ -281,7 +317,10 @@ export async function POST(request: Request) {
       if (budgetTransactions && budgetTransactions.length > 0) {
         userContext += `\n\n${labels.budget}\n`
         budgetTransactions.slice(0, 5).forEach((b) => {
-          const dateStr = new Date(b.date).toLocaleDateString(language === "ko" ? "ko-KR" : "en-US")
+          const dateStr = new Date(b.date).toLocaleDateString(
+            language === "ko" ? "ko-KR" : language === "zh" ? "zh-CN" : language === "ja" ? "ja-JP" : "en-US",
+            { timeZone: timezone },
+          )
           userContext += `- ${dateStr}: ${b.description || ""} ${b.type === "income" ? "+" : "-"}${b.amount}원 (${b.category || ""})\n`
         })
       }
@@ -301,14 +340,23 @@ export async function POST(request: Request) {
       }
     }
 
+    const timezoneInfo =
+      language === "ko"
+        ? `(현지 시간: ${timezone})`
+        : language === "en"
+          ? `(Local time: ${timezone})`
+          : language === "zh"
+            ? `(当地时间：${timezone})`
+            : `(現地時間：${timezone})`
+
     const systemPrompt =
       language === "ko"
-        ? `당신은 친절한 AI 비서입니다. 사용자의 일정, 노트, 차량 관리, 할일, 건강 기록 등을 도와주는 개인 비서 역할을 합니다. 간결하고 명확하게 답변하세요. 반드시 한국어로 답변하세요.\n\n현재 날짜: ${currentDateKST} (한국 시간)\n${userContext}`
+        ? `당신은 친절한 AI 비서입니다. 사용자의 일정, 노트, 차량 관리, 할일, 건강 기록 등을 도와주는 개인 비서 역할을 합니다. 간결하고 명확하게 답변하세요. 반드시 한국어로 답변하세요.\n\n현재 날짜: ${currentDate} ${timezoneInfo}\n${userContext}`
         : language === "en"
-          ? `You are a friendly AI assistant. You help users manage their schedules, notes, vehicle maintenance, todos, health records, and more. Provide concise and clear responses. IMPORTANT: Always respond in English only.\n\nCurrent date: ${currentDateKST} (Korean Time)\n${userContext}`
+          ? `You are a friendly AI assistant. You help users manage their schedules, notes, vehicle maintenance, todos, health records, and more. Provide concise and clear responses. IMPORTANT: Always respond in English only.\n\nCurrent date: ${currentDate} ${timezoneInfo}\n${userContext}`
           : language === "zh"
-            ? `您是一位友好的AI助手。您帮助用户管理日程、笔记、车辆维护、待办事项、健康记录等。请提供简洁明了的回答。重要：请仅用中文回答。\n\n当前日期：${currentDateKST}（韩国时间）\n${userContext}`
-            : `あなたは親切なAIアシスタントです。ユーザーのスケジュール、ノート、車両管理、やること、健康記録などをサポートします。簡潔で明確な回答を提供してください。重要：必ず日本語で回答してください。\n\n現在の日付：${currentDateKST}（韓国時間）\n${userContext}`
+            ? `您是一位友好的AI助手。您帮助用户管理日程、笔记、车辆维护、待办事项、健康记录等。请提供简洁明了的回答。重要：请仅用中文回答。\n\n当前日期：${currentDate} ${timezoneInfo}\n${userContext}`
+            : `あなたは親切なAIアシスタントです。ユーザーのスケジュール、ノート、車両管理、やること、健康記録などをサポートします。簡潔で明確な回答を提供してください。重要：必ず日本語で回答してください。\n\n現在の日付：${currentDate} ${timezoneInfo}\n${userContext}`
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
