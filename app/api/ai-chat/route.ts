@@ -196,6 +196,17 @@ export async function POST(request: Request) {
       ])
 
       if (schedules && schedules.length > 0) {
+        const vehicleSchedules = schedules.filter(
+          (s) =>
+            s.category === "차량" ||
+            s.category === "정비" ||
+            s.title.includes("정비") ||
+            s.title.includes("차량") ||
+            s.title.includes("점검") ||
+            s.description?.includes("정비") ||
+            s.description?.includes("차량"),
+        )
+
         const thisWeekSchedules = schedules.filter((s) => {
           const scheduleDate = new Date(s.start_time)
           const scheduleDateStr = scheduleDate.toLocaleDateString("en-CA", { timeZone: timezone })
@@ -219,8 +230,28 @@ export async function POST(request: Request) {
               timeZone: timezone,
             },
           )
-          userContext += `- ${dateStr} ${timeStr}: ${s.title}${s.description ? ` (${s.description})` : ""}\n`
+          userContext += `- ${dateStr} ${timeStr}: ${s.title}${s.description ? ` (${s.description})` : ""}${s.category ? ` [${s.category}]` : ""}\n`
         })
+
+        if (vehicleSchedules.length > 0) {
+          userContext += `\n차량 예방 정비 일정:\n`
+          vehicleSchedules.forEach((s) => {
+            const startTime = new Date(s.start_time)
+            const dateStr = startTime.toLocaleDateString(
+              language === "ko" ? "ko-KR" : language === "zh" ? "zh-CN" : language === "ja" ? "ja-JP" : "en-US",
+              { timeZone: timezone },
+            )
+            const timeStr = startTime.toLocaleTimeString(
+              language === "ko" ? "ko-KR" : language === "zh" ? "zh-CN" : language === "ja" ? "ja-JP" : "en-US",
+              {
+                hour: "2-digit",
+                minute: "2-digit",
+                timeZone: timezone,
+              },
+            )
+            userContext += `- ${dateStr} ${timeStr}: ${s.title}${s.description ? ` - ${s.description}` : ""}\n`
+          })
+        }
 
         if (thisWeekSchedules.length > 0) {
           userContext += `\n${labels.thisWeek}\n`
@@ -393,24 +424,40 @@ export async function POST(request: Request) {
       language === "ko"
         ? `당신은 친절한 AI 비서입니다. 사용자의 일정, 노트, 차량 관리 및 정비, 할일, 건강 기록 등을 도와주는 개인 비서 역할을 합니다. 
           
-특히 차량 관련 질문(정비 일정, 정비 내역, 예방 정비 등)에 대해 상세하게 답변해주세요. 차량 정비 내역은 위의 컨텍스트에 "차량 정비 내역:" 섹션에 포함되어 있습니다.
+**중요:** 차량 관련 질문에 대해:
+- "차량 예방 정비 일정" = 앞으로 예정된 정비 일정 (일정 섹션에서 차량/정비 카테고리)
+- "차량 정비 내역/기록" = 과거에 완료된 정비 기록 (차량 정비 내역 섹션)
+- 사용자가 "예방 정비 일정"을 물어보면 일정 섹션의 차량 관련 일정을 확인하세요.
+- 사용자가 "정비 내역" 또는 "정비 기록"을 물어보면 차량 정비 내역 섹션을 확인하세요.
 
 간결하고 명확하게 답변하세요. 반드시 한국어로 답변하세요.\n\n현재 날짜: ${currentDateStr} ${timezoneInfo}\n${userContext}`
         : language === "en"
           ? `You are a friendly AI assistant. You help users manage their schedules, notes, vehicle maintenance, todos, health records, and more. 
           
-Pay special attention to vehicle-related questions (maintenance schedules, service history, preventive maintenance). Vehicle maintenance records are included in the context under "Vehicle maintenance history:".
+**Important:** For vehicle-related questions:
+- "Vehicle preventive maintenance schedule" = Upcoming maintenance appointments (from schedules section with vehicle/maintenance category)
+- "Vehicle maintenance history/records" = Past completed maintenance (from vehicle maintenance history section)
+- If user asks about "preventive maintenance schedule", check vehicle-related schedules.
+- If user asks about "maintenance history" or "service records", check vehicle maintenance history section.
 
 Provide concise and clear responses. IMPORTANT: Always respond in English only.\n\nCurrent date: ${currentDateStr} ${timezoneInfo}\n${userContext}`
           : language === "zh"
             ? `您是一位友好的AI助手。您帮助用户管理日程、笔记、车辆维护、待办事项、健康记录等。
 
-特别注意车辆相关问题（维护计划、服务历史、预防性维护）。车辆维护记录包含在"车辆维护记录："部分的上下文中。
+**重要：** 关于车辆相关问题：
+- "车辆预防性维护计划" = 即将到来的维护预约（来自日程部分的车辆/维护类别）
+- "车辆维护历史/记录" = 过去完成的维护（来自车辆维护历史部分）
+- 如果用户询问"预防性维护计划"，请检查车辆相关日程。
+- 如果用户询问"维护历史"或"服务记录"，请检查车辆维护历史部分。
 
 请提供简洁明了的回答。重要：请仅用中文回答。\n\n当前日期：${currentDateStr} ${timezoneInfo}\n${userContext}`
             : `あなたは親切なAIアシスタントです。ユーザーのスケジュール、ノート、車両管理、やること、健康記録などをサポートします。
 
-車両関連の質問（メンテナンススケジュール、サービス履歴、予防メンテナンス）に特に注意してください。車両メンテナンス記録は「車両メンテナンス履歴：」セクションのコンテキストに含まれています。
+**重要：** 車両関連の質問について：
+- "車両予防メンテナンススケジュール" = 今後のメンテナンス予定（スケジュールセクションの車両/メンテナンスカテゴリから）
+- "車両メンテナンス履歴/記録" = 過去に完了したメンテナンス（車両メンテナンス履歴セクションから）
+- ユーザーが「予防メンテナンススケジュール」について尋ねた場合、車両関連のスケジュールを確認してください。
+- ユーザーが「メンテナンス履歴」または「サービス記録」について尋ねた場合、車両メンテナンス履歴セクションを確認してください。
 
 簡潔で明確な回答を提供してください。重要：必ず日本語で回答してください。\n\n現在の日付：${currentDateStr} ${timezoneInfo}\n${userContext}`
 
