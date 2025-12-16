@@ -3,10 +3,10 @@ import { createClient } from "@/lib/supabase/server"
 
 export async function POST(request: Request) {
   try {
-    const { message, language, userId, timezone = "Asia/Seoul" } = await request.json()
+    const { message, language, userId, timezone = "Asia/Seoul", clientDate } = await request.json()
 
     console.log("[v0] AI Chat - Received timezone:", timezone)
-    console.log("[v0] AI Chat - Server time (UTC):", new Date().toISOString())
+    console.log("[v0] AI Chat - Received clientDate:", clientDate)
 
     if (!message) {
       return NextResponse.json({ error: "Message is required" }, { status: 400 })
@@ -16,39 +16,47 @@ export async function POST(request: Request) {
 
     let userContext = ""
 
-    const now = new Date()
+    let currentDateStr = ""
+    let todayStart: Date
+    let todayEnd: Date
+    let weekEnd: Date
 
-    // Get user's current date and time in their timezone
-    const userDateStr = now.toLocaleDateString("en-CA", { timeZone: timezone }) // YYYY-MM-DD format
-    const userTimeStr = now.toLocaleTimeString("en-US", { timeZone: timezone, hour12: false }) // HH:MM:SS format
-    const userDateTime = new Date(`${userDateStr}T${userTimeStr}`)
+    if (clientDate) {
+      // Use client's date information (most accurate)
+      currentDateStr = clientDate.dateString
+      todayStart = new Date(clientDate.year, clientDate.month - 1, clientDate.day, 0, 0, 0)
+      todayEnd = new Date(clientDate.year, clientDate.month - 1, clientDate.day, 23, 59, 59)
+      weekEnd = new Date(todayStart.getTime() + 7 * 24 * 60 * 60 * 1000)
 
-    console.log("[v0] AI Chat - User date string:", userDateStr)
-    console.log("[v0] AI Chat - User time string:", userTimeStr)
-    console.log("[v0] AI Chat - User date time:", userDateTime.toISOString())
+      console.log("[v0] AI Chat - Using client date:", currentDateStr)
+      console.log(
+        "[v0] AI Chat - Today:",
+        `${clientDate.year}-${clientDate.month}-${clientDate.day}`,
+        clientDate.weekday,
+      )
+    } else {
+      // Fallback to server-side calculation
+      const now = new Date()
+      const userDateStr = now.toLocaleDateString("en-CA", { timeZone: timezone })
+      const [year, month, day] = userDateStr.split("-").map(Number)
 
-    // Calculate today (start of day) in user's timezone
-    const todayStart = new Date(`${userDateStr}T00:00:00`)
-    const todayEnd = new Date(`${userDateStr}T23:59:59`)
-    const weekEnd = new Date(todayStart.getTime() + 7 * 24 * 60 * 60 * 1000)
+      todayStart = new Date(year, month - 1, day, 0, 0, 0)
+      todayEnd = new Date(year, month - 1, day, 23, 59, 59)
+      weekEnd = new Date(todayStart.getTime() + 7 * 24 * 60 * 60 * 1000)
 
-    console.log("[v0] AI Chat - Today start:", todayStart.toISOString())
-    console.log("[v0] AI Chat - Today end:", todayEnd.toISOString())
-    console.log("[v0] AI Chat - Week end:", weekEnd.toISOString())
+      currentDateStr = now.toLocaleDateString(
+        language === "ko" ? "ko-KR" : language === "zh" ? "zh-CN" : language === "ja" ? "ja-JP" : "en-US",
+        {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          weekday: "long",
+          timeZone: timezone,
+        },
+      )
 
-    // Get formatted current date for AI
-    const currentDate = userDateTime.toLocaleDateString(
-      language === "ko" ? "ko-KR" : language === "zh" ? "zh-CN" : language === "ja" ? "ja-JP" : "en-US",
-      {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        weekday: "long",
-        timeZone: timezone,
-      },
-    )
-
-    console.log("[v0] AI Chat - Current date for AI:", currentDate)
+      console.log("[v0] AI Chat - Using server calculated date:", currentDateStr)
+    }
 
     const contextLabels = {
       ko: {
@@ -374,12 +382,12 @@ export async function POST(request: Request) {
 
     const systemPrompt =
       language === "ko"
-        ? `당신은 친절한 AI 비서입니다. 사용자의 일정, 노트, 차량 관리, 할일, 건강 기록 등을 도와주는 개인 비서 역할을 합니다. 간결하고 명확하게 답변하세요. 반드시 한국어로 답변하세요.\n\n현재 날짜: ${currentDate} ${timezoneInfo}\n${userContext}`
+        ? `당신은 친절한 AI 비서입니다. 사용자의 일정, 노트, 차량 관리, 할일, 건강 기록 등을 도와주는 개인 비서 역할을 합니다. 간결하고 명확하게 답변하세요. 반드시 한국어로 답변하세요.\n\n현재 날짜: ${currentDateStr} ${timezoneInfo}\n${userContext}`
         : language === "en"
-          ? `You are a friendly AI assistant. You help users manage their schedules, notes, vehicle maintenance, todos, health records, and more. Provide concise and clear responses. IMPORTANT: Always respond in English only.\n\nCurrent date: ${currentDate} ${timezoneInfo}\n${userContext}`
+          ? `You are a friendly AI assistant. You help users manage their schedules, notes, vehicle maintenance, todos, health records, and more. Provide concise and clear responses. IMPORTANT: Always respond in English only.\n\nCurrent date: ${currentDateStr} ${timezoneInfo}\n${userContext}`
           : language === "zh"
-            ? `您是一位友好的AI助手。您帮助用户管理日程、笔记、车辆维护、待办事项、健康记录等。请提供简洁明了的回答。重要：请仅用中文回答。\n\n当前日期：${currentDate} ${timezoneInfo}\n${userContext}`
-            : `あなたは親切なAIアシスタントです。ユーザーのスケジュール、ノート、車両管理、やること、健康記録などをサポートします。簡潔で明確な回答を提供してください。重要：必ず日本語で回答してください。\n\n現在の日付：${currentDate} ${timezoneInfo}\n${userContext}`
+            ? `您是一位友好的AI助手。您帮助用户管理日程、笔记、车辆维护、待办事项、健康记录等。请提供简洁明了的回答。重要：请仅用中文回答。\n\n当前日期：${currentDateStr} ${timezoneInfo}\n${userContext}`
+            : `あなたは親切なAIアシスタントです。ユーザーのスケジュール、ノート、車両管理、やること、健康記録などをサポートします。簡潔で明確な回答を提供してください。重要：必ず日本語で回答してください。\n\n現在の日付：${currentDateStr} ${timezoneInfo}\n${userContext}`
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",

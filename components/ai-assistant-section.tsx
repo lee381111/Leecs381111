@@ -165,6 +165,23 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
     setIsLoading(true)
 
     try {
+      const now = new Date()
+      const clientDate = {
+        year: now.getFullYear(),
+        month: now.getMonth() + 1,
+        day: now.getDate(),
+        weekday: now.toLocaleDateString(language === "ko" ? "ko-KR" : "en-US", { weekday: "long" }),
+        dateString: now.toLocaleDateString(
+          language === "ko" ? "ko-KR" : language === "zh" ? "zh-CN" : language === "ja" ? "ja-JP" : "en-US",
+          {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            weekday: "long",
+          },
+        ),
+      }
+
       const response = await fetch("/api/ai-chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -173,6 +190,7 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
           language,
           userId: user?.id,
           timezone,
+          clientDate,
         }),
       })
 
@@ -255,6 +273,23 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
     setIsLoading(true)
 
     try {
+      const now = new Date()
+      const clientDate = {
+        year: now.getFullYear(),
+        month: now.getMonth() + 1,
+        day: now.getDate(),
+        weekday: now.toLocaleDateString(language === "ko" ? "ko-KR" : "en-US", { weekday: "long" }),
+        dateString: now.toLocaleDateString(
+          language === "ko" ? "ko-KR" : language === "zh" ? "zh-CN" : language === "ja" ? "ja-JP" : "en-US",
+          {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            weekday: "long",
+          },
+        ),
+      }
+
       const response = await fetch("/api/ai-chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -263,6 +298,7 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
           language,
           userId: user?.id,
           timezone,
+          clientDate,
         }),
       })
 
