@@ -17,21 +17,27 @@ export async function POST(request: Request) {
     let userContext = ""
 
     const now = new Date()
-    const userTimeString = now.toLocaleString("en-US", { timeZone: timezone })
-    const userTime = new Date(userTimeString)
 
-    console.log("[v0] AI Chat - User time string:", userTimeString)
-    console.log("[v0] AI Chat - User time object:", userTime.toISOString())
+    // Get user's current date and time in their timezone
+    const userDateStr = now.toLocaleDateString("en-CA", { timeZone: timezone }) // YYYY-MM-DD format
+    const userTimeStr = now.toLocaleTimeString("en-US", { timeZone: timezone, hour12: false }) // HH:MM:SS format
+    const userDateTime = new Date(`${userDateStr}T${userTimeStr}`)
 
-    // Get start of today in user's timezone
-    const todayStr = userTime.toLocaleDateString("en-CA", { timeZone: timezone }) // YYYY-MM-DD format
-    const today = new Date(todayStr + "T00:00:00")
-    const thisWeekEnd = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
+    console.log("[v0] AI Chat - User date string:", userDateStr)
+    console.log("[v0] AI Chat - User time string:", userTimeStr)
+    console.log("[v0] AI Chat - User date time:", userDateTime.toISOString())
 
-    console.log("[v0] AI Chat - Today (user TZ):", todayStr)
-    console.log("[v0] AI Chat - This week end:", thisWeekEnd.toISOString())
+    // Calculate today (start of day) in user's timezone
+    const todayStart = new Date(`${userDateStr}T00:00:00`)
+    const todayEnd = new Date(`${userDateStr}T23:59:59`)
+    const weekEnd = new Date(todayStart.getTime() + 7 * 24 * 60 * 60 * 1000)
 
-    const currentDate = userTime.toLocaleDateString(
+    console.log("[v0] AI Chat - Today start:", todayStart.toISOString())
+    console.log("[v0] AI Chat - Today end:", todayEnd.toISOString())
+    console.log("[v0] AI Chat - Week end:", weekEnd.toISOString())
+
+    // Get formatted current date for AI
+    const currentDate = userDateTime.toLocaleDateString(
       language === "ko" ? "ko-KR" : language === "zh" ? "zh-CN" : language === "ja" ? "ja-JP" : "en-US",
       {
         year: "numeric",
@@ -42,7 +48,7 @@ export async function POST(request: Request) {
       },
     )
 
-    console.log("[v0] AI Chat - Current date string:", currentDate)
+    console.log("[v0] AI Chat - Current date for AI:", currentDate)
 
     const contextLabels = {
       ko: {
@@ -184,8 +190,10 @@ export async function POST(request: Request) {
       if (schedules && schedules.length > 0) {
         const thisWeekSchedules = schedules.filter((s) => {
           const scheduleDate = new Date(s.start_time)
-          const scheduleInUserTZ = new Date(scheduleDate.toLocaleString("en-US", { timeZone: timezone }))
-          return scheduleInUserTZ >= today && scheduleInUserTZ <= thisWeekEnd
+          const scheduleDateStr = scheduleDate.toLocaleDateString("en-CA", { timeZone: timezone })
+          const scheduleDateTime = new Date(scheduleDateStr)
+
+          return scheduleDateTime >= todayStart && scheduleDateTime <= weekEnd
         })
 
         userContext += `\n\n${labels.schedules}\n`
