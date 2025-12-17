@@ -797,6 +797,8 @@ type TranslationKey =
   | "bullet_list" // Added
   | "numbered_list" // Added
   | "clear_formatting" // Added
+  | "plainTextMode" // Added
+  | "richTextMode" // Added
 
 const translations: Record<Language, Record<TranslationKey, string>> = {
   ko: {
@@ -918,6 +920,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     bullet_list: "글머리 기호",
     numbered_list: "번호 매기기",
     clear_formatting: "서식 지우기",
+    plainTextMode: "일반 텍스트 모드",
+    richTextMode: "서식 편집 모드",
 
     // Health Section
     health_record: "건강 기록",
@@ -1799,6 +1803,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     bullet_list: "Bullet List",
     numbered_list: "Numbered List",
     clear_formatting: "Clear Formatting",
+    plainTextMode: "Plain Text Mode",
+    richTextMode: "Rich Text Mode",
 
     // Health Section
     health_record: "Health Record",
@@ -2687,6 +2693,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     bullet_list: "箇条書きリスト",
     numbered_list: "番号付きリスト",
     clear_formatting: "書式クリア",
+    plainTextMode: "プレーンテキストモード",
+    richTextMode: "リッチテキストモード",
 
     // Health Section
     health_record: "健康記録",
@@ -2977,7 +2985,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     excel_downloaded: "Excelファイルがダウンロードされました",
     excel_export_failed: "Excelエクスポート失敗",
     backup_downloaded: "バックアップファイルがダウンロードされました",
-    backup_error: "バックアップ失敗",
+    backup_error: "バック업失敗",
     restore_success: "復元完了",
     restore_error: "復元失敗",
     not_logged_in: "未ログイン",
@@ -3567,6 +3575,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     bullet_list: "项目符号",
     numbered_list: "编号",
     clear_formatting: "清除格式",
+    plainTextMode: "纯文本模式",
+    richTextMode: "富文本模式",
 
     // Health Section
     health_record: "健康记录",
