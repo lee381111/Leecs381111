@@ -1,11 +1,29 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, Plus, Search, Trash2, Edit2, Save, Tag, Eye, Share2, Sparkles } from "lucide-react"
+import {
+  ArrowLeft,
+  Plus,
+  Search,
+  Trash2,
+  Edit2,
+  Save,
+  Tag,
+  Eye,
+  Share2,
+  Sparkles,
+  Type,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  X,
+} from "lucide-react"
 import { saveNotes, loadNotes } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import { getTranslation } from "@/lib/i18n"
@@ -43,6 +61,13 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
   const [isTranslating, setIsTranslating] = useState(false)
   const [noteTranslation, setNoteTranslation] = useState<string | null>(null)
   const [showLanguageSelect, setShowLanguageSelect] = useState(false)
+  const [showFormatting, setShowFormatting] = useState(false)
+  const [textSize, setTextSize] = useState<"small" | "normal" | "large">("normal")
+  const [isBold, setIsBold] = useState(false)
+  const [isItalic, setIsItalic] = useState(false)
+  const [isUnderline, setIsUnderline] = useState(false)
+  const [textAlign, setTextAlign] = useState<"left" | "center" | "right">("left")
+  const [textColor, setTextColor] = useState("#000000")
 
   const t = (key: string) => getTranslation(language, key)
 
@@ -355,6 +380,80 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
     setNoteTranslation(null)
   }
 
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    e.preventDefault()
+    const pastedText = e.clipboardData.getData("text")
+
+    // Detect numbered paragraphs (1. 2. 3. or 1) 2) 3) etc.)
+    const hasNumberedParagraphs = /^\s*\d+[.)]\s+/m.test(pastedText)
+
+    if (hasNumberedParagraphs) {
+      // Format numbered paragraphs with proper spacing
+      const formatted = pastedText
+        .split(/\n+/)
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0)
+        .map((line) => {
+          // Ensure consistent numbering format
+          return line.replace(/^(\d+)[.)]?\s*/, "$1. ")
+        })
+        .join("\n\n")
+
+      const textarea = e.currentTarget
+      const start = textarea.selectionStart
+      const end = textarea.selectionEnd
+      const newContent = formData.content.substring(0, start) + formatted + formData.content.substring(end)
+
+      setFormData({ ...formData, content: newContent })
+
+      // Set cursor position after pasted content
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = start + formatted.length
+      }, 0)
+    } else {
+      // Normal paste - just clean up extra whitespace
+      const formatted = pastedText
+        .split(/\n{3,}/)
+        .map((para) => para.trim())
+        .join("\n\n")
+
+      const textarea = e.currentTarget
+      const start = textarea.selectionStart
+      const end = textarea.selectionEnd
+      const newContent = formData.content.substring(0, start) + formatted + formData.content.substring(end)
+
+      setFormData({ ...formData, content: newContent })
+
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = start + formatted.length
+      }, 0)
+    }
+  }
+
+  const getTextStyle = () => {
+    const sizes = {
+      small: "text-sm",
+      normal: "text-base",
+      large: "text-lg",
+    }
+    const aligns = {
+      left: "text-left",
+      center: "text-center",
+      right: "text-right",
+    }
+
+    return `${sizes[textSize]} ${aligns[textAlign]} ${isBold ? "font-bold" : ""} ${isItalic ? "italic" : ""} ${isUnderline ? "underline" : ""}`
+  }
+
+  const clearFormatting = () => {
+    setTextSize("normal")
+    setIsBold(false)
+    setIsItalic(false)
+    setIsUnderline(false)
+    setTextAlign("left")
+    setTextColor("#000000")
+  }
+
   const allTags = Array.from(new Set(notes.flatMap((note) => note.tags))).sort()
 
   const filteredNotes = notes.filter((note) => {
@@ -401,11 +500,136 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
           />
+          <div className="flex items-center gap-2 mb-2 p-2 border border-green-200 rounded-lg bg-green-50/50 flex-wrap">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowFormatting(!showFormatting)}
+              className="text-green-700"
+            >
+              <Type className="w-4 h-4 mr-1" />
+              {t("formatting")}
+            </Button>
+
+            {showFormatting && (
+              <>
+                <div className="h-6 w-px bg-green-200" />
+
+                <select
+                  value={textSize}
+                  onChange={(e) => setTextSize(e.target.value as any)}
+                  className="text-sm border border-green-200 rounded px-2 py-1 bg-white"
+                >
+                  <option value="small">{t("small")}</option>
+                  <option value="normal">{t("normal")}</option>
+                  <option value="large">{t("large")}</option>
+                </select>
+
+                <div className="h-6 w-px bg-green-200" />
+
+                <Button
+                  type="button"
+                  variant={isBold ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setIsBold(!isBold)}
+                  className="h-8 w-8 p-0"
+                  title={t("bold")}
+                >
+                  <span className="font-bold">B</span>
+                </Button>
+
+                <Button
+                  type="button"
+                  variant={isItalic ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setIsItalic(!isItalic)}
+                  className="h-8 w-8 p-0"
+                  title={t("italic")}
+                >
+                  <span className="italic">I</span>
+                </Button>
+
+                <Button
+                  type="button"
+                  variant={isUnderline ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setIsUnderline(!isUnderline)}
+                  className="h-8 w-8 p-0"
+                  title={t("underline")}
+                >
+                  <span className="underline">U</span>
+                </Button>
+
+                <div className="h-6 w-px bg-green-200" />
+
+                <Button
+                  type="button"
+                  variant={textAlign === "left" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setTextAlign("left")}
+                  className="h-8 w-8 p-0"
+                  title={t("align_left")}
+                >
+                  <AlignLeft className="w-4 h-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant={textAlign === "center" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setTextAlign("center")}
+                  className="h-8 w-8 p-0"
+                  title={t("align_center")}
+                >
+                  <AlignCenter className="w-4 h-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant={textAlign === "right" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setTextAlign("right")}
+                  className="h-8 w-8 p-0"
+                  title={t("align_right")}
+                >
+                  <AlignRight className="w-4 h-4" />
+                </Button>
+
+                <div className="h-6 w-px bg-green-200" />
+
+                <div className="flex items-center gap-1">
+                  <input
+                    type="color"
+                    value={textColor}
+                    onChange={(e) => setTextColor(e.target.value)}
+                    className="w-8 h-8 rounded cursor-pointer"
+                    title={t("text_color")}
+                  />
+                </div>
+
+                <div className="h-6 w-px bg-green-200" />
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearFormatting}
+                  className="text-xs text-green-700"
+                  title={t("clear_formatting")}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </>
+            )}
+          </div>
+
           <Textarea
             placeholder={t("content")}
             value={formData.content}
             onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+            onPaste={handlePaste}
             rows={10}
+            className={getTextStyle()}
+            style={{ color: textColor }}
           />
 
           <Button
@@ -555,7 +779,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
                       )}
                       {!isImage && (
                         <div className="flex items-center justify-center h-24 bg-gray-200">
-                          <p className="text-xs text-gray-600 truncate px-2">{file.name || "파일"}</p>
+                          <p className="text-xs text-gray-600 truncate px-2">{file.name || `첨부 ${idx + 1}`}</p>
                         </div>
                       )}
                       <button

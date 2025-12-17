@@ -20,7 +20,6 @@ type TranslationKey =
   | "krw_unit"
   | "file_upload"
   | "take_photo"
-  | "shoot"
   | "ocr_camera"
   | "ocr_upload"
   | "handwriting"
@@ -784,6 +783,20 @@ type TranslationKey =
   | "ai_advice"
   | "alarm_notification" // Added missing translation key
   | "days_before_1" // Added missing translation key
+  | "formatting" // Added
+  | "small" // Added
+  | "normal" // Added
+  | "large" // Added
+  | "bold" // Added
+  | "italic" // Added
+  | "underline" // Added
+  | "align_left" // Added
+  | "align_center" // Added
+  | "align_right" // Added
+  | "text_color" // Added
+  | "bullet_list" // Added
+  | "numbered_list" // Added
+  | "clear_formatting" // Added
 
 const translations: Record<Language, Record<TranslationKey, string>> = {
   ko: {
@@ -889,6 +902,22 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     translate_to_chinese: "중국어로 번역",
     translate_to_japanese: "일본어로 번역",
     translation_failed: "번역에 실패했습니다",
+
+    // Formatting
+    formatting: "서식",
+    small: "작게",
+    normal: "보통",
+    large: "크게",
+    bold: "굵게",
+    italic: "기울임",
+    underline: "밑줄",
+    align_left: "왼쪽 정렬",
+    align_center: "가운데 정렬",
+    align_right: "오른쪽 정렬",
+    text_color: "글자 색상",
+    bullet_list: "글머리 기호",
+    numbered_list: "번호 매기기",
+    clear_formatting: "서식 지우기",
 
     // Health Section
     health_record: "건강 기록",
@@ -1754,6 +1783,22 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     translate_to_chinese: "Translate to Chinese",
     translate_to_japanese: "Translate to Japanese",
     translation_failed: "Translation failed",
+
+    // Formatting
+    formatting: "Formatting",
+    small: "Small",
+    normal: "Normal",
+    large: "Large",
+    bold: "Bold",
+    italic: "Italic",
+    underline: "Underline",
+    align_left: "Align Left",
+    align_center: "Align Center",
+    align_right: "Align Right",
+    text_color: "Text Color",
+    bullet_list: "Bullet List",
+    numbered_list: "Numbered List",
+    clear_formatting: "Clear Formatting",
 
     // Health Section
     health_record: "Health Record",
@@ -2627,6 +2672,22 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     translate_to_japanese: "日本語に翻訳",
     translation_failed: "翻訳に失敗しました",
 
+    // Formatting
+    formatting: "書式設定",
+    small: "小",
+    normal: "標準",
+    large: "大",
+    bold: "太字",
+    italic: "斜体",
+    underline: "下線",
+    align_left: "左揃え",
+    align_center: "中央揃え",
+    align_right: "右揃え",
+    text_color: "文字色",
+    bullet_list: "箇条書きリスト",
+    numbered_list: "番号付きリスト",
+    clear_formatting: "書式クリア",
+
     // Health Section
     health_record: "健康記録",
     health_record_btn: "健康記録",
@@ -3490,6 +3551,22 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     translate_to_chinese: "翻译成中文",
     translate_to_japanese: "翻译成日语",
     translation_failed: "翻译失败",
+
+    // Formatting
+    formatting: "格式",
+    small: "小",
+    normal: "正常",
+    large: "大",
+    bold: "粗体",
+    italic: "斜体",
+    underline: "下划线",
+    align_left: "左对齐",
+    align_center: "居中",
+    align_right: "右对齐",
+    text_color: "文字颜色",
+    bullet_list: "项目符号",
+    numbered_list: "编号",
+    clear_formatting: "清除格式",
 
     // Health Section
     health_record: "健康记录",
