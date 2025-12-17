@@ -799,6 +799,7 @@ type TranslationKey =
   | "clear_formatting" // Added
   | "plainTextMode" // Added
   | "richTextMode" // Added
+  | "select_text_to_format" // Added for rich text mode instruction
 
 const translations: Record<Language, Record<TranslationKey, string>> = {
   ko: {
@@ -922,6 +923,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     clear_formatting: "서식 지우기",
     plainTextMode: "일반 텍스트 모드",
     richTextMode: "서식 편집 모드",
+    select_text_to_format: "텍스트를 드래그하여 선택한 후 서식 버튼을 클릭하세요", // Added instruction
 
     // Health Section
     health_record: "건강 기록",
@@ -1574,7 +1576,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     no_health_records: "건강 기록이 없습니다.",
     health_metrics: "건강 지표",
     medication_name_placeholder: "약 이름을 입력하세요",
-    dosage_placeholder: "복용량을 입력하세요",
+    dosage_placeholder: "용량을 입력하세요",
     frequency_placeholder: "복용 빈도를 입력하세요",
     no_medications: "등록된 약이 없습니다.",
     add_medication: "약 추가",
@@ -1632,7 +1634,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     tos_2_content: "본 약관에서 사용하는 용어의 정의는 다음과 같습니다. ...",
     tos_3_title: "제3조 (이용 계약)",
     tos_3_content: "이용 계약은 이용자가 본 약관의 내용에 대하여 동의함을 표시함으로써 체결됩니다. ...",
-    tos_4_title: "제4조 (이용자의 의무)",
+    tos_4_title: "제4조 (사용자의 의무)",
     tos_4_content: "이용자는 다음 각 호의 행위를 하여서는 안 됩니다. ...",
     tos_5_title: "제5조 (서비스 제공 및 중단)",
     tos_5_content: "회사는 이용자에게 안정적인 서비스를 제공합니다. ...",
@@ -1805,6 +1807,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     clear_formatting: "Clear Formatting",
     plainTextMode: "Plain Text Mode",
     richTextMode: "Rich Text Mode",
+    select_text_to_format: "Select text by dragging, then click formatting buttons", // Added instruction
 
     // Health Section
     health_record: "Health Record",
@@ -2690,11 +2693,12 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     align_center: "中央揃え",
     align_right: "右揃え",
     text_color: "文字色",
-    bullet_list: "箇条書きリスト",
+    bullet_list: "箇条書き",
     numbered_list: "番号付きリスト",
     clear_formatting: "書式クリア",
     plainTextMode: "プレーンテキストモード",
-    richTextMode: "リッチテキストモード",
+    richTextMode: "書式編集モード",
+    select_text_to_format: "テキストをドラッグして選択した後、書式ボタンをクリックしてください", // Added instruction
 
     // Health Section
     health_record: "健康記録",
@@ -2985,7 +2989,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     excel_downloaded: "Excelファイルがダウンロードされました",
     excel_export_failed: "Excelエクスポート失敗",
     backup_downloaded: "バックアップファイルがダウンロードされました",
-    backup_error: "バック업失敗",
+    backup_error: "バックアップ失敗",
     restore_success: "復元完了",
     restore_error: "復元失敗",
     not_logged_in: "未ログイン",
@@ -3573,10 +3577,11 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     align_right: "右对齐",
     text_color: "文字颜色",
     bullet_list: "项目符号",
-    numbered_list: "编号",
+    numbered_list: "编号列表",
     clear_formatting: "清除格式",
     plainTextMode: "纯文本模式",
-    richTextMode: "富文本模式",
+    richTextMode: "格式编辑模式",
+    select_text_to_format: "拖动选择文本后点击格式按钮", // Added instruction
 
     // Health Section
     health_record: "健康记录",

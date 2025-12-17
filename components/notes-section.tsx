@@ -209,10 +209,11 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
     setAttachments(loadedAttachments)
     setIsAdding(true)
 
-    // Populate contentEditable div with existing content
-    if (contentEditableRef.current) {
-      contentEditableRef.current.innerHTML = note.content
-    }
+    setTimeout(() => {
+      if (contentEditableRef.current) {
+        contentEditableRef.current.innerHTML = note.content
+      }
+    }, 0)
   }
 
   const handleOrganizeMeeting = async () => {
@@ -687,22 +688,26 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
           )}
 
           {isRichTextMode ? (
-            <div
-              ref={contentEditableRef}
-              contentEditable
-              suppressContentEditableWarning
-              onPaste={handlePaste}
-              onInput={(e) => {
-                // onInput으로 실시간 업데이트하여 부분 편집 가능
-                setFormData({ ...formData, content: e.currentTarget.innerHTML })
-              }}
-              className={cn(
-                getTextStyle(),
-                "min-h-[300px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-              )}
-              style={{ color: textColor }}
-            />
+            <>
+              <div className="mb-2 text-sm text-muted-foreground">{t("select_text_to_format")}</div>
+              <div
+                ref={contentEditableRef}
+                contentEditable
+                suppressContentEditableWarning
+                onPaste={handlePaste}
+                onInput={(e) => {
+                  // onInput으로 실시간 업데이트하여 부분 편집 가능
+                  setFormData({ ...formData, content: e.currentTarget.innerHTML })
+                }}
+                dangerouslySetInnerHTML={{ __html: formData.content }}
+                className={cn(
+                  getTextStyle(),
+                  "min-h-[300px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                )}
+                style={{ color: textColor }}
+              />
+            </>
           ) : (
             <Textarea
               value={formData.content}
