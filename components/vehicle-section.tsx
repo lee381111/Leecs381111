@@ -459,7 +459,7 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
         </Button>
 
         {selectedVehicle && (
-          <Card className="mb-4">
+          <Card className="mb-4 p-4">
             <div className="flex justify-between items-start">
               <div className="flex-1">
                 <h3 className="font-semibold text-lg">{selectedVehicle.name}</h3>
@@ -712,7 +712,7 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
 
         {vehicleSchedules.length > 0 && (
           <div className="px-4">
-            <h3 className="text-lg font-semibold mb-3 mt-6 px-4">{t("preventive_schedule")}</h3>
+            <h3 className="text-lg font-semibold mb-3 mt-6">{t("preventive_maintenance")}</h3>
             <div className="grid gap-3">
               {vehicleSchedules.map((schedule) => (
                 <Card key={schedule.id} className={`p-4 ${schedule.isCompleted ? "bg-gray-100" : "bg-teal-50"}`}>
@@ -777,7 +777,7 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
 
         {vehicleRecords.length > 0 && (
           <div className="px-4">
-            <h3 className="text-lg font-semibold mb-3 mt-6 px-4">{t("maintenance_history")}</h3>
+            <h3 className="text-lg font-semibold mb-3 mt-6">{t("maintenance_history")}</h3>
             <div className="grid gap-3">
               {vehicleRecords.map((record) => (
                 <Card key={record.id} className="p-4">

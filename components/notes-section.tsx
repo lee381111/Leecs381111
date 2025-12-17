@@ -22,7 +22,7 @@ import {
   AlignLeft,
   AlignCenter,
   AlignRight,
-  X,
+  Eraser,
 } from "lucide-react"
 import { saveNotes, loadNotes } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
@@ -719,11 +719,11 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
                     variant="ghost"
                     size="sm"
                     onClick={clearFormatting}
-                    className="h-8 px-3 text-xs bg-white hover:bg-gray-100 border-red-300 hover:border-red-400"
+                    className="h-8 px-3 text-xs bg-green-50 hover:bg-green-100 border border-green-200 hover:border-green-300"
                     title={t("clear_formatting")}
                   >
-                    <X className="w-4 h-4 mr-1 text-red-500" />
-                    {t("clear")}
+                    <Eraser className="w-4 h-4 mr-1 text-green-700" />
+                    {t("clear_formatting")}
                   </Button>
                 </>
               )}
