@@ -58,6 +58,46 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
 
   const t = (key: string) => getTranslation(language as any, key)
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition()
+        recognition.lang =
+          language === "ko" ? "ko-KR" : language === "ja" ? "ja-JP" : language === "zh" ? "zh-CN" : "en-US"
+        recognition.continuous = false
+        recognition.interimResults = false
+
+        recognition.onresult = (event: any) => {
+          const transcript = event.results[0][0].transcript
+          setFormData((prev) => ({ ...prev, title: transcript }))
+          setIsListening(false)
+        }
+
+        recognition.onerror = (event: any) => {
+          console.error("[v0] Speech recognition error:", event.error)
+          setIsListening(false)
+          if (event.error === "not-allowed") {
+            alert(t("mic_permission_required"))
+          }
+        }
+
+        recognition.onend = () => {
+          setIsListening(false)
+        }
+
+        recognitionRef.current = recognition
+      }
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop()
+      }
+    }
+  }, [language])
+
   const handleToggleComplete = async (id: string) => {
     if (!user?.id) return
 
