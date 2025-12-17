@@ -70,11 +70,29 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
   const [textAlign, setTextAlign] = useState<"left" | "center" | "right">("left")
   const [textColor, setTextColor] = useState("#000000")
   const [isRichTextMode, setIsRichTextMode] = useState(false)
+  const [isComposing, setIsComposing] = useState(false)
 
   const contentEditableRef = useRef<HTMLDivElement>(null)
 
   const applyFormatting = (command: string, value?: string) => {
+    const selection = window.getSelection()
+    if (!selection || selection.rangeCount === 0) {
+      alert(t("select_text_to_format"))
+      return
+    }
+
+    // Check if there's actually selected text
+    if (selection.toString().length === 0) {
+      alert(t("select_text_to_format"))
+      return
+    }
+
+    console.log("[v0] Applying formatting:", command, "to selection:", selection.toString())
+
+    // Use execCommand which works on the current selection
     document.execCommand(command, false, value)
+
+    // Keep the selection visible
     contentEditableRef.current?.focus()
   }
 
@@ -470,16 +488,40 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
   }
 
   const clearFormatting = () => {
-    setTextSize("normal")
-    setIsBold(false)
-    setIsItalic(false)
-    setIsUnderline(false)
-    setTextAlign("left")
-    setTextColor("#000000")
-    if (contentEditableRef.current) {
-      // Reset to plain text to clear formatting applied by execCommand
-      contentEditableRef.current.innerHTML = contentEditableRef.current.innerText
+    const selection = window.getSelection()
+
+    if (!selection || selection.rangeCount === 0 || selection.toString().length === 0) {
+      // No selection - clear all formatting in the entire div
+      if (contentEditableRef.current) {
+        const plainText = contentEditableRef.current.innerText
+        contentEditableRef.current.innerHTML = plainText
+        setFormData({ ...formData, content: plainText })
+      }
+      setIsBold(false)
+      setIsItalic(false)
+      setIsUnderline(false)
+      setTextAlign("left")
+      setTextColor("#000000")
+      return
     }
+
+    // Clear formatting from selected text only
+    const range = selection.getRangeAt(0)
+    const selectedText = selection.toString()
+
+    console.log("[v0] Clearing formatting from:", selectedText)
+
+    // Remove formatting by replacing with plain text node
+    range.deleteContents()
+    const textNode = document.createTextNode(selectedText)
+    range.insertNode(textNode)
+
+    // Update content
+    if (contentEditableRef.current) {
+      setFormData({ ...formData, content: contentEditableRef.current.innerHTML })
+    }
+
+    contentEditableRef.current?.focus()
   }
 
   const getTextStyle = () => {
@@ -695,11 +737,26 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
                 contentEditable
                 suppressContentEditableWarning
                 onPaste={handlePaste}
-                onInput={(e) => {
-                  // onInput으로 실시간 업데이트하여 부분 편집 가능
-                  setFormData({ ...formData, content: e.currentTarget.innerHTML })
+                onCompositionStart={() => setIsComposing(true)}
+                onCompositionEnd={(e) => {
+                  setIsComposing(false)
+                  // 조합이 끝난 후에만 상태 업데이트
+                  if (contentEditableRef.current) {
+                    setFormData({ ...formData, content: contentEditableRef.current.innerHTML })
+                  }
                 }}
-                dangerouslySetInnerHTML={{ __html: formData.content }}
+                onInput={(e) => {
+                  // IME 조합 중이 아닐 때만 상태 업데이트
+                  if (!isComposing && contentEditableRef.current) {
+                    setFormData({ ...formData, content: contentEditableRef.current.innerHTML })
+                  }
+                }}
+                onBlur={() => {
+                  // 포커스를 잃을 때 최종 내용 저장
+                  if (contentEditableRef.current) {
+                    setFormData({ ...formData, content: contentEditableRef.current.innerHTML })
+                  }
+                }}
                 className={cn(
                   getTextStyle(),
                   "min-h-[300px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
