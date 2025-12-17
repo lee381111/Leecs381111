@@ -711,8 +711,8 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
         )}
 
         {vehicleSchedules.length > 0 && (
-          <div>
-            <h3 className="text-lg font-semibold mb-3 mt-6">{t("preventive_schedule")}</h3>
+          <div className="px-4">
+            <h3 className="text-lg font-semibold mb-3 mt-6 px-4">{t("preventive_schedule")}</h3>
             <div className="grid gap-3">
               {vehicleSchedules.map((schedule) => (
                 <Card key={schedule.id} className={`p-4 ${schedule.isCompleted ? "bg-gray-100" : "bg-teal-50"}`}>
@@ -776,8 +776,8 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
         )}
 
         {vehicleRecords.length > 0 && (
-          <div>
-            <h3 className="text-lg font-semibold mb-3 mt-6">{t("maintenance_history")}</h3>
+          <div className="px-4">
+            <h3 className="text-lg font-semibold mb-3 mt-6 px-4">{t("maintenance_history")}</h3>
             <div className="grid gap-3">
               {vehicleRecords.map((record) => (
                 <Card key={record.id} className="p-4">

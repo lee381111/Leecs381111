@@ -488,9 +488,11 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
   }
 
   const clearFormatting = () => {
+    console.log("[v0] Clear formatting button clicked")
     const selection = window.getSelection()
 
     if (!selection || selection.rangeCount === 0 || selection.toString().length === 0) {
+      console.log("[v0] No selection - clearing all formatting")
       // No selection - clear all formatting in the entire div
       if (contentEditableRef.current) {
         const plainText = contentEditableRef.current.innerText
@@ -505,11 +507,10 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
       return
     }
 
+    console.log("[v0] Clearing formatting from selected text:", selection.toString())
     // Clear formatting from selected text only
     const range = selection.getRangeAt(0)
     const selectedText = selection.toString()
-
-    console.log("[v0] Clearing formatting from:", selectedText)
 
     // Remove formatting by replacing with plain text node
     range.deleteContents()
@@ -718,10 +719,10 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
                     variant="ghost"
                     size="sm"
                     onClick={clearFormatting}
-                    className="h-8 px-2 text-xs"
+                    className="h-8 px-3 text-xs bg-white hover:bg-gray-100 border-red-300 hover:border-red-400"
                     title={t("clear_formatting")}
                   >
-                    <X className="w-4 h-4 mr-1" />
+                    <X className="w-4 h-4 mr-1 text-red-500" />
                     {t("clear")}
                   </Button>
                 </>
