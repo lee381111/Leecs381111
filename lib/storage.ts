@@ -317,17 +317,26 @@ export async function saveSchedules(schedules: ScheduleEvent[], userId: string) 
       dateOnly = dateOnly.split("T")[0]
     }
 
-    const startTime = `${dateOnly} ${schedule.time || "00:00"}:00`
-    const endTime = schedule.endTime
-      ? `${dateOnly} ${schedule.endTime}:00`
-      : `${dateOnly} ${schedule.time || "00:00"}:00`
+    // Create a date object in the local timezone, then convert to ISO string
+    const timeString = schedule.time || "00:00"
+    const [hours, minutes] = timeString.split(":")
+    const startDateTime = new Date(dateOnly)
+    startDateTime.setHours(Number.parseInt(hours), Number.parseInt(minutes), 0, 0)
+    const startTime = startDateTime.toISOString()
+
+    let endTime = startTime
+    if (schedule.endTime) {
+      const [endHours, endMinutes] = schedule.endTime.split(":")
+      const endDateTime = new Date(dateOnly)
+      endDateTime.setHours(Number.parseInt(endHours), Number.parseInt(endMinutes), 0, 0)
+      endTime = endDateTime.toISOString()
+    }
 
     const alarmTime =
       schedule.alarmMinutesBefore && schedule.time
         ? (() => {
-            const eventDateTime = new Date(`${dateOnly}T${schedule.time}:00`)
-            const alarmDateTime = new Date(eventDateTime.getTime() - schedule.alarmMinutesBefore * 60 * 1000)
-            return `${alarmDateTime.getFullYear()}-${String(alarmDateTime.getMonth() + 1).padStart(2, "0")}-${String(alarmDateTime.getDate()).padStart(2, "0")} ${String(alarmDateTime.getHours()).padStart(2, "0")}:${String(alarmDateTime.getMinutes()).padStart(2, "0")}:00`
+            const alarmDateTime = new Date(startDateTime.getTime() - schedule.alarmMinutesBefore * 60 * 1000)
+            return alarmDateTime.toISOString()
           })()
         : null
 
@@ -368,41 +377,52 @@ export async function loadSchedules(userId: string): Promise<ScheduleEvent[]> {
   if (error) throw error
 
   return (data || []).map((row) => {
-    // Parse start_time which can be in format "YYYY-MM-DD HH:MM:SS" or ISO format
     let date = ""
     let time = "00:00"
 
     try {
       const startTimeDate = new Date(row.start_time)
-      date = startTimeDate.toISOString().split("T")[0] // YYYY-MM-DD
-      time = startTimeDate.toTimeString().substring(0, 5) // HH:MM
+      // Get date in local timezone
+      const year = startTimeDate.getFullYear()
+      const month = String(startTimeDate.getMonth() + 1).padStart(2, "0")
+      const day = String(startTimeDate.getDate()).padStart(2, "0")
+      date = `${year}-${month}-${day}`
+
+      // Get time in local timezone
+      const hours = String(startTimeDate.getHours()).padStart(2, "0")
+      const minutes = String(startTimeDate.getMinutes()).padStart(2, "0")
+      time = `${hours}:${minutes}`
+
+      console.log("[v0] Loaded schedule time:", {
+        raw: row.start_time,
+        parsed: startTimeDate.toISOString(),
+        localDate: date,
+        localTime: time,
+      })
     } catch (e) {
       console.error("[v0] Failed to parse start_time:", row.start_time, e)
-      // Fallback to old parsing method
-      const [dateWithTime] = row.start_time.split(" ")
-      date = dateWithTime.split("T")[0]
-      const [, timeWithSeconds] = row.start_time.split(" ")
-      time = timeWithSeconds ? timeWithSeconds.substring(0, 5) : "00:00"
+      date = new Date().toISOString().split("T")[0]
+      time = "00:00"
     }
 
     let endTime = ""
     if (row.end_time) {
       try {
         const endTimeDate = new Date(row.end_time)
-        endTime = endTimeDate.toTimeString().substring(0, 5) // HH:MM
+        const hours = String(endTimeDate.getHours()).padStart(2, "0")
+        const minutes = String(endTimeDate.getMinutes()).padStart(2, "0")
+        endTime = `${hours}:${minutes}`
       } catch (e) {
         console.error("[v0] Failed to parse end_time:", row.end_time, e)
-        const [, endTimeWithSeconds] = row.end_time.split(" ")
-        endTime = endTimeWithSeconds ? endTimeWithSeconds.substring(0, 5) : ""
+        endTime = ""
       }
     }
 
     let alarmMinutesBefore = 30
     if (row.alarm_time && row.alarm_enabled) {
       try {
-        const [alarmDate, alarmTimeStr] = row.alarm_time.split(" ")
-        const eventDateTime = new Date(`${date}T${time}:00`)
-        const alarmDateTime = new Date(`${alarmDate}T${alarmTimeStr}`)
+        const eventDateTime = new Date(row.start_time)
+        const alarmDateTime = new Date(row.alarm_time)
         const calculatedMinutes = Math.floor((eventDateTime.getTime() - alarmDateTime.getTime()) / (60 * 1000))
         alarmMinutesBefore = calculatedMinutes > 0 ? calculatedMinutes : 30
       } catch (e) {
@@ -429,7 +449,7 @@ export async function loadSchedules(userId: string): Promise<ScheduleEvent[]> {
       id: row.id,
       title: row.title,
       description: row.description || "",
-      date, // Now guaranteed to be YYYY-MM-DD format
+      date,
       time,
       endTime,
       category: row.category || "일정",
