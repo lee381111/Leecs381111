@@ -1,0 +1,9 @@
+# Google AdSense ads.txt
+# 
+# 게시자 ID가 성공적으로 입력되었습니다: pub-2073813117364926
+# 
+# 이 파일은 Google이 귀하의 사이트에서 광고를 판매할 권한이 있음을 확인합니다.
+# 배포 후 https://your-app.vercel.app/ads.txt 로 접속하여 확인하세요.
+# 24시간 후 애드센스 대시보드에서 "Ads.txt 상태"가 업데이트됩니다.
+
+google.com, pub-2073813117364926, DIRECT, f08c47fec0942fa0
