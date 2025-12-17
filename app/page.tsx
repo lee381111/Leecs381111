@@ -17,6 +17,8 @@ import { NotificationCenter } from "@/components/notification-center"
 import { TermsConsentModal } from "@/components/terms-consent-modal"
 import { LoginForm } from "@/components/login-form"
 import { AIAssistantSection } from "@/components/ai-assistant-section"
+import { AdsenseAd } from "@/components/adsense-ad"
+import { StorageQuotaCard } from "@/components/storage-quota-card"
 import {
   FileText,
   BookOpen,
@@ -670,6 +672,8 @@ export default function ForestNotePage() {
           </div>
         </div>
 
+        <AdsenseAd slot="1234567890" format="horizontal" />
+
         <div className="bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 backdrop-blur p-4 rounded-lg shadow-md">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-gray-900 dark:text-slate-100">
@@ -713,6 +717,8 @@ export default function ForestNotePage() {
             language={language}
           />
         </div>
+
+        <AdsenseAd slot="0987654321" format="rectangle" />
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {sections.map((item) => {
@@ -776,17 +782,9 @@ export default function ForestNotePage() {
           })}
         </div>
 
-        <div className="text-center text-sm text-gray-700">
-          <p>
-            {language === "ko"
-              ? "숲처럼 평화로운 당신의 기록"
-              : language === "en"
-                ? "Your peaceful records like a forest"
-                : language === "zh"
-                  ? "像森林一样平静的你的记录"
-                  : "あなたの記録は森のように平和です"}
-          </p>
-        </div>
+        <AdsenseAd slot="1122334455" format="horizontal" />
+
+        <StorageQuotaCard language={language} />
       </div>
     </div>
   )
