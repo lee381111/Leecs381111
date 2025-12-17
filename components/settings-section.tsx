@@ -23,6 +23,8 @@ import { getTranslation } from "@/lib/i18n"
 import type { Language, Announcement } from "@/lib/types"
 import { useRouter } from "next/navigation" // Added for admin page navigation
 import { StorageQuotaCard } from "./storage-quota-card" // Import storage quota card
+import { PrivacyPolicyDialog } from "./privacy-policy-dialog" // Import Privacy Policy dialog
+import { TermsOfServiceDialog } from "./terms-of-service-dialog" // Import Terms of Service dialog
 
 export function SettingsSection({ onBack, language }: { onBack: () => void; language: string }) {
   const { user } = useAuth()
@@ -51,6 +53,9 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
 
   const [showDiaryPasswordSection, setShowDiaryPasswordSection] = useState(false)
   const [diaryPasswordAction, setDiaryPasswordAction] = useState<"remove" | "reset">("remove")
+
+  const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false)
+  const [showTermsOfService, setShowTermsOfService] = useState(false)
 
   const handleExport = async () => {
     if (!user?.id) {
@@ -729,13 +734,29 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
             <h2 className="text-xl font-bold text-purple-600 dark:text-purple-400">관리자 전용</h2>
           </div>
           <p className="text-sm text-muted-foreground">약관 동의 로그 및 개인정보 파기 대장을 관리할 수 있습니다.</p>
-          <Button
-            onClick={() => router.push("/admin/consents")}
-            variant="outline"
-            className="w-full border-purple-300 hover:bg-purple-50 dark:border-purple-700 dark:hover:bg-purple-950/50"
-          >
-            관리자 페이지 열기
-          </Button>
+          <div className="space-y-2">
+            <Button
+              onClick={() => router.push("/admin/consents")}
+              variant="outline"
+              className="w-full border-purple-300 hover:bg-purple-50 dark:border-purple-700 dark:hover:bg-purple-950/50"
+            >
+              관리자 페이지 열기
+            </Button>
+            <Button
+              onClick={() => setShowPrivacyPolicy(true)}
+              variant="outline"
+              className="w-full border-purple-300 hover:bg-purple-50 dark:border-purple-700 dark:hover:bg-purple-950/50"
+            >
+              {getTranslation(currentLanguage, "privacy_policy")}
+            </Button>
+            <Button
+              onClick={() => setShowTermsOfService(true)}
+              variant="outline"
+              className="w-full border-purple-300 hover:bg-purple-50 dark:border-purple-700 dark:hover:bg-purple-950/50"
+            >
+              {getTranslation(currentLanguage, "terms_of_service")}
+            </Button>
+          </div>
         </Card>
       )}
 
@@ -1072,6 +1093,17 @@ export function SettingsSection({ onBack, language }: { onBack: () => void; lang
           </div>
         </DialogContent>
       </Dialog>
+
+      <PrivacyPolicyDialog
+        open={showPrivacyPolicy}
+        onOpenChange={setShowPrivacyPolicy}
+        language={currentLanguage as Language}
+      />
+      <TermsOfServiceDialog
+        open={showTermsOfService}
+        onOpenChange={setShowTermsOfService}
+        language={currentLanguage as Language}
+      />
     </div>
   )
 }
