@@ -368,16 +368,33 @@ export async function loadSchedules(userId: string): Promise<ScheduleEvent[]> {
   if (error) throw error
 
   return (data || []).map((row) => {
-    const [dateWithTime] = row.start_time.split(" ")
-    const date = dateWithTime.split("T")[0] // Handle both "2025-11-18" and "2025-11-18T00:00:00"
+    // Parse start_time which can be in format "YYYY-MM-DD HH:MM:SS" or ISO format
+    let date = ""
+    let time = "00:00"
 
-    const [, timeWithSeconds] = row.start_time.split(" ")
-    const time = timeWithSeconds ? timeWithSeconds.substring(0, 5) : "00:00"
+    try {
+      const startTimeDate = new Date(row.start_time)
+      date = startTimeDate.toISOString().split("T")[0] // YYYY-MM-DD
+      time = startTimeDate.toTimeString().substring(0, 5) // HH:MM
+    } catch (e) {
+      console.error("[v0] Failed to parse start_time:", row.start_time, e)
+      // Fallback to old parsing method
+      const [dateWithTime] = row.start_time.split(" ")
+      date = dateWithTime.split("T")[0]
+      const [, timeWithSeconds] = row.start_time.split(" ")
+      time = timeWithSeconds ? timeWithSeconds.substring(0, 5) : "00:00"
+    }
 
     let endTime = ""
     if (row.end_time) {
-      const [, endTimeWithSeconds] = row.end_time.split(" ")
-      endTime = endTimeWithSeconds ? endTimeWithSeconds.substring(0, 5) : ""
+      try {
+        const endTimeDate = new Date(row.end_time)
+        endTime = endTimeDate.toTimeString().substring(0, 5) // HH:MM
+      } catch (e) {
+        console.error("[v0] Failed to parse end_time:", row.end_time, e)
+        const [, endTimeWithSeconds] = row.end_time.split(" ")
+        endTime = endTimeWithSeconds ? endTimeWithSeconds.substring(0, 5) : ""
+      }
     }
 
     let alarmMinutesBefore = 30
