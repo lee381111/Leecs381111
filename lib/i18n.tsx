@@ -591,6 +591,7 @@ type TranslationKey =
   | "no_records"
   | "preventive_schedule"
   | "preventive_input"
+  | "preventive_maintenance" // Added preventive_maintenance translation key
   | "scheduled_date"
   | "estimated_mileage"
   | "estimated_mileage_placeholder"
@@ -1462,6 +1463,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     no_records: "기록이 없습니다",
     preventive_schedule: "예방 정비 일정",
     preventive_input: "예방 정비 입력",
+    preventive_maintenance: "예방 정비 일정", // Added Korean translation for preventive_maintenance
     scheduled_date: "예정일",
     estimated_mileage: "예상 주행거리",
     estimated_mileage_placeholder: "예상 주행거리 입력",
@@ -1619,7 +1621,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     consent_logs: "동의 기록",
     user: "사용자",
     terms_version: "이용약관 버전",
-    privacy_version: "개인정보 처리방침 버전",
+    privacy_version: "개인정보 처리방방침 버전",
     agreed_at: "동의 일시",
     user_agent: "사용자 에이전트",
     no_consent_logs: "동의 기록이 없습니다",
@@ -2352,6 +2354,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     no_records: "No records",
     preventive_schedule: "Preventive Maintenance Schedule",
     preventive_input: "Preventive Maintenance Input",
+    preventive_maintenance: "Preventive Maintenance", // Added English translation for preventive_maintenance
     scheduled_date: "Scheduled Date",
     estimated_mileage: "Estimated Mileage",
     estimated_mileage_placeholder: "Enter estimated mileage",
@@ -3236,6 +3239,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     no_records: "記録がありません",
     preventive_schedule: "予防整備スケジュール",
     preventive_input: "予防整備入力",
+    preventive_maintenance: "予防メンテナンススケジュール", // Added Japanese translation for preventive_maintenance
     scheduled_date: "予定日",
     estimated_mileage: "予想走行距離",
     estimated_mileage_placeholder: "予想走行距離を入力",
@@ -4116,7 +4120,8 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     no_records: "无记录",
     preventive_schedule: "预防性保养计划",
     preventive_input: "预防性保养输入",
-    scheduled_date: "计划日期",
+    preventive_maintenance: "预防性保养计划", // Added Chinese translation for preventive_maintenance
+    scheduled_date: "预定日期",
     estimated_mileage: "预计里程",
     estimated_mileage_placeholder: "输入预计里程",
     description: "描述",
