@@ -16,7 +16,7 @@ export function TermsOfServiceDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[80vh]">
+      <DialogContent className="max-w-3xl max-h-[80vh] bg-white dark:bg-slate-900">
         <DialogHeader>
           <DialogTitle>{getTranslation(language, "terms_of_service")}</DialogTitle>
         </DialogHeader>
