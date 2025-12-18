@@ -440,6 +440,24 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
     e.preventDefault()
     const pastedText = e.clipboardData.getData("text")
 
+    if (!isRichTextMode) {
+      const textarea = e.currentTarget as HTMLTextAreaElement
+      const start = textarea.selectionStart
+      const end = textarea.selectionEnd
+      const newContent = formData.content.substring(0, start) + pastedText + formData.content.substring(end)
+      setFormData({ ...formData, content: newContent })
+
+      // 커서 위치 복원
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = start + pastedText.length
+      }, 0)
+      return
+    }
+
+    if (contentEditableRef.current && document.activeElement !== contentEditableRef.current) {
+      contentEditableRef.current.focus()
+    }
+
     // Detect numbered paragraphs (1. 2. 3. or 1) 2) 3) etc.)
     const hasNumberedParagraphs = /^\s*\d+[.)]\s+/m.test(pastedText)
 
@@ -456,7 +474,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
         .join("\n\n")
 
       const selection = window.getSelection()
-      if (selection && selection.rangeCount > 0) {
+      if (selection && selection.rangeCount > 0 && contentEditableRef.current?.contains(selection.anchorNode)) {
         const range = selection.getRangeAt(0)
         range.deleteContents()
         const textNode = document.createTextNode(formatted)
@@ -465,6 +483,13 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
         range.setEndAfter(textNode)
         selection.removeAllRanges()
         selection.addRange(range)
+
+        if (contentEditableRef.current) {
+          setFormData({ ...formData, content: contentEditableRef.current.innerHTML })
+        }
+      } else if (contentEditableRef.current) {
+        contentEditableRef.current.innerHTML += formatted
+        setFormData({ ...formData, content: contentEditableRef.current.innerHTML })
       }
     } else {
       // Normal paste - just clean up extra whitespace
@@ -474,7 +499,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
         .join("\n\n")
 
       const selection = window.getSelection()
-      if (selection && selection.rangeCount > 0) {
+      if (selection && selection.rangeCount > 0 && contentEditableRef.current?.contains(selection.anchorNode)) {
         const range = selection.getRangeAt(0)
         range.deleteContents()
         const textNode = document.createTextNode(formatted)
@@ -483,6 +508,13 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
         range.setEndAfter(textNode)
         selection.removeAllRanges()
         selection.addRange(range)
+
+        if (contentEditableRef.current) {
+          setFormData({ ...formData, content: contentEditableRef.current.innerHTML })
+        }
+      } else if (contentEditableRef.current) {
+        contentEditableRef.current.innerHTML += formatted
+        setFormData({ ...formData, content: contentEditableRef.current.innerHTML })
       }
     }
   }
