@@ -36,6 +36,7 @@ import {
   CheckSquare,
   CreditCard,
   Bot,
+  Cloud,
 } from "lucide-react"
 
 const NotesSection = dynamic(() => import("@/components/notes-section").then((m) => ({ default: m.NotesSection })), {
@@ -518,6 +519,12 @@ export default function ForestNotePage() {
       label: language === "ko" ? "명함" : language === "en" ? "Business Card" : language === "zh" ? "名片" : "名刺",
       icon: CreditCard,
       color: "cyan",
+    },
+    {
+      id: "weather",
+      label: language === "ko" ? "날씨" : language === "en" ? "Weather" : language === "zh" ? "天气" : "天気",
+      icon: Cloud,
+      color: "sky",
     },
     { id: "radio", label: getTranslation(language, "radio"), icon: Radio, color: "teal" },
     {
