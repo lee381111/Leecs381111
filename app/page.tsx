@@ -18,6 +18,8 @@ import { TermsConsentModal } from "@/components/terms-consent-modal"
 import { LoginForm } from "@/components/login-form"
 import { AIAssistantSection } from "@/components/ai-assistant-section"
 import { AdsenseAd } from "@/components/adsense-ad"
+import { PrivacyPolicyDialog } from "@/components/privacy-policy-dialog"
+import { TermsOfServiceDialog } from "@/components/terms-of-service-dialog"
 import { StorageQuotaCard } from "@/components/storage-quota-card"
 import {
   FileText,
@@ -383,6 +385,8 @@ export default function ForestNotePage() {
   const isCalculatingRef = useRef(false)
   const [needsConsent, setNeedsConsent] = useState(false)
   const [isCheckingConsent, setIsCheckingConsent] = useState(false)
+  const [showPrivacyDialog, setShowPrivacyDialog] = useState(false)
+  const [showTermsDialog, setShowTermsDialog] = useState(false)
 
   const ADMIN_EMAILS = ["chanse1984@hanmail.net", "lee381111@gmail.com"]
   const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email) : false
@@ -564,7 +568,7 @@ export default function ForestNotePage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
         {/* AdSense Ad - Top Banner */}
         {process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID && (
           <div className="w-full py-2 bg-white/50 backdrop-blur-sm border-b border-green-100">
@@ -801,12 +805,7 @@ export default function ForestNotePage() {
 
           {/* Footer with Privacy Policy and Terms */}
           <div className="mt-12 text-center text-sm text-green-600 space-x-4">
-            <button
-              onClick={() => {
-                /* Privacy policy dialog */
-              }}
-              className="hover:text-green-800 underline"
-            >
+            <button onClick={() => setShowPrivacyDialog(true)} className="hover:text-green-800 underline">
               {language === "ko"
                 ? "개인정보처리방침"
                 : language === "en"
@@ -816,12 +815,7 @@ export default function ForestNotePage() {
                     : "プライバシーポリシー"}
             </button>
             <span>|</span>
-            <button
-              onClick={() => {
-                /* Terms dialog */
-              }}
-              className="hover:text-green-800 underline"
-            >
+            <button onClick={() => setShowTermsDialog(true)} className="hover:text-green-800 underline">
               {language === "ko"
                 ? "이용약관"
                 : language === "en"
@@ -839,6 +833,10 @@ export default function ForestNotePage() {
             <AdsenseAd slot="2468013579" format="horizontal" />
           </div>
         )}
+
+        {/* Privacy and Terms dialogs */}
+        <PrivacyPolicyDialog open={showPrivacyDialog} onOpenChange={setShowPrivacyDialog} language={language} />
+        <TermsOfServiceDialog open={showTermsDialog} onOpenChange={setShowTermsDialog} language={language} />
       </div>
     )
   }
