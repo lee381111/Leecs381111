@@ -564,8 +564,281 @@ export default function ForestNotePage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 flex items-center justify-center p-6">
-        <LoginForm language={language} onLanguageChange={setLanguage} />
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50">
+        {/* AdSense Ad - Top Banner */}
+        {process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID && (
+          <div className="w-full py-2 bg-white/50 backdrop-blur-sm border-b border-green-100">
+            <AdsenseAd slot="1234567890" format="horizontal" />
+          </div>
+        )}
+
+        {/* Hero Section */}
+        <div className="max-w-6xl mx-auto px-6 py-12">
+          <div className="text-center mb-12">
+            <h1 className="text-5xl font-bold text-green-800 mb-4">
+              {language === "ko"
+                ? "🌲 Forest Note"
+                : language === "en"
+                  ? "🌲 Forest Note"
+                  : language === "zh"
+                    ? "🌲 森林笔记"
+                    : "🌲 フォレストノート"}
+            </h1>
+            <p className="text-xl text-green-700 mb-8">
+              {language === "ko"
+                ? "하루를 정리하는 스마트한 방법"
+                : language === "en"
+                  ? "Smart way to organize your day"
+                  : language === "zh"
+                    ? "整理您一天的智能方式"
+                    : "あなたの一日を整理するスマートな方法"}
+            </p>
+          </div>
+
+          {/* Features Grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            {/* Feature 1: Notes */}
+            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+              <div className="text-4xl mb-4">📝</div>
+              <h3 className="text-xl font-semibold text-green-800 mb-2">
+                {language === "ko" ? "노트" : language === "en" ? "Notes" : language === "zh" ? "笔记" : "ノート"}
+              </h3>
+              <p className="text-green-600">
+                {language === "ko"
+                  ? "생각과 아이디어를 자유롭게 기록하세요. 서식 편집, 이미지 첨부, 카테고리 분류 기능을 제공합니다."
+                  : language === "en"
+                    ? "Record your thoughts and ideas freely. Text formatting, image attachments, and categorization available."
+                    : language === "zh"
+                      ? "自由记录您的想法和创意。提供格式编辑、图片附件和分类功能。"
+                      : "自由に思考とアイデアを記録。書式編集、画像添付、カテゴリ分類機能を提供。"}
+              </p>
+            </div>
+
+            {/* Feature 2: Schedule */}
+            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+              <div className="text-4xl mb-4">📅</div>
+              <h3 className="text-xl font-semibold text-green-800 mb-2">
+                {language === "ko"
+                  ? "일정"
+                  : language === "en"
+                    ? "Schedule"
+                    : language === "zh"
+                      ? "日程"
+                      : "スケジュール"}
+              </h3>
+              <p className="text-green-600">
+                {language === "ko"
+                  ? "중요한 일정을 놓치지 마세요. 시간별 알림, 반복 일정, 카테고리별 색상 구분이 가능합니다."
+                  : language === "en"
+                    ? "Never miss important events. Time-based alerts, recurring schedules, and color coding by category."
+                    : language === "zh"
+                      ? "不要错过重要日程。提供时间提醒、重复日程和按类别分色功能。"
+                      : "重要な予定を見逃さない。時間通知、繰り返し予定、カテゴリ別色分け。"}
+              </p>
+            </div>
+
+            {/* Feature 3: Todos */}
+            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+              <div className="text-4xl mb-4">✅</div>
+              <h3 className="text-xl font-semibold text-green-800 mb-2">
+                {language === "ko" ? "할 일" : language === "en" ? "To-Do" : language === "zh" ? "待办" : "やること"}
+              </h3>
+              <p className="text-green-600">
+                {language === "ko"
+                  ? "해야 할 일을 체계적으로 관리하세요. 음성 입력, 우선순위 설정, 진행 상태 추적 기능이 있습니다."
+                  : language === "en"
+                    ? "Manage your tasks systematically. Voice input, priority settings, and progress tracking available."
+                    : language === "zh"
+                      ? "系统地管理您的任务。提供语音输入、优先级设置和进度跟踪功能。"
+                      : "タスクを体系的に管理。音声入力、優先度設定、進捗追跡機能あり。"}
+              </p>
+            </div>
+
+            {/* Feature 4: Vehicle */}
+            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+              <div className="text-4xl mb-4">🚗</div>
+              <h3 className="text-xl font-semibold text-green-800 mb-2">
+                {language === "ko"
+                  ? "차량 관리"
+                  : language === "en"
+                    ? "Vehicle"
+                    : language === "zh"
+                      ? "车辆管理"
+                      : "車両管理"}
+              </h3>
+              <p className="text-green-600">
+                {language === "ko"
+                  ? "차량 정보와 정비 기록을 한눈에 관리하세요. 예방 정비 일정, 정비 이력, 사진 첨부가 가능합니다."
+                  : language === "en"
+                    ? "Manage vehicle info and maintenance records at a glance. Preventive maintenance schedules, history, and photo attachments."
+                    : language === "zh"
+                      ? "一目了然地管理车辆信息和维修记录。提供预防性保养计划、历史记录和照片附件。"
+                      : "車両情報とメンテナンス記録を一目で管理。予防メンテナンス、履歴、写真添付可能。"}
+              </p>
+            </div>
+
+            {/* Feature 5: AI Assistant */}
+            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+              <div className="text-4xl mb-4">🤖</div>
+              <h3 className="text-xl font-semibold text-green-800 mb-2">
+                {language === "ko"
+                  ? "AI 비서"
+                  : language === "en"
+                    ? "AI Assistant"
+                    : language === "zh"
+                      ? "AI助手"
+                      : "AIアシスタント"}
+              </h3>
+              <p className="text-green-600">
+                {language === "ko"
+                  ? "똑똑한 AI가 일정과 노트를 분석해 답변합니다. 자연어로 질문하면 필요한 정보를 찾아줍니다."
+                  : language === "en"
+                    ? "Smart AI analyzes your schedules and notes to answer questions. Ask naturally and get the info you need."
+                    : language === "zh"
+                      ? "智能AI分析您的日程和笔记并回答问题。用自然语言提问即可获取所需信息。"
+                      : "スマートAIがスケジュールとノートを分析して回答。自然言語で質問すれば必要な情報を提供。"}
+              </p>
+            </div>
+
+            {/* Feature 6: More */}
+            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+              <div className="text-4xl mb-4">🎯</div>
+              <h3 className="text-xl font-semibold text-green-800 mb-2">
+                {language === "ko"
+                  ? "그 외 기능"
+                  : language === "en"
+                    ? "More Features"
+                    : language === "zh"
+                      ? "更多功能"
+                      : "その他の機能"}
+              </h3>
+              <p className="text-green-600">
+                {language === "ko"
+                  ? "날씨, 명함 관리, 라디오, 통계 등 생활에 필요한 다양한 기능을 제공합니다."
+                  : language === "en"
+                    ? "Weather, business cards, radio, statistics, and more useful features for daily life."
+                    : language === "zh"
+                      ? "天气、名片管理、收音机、统计等日常生活所需的各种功能。"
+                      : "天気、名刺管理、ラジオ、統計など生活に必要な様々な機能を提供。"}
+              </p>
+            </div>
+          </div>
+
+          {/* AdSense Ad - Middle */}
+          {process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID && (
+            <div className="w-full py-4 mb-12">
+              <AdsenseAd slot="0987654321" format="rectangle" />
+            </div>
+          )}
+
+          {/* Benefits Section */}
+          <div className="bg-white rounded-lg shadow-md p-8 mb-12">
+            <h2 className="text-3xl font-bold text-green-800 mb-6 text-center">
+              {language === "ko"
+                ? "왜 Forest Note인가요?"
+                : language === "en"
+                  ? "Why Forest Note?"
+                  : language === "zh"
+                    ? "为什么选择森林笔记？"
+                    : "なぜフォレストノートなのか？"}
+            </h2>
+            <ul className="space-y-4 text-green-700">
+              <li className="flex items-start">
+                <span className="text-2xl mr-3">✨</span>
+                <span>
+                  {language === "ko"
+                    ? "직관적인 인터페이스로 누구나 쉽게 사용 가능"
+                    : language === "en"
+                      ? "Intuitive interface easy for anyone to use"
+                      : language === "zh"
+                        ? "直观的界面，任何人都可以轻松使用"
+                        : "直感的なインターフェースで誰でも簡単に使用可能"}
+                </span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-2xl mr-3">🔒</span>
+                <span>
+                  {language === "ko"
+                    ? "안전한 클라우드 저장소로 데이터 보호"
+                    : language === "en"
+                      ? "Secure cloud storage protects your data"
+                      : language === "zh"
+                        ? "安全的云存储保护您的数据"
+                        : "安全なクラウドストレージでデータ保護"}
+                </span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-2xl mr-3">🌐</span>
+                <span>
+                  {language === "ko"
+                    ? "한국어, 영어, 중국어, 일본어 4개 언어 지원"
+                    : language === "en"
+                      ? "Supports 4 languages: Korean, English, Chinese, Japanese"
+                      : language === "zh"
+                        ? "支持韩语、英语、中文、日语4种语言"
+                        : "韓国語、英語、中国語、日本語の4言語対応"}
+                </span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-2xl mr-3">📱</span>
+                <span>
+                  {language === "ko"
+                    ? "모바일, 태블릿, PC 모든 기기에서 접속 가능"
+                    : language === "en"
+                      ? "Accessible on mobile, tablet, and PC"
+                      : language === "zh"
+                        ? "可在手机、平板电脑、PC上访问"
+                        : "モバイル、タブレット、PCすべてのデバイスでアクセス可能"}
+                </span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Login Section */}
+          <div className="max-w-md mx-auto">
+            <LoginForm language={language} onLanguageChange={setLanguage} />
+          </div>
+
+          {/* Footer with Privacy Policy and Terms */}
+          <div className="mt-12 text-center text-sm text-green-600 space-x-4">
+            <button
+              onClick={() => {
+                /* Privacy policy dialog */
+              }}
+              className="hover:text-green-800 underline"
+            >
+              {language === "ko"
+                ? "개인정보처리방침"
+                : language === "en"
+                  ? "Privacy Policy"
+                  : language === "zh"
+                    ? "隐私政策"
+                    : "プライバシーポリシー"}
+            </button>
+            <span>|</span>
+            <button
+              onClick={() => {
+                /* Terms dialog */
+              }}
+              className="hover:text-green-800 underline"
+            >
+              {language === "ko"
+                ? "이용약관"
+                : language === "en"
+                  ? "Terms of Service"
+                  : language === "zh"
+                    ? "使用条款"
+                    : "利用規約"}
+            </button>
+          </div>
+        </div>
+
+        {/* AdSense Ad - Bottom Banner */}
+        {process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID && (
+          <div className="w-full py-2 bg-white/50 backdrop-blur-sm border-t border-green-100">
+            <AdsenseAd slot="2468013579" format="horizontal" />
+          </div>
+        )}
       </div>
     )
   }
