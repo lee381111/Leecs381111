@@ -569,9 +569,20 @@ export default function ForestNotePage() {
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
+        {/* Header with Language Selector */}
+        {!loading && (
+          <header className="flex justify-between items-center p-6">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">🌲</span>
+              <h1 className="text-2xl font-bold text-emerald-700">{getTranslation(language, "title")}</h1>
+            </div>
+            <LanguageSelector language={language} onChange={setLanguage} />
+          </header>
+        )}
+
         {/* AdSense Ad - Top Banner */}
         {process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID && (
-          <div className="w-full py-2 bg-white/50 backdrop-blur-sm border-b border-green-100">
+          <div className="max-w-7xl mx-auto px-4">
             <AdsenseAd slot="1234567890" format="horizontal" />
           </div>
         )}
