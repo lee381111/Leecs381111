@@ -518,6 +518,11 @@ export default function ForestNotePage() {
     console.log("[v0] currentSection state set to:", sectionId)
   }
 
+  const handleBackToHome = () => {
+    console.log("[v0] Back button clicked, returning to home")
+    setCurrentSection("home")
+  }
+
   const sections: { id: Section; label: string; icon: any; color: string }[] = [
     { id: "notes", label: getTranslation(language, "notes"), icon: FileText, color: "amber" },
     { id: "schedule", label: getTranslation(language, "schedule"), icon: CalendarIcon, color: "red" },
@@ -944,20 +949,30 @@ export default function ForestNotePage() {
           ) : (
             <div>
               {console.log("[v0] Rendering section:", currentSection)}
-              {currentSection === "notes" && <NotesSection user={effectiveUser} />}
-              {currentSection === "schedule" && <ScheduleSection user={effectiveUser} />}
-              {currentSection === "todo" && <TodoSection user={effectiveUser} />}
-              {currentSection === "diary" && <DiarySection user={effectiveUser} />}
-              {currentSection === "travel" && <TravelSection user={effectiveUser} />}
-              {currentSection === "vehicle" && <VehicleSection user={effectiveUser} />}
-              {currentSection === "health" && <HealthSection user={effectiveUser} />}
-              {currentSection === "statistics" && <StatisticsSection user={effectiveUser} />}
-              {currentSection === "budget" && <BudgetSection user={effectiveUser} />}
-              {currentSection === "businessCard" && <BusinessCardSection user={effectiveUser} />}
-              {currentSection === "weather" && <WeatherSection user={effectiveUser} />}
-              {currentSection === "radio" && <RadioSection user={effectiveUser} />}
-              {currentSection === "settings" && <SettingsSection user={effectiveUser} />}
-              {currentSection === "aiAssistant" && <AiAssistantSection user={effectiveUser} />}
+              {currentSection !== "home" && (
+                <>
+                  {currentSection === "notes" && <NotesSection onBack={handleBackToHome} language={language} />}
+                  {currentSection === "schedule" && <ScheduleSection onBack={handleBackToHome} language={language} />}
+                  {currentSection === "todo" && <TodoSection onBack={handleBackToHome} language={language} />}
+                  {currentSection === "diary" && <DiarySection onBack={handleBackToHome} language={language} />}
+                  {currentSection === "travel" && <TravelSection onBack={handleBackToHome} language={language} />}
+                  {currentSection === "vehicle" && <VehicleSection onBack={handleBackToHome} language={language} />}
+                  {currentSection === "health" && <HealthSection onBack={handleBackToHome} language={language} />}
+                  {currentSection === "statistics" && (
+                    <StatisticsSection onBack={handleBackToHome} language={language} />
+                  )}
+                  {currentSection === "budget" && <BudgetSection onBack={handleBackToHome} language={language} />}
+                  {currentSection === "businessCard" && (
+                    <BusinessCardSection onBack={handleBackToHome} language={language} />
+                  )}
+                  {currentSection === "weather" && <WeatherSection onBack={handleBackToHome} language={language} />}
+                  {currentSection === "radio" && <RadioSection onBack={handleBackToHome} language={language} />}
+                  {currentSection === "settings" && <SettingsSection onBack={handleBackToHome} language={language} />}
+                  {currentSection === "aiAssistant" && (
+                    <AiAssistantSection user={effectiveUser} language={language} onBack={handleBackToHome} />
+                  )}
+                </>
+              )}
             </div>
           )}
 
