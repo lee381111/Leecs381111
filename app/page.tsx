@@ -791,7 +791,6 @@ export default function ForestNotePage() {
             <span className="text-2xl">🌲</span>
             <h1 className="text-2xl font-bold text-emerald-700">{getTranslation(language, "title")}</h1>
           </div>
-          <LanguageSelector language={language} onChange={setLanguage} />
         </header>
       )}
 
