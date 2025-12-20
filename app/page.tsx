@@ -504,6 +504,14 @@ export default function ForestNotePage() {
     setNeedsConsent(false)
   }
 
+  const handleSectionClick = (sectionId: Section) => {
+    console.log("[v0] Section button clicked:", sectionId)
+    console.log("[v0] Current user:", currentUser)
+    console.log("[v0] TEMP MODE:", TEMPORARY_DISABLE_LOGIN)
+    setCurrentSection(sectionId)
+    console.log("[v0] currentSection state set to:", sectionId)
+  }
+
   const sections: { id: Section; label: string; icon: any; color: string }[] = [
     { id: "notes", label: getTranslation(language, "notes"), icon: FileText, color: "amber" },
     { id: "schedule", label: getTranslation(language, "schedule"), icon: CalendarIcon, color: "red" },
@@ -917,7 +925,7 @@ export default function ForestNotePage() {
                 <Card
                   key={item.id}
                   className={`p-6 cursor-pointer hover:scale-105 transition-transform backdrop-blur flex flex-col items-center justify-center shadow-md hover:shadow-lg ${lightBg}`}
-                  onClick={() => setCurrentSection(item.id as Section)}
+                  onClick={() => handleSectionClick(item.id as Section)}
                 >
                   <item.icon className={`h-8 w-8 mb-4 ${iconColor}`} />
                   <h3 className={`font-semibold text-lg text-center ${textColor}`}>{item.label}</h3>
@@ -925,6 +933,24 @@ export default function ForestNotePage() {
               )
             })}
           </div>
+
+          {currentSection !== "home" && (
+            <>
+              {console.log("[v0] Rendering section:", currentSection)}
+              {currentSection === "notes" && <NotesSection user={user || tempUser} />}
+              {currentSection === "schedule" && <ScheduleSection user={user || tempUser} />}
+              {currentSection === "todo" && <TodoSection user={user || tempUser} />}
+              {currentSection === "diary" && <DiarySection user={user || tempUser} />}
+              {currentSection === "travel" && <TravelSection user={user || tempUser} />}
+              {currentSection === "vehicle" && <VehicleSection user={user || tempUser} />}
+              {currentSection === "health" && <HealthSection user={user || tempUser} />}
+              {currentSection === "statistics" && <StatisticsSection user={user || tempUser} />}
+              {currentSection === "budget" && <BudgetSection user={user || tempUser} />}
+              {currentSection === "businessCard" && <BusinessCardSection user={user || tempUser} />}
+              {currentSection === "settings" && <SettingsSection user={user || tempUser} />}
+              {currentSection === "aiAssistant" && <div>AI Assistant Section</div>}
+            </>
+          )}
 
           <StorageQuotaCard language={language} user={currentUser} />
         </div>
