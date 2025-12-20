@@ -100,6 +100,12 @@ const CalendarWidget = dynamic(
     ssr: false,
   },
 )
+const AiAssistantSection = dynamic(
+  () => import("@/components/ai-assistant-section").then((m) => ({ default: m.AiAssistantSection })),
+  {
+    loading: () => <LoadingSection />,
+  },
+)
 
 function LoadingSection() {
   return (
@@ -872,70 +878,71 @@ export default function ForestNotePage() {
             />
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {sections.map((item) => {
-              const lightBg =
-                item.color === "teal"
-                  ? "bg-teal-50"
-                  : item.color === "emerald"
-                    ? "bg-emerald-50"
-                    : item.color === "green"
-                      ? "bg-green-50"
-                      : item.color === "blue"
-                        ? "bg-blue-50"
-                        : item.color === "indigo"
-                          ? "bg-indigo-50"
-                          : item.color === "rose"
-                            ? "bg-rose-50"
-                            : item.color === "cyan"
-                              ? "bg-cyan-50"
-                              : item.color === "purple"
-                                ? "bg-purple-50"
-                                : item.color === "amber"
-                                  ? "bg-amber-50"
-                                  : item.color === "yellow"
-                                    ? "bg-yellow-50"
-                                    : "bg-gray-50"
+          {/* Conditional rendering of home screen and individual sections */}
+          {currentSection === "home" ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {sections.map((item) => {
+                const lightBg =
+                  item.color === "teal"
+                    ? "bg-teal-50"
+                    : item.color === "emerald"
+                      ? "bg-emerald-50"
+                      : item.color === "green"
+                        ? "bg-green-50"
+                        : item.color === "blue"
+                          ? "bg-blue-50"
+                          : item.color === "indigo"
+                            ? "bg-indigo-50"
+                            : item.color === "rose"
+                              ? "bg-rose-50"
+                              : item.color === "cyan"
+                                ? "bg-cyan-50"
+                                : item.color === "purple"
+                                  ? "bg-purple-50"
+                                  : item.color === "amber"
+                                    ? "bg-amber-50"
+                                    : item.color === "yellow"
+                                      ? "bg-yellow-50"
+                                      : "bg-gray-50"
 
-              const textColor = "text-gray-900"
-              const iconColor =
-                item.color === "teal"
-                  ? "text-teal-700"
-                  : item.color === "emerald"
-                    ? "text-emerald-700"
-                    : item.color === "green"
-                      ? "text-green-700"
-                      : item.color === "blue"
-                        ? "text-blue-700"
-                        : item.color === "indigo"
-                          ? "text-indigo-700"
-                          : item.color === "rose"
-                            ? "text-rose-700"
-                            : item.color === "cyan"
-                              ? "text-cyan-700"
-                              : item.color === "purple"
-                                ? "text-purple-700"
-                                : item.color === "amber"
-                                  ? "text-amber-700"
-                                  : item.color === "yellow"
-                                    ? "text-yellow-700"
-                                    : "text-gray-700"
+                const textColor = "text-gray-900"
+                const iconColor =
+                  item.color === "teal"
+                    ? "text-teal-700"
+                    : item.color === "emerald"
+                      ? "text-emerald-700"
+                      : item.color === "green"
+                        ? "text-green-700"
+                        : item.color === "blue"
+                          ? "text-blue-700"
+                          : item.color === "indigo"
+                            ? "text-indigo-700"
+                            : item.color === "rose"
+                              ? "text-rose-700"
+                              : item.color === "cyan"
+                                ? "text-cyan-700"
+                                : item.color === "purple"
+                                  ? "text-purple-700"
+                                  : item.color === "amber"
+                                    ? "text-amber-700"
+                                    : item.color === "yellow"
+                                      ? "text-yellow-700"
+                                      : "text-gray-700"
 
-              return (
-                <Card
-                  key={item.id}
-                  className={`p-6 cursor-pointer hover:scale-105 transition-transform backdrop-blur flex flex-col items-center justify-center shadow-md hover:shadow-lg ${lightBg}`}
-                  onClick={() => handleSectionClick(item.id as Section)}
-                >
-                  <item.icon className={`h-8 w-8 mb-4 ${iconColor}`} />
-                  <h3 className={`font-semibold text-lg text-center ${textColor}`}>{item.label}</h3>
-                </Card>
-              )
-            })}
-          </div>
-
-          {currentSection !== "home" && (
-            <>
+                return (
+                  <Card
+                    key={item.id}
+                    className={`p-6 cursor-pointer hover:scale-105 transition-transform backdrop-blur flex flex-col items-center justify-center shadow-md hover:shadow-lg ${lightBg}`}
+                    onClick={() => handleSectionClick(item.id as Section)}
+                  >
+                    <item.icon className={`h-8 w-8 mb-4 ${iconColor}`} />
+                    <h3 className={`font-semibold text-lg text-center ${textColor}`}>{item.label}</h3>
+                  </Card>
+                )
+              })}
+            </div>
+          ) : (
+            <div>
               {console.log("[v0] Rendering section:", currentSection)}
               {currentSection === "notes" && <NotesSection user={effectiveUser} />}
               {currentSection === "schedule" && <ScheduleSection user={effectiveUser} />}
@@ -947,9 +954,11 @@ export default function ForestNotePage() {
               {currentSection === "statistics" && <StatisticsSection user={effectiveUser} />}
               {currentSection === "budget" && <BudgetSection user={effectiveUser} />}
               {currentSection === "businessCard" && <BusinessCardSection user={effectiveUser} />}
+              {currentSection === "weather" && <WeatherSection user={effectiveUser} />}
+              {currentSection === "radio" && <RadioSection user={effectiveUser} />}
               {currentSection === "settings" && <SettingsSection user={effectiveUser} />}
-              {currentSection === "aiAssistant" && <div>AI Assistant Section</div>}
-            </>
+              {currentSection === "aiAssistant" && <AiAssistantSection user={effectiveUser} />}
+            </div>
           )}
 
           <StorageQuotaCard language={language} user={effectiveUser} />
