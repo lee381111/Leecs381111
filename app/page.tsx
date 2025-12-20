@@ -789,8 +789,8 @@ export default function ForestNotePage() {
         <header className="flex justify-between items-center p-6">
           <div className="flex items-center gap-2">
             <span className="text-2xl">🌲</span>
-            <h1 className="text-2xl font-bold text-emerald-700">{getTranslation(language, "title")}</h1>
           </div>
+          <LanguageSelector language={language} onChange={setLanguage} />
         </header>
       )}
 
