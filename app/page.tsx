@@ -588,17 +588,6 @@ export default function ForestNotePage() {
   if (!TEMPORARY_DISABLE_LOGIN && !effectiveUser) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50">
-        {/* Header with Language Selector */}
-        {!loading && (
-          <header className="flex justify-between items-center p-6">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">🌲</span>
-              <h1 className="text-2xl font-bold text-emerald-700">{getTranslation(language, "title")}</h1>
-            </div>
-            <LanguageSelector language={language} onChange={setLanguage} />
-          </header>
-        )}
-
         {/* Hero Section */}
         <div className="max-w-6xl mx-auto px-6 py-12">
           <div className="text-center mb-12">
@@ -784,16 +773,6 @@ export default function ForestNotePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50">
-      {/* Header with Language Selector */}
-      {!loading && (
-        <header className="flex justify-between items-center p-6">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🌲</span>
-          </div>
-          <LanguageSelector language={language} onChange={setLanguage} />
-        </header>
-      )}
-
       {/* Main Content */}
       <div className="p-6 space-y-6">
         <AnnouncementBanner language={language} />
