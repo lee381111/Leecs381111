@@ -398,13 +398,13 @@ export default function ForestNotePage() {
         email: "guest@forestnote.app",
       }
     : user
-  const currentUser = tempUser || user
+  const effectiveUser = TEMPORARY_DISABLE_LOGIN ? tempUser : user
 
-  console.log("[v0] User email:", currentUser?.email, "Is admin:", isAdmin, "Storage limit:", STORAGE_LIMIT_MB, "MB")
+  console.log("[v0] User email:", effectiveUser?.email, "Is admin:", isAdmin, "Storage limit:", STORAGE_LIMIT_MB, "MB")
 
   useEffect(() => {
     const calculateStorage = async () => {
-      if (!currentUser || isCalculatingRef.current) return
+      if (!effectiveUser || isCalculatingRef.current) return
       isCalculatingRef.current = true
 
       try {
@@ -413,7 +413,7 @@ export default function ForestNotePage() {
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("storage_used")
-          .eq("user_id", currentUser.id)
+          .eq("user_id", effectiveUser.id)
           .single()
 
         if (profileError) {
@@ -445,13 +445,13 @@ export default function ForestNotePage() {
     const interval = setInterval(calculateStorage, 60000) // Every 60 seconds
 
     return () => clearInterval(interval)
-  }, [currentUser])
+  }, [effectiveUser])
 
   useEffect(() => {
     const loadEvents = async () => {
-      if (!currentUser) return
+      if (!effectiveUser) return
       try {
-        const schedules = await loadSchedules(currentUser.id)
+        const schedules = await loadSchedules(effectiveUser.id)
         setUpcomingEvents(schedules)
       } catch (error) {
         setUpcomingEvents([])
@@ -468,20 +468,20 @@ export default function ForestNotePage() {
     return () => {
       window.removeEventListener("scheduleUpdate", handleScheduleUpdate)
     }
-  }, [currentUser])
+  }, [effectiveUser])
 
   useEffect(() => {
-    console.log("[v0] Auth state:", { user: currentUser?.email, loading })
-  }, [currentUser, loading])
+    console.log("[v0] Auth state:", { user: effectiveUser?.email, loading })
+  }, [effectiveUser, loading])
 
   useEffect(() => {
     const checkConsent = async () => {
-      if (!currentUser || isCheckingConsent || loading) return
+      if (!effectiveUser || isCheckingConsent || loading) return
 
-      console.log("[v0] Starting consent check for user:", currentUser.id)
+      console.log("[v0] Starting consent check for user:", effectiveUser.id)
       setIsCheckingConsent(true)
       try {
-        const hasConsent = await checkUserConsent(currentUser.id)
+        const hasConsent = await checkUserConsent(effectiveUser.id)
         console.log("[v0] User consent check result:", hasConsent ? "HAS CONSENT" : "NEEDS CONSENT")
         setNeedsConsent(!hasConsent)
       } catch (error) {
@@ -493,7 +493,7 @@ export default function ForestNotePage() {
     }
 
     checkConsent()
-  }, [currentUser, loading])
+  }, [effectiveUser, loading])
 
   const handleConsentAccept = () => {
     setNeedsConsent(false)
@@ -506,7 +506,7 @@ export default function ForestNotePage() {
 
   const handleSectionClick = (sectionId: Section) => {
     console.log("[v0] Section button clicked:", sectionId)
-    console.log("[v0] Current user:", currentUser)
+    console.log("[v0] Current user:", effectiveUser)
     console.log("[v0] TEMP MODE:", TEMPORARY_DISABLE_LOGIN)
     setCurrentSection(sectionId)
     console.log("[v0] currentSection state set to:", sectionId)
@@ -574,7 +574,7 @@ export default function ForestNotePage() {
     )
   }
 
-  if (!TEMPORARY_DISABLE_LOGIN && !currentUser) {
+  if (!TEMPORARY_DISABLE_LOGIN && !effectiveUser) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50">
         {/* Header with Language Selector */}
@@ -937,22 +937,22 @@ export default function ForestNotePage() {
           {currentSection !== "home" && (
             <>
               {console.log("[v0] Rendering section:", currentSection)}
-              {currentSection === "notes" && <NotesSection user={user || tempUser} />}
-              {currentSection === "schedule" && <ScheduleSection user={user || tempUser} />}
-              {currentSection === "todo" && <TodoSection user={user || tempUser} />}
-              {currentSection === "diary" && <DiarySection user={user || tempUser} />}
-              {currentSection === "travel" && <TravelSection user={user || tempUser} />}
-              {currentSection === "vehicle" && <VehicleSection user={user || tempUser} />}
-              {currentSection === "health" && <HealthSection user={user || tempUser} />}
-              {currentSection === "statistics" && <StatisticsSection user={user || tempUser} />}
-              {currentSection === "budget" && <BudgetSection user={user || tempUser} />}
-              {currentSection === "businessCard" && <BusinessCardSection user={user || tempUser} />}
-              {currentSection === "settings" && <SettingsSection user={user || tempUser} />}
+              {currentSection === "notes" && <NotesSection user={effectiveUser} />}
+              {currentSection === "schedule" && <ScheduleSection user={effectiveUser} />}
+              {currentSection === "todo" && <TodoSection user={effectiveUser} />}
+              {currentSection === "diary" && <DiarySection user={effectiveUser} />}
+              {currentSection === "travel" && <TravelSection user={effectiveUser} />}
+              {currentSection === "vehicle" && <VehicleSection user={effectiveUser} />}
+              {currentSection === "health" && <HealthSection user={effectiveUser} />}
+              {currentSection === "statistics" && <StatisticsSection user={effectiveUser} />}
+              {currentSection === "budget" && <BudgetSection user={effectiveUser} />}
+              {currentSection === "businessCard" && <BusinessCardSection user={effectiveUser} />}
+              {currentSection === "settings" && <SettingsSection user={effectiveUser} />}
               {currentSection === "aiAssistant" && <div>AI Assistant Section</div>}
             </>
           )}
 
-          <StorageQuotaCard language={language} user={currentUser} />
+          <StorageQuotaCard language={language} user={effectiveUser} />
         </div>
       </div>
     </div>
