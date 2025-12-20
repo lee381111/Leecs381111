@@ -14,10 +14,6 @@ import { Input } from "@/components/ui/input"
 import { ForestCanvas } from "@/components/forest-canvas"
 import { AnnouncementBanner } from "@/components/announcement-banner"
 import { NotificationCenter } from "@/components/notification-center"
-import { TermsConsentModal } from "@/components/terms-consent-modal"
-import { LoginForm } from "@/components/login-form"
-import { AIAssistantSection } from "@/components/ai-assistant-section"
-import { AdsenseAd } from "@/components/adsense-ad"
 import { PrivacyPolicyDialog } from "@/components/privacy-policy-dialog"
 import { TermsOfServiceDialog } from "@/components/terms-of-service-dialog"
 import { StorageQuotaCard } from "@/components/storage-quota-card"
@@ -555,20 +551,11 @@ export default function ForestNotePage() {
 
   const storagePercentage = (storageUsed / STORAGE_LIMIT) * 100
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-          <p className="text-emerald-800">로딩 중...</p>
-        </div>
-      </div>
-    )
-  }
+  const TEMPORARY_DISABLE_LOGIN = true // Keep login disabled for AdSense approval
 
-  if (!user) {
+  if (TEMPORARY_DISABLE_LOGIN || user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50">
         {/* Header with Language Selector */}
         {!loading && (
           <header className="flex justify-between items-center p-6">
@@ -580,501 +567,353 @@ export default function ForestNotePage() {
           </header>
         )}
 
-        {/* AdSense Ad - Top Banner */}
-        {process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID && (
-          <div className="max-w-7xl mx-auto px-4">
-            <AdsenseAd slot="1234567890" format="horizontal" />
-          </div>
-        )}
+        {/* Main Content */}
+        <div className="p-6 space-y-6">
+          <AnnouncementBanner language={language} />
 
-        {/* Hero Section */}
-        <div className="max-w-6xl mx-auto px-6 py-12">
-          <div className="text-center mb-12">
-            <h1 className="text-5xl font-bold text-green-800 mb-4">
-              {language === "ko"
-                ? "🌲 Forest Note"
-                : language === "en"
-                  ? "🌲 Forest Note"
-                  : language === "zh"
-                    ? "🌲 森林笔记"
-                    : "🌲 フォレストノート"}
-            </h1>
-            <p className="text-xl text-green-700 mb-8">
-              {language === "ko"
-                ? "하루를 정리하는 스마트한 방법"
-                : language === "en"
-                  ? "Smart way to organize your day"
-                  : language === "zh"
-                    ? "整理您一天的智能方式"
-                    : "あなたの一日を整理するスマートな方法"}
-            </p>
+          <div className="absolute inset-0 opacity-30">
+            <ForestCanvas />
           </div>
 
-          {/* Features Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {/* Feature 1: Notes */}
-            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-              <div className="text-4xl mb-4">📝</div>
-              <h3 className="text-xl font-semibold text-green-800 mb-2">
-                {language === "ko" ? "노트" : language === "en" ? "Notes" : language === "zh" ? "笔记" : "ノート"}
-              </h3>
-              <p className="text-green-600">
-                {language === "ko"
-                  ? "생각과 아이디어를 자유롭게 기록하세요. 서식 편집, 이미지 첨부, 카테고리 분류 기능을 제공합니다."
-                  : language === "en"
-                    ? "Record your thoughts and ideas freely. Text formatting, image attachments, and categorization available."
-                    : language === "zh"
-                      ? "自由记录您的想法和创意。提供格式编辑、图片附件和分类功能。"
-                      : "自由に思考とアイデアを記録。書式編集、画像添付、カテゴリ分類機能を提供。"}
-              </p>
+          <div className="relative z-10 space-y-6">
+            <div className="space-y-2">
+              <h1 className="text-2xl md:text-3xl font-bold text-emerald-700 text-center">
+                🌲 {getTranslation(language, "title")}
+              </h1>
+              <div className="flex items-center justify-center gap-2 flex-wrap">
+                <NotificationCenter language={language} />
+                <LanguageSelector language={language} onChange={setLanguage} />
+                <GlobalSearch
+                  language={language}
+                  onResultClick={(section, item) => {
+                    setCurrentSection(section)
+                  }}
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={logout}
+                  className="text-black flex items-center gap-1 bg-transparent"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span className="text-sm hidden sm:inline">
+                    {language === "ko"
+                      ? "로그아웃"
+                      : language === "en"
+                        ? "Logout"
+                        : language === "zh"
+                          ? "登出"
+                          : "ログアウト"}
+                  </span>
+                </Button>
+              </div>
             </div>
 
-            {/* Feature 2: Schedule */}
-            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-              <div className="text-4xl mb-4">📅</div>
-              <h3 className="text-xl font-semibold text-green-800 mb-2">
-                {language === "ko"
-                  ? "일정"
-                  : language === "en"
-                    ? "Schedule"
-                    : language === "zh"
-                      ? "日程"
-                      : "スケジュール"}
-              </h3>
-              <p className="text-green-600">
-                {language === "ko"
-                  ? "중요한 일정을 놓치지 마세요. 시간별 알림, 반복 일정, 카테고리별 색상 구분이 가능합니다."
-                  : language === "en"
-                    ? "Never miss important events. Time-based alerts, recurring schedules, and color coding by category."
-                    : language === "zh"
-                      ? "不要错过重要日程。提供时间提醒、重复日程和按类别分色功能。"
-                      : "重要な予定を見逃さない。時間通知、繰り返し予定、カテゴリ別色分け。"}
-              </p>
-            </div>
-
-            {/* Feature 3: Todos */}
-            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-              <div className="text-4xl mb-4">✅</div>
-              <h3 className="text-xl font-semibold text-green-800 mb-2">
-                {language === "ko" ? "할 일" : language === "en" ? "To-Do" : language === "zh" ? "待办" : "やること"}
-              </h3>
-              <p className="text-green-600">
-                {language === "ko"
-                  ? "해야 할 일을 체계적으로 관리하세요. 음성 입력, 우선순위 설정, 진행 상태 추적 기능이 있습니다."
-                  : language === "en"
-                    ? "Manage your tasks systematically. Voice input, priority settings, and progress tracking available."
-                    : language === "zh"
-                      ? "系统地管理您的任务。提供语音输入、优先级设置和进度跟踪功能。"
-                      : "タスクを体系的に管理。音声入力、優先度設定、進捗追跡機能あり。"}
-              </p>
-            </div>
-
-            {/* Feature 4: Vehicle */}
-            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-              <div className="text-4xl mb-4">🚗</div>
-              <h3 className="text-xl font-semibold text-green-800 mb-2">
-                {language === "ko"
-                  ? "차량 관리"
-                  : language === "en"
-                    ? "Vehicle"
-                    : language === "zh"
-                      ? "车辆管理"
-                      : "車両管理"}
-              </h3>
-              <p className="text-green-600">
-                {language === "ko"
-                  ? "차량 정보와 정비 기록을 한눈에 관리하세요. 예방 정비 일정, 정비 이력, 사진 첨부가 가능합니다."
-                  : language === "en"
-                    ? "Manage vehicle info and maintenance records at a glance. Preventive maintenance schedules, history, and photo attachments."
-                    : language === "zh"
-                      ? "一目了然地管理车辆信息和维修记录。提供预防性保养计划、历史记录和照片附件。"
-                      : "車両情報とメンテナンス記録を一目で管理。予防メンテナンス、履歴、写真添付可能。"}
-              </p>
-            </div>
-
-            {/* Feature 5: AI Assistant */}
-            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-              <div className="text-4xl mb-4">🤖</div>
-              <h3 className="text-xl font-semibold text-green-800 mb-2">
-                {language === "ko"
-                  ? "AI 비서"
-                  : language === "en"
-                    ? "AI Assistant"
-                    : language === "zh"
-                      ? "AI助手"
-                      : "AIアシスタント"}
-              </h3>
-              <p className="text-green-600">
-                {language === "ko"
-                  ? "똑똑한 AI가 일정과 노트를 분석해 답변합니다. 자연어로 질문하면 필요한 정보를 찾아줍니다."
-                  : language === "en"
-                    ? "Smart AI analyzes your schedules and notes to answer questions. Ask naturally and get the info you need."
-                    : language === "zh"
-                      ? "智能AI分析您的日程和笔记并回答问题。用自然语言提问即可获取所需信息。"
-                      : "スマートAIがスケジュールとノートを分析して回答。自然言語で質問すれば必要な情報を提供。"}
-              </p>
-            </div>
-
-            {/* Feature 6: More */}
-            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-              <div className="text-4xl mb-4">🎯</div>
-              <h3 className="text-xl font-semibold text-green-800 mb-2">
-                {language === "ko"
-                  ? "그 외 기능"
-                  : language === "en"
-                    ? "More Features"
-                    : language === "zh"
-                      ? "更多功能"
-                      : "その他の機能"}
-              </h3>
-              <p className="text-green-600">
-                {language === "ko"
-                  ? "날씨, 명함 관리, 라디오, 통계 등 생활에 필요한 다양한 기능을 제공합니다."
-                  : language === "en"
-                    ? "Weather, business cards, radio, statistics, and more useful features for daily life."
-                    : language === "zh"
-                      ? "天气、名片管理、收音机、统计等日常生活所需的各种功能。"
-                      : "天気、名刺管理、ラジオ、統計など生活に必要な様々な機能を提供。"}
-              </p>
-            </div>
-          </div>
-
-          {/* AdSense Ad - Middle */}
-          {process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID && (
-            <div className="w-full py-4 mb-12">
-              <AdsenseAd slot="0987654321" format="rectangle" />
-            </div>
-          )}
-
-          {/* Benefits Section */}
-          <div className="bg-white rounded-lg shadow-md p-8 mb-12">
-            <h2 className="text-3xl font-bold text-green-800 mb-6 text-center">
-              {language === "ko"
-                ? "왜 Forest Note인가요?"
-                : language === "en"
-                  ? "Why Forest Note?"
-                  : language === "zh"
-                    ? "为什么选择森林笔记？"
-                    : "なぜフォレストノートなのか？"}
-            </h2>
-            <ul className="space-y-4 text-green-700">
-              <li className="flex items-start">
-                <span className="text-2xl mr-3">✨</span>
-                <span>
+            <div className="bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 backdrop-blur p-4 rounded-lg shadow-md">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-900 dark:text-slate-100">
                   {language === "ko"
-                    ? "직관적인 인터페이스로 누구나 쉽게 사용 가능"
+                    ? "저장소 사용량"
                     : language === "en"
-                      ? "Intuitive interface easy for anyone to use"
+                      ? "Storage Used"
                       : language === "zh"
-                        ? "直观的界面，任何人都可以轻松使用"
-                        : "直感的なインターフェースで誰でも簡単に使用可能"}
+                        ? "存储使用"
+                        : "ストレージ使用"}
                 </span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-2xl mr-3">🔒</span>
-                <span>
+                <span className="text-sm font-bold text-emerald-700">
+                  {formatBytes(storageUsed)} / {formatBytes(STORAGE_LIMIT)}
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className={`h-2 rounded-full transition-all ${
+                    storagePercentage > 90 ? "bg-red-500" : storagePercentage > 70 ? "bg-yellow-500" : "bg-emerald-600"
+                  }`}
+                  style={{ width: `${Math.min(storagePercentage, 100)}%` }}
+                />
+              </div>
+              {storagePercentage > 90 && (
+                <p className="text-xs text-red-600 mt-1">
                   {language === "ko"
-                    ? "안전한 클라우드 저장소로 데이터 보호"
+                    ? "저장소가 거의 찼습니다!"
                     : language === "en"
-                      ? "Secure cloud storage protects your data"
+                      ? "Storage is almost full!"
                       : language === "zh"
-                        ? "安全的云存储保护您的数据"
-                        : "安全なクラウドストレージでデータ保護"}
-                </span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-2xl mr-3">🌐</span>
-                <span>
-                  {language === "ko"
-                    ? "한국어, 영어, 중국어, 일본어 4개 언어 지원"
-                    : language === "en"
-                      ? "Supports 4 languages: Korean, English, Chinese, Japanese"
-                      : language === "zh"
-                        ? "支持韩语、英语、中文、日语4种语言"
-                        : "韓国語、英語、中国語、日本語の4言語対応"}
-                </span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-2xl mr-3">📱</span>
-                <span>
-                  {language === "ko"
-                    ? "모바일, 태블릿, PC 모든 기기에서 접속 가능"
-                    : language === "en"
-                      ? "Accessible on mobile, tablet, and PC"
-                      : language === "zh"
-                        ? "可在手机、平板电脑、PC上访问"
-                        : "モバイル、タブレット、PCすべてのデバイスでアクセス可能"}
-                </span>
-              </li>
-            </ul>
-          </div>
+                        ? "存储空间几乎已满！"
+                        : "ストレージがほぼ満杯です！"}
+                </p>
+              )}
+            </div>
 
-          {/* Login Section */}
-          <div className="max-w-md mx-auto">
-            <LoginForm language={language} onLanguageChange={setLanguage} />
-          </div>
+            <div className="shadow-md rounded-lg overflow-hidden">
+              <CalendarWidget
+                events={upcomingEvents}
+                onDateClick={(date) => setCurrentSection("schedule")}
+                language={language}
+              />
+            </div>
 
-          {/* Footer with Privacy Policy and Terms */}
-          <div className="mt-12 text-center text-sm text-green-600 space-x-4">
-            <button onClick={() => setShowPrivacyDialog(true)} className="hover:text-green-800 underline">
-              {language === "ko"
-                ? "개인정보처리방침"
-                : language === "en"
-                  ? "Privacy Policy"
-                  : language === "zh"
-                    ? "隐私政策"
-                    : "プライバシーポリシー"}
-            </button>
-            <span>|</span>
-            <button onClick={() => setShowTermsDialog(true)} className="hover:text-green-800 underline">
-              {language === "ko"
-                ? "이용약관"
-                : language === "en"
-                  ? "Terms of Service"
-                  : language === "zh"
-                    ? "使用条款"
-                    : "利用規約"}
-            </button>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {sections.map((item) => {
+                const lightBg =
+                  item.color === "teal"
+                    ? "bg-teal-50"
+                    : item.color === "emerald"
+                      ? "bg-emerald-50"
+                      : item.color === "green"
+                        ? "bg-green-50"
+                        : item.color === "blue"
+                          ? "bg-blue-50"
+                          : item.color === "indigo"
+                            ? "bg-indigo-50"
+                            : item.color === "rose"
+                              ? "bg-rose-50"
+                              : item.color === "cyan"
+                                ? "bg-cyan-50"
+                                : item.color === "purple"
+                                  ? "bg-purple-50"
+                                  : item.color === "amber"
+                                    ? "bg-amber-50"
+                                    : item.color === "yellow"
+                                      ? "bg-yellow-50"
+                                      : "bg-gray-50"
+
+                const textColor = "text-gray-900"
+                const iconColor =
+                  item.color === "teal"
+                    ? "text-teal-700"
+                    : item.color === "emerald"
+                      ? "text-emerald-700"
+                      : item.color === "green"
+                        ? "text-green-700"
+                        : item.color === "blue"
+                          ? "text-blue-700"
+                          : item.color === "indigo"
+                            ? "text-indigo-700"
+                            : item.color === "rose"
+                              ? "text-rose-700"
+                              : item.color === "cyan"
+                                ? "text-cyan-700"
+                                : item.color === "purple"
+                                  ? "text-purple-700"
+                                  : item.color === "amber"
+                                    ? "text-amber-700"
+                                    : item.color === "yellow"
+                                      ? "text-yellow-700"
+                                      : "text-gray-700"
+
+                return (
+                  <Card
+                    key={item.id}
+                    className={`p-6 cursor-pointer hover:scale-105 transition-transform backdrop-blur flex flex-col items-center justify-center shadow-md hover:shadow-lg ${lightBg}`}
+                    onClick={() => setCurrentSection(item.id as Section)}
+                  >
+                    <item.icon className={`h-8 w-8 mb-4 ${iconColor}`} />
+                    <h3 className={`font-semibold text-lg text-center ${textColor}`}>{item.label}</h3>
+                  </Card>
+                )
+              })}
+            </div>
+
+            <StorageQuotaCard language={language} />
           </div>
         </div>
-
-        {/* AdSense Ad - Bottom Banner */}
-        {process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID && (
-          <div className="w-full py-2 bg-white/50 backdrop-blur-sm border-t border-green-100">
-            <AdsenseAd slot="2468013579" format="horizontal" />
-          </div>
-        )}
-
-        {/* Privacy and Terms dialogs */}
-        <PrivacyPolicyDialog open={showPrivacyDialog} onOpenChange={setShowPrivacyDialog} language={language} />
-        <TermsOfServiceDialog open={showTermsDialog} onOpenChange={setShowTermsDialog} language={language} />
       </div>
     )
-  }
-
-  if (needsConsent && user && !loading) {
-    return (
-      <TermsConsentModal
-        userId={user.id}
-        userEmail={user.email || ""}
-        onConsent={handleConsentAccept}
-        onDecline={handleConsentDecline}
-      />
-    )
-  }
-
-  if (currentSection === "notes") {
-    return <NotesSection onBack={() => setCurrentSection("home")} language={language} />
-  }
-
-  if (currentSection === "diary") {
-    return <DiarySection onBack={() => setCurrentSection("home")} language={language} />
-  }
-
-  if (currentSection === "schedule") {
-    return <ScheduleSection onBack={() => setCurrentSection("home")} language={language} />
-  }
-
-  if (currentSection === "todo") {
-    return <TodoSection onBack={() => setCurrentSection("home")} language={language} />
-  }
-
-  if (currentSection === "weather") {
-    return <WeatherSection onBack={() => setCurrentSection("home")} language={language} />
-  }
-
-  if (currentSection === "radio") {
-    return <RadioSection onBack={() => setCurrentSection("home")} language={language} />
-  }
-
-  if (currentSection === "travel") {
-    return <TravelSection onBack={() => setCurrentSection("home")} language={language} />
-  }
-
-  if (currentSection === "vehicle") {
-    return <VehicleSection onBack={() => setCurrentSection("home")} language={language} />
-  }
-
-  if (currentSection === "health") {
-    return <HealthSection onBack={() => setCurrentSection("home")} language={language} />
-  }
-
-  if (currentSection === "budget") {
-    return <BudgetSection onBack={() => setCurrentSection("home")} language={language} />
-  }
-
-  if (currentSection === "statistics") {
-    return <StatisticsSection onBack={() => setCurrentSection("home")} language={language} />
-  }
-
-  if (currentSection === "businessCard") {
-    return <BusinessCardSection onBack={() => setCurrentSection("home")} language={language} />
-  }
-
-  if (currentSection === "settings") {
-    return <SettingsSection onBack={() => setCurrentSection("home")} language={language} />
-  }
-
-  if (currentSection === "aiAssistant") {
-    return <AIAssistantSection user={user} language={language} onBack={() => setCurrentSection("home")} />
   }
 
   return (
-    <div className="min-h-screen bg-[rgb(220,252,231)] relative overflow-hidden">
-      <AnnouncementBanner language={language} />
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50">
+      {/* Header with Language Selector */}
+      {!loading && (
+        <header className="flex justify-between items-center p-6">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">🌲</span>
+            <h1 className="text-2xl font-bold text-emerald-700">{getTranslation(language, "title")}</h1>
+          </div>
+          <LanguageSelector language={language} onChange={setLanguage} />
+        </header>
+      )}
 
-      <div className="absolute inset-0 opacity-30">
-        <ForestCanvas />
-      </div>
-
-      <div className="relative z-10 p-6 space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-2xl md:text-3xl font-bold text-emerald-700 text-center">
-            🌲 {getTranslation(language, "title")}
+      {/* Hero Section */}
+      <div className="max-w-6xl mx-auto px-6 py-12">
+        <div className="text-center mb-12">
+          <h1 className="text-5xl font-bold text-green-800 mb-4">
+            {language === "ko"
+              ? "🌲 Forest Note"
+              : language === "en"
+                ? "🌲 Forest Note"
+                : language === "zh"
+                  ? "🌲 森林笔记"
+                  : "🌲 フォレストノート"}
           </h1>
-          <div className="flex items-center justify-center gap-2 flex-wrap">
-            <NotificationCenter language={language} />
-            <LanguageSelector language={language} onChange={setLanguage} />
-            <GlobalSearch
-              language={language}
-              onResultClick={(section, item) => {
-                setCurrentSection(section)
-              }}
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={logout}
-              className="text-black flex items-center gap-1 bg-transparent"
-            >
-              <LogOut className="h-4 w-4" />
-              <span className="text-sm hidden sm:inline">
-                {language === "ko"
-                  ? "로그아웃"
-                  : language === "en"
-                    ? "Logout"
-                    : language === "zh"
-                      ? "登出"
-                      : "ログアウト"}
-              </span>
-            </Button>
-          </div>
+          <p className="text-xl text-green-700 mb-8">
+            {language === "ko"
+              ? "하루를 정리하는 스마트한 방법"
+              : language === "en"
+                ? "Smart way to organize your day"
+                : language === "zh"
+                  ? "整理您一天的智能方式"
+                  : "あなたの一日を整理するスマートな方法"}
+          </p>
         </div>
 
-        <AdsenseAd slot="1234567890" format="horizontal" />
-
-        <div className="bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 backdrop-blur p-4 rounded-lg shadow-md">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-900 dark:text-slate-100">
+        {/* Features Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          {/* Feature 1: Notes */}
+          <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+            <div className="text-4xl mb-4">📝</div>
+            <h3 className="text-xl font-semibold text-green-800 mb-2">
+              {language === "ko" ? "노트" : language === "en" ? "Notes" : language === "zh" ? "笔记" : "ノート"}
+            </h3>
+            <p className="text-green-600">
               {language === "ko"
-                ? "저장소 사용량"
+                ? "생각과 아이디어를 자유롭게 기록하세요. 서식 편집, 이미지 첨부, 카테고리 분류 기능을 제공합니다."
                 : language === "en"
-                  ? "Storage Used"
+                  ? "Record your thoughts and ideas freely. Text formatting, image attachments, and categorization available."
                   : language === "zh"
-                    ? "存储使用"
-                    : "ストレージ使用"}
-            </span>
-            <span className="text-sm font-bold text-emerald-700">
-              {formatBytes(storageUsed)} / {formatBytes(STORAGE_LIMIT)}
-            </span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className={`h-2 rounded-full transition-all ${
-                storagePercentage > 90 ? "bg-red-500" : storagePercentage > 70 ? "bg-yellow-500" : "bg-emerald-600"
-              }`}
-              style={{ width: `${Math.min(storagePercentage, 100)}%` }}
-            />
-          </div>
-          {storagePercentage > 90 && (
-            <p className="text-xs text-red-600 mt-1">
-              {language === "ko"
-                ? "저장소가 거의 찼습니다!"
-                : language === "en"
-                  ? "Storage is almost full!"
-                  : language === "zh"
-                    ? "存储空间几乎已满！"
-                    : "ストレージがほぼ満杯です！"}
+                    ? "自由记录您的想法和创意。提供格式编辑、图片附件和分类功能。"
+                    : "自由に思考とアイデアを記録。書式編集、画像添付、カテゴリ分類機能を提供。"}
             </p>
-          )}
+          </div>
+
+          {/* Feature 2: Schedule */}
+          <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+            <div className="text-4xl mb-4">📅</div>
+            <h3 className="text-xl font-semibold text-green-800 mb-2">
+              {language === "ko"
+                ? "일정"
+                : language === "en"
+                  ? "Schedule"
+                  : language === "zh"
+                    ? "日程"
+                    : "スケジュール"}
+            </h3>
+            <p className="text-green-600">
+              {language === "ko"
+                ? "중요한 일정을 놓치지 마세요. 시간별 알림, 반복 일정, 카테고리별 색상 구분이 가능합니다."
+                : language === "en"
+                  ? "Never miss important events. Time-based alerts, recurring schedules, and color coding by category."
+                  : language === "zh"
+                    ? "不要错过重要日程。提供时间提醒、重复日程和按类别分色功能。"
+                    : "重要な予定を見逃さない。時間通知、繰り返し予定、カテゴリ別色分け。"}
+            </p>
+          </div>
+
+          {/* Feature 3: Todos */}
+          <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+            <div className="text-4xl mb-4">✅</div>
+            <h3 className="text-xl font-semibold text-green-800 mb-2">
+              {language === "ko" ? "할 일" : language === "en" ? "To-Do" : language === "zh" ? "待办" : "やること"}
+            </h3>
+            <p className="text-green-600">
+              {language === "ko"
+                ? "해야 할 일을 체계적으로 관리하세요. 음성 입력, 우선순위 설정, 진행 상태 추적 기능이 있습니다."
+                : language === "en"
+                  ? "Manage your tasks systematically. Voice input, priority settings, and progress tracking available."
+                  : language === "zh"
+                    ? "系统地管理您的任务。提供语音输入、优先级设置和进度跟踪功能。"
+                    : "タスクを体系的に管理。音声入力、優先度設定、進捗追跡機能あり。"}
+            </p>
+          </div>
+
+          {/* Feature 4: Vehicle */}
+          <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+            <div className="text-4xl mb-4">🚗</div>
+            <h3 className="text-xl font-semibold text-green-800 mb-2">
+              {language === "ko"
+                ? "차량 관리"
+                : language === "en"
+                  ? "Vehicle"
+                  : language === "zh"
+                    ? "车辆管理"
+                    : "車両管理"}
+            </h3>
+            <p className="text-green-600">
+              {language === "ko"
+                ? "차량 정보와 정비 기록을 한눈에 관리하세요. 예방 정비 일정, 정비 이력, 사진 첨부가 가능합니다."
+                : language === "en"
+                  ? "Manage vehicle info and maintenance records at a glance. Preventive maintenance schedules, history, and photo attachments."
+                  : language === "zh"
+                    ? "一目了然地管理车辆信息和维修记录。提供预防性保养计划、历史记录和照片附件。"
+                    : "車両情報とメンテナンス記録を一目で管理。予防メンテナンス、履歴、写真添付可能。"}
+            </p>
+          </div>
+
+          {/* Feature 5: AI Assistant */}
+          <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+            <div className="text-4xl mb-4">🤖</div>
+            <h3 className="text-xl font-semibold text-green-800 mb-2">
+              {language === "ko"
+                ? "AI 비서"
+                : language === "en"
+                  ? "AI Assistant"
+                  : language === "zh"
+                    ? "AI助手"
+                    : "AIアシスタント"}
+            </h3>
+            <p className="text-green-600">
+              {language === "ko"
+                ? "똑똑한 AI가 일정과 노트를 분석해 답변합니다. 자연어로 질문하면 필요한 정보를 찾아줍니다."
+                : language === "en"
+                  ? "Smart AI analyzes your schedules and notes to answer questions. Ask naturally and get the info you need."
+                  : language === "zh"
+                    ? "智能AI分析您的日程和笔记并回答问题。用自然语言提问即可获取所需信息。"
+                    : "スマートAIがスケジュールとノートを分析して回答。自然言語で質問すれば必要な情報を提供。"}
+            </p>
+          </div>
+
+          {/* Feature 6: More */}
+          <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+            <div className="text-4xl mb-4">🎯</div>
+            <h3 className="text-xl font-semibold text-green-800 mb-2">
+              {language === "ko"
+                ? "그 외 기능"
+                : language === "en"
+                  ? "More Features"
+                  : language === "zh"
+                    ? "更多功能"
+                    : "その他の機能"}
+            </h3>
+            <p className="text-green-600">
+              {language === "ko"
+                ? "날씨, 명함 관리, 라디오, 통계 등 생활에 필요한 다양한 기능을 제공합니다."
+                : language === "en"
+                  ? "Weather, business cards, radio, statistics, and more useful features for daily life."
+                  : language === "zh"
+                    ? "天气、名片管理、收音机、统计等日常生活所需的各种功能。"
+                    : "天気、名刺管理、ラジオ、統計など生活に必要な様々な機能を提供。"}
+            </p>
+          </div>
         </div>
 
-        <div className="shadow-md rounded-lg overflow-hidden">
-          <CalendarWidget
-            events={upcomingEvents}
-            onDateClick={(date) => setCurrentSection("schedule")}
-            language={language}
-          />
+        {/* Footer with Privacy Policy and Terms */}
+        <div className="mt-12 text-center text-sm text-green-600 space-x-4">
+          <button onClick={() => setShowPrivacyDialog(true)} className="hover:text-green-800 underline">
+            {language === "ko"
+              ? "개인정보처리방침"
+              : language === "en"
+                ? "Privacy Policy"
+                : language === "zh"
+                  ? "隐私政策"
+                  : "プライバシーポリシー"}
+          </button>
+          <span>|</span>
+          <button onClick={() => setShowTermsDialog(true)} className="hover:text-green-800 underline">
+            {language === "ko"
+              ? "이용약관"
+              : language === "en"
+                ? "Terms of Service"
+                : language === "zh"
+                  ? "使用条款"
+                  : "利用規約"}
+          </button>
         </div>
-
-        <AdsenseAd slot="0987654321" format="rectangle" />
-
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {sections.map((item) => {
-            const lightBg =
-              item.color === "teal"
-                ? "bg-teal-50"
-                : item.color === "emerald"
-                  ? "bg-emerald-50"
-                  : item.color === "green"
-                    ? "bg-green-50"
-                    : item.color === "blue"
-                      ? "bg-blue-50"
-                      : item.color === "indigo"
-                        ? "bg-indigo-50"
-                        : item.color === "rose"
-                          ? "bg-rose-50"
-                          : item.color === "cyan"
-                            ? "bg-cyan-50"
-                            : item.color === "purple"
-                              ? "bg-purple-50"
-                              : item.color === "amber"
-                                ? "bg-amber-50"
-                                : item.color === "yellow"
-                                  ? "bg-yellow-50"
-                                  : "bg-gray-50"
-
-            const textColor = "text-gray-900"
-            const iconColor =
-              item.color === "teal"
-                ? "text-teal-700"
-                : item.color === "emerald"
-                  ? "text-emerald-700"
-                  : item.color === "green"
-                    ? "text-green-700"
-                    : item.color === "blue"
-                      ? "text-blue-700"
-                      : item.color === "indigo"
-                        ? "text-indigo-700"
-                        : item.color === "rose"
-                          ? "text-rose-700"
-                          : item.color === "cyan"
-                            ? "text-cyan-700"
-                            : item.color === "purple"
-                              ? "text-purple-700"
-                              : item.color === "amber"
-                                ? "text-amber-700"
-                                : item.color === "yellow"
-                                  ? "text-yellow-700"
-                                  : "text-gray-700"
-
-            return (
-              <Card
-                key={item.id}
-                className={`p-6 cursor-pointer hover:scale-105 transition-transform backdrop-blur flex flex-col items-center justify-center shadow-md hover:shadow-lg ${lightBg}`}
-                onClick={() => setCurrentSection(item.id as Section)}
-              >
-                <item.icon className={`h-8 w-8 mb-4 ${iconColor}`} />
-                <h3 className={`font-semibold text-lg text-center ${textColor}`}>{item.label}</h3>
-              </Card>
-            )
-          })}
-        </div>
-
-        <AdsenseAd slot="1122334455" format="horizontal" />
-
-        <StorageQuotaCard language={language} />
       </div>
+
+      {/* Privacy and Terms dialogs */}
+      <PrivacyPolicyDialog open={showPrivacyDialog} onOpenChange={setShowPrivacyDialog} language={language} />
+      <TermsOfServiceDialog open={showTermsDialog} onOpenChange={setShowTermsDialog} language={language} />
     </div>
   )
 }
