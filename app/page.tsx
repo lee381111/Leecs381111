@@ -12,10 +12,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ForestCanvas } from "@/components/forest-canvas"
-import { AnnouncementBanner } from "@/components/announcement-banner"
 import { NotificationCenter } from "@/components/notification-center"
-import { PrivacyPolicyDialog } from "@/components/privacy-policy-dialog"
-import { TermsOfServiceDialog } from "@/components/terms-of-service-dialog"
 import { StorageQuotaCard } from "@/components/storage-quota-card"
 import {
   FileText,
@@ -585,238 +582,86 @@ export default function ForestNotePage() {
     )
   }
 
-  if (!TEMPORARY_DISABLE_LOGIN && !effectiveUser) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50">
-        {/* Hero Section */}
-        <div className="max-w-6xl mx-auto px-6 py-12">
-          <div className="text-center mb-12">
-            <h1 className="text-5xl font-bold text-green-800 mb-4">
-              {language === "ko"
-                ? "🌲 Forest Note"
-                : language === "en"
-                  ? "🌲 Forest Note"
-                  : language === "zh"
-                    ? "🌲 森林笔记"
-                    : "🌲 フォレストノート"}
-            </h1>
-            <p className="text-xl text-green-700 mb-8">
-              {language === "ko"
-                ? "하루를 정리하는 스마트한 방법"
-                : language === "en"
-                  ? "Smart way to organize your day"
-                  : language === "zh"
-                    ? "整理您一天的智能方式"
-                    : "あなたの一日を整理するスマートな方法"}
-            </p>
-          </div>
-
-          {/* Features Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {/* Feature 1: Notes */}
-            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-              <div className="text-4xl mb-4">📝</div>
-              <h3 className="text-xl font-semibold text-green-800 mb-2">
-                {language === "ko" ? "노트" : language === "en" ? "Notes" : language === "zh" ? "笔记" : "ノート"}
-              </h3>
-              <p className="text-green-600">
-                {language === "ko"
-                  ? "생각과 아이디어를 자유롭게 기록하세요. 서식 편집, 이미지 첨부, 카테고리 분류 기능을 제공합니다."
-                  : language === "en"
-                    ? "Record your thoughts and ideas freely. Text formatting, image attachments, and categorization available."
-                    : language === "zh"
-                      ? "自由记录您的想法和创意。提供格式编辑、图片附件和分类功能。"
-                      : "自由に思考とアイデアを記録。書式編集、画像添付、カテゴリ分類機能を提供。"}
-              </p>
-            </div>
-
-            {/* Feature 2: Schedule */}
-            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-              <div className="text-4xl mb-4">📅</div>
-              <h3 className="text-xl font-semibold text-green-800 mb-2">
-                {language === "ko"
-                  ? "일정"
-                  : language === "en"
-                    ? "Schedule"
-                    : language === "zh"
-                      ? "日程"
-                      : "スケジュール"}
-              </h3>
-              <p className="text-green-600">
-                {language === "ko"
-                  ? "중요한 일정을 놓치지 마세요. 시간별 알림, 반복 일정, 카테고리별 색상 구분이 가능합니다."
-                  : language === "en"
-                    ? "Never miss important events. Time-based alerts, recurring schedules, and color coding by category."
-                    : language === "zh"
-                      ? "不要错过重要日程。提供时间提醒、重复日程和按类别分色功能。"
-                      : "重要な予定を見逃さない。時間通知、繰り返し予定、カテゴリ別色分け。"}
-              </p>
-            </div>
-
-            {/* Feature 3: Todos */}
-            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-              <div className="text-4xl mb-4">✅</div>
-              <h3 className="text-xl font-semibold text-green-800 mb-2">
-                {language === "ko" ? "할 일" : language === "en" ? "To-Do" : language === "zh" ? "待办" : "やること"}
-              </h3>
-              <p className="text-green-600">
-                {language === "ko"
-                  ? "해야 할 일을 체계적으로 관리하세요. 음성 입력, 우선순위 설정, 진행 상태 추적 기능이 있습니다."
-                  : language === "en"
-                    ? "Manage your tasks systematically. Voice input, priority settings, and progress tracking available."
-                    : language === "zh"
-                      ? "系统地管理您的任务。提供语音输入、优先级设置和进度跟踪功能。"
-                      : "タスクを体系的に管理。音声入力、優先度設定、進捗追跡機能あり。"}
-              </p>
-            </div>
-
-            {/* Feature 4: Vehicle */}
-            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-              <div className="text-4xl mb-4">🚗</div>
-              <h3 className="text-xl font-semibold text-green-800 mb-2">
-                {language === "ko"
-                  ? "차량 관리"
-                  : language === "en"
-                    ? "Vehicle"
-                    : language === "zh"
-                      ? "车辆管理"
-                      : "車両管理"}
-              </h3>
-              <p className="text-green-600">
-                {language === "ko"
-                  ? "차량 정보와 정비 기록을 한눈에 관리하세요. 예방 정비 일정, 정비 이력, 사진 첨부가 가능합니다."
-                  : language === "en"
-                    ? "Manage vehicle info and maintenance records at a glance. Preventive maintenance schedules, history, and photo attachments."
-                    : language === "zh"
-                      ? "一目了然地管理车辆信息和维修记录。提供预防性保养计划、历史记录和照片附件。"
-                      : "車両情報とメンテナンス記録を一目で管理。予防メンテナンス、履歴、写真添付可能。"}
-              </p>
-            </div>
-
-            {/* Feature 5: AI Assistant */}
-            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-              <div className="text-4xl mb-4">🤖</div>
-              <h3 className="text-xl font-semibold text-green-800 mb-2">
-                {language === "ko"
-                  ? "AI 비서"
-                  : language === "en"
-                    ? "AI Assistant"
-                    : language === "zh"
-                      ? "AI助手"
-                      : "AIアシスタント"}
-              </h3>
-              <p className="text-green-600">
-                {language === "ko"
-                  ? "똑똑한 AI가 일정과 노트를 분석해 답변합니다. 자연어로 질문하면 필요한 정보를 찾아줍니다."
-                  : language === "en"
-                    ? "Smart AI analyzes your schedules and notes to answer questions. Ask naturally and get the info you need."
-                    : language === "zh"
-                      ? "智能AI分析您的日程和笔记并回答问题。用自然语言提问即可获取所需信息。"
-                      : "スマートAIがスケジュールとノートを分析して回答。自然言語で質問すれば必要な情報を提供。"}
-              </p>
-            </div>
-
-            {/* Feature 6: More */}
-            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-              <div className="text-4xl mb-4">🎯</div>
-              <h3 className="text-xl font-semibold text-green-800 mb-2">
-                {language === "ko"
-                  ? "그 외 기능"
-                  : language === "en"
-                    ? "More Features"
-                    : language === "zh"
-                      ? "更多功能"
-                      : "その他の機能"}
-              </h3>
-              <p className="text-green-600">
-                {language === "ko"
-                  ? "날씨, 명함 관리, 라디오, 통계 등 생활에 필요한 다양한 기능을 제공합니다."
-                  : language === "en"
-                    ? "Weather, business cards, radio, statistics, and more useful features for daily life."
-                    : language === "zh"
-                      ? "天气、名片管理、收音机、统计等日常生活所需的各种功能。"
-                      : "天気、名刺管理、ラジオ、統計など生活に必要な様々な機能を提供。"}
-              </p>
-            </div>
-          </div>
-
-          {/* Footer with Privacy Policy and Terms */}
-          <div className="mt-12 text-center text-sm text-green-600 space-x-4">
-            <button onClick={() => setShowPrivacyDialog(true)} className="hover:text-green-800 underline">
-              {language === "ko"
-                ? "개인정보처리방침"
-                : language === "en"
-                  ? "Privacy Policy"
-                  : language === "zh"
-                    ? "隐私政策"
-                    : "プライバシーポリシー"}
-            </button>
-            <span>|</span>
-            <button onClick={() => setShowTermsDialog(true)} className="hover:text-green-800 underline">
-              {language === "ko"
-                ? "이용약관"
-                : language === "en"
-                  ? "Terms of Service"
-                  : language === "zh"
-                    ? "使用条款"
-                    : "利用規約"}
-            </button>
-          </div>
-        </div>
-
-        {/* Privacy and Terms dialogs */}
-        <PrivacyPolicyDialog open={showPrivacyDialog} onOpenChange={setShowPrivacyDialog} language={language} />
-        <TermsOfServiceDialog open={showTermsDialog} onOpenChange={setShowTermsDialog} language={language} />
-      </div>
-    )
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50">
-      {/* Main Content */}
-      <div className="p-6 space-y-6">
-        <AnnouncementBanner language={language} />
+      <div className="max-w-7xl mx-auto p-4">
+        <div className="bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 backdrop-blur p-4 rounded-lg shadow-md">
+          <div className="max-w-3xl mx-auto text-center mb-6">
+            <h1 className="text-4xl md:text-5xl font-bold text-green-800 dark:text-green-300 mb-4">
+              🌲 {getTranslation(language, "app_title")}
+            </h1>
+
+            {/* Removed landing page content - show main app directly */}
+
+            <div className="flex justify-center items-center gap-4 mb-4 text-sm text-green-600 dark:text-green-300">
+              {language === "ko" ? (
+                <>
+                  <span>✓ AI 비서 지원</span>
+                  <span>✓ 다국어 지원 (한/영/중/일)</span>
+                  <span>✓ 클라우드 동기화</span>
+                  <span>✓ 무료 사용</span>
+                </>
+              ) : language === "en" ? (
+                <>
+                  <span>✓ AI Assistant</span>
+                  <span>✓ Multi-language (KR/EN/CN/JP)</span>
+                  <span>✓ Cloud Sync</span>
+                  <span>✓ Free to Use</span>
+                </>
+              ) : language === "zh" ? (
+                <>
+                  <span>✓ AI助手</span>
+                  <span>✓ 多语言支持</span>
+                  <span>✓ 云同步</span>
+                  <span>✓ 免费使用</span>
+                </>
+              ) : (
+                <>
+                  <span>✓ AIアシスタント</span>
+                  <span>✓ 多言語対応</span>
+                  <span>✓ クラウド同期</span>
+                  <span>✓ 無料</span>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="flex justify-center items-center gap-4 mb-4">
+            <NotificationCenter language={language} />
+            <LanguageSelector language={language} onChange={setLanguage} />
+            <GlobalSearch
+              language={language}
+              onResultClick={(section, item) => {
+                setCurrentSection(section)
+              }}
+            />
+            {!TEMPORARY_DISABLE_LOGIN && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={logout}
+                className="text-black flex items-center gap-1 bg-transparent"
+              >
+                <LogOut className="h-4 w-4" />
+                <span className="text-sm hidden sm:inline">
+                  {language === "ko"
+                    ? "로그아웃"
+                    : language === "en"
+                      ? "Logout"
+                      : language === "zh"
+                        ? "登出"
+                        : "ログアウト"}
+                </span>
+              </Button>
+            )}
+          </div>
+        </div>
 
         <div className="absolute inset-0 opacity-30">
           <ForestCanvas />
         </div>
 
         <div className="relative z-10 space-y-6">
-          <div className="space-y-2">
-            <h1 className="text-2xl md:text-3xl font-bold text-emerald-700 text-center">
-              🌲 {getTranslation(language, "title")}
-            </h1>
-            <div className="flex items-center justify-center gap-2 flex-wrap">
-              <NotificationCenter language={language} />
-              <LanguageSelector language={language} onChange={setLanguage} />
-              <GlobalSearch
-                language={language}
-                onResultClick={(section, item) => {
-                  setCurrentSection(section)
-                }}
-              />
-              {!TEMPORARY_DISABLE_LOGIN && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={logout}
-                  className="text-black flex items-center gap-1 bg-transparent"
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span className="text-sm hidden sm:inline">
-                    {language === "ko"
-                      ? "로그아웃"
-                      : language === "en"
-                        ? "Logout"
-                        : language === "zh"
-                          ? "登出"
-                          : "ログアウト"}
-                  </span>
-                </Button>
-              )}
-            </div>
-          </div>
-
           <div className="bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 backdrop-blur p-4 rounded-lg shadow-md">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-gray-900 dark:text-slate-100">
