@@ -120,12 +120,19 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
   }, [user])
 
   const loadData = async () => {
-    if (!user?.id) return
+    const isGuest = user?.id === "00000000-0000-0000-0000-000000000000"
 
     try {
       setLoading(true)
-      const data = await loadNotes(user.id)
-      setNotes(data)
+
+      if (isGuest) {
+        const localData = localStorage.getItem("forest-note-notes")
+        const data = localData ? JSON.parse(localData) : []
+        setNotes(data)
+      } else if (user?.id) {
+        const data = await loadNotes(user.id)
+        setNotes(data)
+      }
     } catch (err) {
       console.error("[v0] Error loading notes:", err)
     } finally {
@@ -172,7 +179,12 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
       setNotes(updated)
 
       // Save to database
-      await saveNotes(updated, user.id)
+      const isGuest = user.id === "00000000-0000-0000-0000-000000000000"
+      if (!isGuest) {
+        await saveNotes(updated, user.id)
+      } else {
+        localStorage.setItem("forest-note-notes", JSON.stringify(updated))
+      }
 
       setFormData({ title: "", content: "", tags: "", attachments: [] })
       setAttachments([])
@@ -215,7 +227,12 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
     try {
       const updated = notes.filter((n) => n.id !== id)
       setNotes(updated)
-      await saveNotes(updated, user.id)
+      const isGuest = user.id === "00000000-0000-0000-0000-000000000000"
+      if (!isGuest) {
+        await saveNotes(updated, user.id)
+      } else {
+        localStorage.setItem("forest-note-notes", JSON.stringify(updated))
+      }
       alert(language === "ko" ? "삭제되었습니다" : "Deleted")
     } catch (err) {
       console.error("[v0] Delete failed:", err)
