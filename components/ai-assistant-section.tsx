@@ -30,12 +30,15 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const recognitionRef = useRef<any>(null)
 
+  const isGuestUser = user?.email === "guest@forestnote.app" || user?.id === "00000000-0000-0000-0000-000000000000"
+
   useEffect(() => {
     console.log("[v0] AIAssistantSection mounted with user:", user)
+    console.log("[v0] Is guest user:", isGuestUser)
     if (!user || !user.id) {
       console.error("[v0] AIAssistantSection: user or user.id is missing!", user)
     }
-  }, [user])
+  }, [user, isGuestUser])
 
   useEffect(() => {
     try {
@@ -50,11 +53,30 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
 
   useEffect(() => {
     if (user?.id) {
-      loadChatHistory()
+      if (isGuestUser) {
+        loadChatHistoryFromLocalStorage()
+      } else {
+        loadChatHistory()
+      }
     } else {
       console.warn("[v0] AIAssistantSection: Cannot load chat history, user.id is missing")
     }
-  }, [user?.id])
+  }, [user?.id, isGuestUser])
+
+  const loadChatHistoryFromLocalStorage = () => {
+    try {
+      const stored = localStorage.getItem(`ai_chat_${user?.id}`)
+      if (stored) {
+        const loadedMessages = JSON.parse(stored).map((msg: any) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp),
+        }))
+        setMessages(loadedMessages)
+      }
+    } catch (error) {
+      console.error("[v0] Failed to load chat from localStorage:", error)
+    }
+  }
 
   const loadChatHistory = async () => {
     if (!user?.id) {
@@ -94,6 +116,16 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
   }
 
   const saveChatMessage = async (message: Message) => {
+    if (isGuestUser) {
+      try {
+        const currentMessages = [...messages, message]
+        localStorage.setItem(`ai_chat_${user?.id}`, JSON.stringify(currentMessages))
+      } catch (error) {
+        console.warn("[v0] Failed to save to localStorage:", error)
+      }
+      return
+    }
+
     try {
       const supabase = createClient()
       await supabase.from("ai_chat_history").insert({
@@ -271,6 +303,16 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
               : "すべてのチャット履歴を削除しますか？",
       )
     ) {
+      if (isGuestUser) {
+        try {
+          localStorage.removeItem(`ai_chat_${user?.id}`)
+          setMessages([])
+        } catch (error) {
+          console.error("[v0] Failed to clear localStorage:", error)
+        }
+        return
+      }
+
       try {
         const supabase = createClient()
         await supabase.from("ai_chat_history").delete().eq("user_id", user.id)
