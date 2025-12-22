@@ -137,6 +137,11 @@ export async function calculateRealTimeStorageUsage(userId: string): Promise<num
 
 // Get user's storage information
 export async function getUserStorageInfo(userId: string): Promise<StorageInfo | null> {
+  if (!userId || userId === "undefined" || userId === "") {
+    console.error("[v0] Invalid userId provided to getUserStorageInfo:", userId)
+    return null
+  }
+
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,

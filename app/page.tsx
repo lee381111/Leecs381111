@@ -760,7 +760,7 @@ export default function ForestNotePage() {
             </div>
           )}
 
-          <StorageQuotaCard language={language} user={effectiveUser} />
+          <StorageQuotaCard language={language} userId={effectiveUser?.id || ""} />
         </div>
       </div>
     </div>
