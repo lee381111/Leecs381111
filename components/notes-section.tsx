@@ -44,18 +44,18 @@ interface Attachment {
 
 // Mock or import useAuth hook
 // For demonstration, let's assume a mock implementation
-const useAuth = () => {
-  // Replace with your actual authentication hook
-  return { user: { id: "mock-user-id" } }
-}
+// const useAuth = () => {
+//   // Replace with your actual authentication hook
+//   return { user: { id: "mock-user-id" } }
+// }
 
 interface NotesSectionProps {
+  user: { id: string; email?: string }
   onBack: () => void
   language: Language
 }
 
-export function NotesSection({ onBack, language }: NotesSectionProps) {
-  const { user } = useAuth()
+export function NotesSection({ user, onBack, language }: NotesSectionProps) {
   const [notes, setNotes] = useState<Note[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
