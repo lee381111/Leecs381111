@@ -22,6 +22,7 @@ import type { Language, BudgetTransaction } from "@/lib/types"
 import { saveBudgetTransactions, loadBudgetTransactions } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import { Spinner } from "@/components/ui/spinner"
+import { AdsenseAd } from "@/components/adsense-ad"
 
 interface BudgetSectionProps {
   onBack: () => void
@@ -1070,6 +1071,10 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
             </CardContent>
           </Card>
         )}
+
+        <div className="mt-6">
+          <AdsenseAd slot="8901234567" format="horizontal" />
+        </div>
       </div>
     </div>
   )

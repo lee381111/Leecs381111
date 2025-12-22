@@ -945,7 +945,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
           </div>
         </div>
 
-        <AdsenseAd slot="2345678901" format="horizontal" />
+        {/* <AdsenseAd slot="2345678901" format="horizontal" /> */}
 
         <div className="flex justify-end">
           <Button

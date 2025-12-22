@@ -28,7 +28,7 @@ import { loadNotes, saveNotes, type Note } from "@/lib/storage"
 import { getTranslation } from "@/lib/i18n"
 import { MediaTools } from "@/components/media-tools"
 import { Spinner } from "@/components/ui/spinner"
-// import { AdsenseAd } from "@/components/adsense-ad"
+import { AdsenseAd } from "@/components/adsense-ad"
 import { cn } from "@/lib/utils"
 
 // Define interfaces and types if they are not globally available or imported
@@ -1086,7 +1086,7 @@ export function NotesSection({ user, onBack, language }: NotesSectionProps) {
         </Button>
       </div>
 
-      {/* <AdsenseAd slot="1234567890" format="horizontal" /> */}
+      {/* 상단 광고 제거됨 */}
 
       <div className="relative">
         <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -1313,7 +1313,7 @@ export function NotesSection({ user, onBack, language }: NotesSectionProps) {
         )}
       </div>
 
-      {/* <AdsenseAd slot="0987654321" format="horizontal" /> */}
+      <AdsenseAd slot="0987654321" format="horizontal" />
     </div>
   )
 }

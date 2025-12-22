@@ -14,6 +14,7 @@ import { getCoordinates } from "@/lib/geocoding"
 import { Spinner } from "@/components/ui/spinner"
 import { getTranslation } from "@/lib/i18n"
 import dynamic from "next/dynamic"
+import { AdsenseAd } from "@/components/adsense-ad" // Import AdsenseAd component
 
 const TravelMap = dynamic(() => import("@/components/travel-map").then((mod) => mod.TravelMap), {
   ssr: false,
@@ -623,6 +624,10 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
             <p className="text-sm mt-2">{t("add_first_travel")}</p>
           </Card>
         )}
+      </div>
+
+      <div className="mt-6">
+        <AdsenseAd slot="9012345678" format="horizontal" />
       </div>
 
       {selectedImage && (

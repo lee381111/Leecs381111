@@ -50,9 +50,9 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
   const [isLocked, setIsLocked] = useState(true)
   const [password, setPassword] = useState("")
   const [isSettingPassword, setIsSettingPassword] = useState(false)
-  const [confirmPassword, setConfirmPassword] = useState("")
   const [isResettingPassword, setIsResettingPassword] = useState(false)
   const [securityAnswer, setSecurityAnswer] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("") // Declare confirmPassword
 
   const [emotionAnalysis, setEmotionAnalysis] = useState<{
     emotion: string
@@ -117,7 +117,7 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
     setIsSettingPassword(false)
     setIsLocked(false)
     setPassword("")
-    setConfirmPassword("")
+    setConfirmPassword("") // Use confirmPassword
     setSecurityAnswer("")
     alert(t("password_set") || "일기 비밀번호가 설정되었습니다")
   }
@@ -159,7 +159,7 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
     localStorage.setItem("diary_password_hash", newHash)
     alert(t("password_changed") || "비밀번호가 변경되었습니다")
     setPassword("")
-    setConfirmPassword("")
+    setConfirmPassword("") // Use confirmPassword
   }
 
   const handleRemovePassword = async () => {
@@ -211,7 +211,7 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
       setIsResettingPassword(false)
       setIsLocked(false)
       setPassword("")
-      setConfirmPassword("")
+      setConfirmPassword("") // Use confirmPassword
       setSecurityAnswer("")
       alert(t("password_reset_success") || "비밀번호가 재설정되었습니다")
     } else {
@@ -521,7 +521,7 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
                 onClick={() => {
                   setIsResettingPassword(false)
                   setPassword("")
-                  setConfirmPassword("")
+                  setConfirmPassword("") // Use confirmPassword
                   setSecurityAnswer("")
                 }}
                 className="flex-1 bg-transparent"
@@ -740,8 +740,6 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
           </Button>
         </div>
       </div>
-
-      <AdsenseAd slot="6789012345" format="horizontal" />
 
       <div className="grid gap-4">
         {diaries.map((diary) => (

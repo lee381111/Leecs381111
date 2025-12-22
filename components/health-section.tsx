@@ -20,6 +20,7 @@ import {
   toggleMedicationCompletion,
 } from "@/lib/notification-manager"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
+import AdsenseAd from "@/components/adsense-ad"
 
 interface HealthSectionProps {
   onBack: () => void
@@ -1313,6 +1314,10 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
             </div>
           </Card>
         ))}
+      </div>
+
+      <div className="mt-6">
+        <AdsenseAd slot="1234567890" format="horizontal" />
       </div>
     </div>
   )

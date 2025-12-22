@@ -12,6 +12,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { getTranslation } from "@/lib/i18n"
 import { notificationManager } from "@/lib/notification-manager"
 import { MediaTools } from "@/components/media-tools"
+import { AdsenseAd } from "@/components/adsense-ad"
 
 interface VehicleSectionProps {
   onBack: () => void
@@ -979,6 +980,10 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
             </Button>
           </div>
         )}
+      </div>
+
+      <div className="mt-6">
+        <AdsenseAd slot="0123456789" format="horizontal" />
       </div>
     </div>
   )
