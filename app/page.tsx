@@ -30,7 +30,6 @@ import {
   Settings,
   CheckSquare,
   CreditCard,
-  Bot,
   Cloud,
 } from "lucide-react"
 
@@ -554,19 +553,6 @@ export default function ForestNotePage() {
       color: "sky",
     },
     { id: "radio", label: getTranslation(language, "radio"), icon: Radio, color: "teal" },
-    {
-      id: "aiAssistant",
-      label:
-        language === "ko"
-          ? "AI 비서"
-          : language === "en"
-            ? "AI Assistant"
-            : language === "zh"
-              ? "AI 助手"
-              : "AI アシスタント",
-      icon: Bot,
-      color: "blue",
-    },
     { id: "settings", label: getTranslation(language, "settings"), icon: Settings, color: "emerald" },
   ]
 
@@ -764,9 +750,6 @@ export default function ForestNotePage() {
                   {currentSection === "weather" && <WeatherSection onBack={handleBackToHome} language={language} />}
                   {currentSection === "radio" && <RadioSection onBack={handleBackToHome} language={language} />}
                   {currentSection === "settings" && <SettingsSection onBack={handleBackToHome} language={language} />}
-                  {currentSection === "aiAssistant" && (
-                    <AiAssistantSection user={effectiveUser} language={language} onBack={handleBackToHome} />
-                  )}
                 </>
               )}
             </div>
