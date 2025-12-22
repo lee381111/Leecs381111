@@ -621,113 +621,118 @@ export default function ForestNotePage() {
         </div>
 
         <div className="relative z-10 space-y-6">
-          <div className="bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 backdrop-blur p-4 rounded-lg shadow-md">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-900 dark:text-slate-100">
-                {language === "ko"
-                  ? "저장소 사용량"
-                  : language === "en"
-                    ? "Storage Used"
-                    : language === "zh"
-                      ? "存储使用"
-                      : "ストレージ使用"}
-              </span>
-              <span className="text-sm font-bold text-emerald-700">
-                {formatBytes(storageUsed)} / {formatBytes(STORAGE_LIMIT)}
-              </span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className={`h-2 rounded-full transition-all ${
-                  storagePercentage > 90 ? "bg-red-500" : storagePercentage > 70 ? "bg-yellow-500" : "bg-emerald-600"
-                }`}
-                style={{ width: `${Math.min(storagePercentage, 100)}%` }}
-              />
-            </div>
-            {storagePercentage > 90 && (
-              <p className="text-xs text-red-600 mt-1">
-                {language === "ko"
-                  ? "저장소가 거의 찼습니다!"
-                  : language === "en"
-                    ? "Storage is almost full!"
-                    : language === "zh"
-                      ? "存储空间几乎已满！"
-                      : "ストレージがほぼ満杯です！"}
-              </p>
-            )}
-          </div>
-
-          <div className="shadow-md rounded-lg overflow-hidden">
-            <CalendarWidget
-              events={upcomingEvents}
-              onDateClick={(date) => setCurrentSection("schedule")}
-              language={language}
-            />
-          </div>
-
-          {/* Conditional rendering of home screen and individual sections */}
           {currentSection === "home" ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {sections.map((item) => {
-                const lightBg =
-                  item.color === "teal"
-                    ? "bg-teal-50"
-                    : item.color === "emerald"
-                      ? "bg-emerald-50"
-                      : item.color === "green"
-                        ? "bg-green-50"
-                        : item.color === "blue"
-                          ? "bg-blue-50"
-                          : item.color === "indigo"
-                            ? "bg-indigo-50"
-                            : item.color === "rose"
-                              ? "bg-rose-50"
-                              : item.color === "cyan"
-                                ? "bg-cyan-50"
-                                : item.color === "purple"
-                                  ? "bg-purple-50"
-                                  : item.color === "amber"
-                                    ? "bg-amber-50"
-                                    : item.color === "yellow"
-                                      ? "bg-yellow-50"
-                                      : "bg-gray-50"
+            <>
+              <div className="bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 backdrop-blur p-4 rounded-lg shadow-md">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-900 dark:text-slate-100">
+                    {language === "ko"
+                      ? "저장소 사용량"
+                      : language === "en"
+                        ? "Storage Used"
+                        : language === "zh"
+                          ? "存储使用"
+                          : "ストレージ使用"}
+                  </span>
+                  <span className="text-sm font-bold text-emerald-700">
+                    {formatBytes(storageUsed)} / {formatBytes(STORAGE_LIMIT)}
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className={`h-2 rounded-full transition-all ${
+                      storagePercentage > 90
+                        ? "bg-red-500"
+                        : storagePercentage > 70
+                          ? "bg-yellow-500"
+                          : "bg-emerald-600"
+                    }`}
+                    style={{ width: `${Math.min(storagePercentage, 100)}%` }}
+                  />
+                </div>
+                {storagePercentage > 90 && (
+                  <p className="text-xs text-red-600 mt-1">
+                    {language === "ko"
+                      ? "저장소가 거의 찼습니다!"
+                      : language === "en"
+                        ? "Storage is almost full!"
+                        : language === "zh"
+                          ? "存储空间几乎已满！"
+                          : "ストレージがほぼ満杯です！"}
+                  </p>
+                )}
+              </div>
 
-                const textColor = "text-gray-900"
-                const iconColor =
-                  item.color === "teal"
-                    ? "text-teal-700"
-                    : item.color === "emerald"
-                      ? "text-emerald-700"
-                      : item.color === "green"
-                        ? "text-green-700"
-                        : item.color === "blue"
-                          ? "text-blue-700"
-                          : item.color === "indigo"
-                            ? "text-indigo-700"
-                            : item.color === "rose"
-                              ? "text-rose-700"
-                              : item.color === "cyan"
-                                ? "text-cyan-700"
-                                : item.color === "purple"
-                                  ? "text-purple-700"
-                                  : item.color === "amber"
-                                    ? "text-amber-700"
-                                    : item.color === "yellow"
-                                      ? "text-yellow-700"
-                                      : "text-gray-700"
+              <div className="shadow-md rounded-lg overflow-hidden">
+                <CalendarWidget
+                  events={upcomingEvents}
+                  onDateClick={(date) => setCurrentSection("schedule")}
+                  language={language}
+                />
+              </div>
 
-                return (
-                  <Card
-                    key={item.id}
-                    className={`p-6 cursor-pointer hover:scale-105 transition-transform backdrop-blur flex flex-col items-center justify-center shadow-md hover:shadow-lg ${lightBg}`}
-                    onClick={() => handleSectionClick(item.id as Section)}
-                  >
-                    <item.icon className={`h-8 w-8 mb-4 ${iconColor}`} />
-                    <h3 className={`font-semibold text-lg text-center ${textColor}`}>{item.label}</h3>
-                  </Card>
-                )
-              })}
-            </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {sections.map((item) => {
+                  const lightBg =
+                    item.color === "teal"
+                      ? "bg-teal-50"
+                      : item.color === "emerald"
+                        ? "bg-emerald-50"
+                        : item.color === "green"
+                          ? "bg-green-50"
+                          : item.color === "blue"
+                            ? "bg-blue-50"
+                            : item.color === "indigo"
+                              ? "bg-indigo-50"
+                              : item.color === "rose"
+                                ? "bg-rose-50"
+                                : item.color === "cyan"
+                                  ? "bg-cyan-50"
+                                  : item.color === "purple"
+                                    ? "bg-purple-50"
+                                    : item.color === "amber"
+                                      ? "bg-amber-50"
+                                      : item.color === "yellow"
+                                        ? "bg-yellow-50"
+                                        : "bg-gray-50"
+
+                  const textColor = "text-gray-900"
+                  const iconColor =
+                    item.color === "teal"
+                      ? "text-teal-700"
+                      : item.color === "emerald"
+                        ? "text-emerald-700"
+                        : item.color === "green"
+                          ? "text-green-700"
+                          : item.color === "blue"
+                            ? "text-blue-700"
+                            : item.color === "indigo"
+                              ? "text-indigo-700"
+                              : item.color === "rose"
+                                ? "text-rose-700"
+                                : item.color === "cyan"
+                                  ? "text-cyan-700"
+                                  : item.color === "purple"
+                                    ? "text-purple-700"
+                                    : item.color === "amber"
+                                      ? "text-amber-700"
+                                      : item.color === "yellow"
+                                        ? "text-yellow-700"
+                                        : "text-gray-700"
+
+                  return (
+                    <Card
+                      key={item.id}
+                      className={`p-6 cursor-pointer hover:scale-105 transition-transform backdrop-blur flex flex-col items-center justify-center shadow-md hover:shadow-lg ${lightBg}`}
+                      onClick={() => handleSectionClick(item.id as Section)}
+                    >
+                      <item.icon className={`h-8 w-8 mb-4 ${iconColor}`} />
+                      <h3 className={`font-semibold text-lg text-center ${textColor}`}>{item.label}</h3>
+                    </Card>
+                  )
+                })}
+              </div>
+            </>
           ) : (
             <div>
               {console.log("[v0] Rendering section:", currentSection)}
