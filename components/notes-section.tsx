@@ -26,7 +26,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { loadNotes, saveNotes, type Note } from "@/lib/storage"
 import { getTranslation } from "@/lib/i18n"
-import MediaTools from "@/components/media-tools"
+import { MediaTools } from "@/components/media-tools"
 import { Spinner } from "@/components/ui/spinner"
 import { AdsenseAd } from "@/components/adsense-ad"
 import { cn } from "@/lib/utils"
@@ -372,7 +372,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
       text: shareText,
     }
 
-    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+    if (navigator.share && navigator.canShare(shareData)) {
       try {
         await navigator.share(shareData)
         console.log("[v0] Note shared successfully")
