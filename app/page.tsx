@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import dynamic from "next/dynamic"
 import { createClient } from "@/lib/supabase/client"
 import { loadSchedules, loadNotes, loadDiaries, loadTravelRecords, checkUserConsent } from "@/lib/storage"
@@ -394,13 +394,18 @@ export default function ForestNotePage() {
   const TEMPORARY_DISABLE_LOGIN = true // 애드센스 승인용 임시 설정
   const TEMP_USER_ID = "00000000-0000-0000-0000-000000000000" // UUID 형식
 
-  const tempUser = TEMPORARY_DISABLE_LOGIN
-    ? {
-        id: TEMP_USER_ID,
-        email: "guest@forestnote.app",
-      }
-    : user
-  const effectiveUser = TEMPORARY_DISABLE_LOGIN ? tempUser : user
+  const tempUser = useMemo(() => {
+    return TEMPORARY_DISABLE_LOGIN
+      ? {
+          id: TEMP_USER_ID,
+          email: "guest@forestnote.app",
+        }
+      : user
+  }, [user, TEMPORARY_DISABLE_LOGIN])
+
+  const effectiveUser = useMemo(() => {
+    return TEMPORARY_DISABLE_LOGIN ? tempUser : user
+  }, [tempUser, user, TEMPORARY_DISABLE_LOGIN])
 
   console.log("[v0] User email:", effectiveUser?.email, "Is admin:", isAdmin, "Storage limit:", STORAGE_LIMIT_MB, "MB")
 
@@ -419,24 +424,13 @@ export default function ForestNotePage() {
           .single()
 
         if (profileError) {
-          console.warn("[v0] Failed to fetch storage from profile, using cached value:", profileError.message)
-          // Keep existing storageUsed value instead of setting to 0
           return
         }
 
         const profileStorageUsed = profile?.storage_used || 0
 
-        console.log(
-          "[v0] Storage used from profile:",
-          profileStorageUsed,
-          "bytes",
-          "(" + (profileStorageUsed / 1024 / 1024).toFixed(2) + " MB)",
-        )
-
         setStorageUsed(profileStorageUsed)
       } catch (error) {
-        console.warn("[v0] Storage calculation error (network issue?):", error)
-        // Don't reset storageUsed to 0 on network errors
       } finally {
         isCalculatingRef.current = false
       }
@@ -444,7 +438,7 @@ export default function ForestNotePage() {
 
     calculateStorage()
 
-    const interval = setInterval(calculateStorage, 60000) // Every 60 seconds
+    const interval = setInterval(calculateStorage, 60000)
 
     return () => clearInterval(interval)
   }, [effectiveUser])
@@ -472,31 +466,26 @@ export default function ForestNotePage() {
     }
   }, [effectiveUser])
 
-  useEffect(() => {
-    console.log("[v0] Auth state:", { user: effectiveUser?.email, loading })
-  }, [effectiveUser, loading])
+  const hasCheckedConsentRef = useRef(false)
 
   useEffect(() => {
     const checkConsent = async () => {
       if (!effectiveUser || loading) return
 
-      const isGuest = effectiveUser.id === "00000000-0000-0000-0000-000000000000"
+      const isGuest = effectiveUser.id === TEMP_USER_ID
       if (isGuest) {
-        console.log("[v0] Skipping consent check for guest user")
         setNeedsConsent(false)
         return
       }
 
-      if (isCheckingConsent) return
+      if (hasCheckedConsentRef.current || isCheckingConsent) return
+      hasCheckedConsentRef.current = true
 
-      console.log("[v0] Starting consent check for user:", effectiveUser.id)
       setIsCheckingConsent(true)
       try {
         const hasConsent = await checkUserConsent(effectiveUser.id)
-        console.log("[v0] User consent check result:", hasConsent ? "HAS CONSENT" : "NEEDS CONSENT")
         setNeedsConsent(!hasConsent)
       } catch (error) {
-        console.error("[v0] Consent check error:", error)
         setNeedsConsent(false)
       } finally {
         setIsCheckingConsent(false)
@@ -505,13 +494,6 @@ export default function ForestNotePage() {
 
     checkConsent()
   }, [effectiveUser, loading, isCheckingConsent])
-
-  useEffect(() => {
-    console.log("[v0] Current user:", user)
-    console.log("[v0] Temp user:", tempUser)
-    console.log("[v0] Effective user:", effectiveUser)
-    console.log("[v0] TEMPORARY_DISABLE_LOGIN:", TEMPORARY_DISABLE_LOGIN)
-  }, [user, effectiveUser])
 
   const handleConsentAccept = () => {
     setNeedsConsent(false)
