@@ -590,40 +590,6 @@ export default function ForestNotePage() {
             <h1 className="text-4xl md:text-5xl font-bold text-green-800 dark:text-green-300 mb-4">
               🌲 {getTranslation(language, "app_title")}
             </h1>
-
-            {/* Removed landing page content - show main app directly */}
-
-            <div className="flex justify-center items-center gap-4 mb-4 text-sm text-green-600 dark:text-green-300">
-              {language === "ko" ? (
-                <>
-                  <span>✓ AI 비서 지원</span>
-                  <span>✓ 다국어 지원 (한/영/중/일)</span>
-                  <span>✓ 클라우드 동기화</span>
-                  <span>✓ 무료 사용</span>
-                </>
-              ) : language === "en" ? (
-                <>
-                  <span>✓ AI Assistant</span>
-                  <span>✓ Multi-language (KR/EN/CN/JP)</span>
-                  <span>✓ Cloud Sync</span>
-                  <span>✓ Free to Use</span>
-                </>
-              ) : language === "zh" ? (
-                <>
-                  <span>✓ AI助手</span>
-                  <span>✓ 多语言支持</span>
-                  <span>✓ 云同步</span>
-                  <span>✓ 免费使用</span>
-                </>
-              ) : (
-                <>
-                  <span>✓ AIアシスタント</span>
-                  <span>✓ 多言語対応</span>
-                  <span>✓ クラウド同期</span>
-                  <span>✓ 無料</span>
-                </>
-              )}
-            </div>
           </div>
 
           <div className="flex justify-center items-center gap-4 mb-4">
