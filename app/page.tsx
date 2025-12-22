@@ -478,7 +478,16 @@ export default function ForestNotePage() {
 
   useEffect(() => {
     const checkConsent = async () => {
-      if (!effectiveUser || isCheckingConsent || loading) return
+      if (!effectiveUser || loading) return
+
+      const isGuest = effectiveUser.id === "00000000-0000-0000-0000-000000000000"
+      if (isGuest) {
+        console.log("[v0] Skipping consent check for guest user")
+        setNeedsConsent(false)
+        return
+      }
+
+      if (isCheckingConsent) return
 
       console.log("[v0] Starting consent check for user:", effectiveUser.id)
       setIsCheckingConsent(true)
@@ -495,7 +504,7 @@ export default function ForestNotePage() {
     }
 
     checkConsent()
-  }, [effectiveUser, loading])
+  }, [effectiveUser, loading, isCheckingConsent])
 
   useEffect(() => {
     console.log("[v0] Current user:", user)
