@@ -22,6 +22,7 @@ interface AIAssistantSectionProps {
 }
 
 export function AIAssistantSection({ user, language, onBack }: AIAssistantSectionProps) {
+  const [error, setError] = useState<string | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -33,10 +34,16 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
   const isGuestUser = user?.email === "guest@forestnote.app" || user?.id === "00000000-0000-0000-0000-000000000000"
 
   useEffect(() => {
-    console.log("[v0] AIAssistantSection mounted with user:", user)
-    console.log("[v0] Is guest user:", isGuestUser)
-    if (!user || !user.id) {
-      console.error("[v0] AIAssistantSection: user or user.id is missing!", user)
+    try {
+      console.log("[v0] AIAssistantSection mounted with user:", user)
+      console.log("[v0] Is guest user:", isGuestUser)
+      if (!user || !user.id) {
+        console.error("[v0] AIAssistantSection: user or user.id is missing!", user)
+        setError("User information is missing. Please try reloading the page.")
+      }
+    } catch (err) {
+      console.error("[v0] Error in AIAssistantSection initialization:", err)
+      setError("Failed to initialize AI Assistant. Please try again.")
     }
   }, [user, isGuestUser])
 
@@ -418,6 +425,60 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (error) {
+    return (
+      <div className="h-full flex flex-col bg-green-50">
+        <div className="flex items-center justify-between p-4 bg-green-50">
+          <div className="flex items-center gap-2">
+            {onBack && (
+              <Button variant="ghost" size="sm" onClick={onBack} className="mr-2">
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            )}
+            <Bot className="h-6 w-6 text-green-600" />
+            <h2 className="text-xl font-bold text-gray-900">
+              {language === "ko"
+                ? "AI 비서"
+                : language === "en"
+                  ? "AI Assistant"
+                  : language === "zh"
+                    ? "AI 助手"
+                    : "AI アシスタント"}
+            </h2>
+          </div>
+        </div>
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="text-center space-y-4">
+            <p className="text-red-600 font-semibold">
+              {language === "ko"
+                ? "AI 비서를 불러오는 중 오류가 발생했습니다"
+                : language === "en"
+                  ? "Error loading AI Assistant"
+                  : language === "zh"
+                    ? "加载AI助手时出错"
+                    : "AIアシスタントの読み込みエラー"}
+            </p>
+            <p className="text-sm text-gray-600">{error}</p>
+            <Button
+              onClick={() => {
+                setError(null)
+                window.location.reload()
+              }}
+            >
+              {language === "ko"
+                ? "다시 시도"
+                : language === "en"
+                  ? "Try Again"
+                  : language === "zh"
+                    ? "重试"
+                    : "再試行"}
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
