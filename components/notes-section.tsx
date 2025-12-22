@@ -3,34 +3,51 @@
 import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
 import {
   ArrowLeft,
   Plus,
-  Search,
-  Trash2,
   Edit2,
-  Save,
+  Trash2,
+  Search,
   Tag,
   Eye,
   Share2,
-  Sparkles,
   Type,
   AlignLeft,
   AlignCenter,
   AlignRight,
   Eraser,
+  Sparkles,
+  Save,
 } from "lucide-react"
-import { saveNotes, loadNotes } from "@/lib/storage"
-import { useAuth } from "@/lib/auth-context"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { loadNotes, saveNotes, type Note } from "@/lib/storage"
 import { getTranslation } from "@/lib/i18n"
-import type { Note, Language, Attachment } from "@/lib/types"
-import { MediaTools } from "@/components/media-tools"
+import MediaTools from "@/components/media-tools"
 import { Spinner } from "@/components/ui/spinner"
+import { AdsenseAd } from "@/components/adsense-ad"
 import { cn } from "@/lib/utils"
+
+// Define interfaces and types if they are not globally available or imported
+// Assuming Language is defined in "@/lib/i18n" or similar
+type Language = "en" | "ko" | "zh" | "ja" // Example, adjust as needed
+
+interface Attachment {
+  url?: string
+  data?: string
+  type?: string
+  name?: string
+}
+
+// Mock or import useAuth hook
+// For demonstration, let's assume a mock implementation
+const useAuth = () => {
+  // Replace with your actual authentication hook
+  return { user: { id: "mock-user-id" } }
+}
 
 interface NotesSectionProps {
   onBack: () => void
@@ -1052,6 +1069,8 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
         </Button>
       </div>
 
+      <AdsenseAd slot="1234567890" format="horizontal" />
+
       <div className="relative">
         <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
         <Input
@@ -1276,6 +1295,8 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
           </div>
         )}
       </div>
+
+      <AdsenseAd slot="0987654321" format="horizontal" />
     </div>
   )
 }

@@ -13,6 +13,7 @@ import type { DiaryEntry, Attachment } from "@/lib/types"
 import { MediaTools } from "@/components/media-tools"
 import { Spinner } from "@/components/ui/spinner"
 import { getTranslation } from "@/lib/i18n"
+import { AdsenseAd } from "@/components/adsense-ad"
 
 interface DiarySectionProps {
   onBack: () => void
@@ -740,6 +741,8 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
         </div>
       </div>
 
+      <AdsenseAd slot="6789012345" format="horizontal" />
+
       <div className="grid gap-4">
         {diaries.map((diary) => (
           <Card key={diary.id} className="p-4">
@@ -805,6 +808,8 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
           </Card>
         ))}
       </div>
+
+      <AdsenseAd slot="7890123456" format="horizontal" />
 
       {selectedImage && (
         <div

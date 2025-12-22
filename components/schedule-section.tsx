@@ -13,6 +13,7 @@ import { MediaTools } from "@/components/media-tools"
 import { Spinner } from "@/components/ui/spinner"
 import { getTranslation } from "@/lib/i18n"
 import { notificationManager } from "@/lib/notification-manager"
+import { AdsenseAd } from "@/components/adsense-ad"
 
 interface ScheduleSectionProps {
   onBack: () => void
@@ -944,6 +945,8 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
           </div>
         </div>
 
+        <AdsenseAd slot="2345678901" format="horizontal" />
+
         <div className="flex justify-end">
           <Button
             onClick={() => setIsOptimizingTravel(true)}
@@ -1245,6 +1248,7 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
           </div>
         </div>
       )}
+      <AdsenseAd slot="3456789012" format="horizontal" />
     </div>
   )
 }

@@ -23,6 +23,7 @@ import { useAuth } from "@/lib/auth-context"
 import type { TodoItem } from "@/lib/types"
 import { Spinner } from "@/components/ui/spinner"
 import { getTranslation } from "@/lib/i18n"
+import { AdsenseAd } from "@/components/adsense-ad"
 
 interface TodoSectionProps {
   onBack: () => void
@@ -321,6 +322,8 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
           </h1>
         </div>
 
+        <AdsenseAd slot="4567890123" format="horizontal" />
+
         {/* Stats Cards */}
         <div className="grid grid-cols-3 gap-4 mb-6">
           <Card className="p-4 bg-gradient-to-br from-emerald-100 to-emerald-50 dark:from-emerald-900/50 dark:to-emerald-800/30 backdrop-blur border-emerald-200">
@@ -574,6 +577,10 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
             ))}
           </div>
         )}
+
+        <div className="mt-6">
+          <AdsenseAd slot="5678901234" format="horizontal" />
+        </div>
       </div>
     </div>
   )
