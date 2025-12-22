@@ -31,6 +31,13 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
   const recognitionRef = useRef<any>(null)
 
   useEffect(() => {
+    console.log("[v0] AIAssistantSection mounted with user:", user)
+    if (!user || !user.id) {
+      console.error("[v0] AIAssistantSection: user or user.id is missing!", user)
+    }
+  }, [user])
+
+  useEffect(() => {
     try {
       const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
       setTimezone(detectedTimezone)
@@ -44,10 +51,17 @@ export function AIAssistantSection({ user, language, onBack }: AIAssistantSectio
   useEffect(() => {
     if (user?.id) {
       loadChatHistory()
+    } else {
+      console.warn("[v0] AIAssistantSection: Cannot load chat history, user.id is missing")
     }
   }, [user?.id])
 
   const loadChatHistory = async () => {
+    if (!user?.id) {
+      console.warn("[v0] Cannot load chat history without user.id")
+      return
+    }
+
     try {
       const supabase = createClient()
       const { data, error } = await supabase

@@ -498,6 +498,13 @@ export default function ForestNotePage() {
     checkConsent()
   }, [effectiveUser, loading])
 
+  useEffect(() => {
+    console.log("[v0] Current user:", user)
+    console.log("[v0] Temp user:", tempUser)
+    console.log("[v0] Effective user:", effectiveUser)
+    console.log("[v0] TEMPORARY_DISABLE_LOGIN:", TEMPORARY_DISABLE_LOGIN)
+  }, [user, effectiveUser])
+
   const handleConsentAccept = () => {
     setNeedsConsent(false)
   }
