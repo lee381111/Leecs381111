@@ -756,9 +756,7 @@ export default function ForestNotePage() {
             <div>
               {currentSection !== "home" && (
                 <>
-                  {currentSection === "notes" && (
-                    <NotesSection user={effectiveUser} onBack={handleBackToHome} language={language} />
-                  )}
+                  {currentSection === "notes" && <NotesSection onBack={handleBackToHome} language={language} />}
                   {currentSection === "schedule" && <ScheduleSection onBack={handleBackToHome} language={language} />}
                   {currentSection === "todo" && <TodoSection onBack={handleBackToHome} language={language} />}
                   {currentSection === "diary" && <DiarySection onBack={handleBackToHome} language={language} />}

@@ -30,6 +30,7 @@ import { getTranslation } from "@/lib/i18n"
 import { MediaTools } from "@/components/media-tools"
 import { Spinner } from "@/components/ui/spinner"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/hooks/useAuth" // Assuming useAuth is in this path
 
 // Define interfaces and types if they are not globally available or imported
 // Assuming Language is defined in "@/lib/i18n" or similar
@@ -50,12 +51,13 @@ interface Attachment {
 // }
 
 interface NotesSectionProps {
-  user: { id: string; email?: string }
   onBack: () => void
   language: Language
 }
 
-export function NotesSection({ user, onBack, language }: NotesSectionProps) {
+export function NotesSection({ onBack, language }: NotesSectionProps) {
+  const { user } = useAuth()
+
   const [notes, setNotes] = useState<Note[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -117,10 +119,12 @@ export function NotesSection({ user, onBack, language }: NotesSectionProps) {
 
   useEffect(() => {
     loadData()
-  }, [user])
+  }, [user]) // Dependency on user ensures data loads when user info is available
 
   const loadData = async () => {
-    const isGuest = user?.id === "00000000-0000-0000-0000-000000000000"
+    // Guest user ID from your context/implementation
+    const GUEST_USER_ID = "00000000-0000-0000-0000-000000000000"
+    const isGuest = user?.id === GUEST_USER_ID
 
     try {
       setLoading(true)
@@ -179,7 +183,8 @@ export function NotesSection({ user, onBack, language }: NotesSectionProps) {
       setNotes(updated)
 
       // Save to database
-      const isGuest = user.id === "00000000-0000-0000-0000-000000000000"
+      const GUEST_USER_ID = "00000000-0000-0000-0000-000000000000"
+      const isGuest = user.id === GUEST_USER_ID
       if (!isGuest) {
         await saveNotes(updated, user.id)
       } else {
@@ -227,7 +232,8 @@ export function NotesSection({ user, onBack, language }: NotesSectionProps) {
     try {
       const updated = notes.filter((n) => n.id !== id)
       setNotes(updated)
-      const isGuest = user.id === "00000000-0000-0000-0000-000000000000"
+      const GUEST_USER_ID = "00000000-0000-0000-0000-000000000000"
+      const isGuest = user.id === GUEST_USER_ID
       if (!isGuest) {
         await saveNotes(updated, user.id)
       } else {
