@@ -366,105 +366,162 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
   if (isSettingPassword) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 flex items-center justify-center">
-        <Card className="max-w-md w-full p-8 space-y-6">
-          <div className="text-center space-y-2">
-            <Lock className="h-12 w-12 mx-auto text-green-600" />
-            <h2 className="text-2xl font-bold">{t("set_diary_password") || "일기 비밀번호 설정"}</h2>
-            <p className="text-sm text-muted-foreground">
-              {t("password_description") || "일기를 보호하기 위한 비밀번호를 설정하세요"}
-            </p>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">{t("new_password") || "비밀번호"}</label>
-              <Input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={t("password_placeholder") || "최소 4자 이상"}
-                className="mt-1"
-              />
+        <div className="max-w-md w-full space-y-4">
+          <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-slate-800 dark:to-slate-900 border-green-200 dark:border-green-800 p-6">
+            <div className="flex gap-4">
+              <Lightbulb className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
+              <div className="flex-1 space-y-3">
+                <h3 className="font-bold text-lg text-green-900 dark:text-green-100">
+                  {language === "ko"
+                    ? "일기 작성 가이드"
+                    : language === "en"
+                      ? "Diary Writing Guide"
+                      : language === "zh"
+                        ? "日记撰写指南"
+                        : "日記記入ガイド"}
+                </h3>
+                <ul className="space-y-2 text-sm text-green-800 dark:text-green-200">
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600 mt-0.5">•</span>
+                    <span>
+                      {language === "ko"
+                        ? "비밀번호를 설정하여 일기를 안전하게 보호하세요"
+                        : language === "en"
+                          ? "Set a password to keep your diary secure"
+                          : language === "zh"
+                            ? "设置密码以安全保护您的日记"
+                            : "パスワードを設定して日記を安全に保護しましょう"}
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600 mt-0.5">•</span>
+                    <span>
+                      {language === "ko"
+                        ? "날짜별로 감정과 활동을 기록하세요"
+                        : language === "en"
+                          ? "Record your emotions and activities by date"
+                          : language === "zh"
+                            ? "按日期记录您的情绪和活动"
+                            : "日付ごとに感情と活動を記録しましょう"}
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600 mt-0.5">•</span>
+                    <span>
+                      {language === "ko"
+                        ? "사진을 첨부하여 소중한 순간을 남기세요"
+                        : language === "en"
+                          ? "Attach photos to preserve precious moments"
+                          : language === "zh"
+                            ? "附加照片以保存珍贵时刻"
+                            : "写真を添付して大切な瞬間を残しましょう"}
+                    </span>
+                  </li>
+                </ul>
+              </div>
             </div>
-            <div>
-              <label className="text-sm font-medium">{t("confirm_password") || "비밀번호 확인"}</label>
-              <Input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder={t("confirm_password_placeholder") || "비밀번호 재입력"}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">{t("security_question") || "보안 질문: 태어난 도시는?"}</label>
-              <Input
-                type="text"
-                value={securityAnswer}
-                onChange={(e) => setSecurityAnswer(e.target.value)}
-                placeholder={t("security_answer_placeholder") || "예: 서울"}
-                className="mt-1"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                {t("security_answer_help") || "비밀번호를 잊어버렸을 때 사용됩니다"}
+          </Card>
+
+          <Card className="p-8 space-y-6">
+            <div className="text-center space-y-2">
+              <Lock className="h-12 w-12 mx-auto text-green-600" />
+              <h2 className="text-2xl font-bold">{t("set_diary_password") || "일기 비밀번호 설정"}</h2>
+              <p className="text-sm text-muted-foreground">
+                {t("password_description") || "일기를 보호하기 위한 비밀번호를 설정하세요"}
               </p>
             </div>
-            <div className="flex gap-2">
-              <Button onClick={handleSetPassword} className="flex-1 bg-green-600 hover:bg-green-700">
-                {t("set_password") || "설정"}
-              </Button>
-              <Button variant="outline" onClick={onBack} className="flex-1 bg-transparent">
-                {t("skip") || "건너뛰기"}
-              </Button>
-            </div>
-          </div>
-          <MediaTools
-            language={language}
-            attachments={formData.attachments || []}
-            onAttachmentsChange={handleAttachmentsChange}
-            onSave={(attachments) => handleSave(attachments)}
-            saving={saving}
-            onTextFromSpeech={handleTranscriptReceived}
-          />
-          {formData.content && formData.content.trim().length >= 20 && (
-            <Button
-              onClick={handleAnalyzeEmotion}
-              disabled={analyzingEmotion}
-              variant="outline"
-              className="w-full border-purple-300 dark:border-purple-700 hover:bg-purple-50 dark:hover:bg-purple-950 bg-transparent"
-            >
-              <Sparkles className="mr-2 h-4 w-4" />
-              {analyzingEmotion ? t("analyzing_emotion") : t("analyze_emotion")}
-            </Button>
-          )}
-          {emotionAnalysis && (
-            <Card className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 border-purple-200 dark:border-purple-800">
-              <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-purple-600" />
-                {t("emotion_analysis_result")}
-              </h3>
-              <div className="space-y-2 text-sm">
-                <p>
-                  <span className="font-medium">{t("emotion_positive")}:</span>{" "}
-                  {emotionAnalysis.emotion === "긍정적" || emotionAnalysis.emotion === "positive"
-                    ? t("emotion_positive")
-                    : emotionAnalysis.emotion === "부정적" || emotionAnalysis.emotion === "negative"
-                      ? t("emotion_negative")
-                      : t("emotion_neutral")}
-                </p>
-                <p>
-                  <span className="font-medium">{t("emotion_score")}:</span> {emotionAnalysis.score}/10
-                </p>
-                <p>
-                  <span className="font-medium">{t("main_emotions")}:</span> {emotionAnalysis.mainEmotions.join(", ")}
-                </p>
-                <div className="mt-3 p-3 bg-white/50 dark:bg-slate-900/50 rounded">
-                  <p className="font-medium mb-1">{t("ai_advice")}:</p>
-                  <p className="text-muted-foreground">{emotionAnalysis.advice}</p>
-                </div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">{t("new_password") || "비밀번호"}</label>
+                <Input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={t("password_placeholder") || "최소 4자 이상"}
+                  className="mt-1"
+                />
               </div>
-            </Card>
-          )}
-        </Card>
+              <div>
+                <label className="text-sm font-medium">{t("confirm_password") || "비밀번호 확인"}</label>
+                <Input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder={t("confirm_password_placeholder") || "비밀번호 재입력"}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">{t("security_question") || "보안 질문: 태어난 도시는?"}</label>
+                <Input
+                  type="text"
+                  value={securityAnswer}
+                  onChange={(e) => setSecurityAnswer(e.target.value)}
+                  placeholder={t("security_answer_placeholder") || "예: 서울"}
+                  className="mt-1"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t("security_answer_help") || "비밀번호를 잊어버렸을 때 사용됩니다"}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={handleSetPassword} className="flex-1 bg-green-600 hover:bg-green-700">
+                  {t("set_password") || "설정"}
+                </Button>
+                <Button variant="outline" onClick={onBack} className="flex-1 bg-transparent">
+                  {t("skip") || "건너뛰기"}
+                </Button>
+              </div>
+            </div>
+            <MediaTools
+              language={language}
+              attachments={formData.attachments || []}
+              onAttachmentsChange={handleAttachmentsChange}
+              onSave={(attachments) => handleSave(attachments)}
+              saving={saving}
+              onTextFromSpeech={handleTranscriptReceived}
+            />
+            {formData.content && formData.content.trim().length >= 20 && (
+              <Button
+                onClick={handleAnalyzeEmotion}
+                disabled={analyzingEmotion}
+                variant="outline"
+                className="w-full border-purple-300 dark:border-purple-700 hover:bg-purple-50 dark:hover:bg-purple-950 bg-transparent"
+              >
+                <Sparkles className="mr-2 h-4 w-4" />
+                {analyzingEmotion ? t("analyzing_emotion") : t("analyze_emotion")}
+              </Button>
+            )}
+            {emotionAnalysis && (
+              <Card className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 border-purple-200 dark:border-purple-800">
+                <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-purple-600" />
+                  {t("emotion_analysis_result")}
+                </h3>
+                <div className="space-y-2 text-sm">
+                  <p>
+                    <span className="font-medium">{t("emotion_positive")}:</span>{" "}
+                    {emotionAnalysis.emotion === "긍정적" || emotionAnalysis.emotion === "positive"
+                      ? t("emotion_positive")
+                      : emotionAnalysis.emotion === "부정적" || emotionAnalysis.emotion === "negative"
+                        ? t("emotion_negative")
+                        : t("emotion_neutral")}
+                  </p>
+                  <p>
+                    <span className="font-medium">{t("emotion_score")}:</span> {emotionAnalysis.score}/10
+                  </p>
+                  <p>
+                    <span className="font-medium">{t("main_emotions")}:</span> {emotionAnalysis.mainEmotions.join(", ")}
+                  </p>
+                  <div className="mt-3 p-3 bg-white/50 dark:bg-slate-900/50 rounded">
+                    <p className="font-medium mb-1">{t("ai_advice")}:</p>
+                    <p className="text-muted-foreground">{emotionAnalysis.advice}</p>
+                  </div>
+                </div>
+              </Card>
+            )}
+          </Card>
+        </div>
       </div>
     )
   }
