@@ -408,7 +408,34 @@ export default function ForestNotePage() {
     return TEMPORARY_DISABLE_LOGIN ? tempUser : user
   }, [tempUser, user, TEMPORARY_DISABLE_LOGIN])
 
-  console.log("[v0] User email:", effectiveUser?.email, "Is admin:", isAdmin, "Storage limit:", STORAGE_LIMIT_MB, "MB")
+  const hasCheckedConsentRef = useRef(false)
+
+  useEffect(() => {
+    const checkConsent = async () => {
+      if (!effectiveUser || loading) return
+
+      const isGuest = effectiveUser.id === TEMP_USER_ID
+      if (isGuest) {
+        setNeedsConsent(false)
+        return
+      }
+
+      if (hasCheckedConsentRef.current || isCheckingConsent) return
+      hasCheckedConsentRef.current = true
+
+      setIsCheckingConsent(true)
+      try {
+        const hasConsent = await checkUserConsent(effectiveUser.id)
+        setNeedsConsent(!hasConsent)
+      } catch (error) {
+        setNeedsConsent(false)
+      } finally {
+        setIsCheckingConsent(false)
+      }
+    }
+
+    checkConsent()
+  }, [effectiveUser, loading])
 
   useEffect(() => {
     const calculateStorage = async () => {
@@ -466,35 +493,6 @@ export default function ForestNotePage() {
       window.removeEventListener("scheduleUpdate", handleScheduleUpdate)
     }
   }, [effectiveUser])
-
-  const hasCheckedConsentRef = useRef(false)
-
-  useEffect(() => {
-    const checkConsent = async () => {
-      if (!effectiveUser || loading) return
-
-      const isGuest = effectiveUser.id === TEMP_USER_ID
-      if (isGuest) {
-        setNeedsConsent(false)
-        return
-      }
-
-      if (hasCheckedConsentRef.current || isCheckingConsent) return
-      hasCheckedConsentRef.current = true
-
-      setIsCheckingConsent(true)
-      try {
-        const hasConsent = await checkUserConsent(effectiveUser.id)
-        setNeedsConsent(!hasConsent)
-      } catch (error) {
-        setNeedsConsent(false)
-      } finally {
-        setIsCheckingConsent(false)
-      }
-    }
-
-    checkConsent()
-  }, [effectiveUser, loading, isCheckingConsent])
 
   const handleConsentAccept = () => {
     setNeedsConsent(false)
