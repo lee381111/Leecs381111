@@ -646,7 +646,7 @@ export default function ForestNotePage() {
           </div>
         </div>
 
-        <div className="absolute inset-0 opacity-30">
+        <div className="absolute inset-0 opacity-30 pointer-events-none">
           <ForestCanvas />
         </div>
 
