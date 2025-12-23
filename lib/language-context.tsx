@@ -22,8 +22,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const setLanguage = (lang: Language) => {
+    console.log("[v0] Language changing from", language, "to", lang)
     setLanguageState(lang)
     localStorage.setItem("language", lang)
+    console.log("[v0] Language saved to localStorage:", lang)
   }
 
   return <LanguageContext.Provider value={{ language, setLanguage }}>{children}</LanguageContext.Provider>
