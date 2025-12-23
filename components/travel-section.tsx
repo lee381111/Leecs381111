@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, Plus, Pencil, Trash2 } from "lucide-react"
+import { ArrowLeft, Plus, Pencil, Trash2, Plane, MapPin } from "lucide-react"
 import { saveTravelRecords, loadTravelRecords } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import type { TravelRecord, Attachment } from "@/lib/types"
@@ -14,7 +14,6 @@ import { getCoordinates } from "@/lib/geocoding"
 import { Spinner } from "@/components/ui/spinner"
 import { getTranslation } from "@/lib/i18n"
 import dynamic from "next/dynamic"
-import { AdsenseAd } from "@/components/adsense-ad" // Import AdsenseAd component
 
 const TravelMap = dynamic(() => import("@/components/travel-map").then((mod) => mod.TravelMap), {
   ssr: false,
@@ -491,12 +490,48 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
         </Button>
       </div>
 
+      <Card className="p-6 bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-950 dark:to-blue-950 border-sky-200 mb-4">
+        <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
+          <Plane className="h-5 w-5 text-sky-600" />
+          {language === "ko" ? "여행 계획 가이드" : "Travel Planning Guide"}
+        </h3>
+        <div className="space-y-2 text-sm text-muted-foreground">
+          <p>✈️ {language === "ko" ? "여행지와 일정을 기록하세요" : "Record destinations and itineraries"}</p>
+          <p>📸 {language === "ko" ? "여행 사진과 추억을 저장하세요" : "Save travel photos and memories"}</p>
+          <p>💵 {language === "ko" ? "여행 경비를 투명하게 관리하세요" : "Manage travel expenses transparently"}</p>
+          <p>🗺️ {language === "ko" ? "방문한 장소와 경험을 공유하세요" : "Share places visited and experiences"}</p>
+        </div>
+      </Card>
+
       <Card className="p-4 bg-gradient-to-br from-emerald-50 to-teal-50">
         <h3 className="font-semibold mb-4 text-lg">🗺️ {t("travel_map")}</h3>
         <TravelMap travels={travels} onMarkerClick={(travel) => setSelectedTravel(travel)} language={language} />
       </Card>
 
       <div className="grid gap-4">
+        {travels.length === 0 && (
+          <>
+            <Card className="p-6 bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-950 dark:to-blue-950 border-sky-200 mb-4">
+              <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-sky-600" />
+                {language === "ko" ? "여행 기록 가이드" : "Travel Record Guide"}
+              </h3>
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <p>✈️ {language === "ko" ? "여행지와 일정을 기록하세요" : "Record destinations and itineraries"}</p>
+                <p>📸 {language === "ko" ? "사진과 함께 추억을 저장하세요" : "Save memories with photos"}</p>
+                <p>
+                  💡{" "}
+                  {language === "ko" ? "여행 팁과 추천 장소를 메모하세요" : "Note travel tips and recommended places"}
+                </p>
+                <p>🗺️ {language === "ko" ? "카테고리별로 여행을 분류하세요" : "Categorize your travels"}</p>
+              </div>
+            </Card>
+            <Card className="p-8 text-center text-muted-foreground">
+              <p>{t("no_travel_records")}</p>
+              <p className="text-sm mt-2">{t("add_first_travel")}</p>
+            </Card>
+          </>
+        )}
         {travels.map((travel) => (
           <Card key={travel.id} className={`p-4 ${selectedTravel?.id === travel.id ? "ring-2 ring-emerald-500" : ""}`}>
             <div className="flex justify-between items-start mb-2">
@@ -617,17 +652,6 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
             )}
           </Card>
         ))}
-
-        {travels.length === 0 && (
-          <Card className="p-8 text-center text-muted-foreground">
-            <p>{t("no_travel_records")}</p>
-            <p className="text-sm mt-2">{t("add_first_travel")}</p>
-          </Card>
-        )}
-      </div>
-
-      <div className="mt-6">
-        <AdsenseAd slot="9012345678" format="horizontal" />
       </div>
 
       {selectedImage && (

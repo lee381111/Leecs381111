@@ -6,14 +6,13 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Plus, Edit, Trash2, Lock, X, Sparkles, Key } from "lucide-react"
+import { ArrowLeft, Plus, Edit, Trash2, Lock, X, Sparkles, Key, BookOpen } from "lucide-react"
 import { saveDiaries, loadDiaries } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import type { DiaryEntry, Attachment } from "@/lib/types"
 import { MediaTools } from "@/components/media-tools"
 import { Spinner } from "@/components/ui/spinner"
 import { getTranslation } from "@/lib/i18n"
-import { AdsenseAd } from "@/components/adsense-ad"
 
 interface DiarySectionProps {
   onBack: () => void
@@ -741,7 +740,33 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
         </div>
       </div>
 
-      <div className="grid gap-4">
+      <div className="space-y-4">
+        <Card className="p-6 bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-950 dark:to-pink-950 border-rose-200">
+          <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
+            <BookOpen className="h-5 w-5 text-rose-600" />
+            {language === "ko" ? "일기 작성 가이드" : "Diary Writing Guide"}
+          </h3>
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <p>✍️ {language === "ko" ? "매일의 감정과 생각을 기록하세요" : "Record your daily emotions and thoughts"}</p>
+            <p>
+              😊{" "}
+              {language === "ko"
+                ? "기분과 날씨를 선택하여 하루를 표현하세요"
+                : "Express your day with mood and weather"}
+            </p>
+            <p>
+              🔒 {language === "ko" ? "비밀번호로 일기를 안전하게 보호하세요" : "Protect your diary with a password"}
+            </p>
+            <p>📸 {language === "ko" ? "사진과 함께 추억을 기록하세요" : "Capture memories with photos"}</p>
+            <p>
+              🤖{" "}
+              {language === "ko"
+                ? "AI 감정 분석으로 내 마음을 이해하세요"
+                : "Understand your emotions with AI analysis"}
+            </p>
+          </div>
+        </Card>
+
         {diaries.map((diary) => (
           <Card key={diary.id} className="p-4">
             <div className="flex justify-between items-start mb-2">
@@ -806,8 +831,6 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
           </Card>
         ))}
       </div>
-
-      <AdsenseAd slot="7890123456" format="horizontal" />
 
       {selectedImage && (
         <div

@@ -22,7 +22,6 @@ import type { Language, BudgetTransaction } from "@/lib/types"
 import { saveBudgetTransactions, loadBudgetTransactions } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import { Spinner } from "@/components/ui/spinner"
-import { AdsenseAd } from "@/components/adsense-ad"
 
 interface BudgetSectionProps {
   onBack: () => void
@@ -894,7 +893,7 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-4 md:p-8">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
@@ -915,6 +914,26 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
             </Button>
           </div>
         </div>
+
+        <Card className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border-green-200 mb-4">
+          <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
+            <Wallet className="h-5 w-5 text-green-600" />
+            {language === "ko" ? "예산 관리 가이드" : "Budget Management Guide"}
+          </h3>
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <p>
+              💰 {language === "ko" ? "수입과 지출을 카테고리별로 기록하세요" : "Track income and expenses by category"}
+            </p>
+            <p>
+              📊{" "}
+              {language === "ko"
+                ? "월별 통계로 소비 패턴을 분석하세요"
+                : "Analyze spending patterns with monthly stats"}
+            </p>
+            <p>🎯 {language === "ko" ? "예산 목표를 설정하고 달성하세요" : "Set and achieve budget goals"}</p>
+            <p>📈 {language === "ko" ? "카테고리별 지출 비율을 확인하세요" : "Check spending ratio by category"}</p>
+          </div>
+        </Card>
 
         <Card className="p-4 mb-4 dark:bg-card">
           <div className="flex items-center justify-between mb-2">
@@ -986,9 +1005,38 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
 
         <div className="space-y-2">
           {transactions.length === 0 ? (
-            <Card className="p-8 text-center dark:bg-card">
-              <p className="text-muted-foreground dark:text-gray-400">{getText("noTransactions")}</p>
-            </Card>
+            <>
+              <Card className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border-green-200 mb-4">
+                <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
+                  <Wallet className="h-5 w-5 text-green-600" />
+                  {language === "ko" ? "예산 관리 가이드" : "Budget Management Guide"}
+                </h3>
+                <div className="space-y-2 text-sm text-muted-foreground">
+                  <p>
+                    💰{" "}
+                    {language === "ko"
+                      ? "수입과 지출을 기록하여 재정을 파악하세요"
+                      : "Track income and expenses to understand your finances"}
+                  </p>
+                  <p>
+                    📊{" "}
+                    {language === "ko"
+                      ? "카테고리별 지출 분석으로 소비 패턴을 확인하세요"
+                      : "Check spending patterns with category analysis"}
+                  </p>
+                  <p>🎯 {language === "ko" ? "월간 목표를 설정하고 달성하세요" : "Set and achieve monthly goals"}</p>
+                  <p>
+                    📈{" "}
+                    {language === "ko"
+                      ? "차트로 재정 상태를 시각화하세요"
+                      : "Visualize your financial status with charts"}
+                  </p>
+                </div>
+              </Card>
+              <Card className="p-8 text-center dark:bg-card">
+                <p className="text-muted-foreground dark:text-gray-400">{getText("noTransactions")}</p>
+              </Card>
+            </>
           ) : (
             transactions
               .filter((t) => t.date.startsWith(selectedMonth))
@@ -1071,10 +1119,6 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
             </CardContent>
           </Card>
         )}
-
-        <div className="mt-6">
-          <AdsenseAd slot="8901234567" format="horizontal" />
-        </div>
       </div>
     </div>
   )

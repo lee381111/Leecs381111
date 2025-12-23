@@ -12,7 +12,6 @@ import { Spinner } from "@/components/ui/spinner"
 import { getTranslation } from "@/lib/i18n"
 import { notificationManager } from "@/lib/notification-manager"
 import { MediaTools } from "@/components/media-tools"
-import { AdsenseAd } from "@/components/adsense-ad"
 
 interface VehicleSectionProps {
   onBack: () => void
@@ -879,8 +878,8 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6 space-y-4">
-      <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+      <div className="flex items-center justify-between p-6">
         <Button variant="ghost" onClick={onBack}>
           <ArrowLeft className="mr-2 h-4 w-4" /> {t("title")}
         </Button>
@@ -889,102 +888,115 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
         </Button>
       </div>
 
-      <div className="grid gap-4">
-        {vehicles.map((vehicle) => {
-          const vehicleRecords = maintenanceRecords.filter((r) => r.vehicleId === vehicle.id)
-          const totalAmount = vehicleRecords.reduce((sum, r) => sum + r.amount, 0)
-
-          return (
-            <Card
-              key={vehicle.id}
-              className="p-4 cursor-pointer hover:bg-accent transition-colors"
-              onClick={() => {
-                setSelectedVehicleId(vehicle.id)
-                setScreen("vehicle-detail")
-              }}
-            >
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <Car className="h-5 w-5 text-emerald-600" />
-                    <h3 className="font-bold text-lg">{vehicle.name}</h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1">{vehicle.licensePlate}</p>
-                  <div className="mt-1 text-sm space-y-0.5">
-                    {vehicle.model && vehicle.year && (
-                      <p>
-                        {vehicle.model} · {vehicle.year}
-                      </p>
-                    )}
-                    {vehicle.purchaseYear && (
-                      <p>
-                        {t("purchase_year")}: {vehicle.purchaseYear}
-                      </p>
-                    )}
-                    {vehicle.insurance && (
-                      <p>
-                        {t("insurance")}: {vehicle.insurance}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex gap-4 mt-3 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">{t("records_count")}: </span>
-                      <span className="font-medium">
-                        {vehicleRecords.length}
-                        {t("records_unit")}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">{t("schedules_count")}: </span>
-                      <span className="font-medium">
-                        {preventiveSchedules.filter((s) => s.vehicleId === vehicle.id).length}
-                        {t("records_unit")}
-                      </span>
-                    </div>
-                  </div>
-                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-3 flex items-center gap-1">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    {t("tap_to_add_maintenance_and_schedule")}
-                  </p>
-                </div>
-
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleDeleteVehicle(vehicle.id)
-                  }}
-                >
-                  <Trash2 className="w-4 h-4 text-red-500" />
-                </Button>
-              </div>
-            </Card>
-          )
-        })}
-
-        {vehicles.length === 0 && (
-          <div className="text-center py-12">
-            <Car className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground mb-4">{t("no_vehicles")}</p>
-            <Button onClick={() => setScreen("add-vehicle")} className="bg-green-600 hover:bg-green-700 text-white">
-              <Plus className="mr-2 h-4 w-4" /> {t("first_vehicle")}
-            </Button>
+      {screen === "list" && vehicles.length > 0 && (
+        <Card className="mx-4 mb-4 p-6 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950 dark:to-cyan-950 border-teal-200">
+          <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
+            <Car className="h-5 w-5 text-teal-600" />
+            {language === "ko" ? "차량 관리 가이드" : "Vehicle Management Guide"}
+          </h3>
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <p>🚗 {language === "ko" ? "차량 정보와 주행거리를 기록하세요" : "Record vehicle info and mileage"}</p>
+            <p>🔧 {language === "ko" ? "정기 점검 일정을 설정하세요" : "Set regular maintenance schedules"}</p>
+            <p>⛽ {language === "ko" ? "주유 기록으로 연비를 추적하세요" : "Track fuel efficiency"}</p>
+            <p>📋 {language === "ko" ? "수리 내역을 체계적으로 관리하세요" : "Manage repair history systematically"}</p>
           </div>
-        )}
-      </div>
+        </Card>
+      )}
 
-      <div className="mt-6">
-        <AdsenseAd slot="0123456789" format="horizontal" />
-      </div>
+      {screen === "list" && (
+        <div className="p-4 grid gap-4">
+          {vehicles.map((vehicle) => {
+            const vehicleRecords = maintenanceRecords.filter((r) => r.vehicleId === vehicle.id)
+            const totalAmount = vehicleRecords.reduce((sum, r) => sum + r.amount, 0)
+
+            return (
+              <Card
+                key={vehicle.id}
+                className="p-4 cursor-pointer hover:bg-accent transition-colors"
+                onClick={() => {
+                  setSelectedVehicleId(vehicle.id)
+                  setScreen("vehicle-detail")
+                }}
+              >
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <Car className="h-5 w-5 text-emerald-600" />
+                      <h3 className="font-bold text-lg">{vehicle.name}</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">{vehicle.licensePlate}</p>
+                    <div className="mt-1 text-sm space-y-0.5">
+                      {vehicle.model && vehicle.year && (
+                        <p>
+                          {vehicle.model} · {vehicle.year}
+                        </p>
+                      )}
+                      {vehicle.purchaseYear && (
+                        <p>
+                          {t("purchase_year")}: {vehicle.purchaseYear}
+                        </p>
+                      )}
+                      {vehicle.insurance && (
+                        <p>
+                          {t("insurance")}: {vehicle.insurance}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex gap-4 mt-3 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">{t("records_count")}: </span>
+                        <span className="font-medium">
+                          {vehicleRecords.length}
+                          {t("records_unit")}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">{t("schedules_count")}: </span>
+                        <span className="font-medium">
+                          {preventiveSchedules.filter((s) => s.vehicleId === vehicle.id).length}
+                          {t("records_unit")}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-3 flex items-center gap-1">
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      {t("tap_to_add_maintenance_and_schedule")}
+                    </p>
+                  </div>
+
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleDeleteVehicle(vehicle.id)
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4 text-red-500" />
+                  </Button>
+                </div>
+              </Card>
+            )
+          })}
+
+          {vehicles.length === 0 && (
+            <div className="text-center py-12">
+              <Car className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground mb-4">{t("no_vehicles")}</p>
+              <Button onClick={() => setScreen("add-vehicle")} className="bg-green-600 hover:bg-green-700 text-white">
+                <Plus className="mr-2 h-4 w-4" /> {t("first_vehicle")}
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
