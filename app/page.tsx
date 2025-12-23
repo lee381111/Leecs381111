@@ -756,7 +756,6 @@ export default function ForestNotePage() {
             </>
           ) : (
             <div>
-              {console.log("[v0] Rendering section:", currentSection)}
               {currentSection !== "home" && (
                 <>
                   {currentSection === "notes" && (
