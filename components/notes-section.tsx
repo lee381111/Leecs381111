@@ -30,7 +30,7 @@ import { getTranslation } from "@/lib/i18n"
 import { MediaTools } from "@/components/media-tools"
 import { Spinner } from "@/components/ui/spinner"
 import { cn } from "@/lib/utils"
-import { useAuth } from "@/hooks/useAuth" // Assuming useAuth is in this path
+import { useAuth } from "@/lib/auth-context"
 
 // Define interfaces and types if they are not globally available or imported
 // Assuming Language is defined in "@/lib/i18n" or similar
