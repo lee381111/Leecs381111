@@ -904,63 +904,63 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
         </div>
 
         <div className="space-y-2">
-          {transactions.length === 0 ? (
-            <>
-              <Card className="p-6 bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200">
-                <div className="flex items-start gap-4">
-                  <Lightbulb className="h-6 w-6 text-amber-600 flex-shrink-0 mt-1" />
-                  <div>
-                    <h3 className="font-semibold text-amber-900 mb-3">
+          <Card className="p-6 bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200">
+            <div className="flex items-start gap-4">
+              <Lightbulb className="h-6 w-6 text-amber-600 flex-shrink-0 mt-1" />
+              <div>
+                <h3 className="font-semibold text-amber-900 mb-3">
+                  {language === "ko"
+                    ? "💰 예산 관리 가이드"
+                    : language === "en"
+                      ? "💰 Budget Management Guide"
+                      : language === "zh"
+                        ? "💰 预算管理指南"
+                        : "💰 予算管理ガイド"}
+                </h3>
+                <ul className="space-y-2 text-sm text-amber-800">
+                  <li className="flex items-start gap-2">
+                    <span className="text-amber-600 mt-0.5">•</span>
+                    <span>
                       {language === "ko"
-                        ? "💰 예산 관리 가이드"
+                        ? "수입과 지출을 꾸준히 기록하세요"
                         : language === "en"
-                          ? "💰 Budget Management Guide"
+                          ? "Record income and expenses regularly"
                           : language === "zh"
-                            ? "💰 预算管理指南"
-                            : "💰 予算管理ガイド"}
-                    </h3>
-                    <ul className="space-y-2 text-sm text-amber-800">
-                      <li className="flex items-start gap-2">
-                        <span className="text-amber-600 mt-0.5">•</span>
-                        <span>
-                          {language === "ko"
-                            ? "수입과 지출을 꾸준히 기록하세요"
-                            : language === "en"
-                              ? "Record income and expenses regularly"
-                              : language === "zh"
-                                ? "定期记录收入和支出"
-                                : "収入と支出を継続的に記録しましょう"}
-                        </span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-amber-600 mt-0.5">•</span>
-                        <span>
-                          {language === "ko"
-                            ? "AI 분석으로 지출 패턴을 파악하세요"
-                            : language === "en"
-                              ? "Analyze spending patterns with AI"
-                              : language === "zh"
-                                ? "使用AI分析支出模式"
-                                : "AIで支出パターンを把握しましょう"}
-                        </span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-amber-600 mt-0.5">•</span>
-                        <span>
-                          {language === "ko"
-                            ? "월별 예산을 설정하고 지출을 관리하세요"
-                            : language === "en"
-                              ? "Set monthly budget and manage expenses"
-                              : language === "zh"
-                                ? "设置每月预算并管理支出"
-                                : "月次予算を設定して支出を管理しましょう"}
-                        </span>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </Card>
-            </>
+                            ? "定期记录收入和支出"
+                            : "収入と支出を継続的に記録しましょう"}
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-amber-600 mt-0.5">•</span>
+                    <span>
+                      {language === "ko"
+                        ? "AI 분석으로 지출 패턴을 파악하세요"
+                        : language === "en"
+                          ? "Analyze spending patterns with AI"
+                          : language === "zh"
+                            ? "使用AI分析支出模式"
+                            : "AIで支出パターンを把握しましょう"}
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-amber-600 mt-0.5">•</span>
+                    <span>
+                      {language === "ko"
+                        ? "월별 예산을 설정하고 지출을 관리하세요"
+                        : language === "en"
+                          ? "Set monthly budget and manage expenses"
+                          : language === "zh"
+                            ? "设置每月预算并管理支出"
+                            : "月次予算を設定して支出を管理しましょう"}
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </Card>
+
+          {transactions.length === 0 ? (
+            <></>
           ) : (
             transactions
               .filter((t) => t.date.startsWith(selectedMonth))

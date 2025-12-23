@@ -888,99 +888,9 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
         </Button>
       </div>
 
-      {screen === "list" && vehicles.length > 0 && (
-        <div className="p-4 grid gap-4">
-          {vehicles.map((vehicle) => {
-            const vehicleRecords = maintenanceRecords.filter((r) => r.vehicleId === vehicle.id)
-            const totalAmount = vehicleRecords.reduce((sum, r) => sum + r.amount, 0)
-
-            return (
-              <Card
-                key={vehicle.id}
-                className="p-4 cursor-pointer hover:bg-accent transition-colors"
-                onClick={() => {
-                  setSelectedVehicleId(vehicle.id)
-                  setScreen("vehicle-detail")
-                }}
-              >
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <Car className="h-5 w-5 text-emerald-600" />
-                      <h3 className="font-bold text-lg">{vehicle.name}</h3>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">{vehicle.licensePlate}</p>
-                    <div className="mt-1 text-sm space-y-0.5">
-                      {vehicle.model && vehicle.year && (
-                        <p>
-                          {vehicle.model} · {vehicle.year}
-                        </p>
-                      )}
-                      {vehicle.purchaseYear && (
-                        <p>
-                          {t("purchase_year")}: {vehicle.purchaseYear}
-                        </p>
-                      )}
-                      {vehicle.insurance && (
-                        <p>
-                          {t("insurance")}: {vehicle.insurance}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex gap-4 mt-3 text-sm">
-                      <div>
-                        <span className="text-muted-foreground">{t("records_count")}: </span>
-                        <span className="font-medium">
-                          {vehicleRecords.length}
-                          {t("records_unit")}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">{t("schedules_count")}: </span>
-                        <span className="font-medium">
-                          {preventiveSchedules.filter((s) => s.vehicleId === vehicle.id).length}
-                          {t("records_unit")}
-                        </span>
-                      </div>
-                    </div>
-                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-3 flex items-center gap-1">
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      {t("tap_to_add_maintenance_and_schedule")}
-                    </p>
-                  </div>
-
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleDeleteVehicle(vehicle.id)
-                    }}
-                  >
-                    <Trash2 className="w-4 h-4 text-red-500" />
-                  </Button>
-                </div>
-              </Card>
-            )
-          })}
-        </div>
-      )}
-
-      {screen === "list" && vehicles.length === 0 && (
-        <div className="text-center py-12">
-          <Car className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-          <p className="text-muted-foreground mb-4">{t("no_vehicles")}</p>
-          <Button onClick={() => setScreen("add-vehicle")} className="bg-green-600 hover:bg-green-700 text-white">
-            <Plus className="mr-2 h-4 w-4" /> {t("first_vehicle")}
-          </Button>
-          <Card className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200 mt-6">
+      {screen === "list" && (
+        <div className="space-y-4">
+          <Card className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
             <div className="flex items-start gap-4">
               <Lightbulb className="h-6 w-6 text-purple-600 flex-shrink-0 mt-1" />
               <div>
@@ -1034,6 +944,154 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
               </div>
             </div>
           </Card>
+
+          <Card className="p-6 bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-200 mt-4">
+            <div className="flex items-start gap-4">
+              <Lightbulb className="h-6 w-6 text-emerald-600 flex-shrink-0 mt-1" />
+              <div>
+                <h3 className="font-semibold text-emerald-900 mb-3">
+                  {language === "ko"
+                    ? "🚗 차량 관리 가이드"
+                    : language === "en"
+                      ? "🚗 Vehicle Management Guide"
+                      : language === "zh"
+                        ? "🚗 车辆管理指南"
+                        : "🚗 車両管理ガイド"}
+                </h3>
+                <ul className="space-y-2 text-sm text-emerald-800">
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-600 mt-0.5">•</span>
+                    <span>
+                      {language === "ko"
+                        ? "정기 점검 일정을 설정하고 알림을 받으세요"
+                        : language === "en"
+                          ? "Set regular maintenance schedules and get reminders"
+                          : language === "zh"
+                            ? "设置定期检查日程并接收提醒"
+                            : "定期点検スケジュールを設定して通知を受け取りましょう"}
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-600 mt-0.5">•</span>
+                    <span>
+                      {language === "ko"
+                        ? "주유, 수리 기록을 남겨 차량 이력을 관리하세요"
+                        : language === "en"
+                          ? "Keep fueling and repair records to manage vehicle history"
+                          : language === "zh"
+                            ? "记录加油和维修以管理车辆历史"
+                            : "給油、修理記録を残して車両履歴を管理しましょう"}
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-600 mt-0.5">•</span>
+                    <span>
+                      {language === "ko"
+                        ? "보험 만기일을 체크하고 갱신하세요"
+                        : language === "en"
+                          ? "Check insurance expiration and renew on time"
+                          : language === "zh"
+                            ? "检查保险到期日并及时续保"
+                            : "保険の満期日をチェックして更新しましょう"}
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </Card>
+
+          {vehicles.length === 0 ? (
+            <div className="text-center py-12">
+              <Car className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground mb-4">{t("no_vehicles")}</p>
+              <Button onClick={() => setScreen("add-vehicle")} className="bg-green-600 hover:bg-green-700 text-white">
+                <Plus className="mr-2 h-4 w-4" /> {t("first_vehicle")}
+              </Button>
+            </div>
+          ) : (
+            <div className="p-4 grid gap-4">
+              {vehicles.map((vehicle) => {
+                const vehicleRecords = maintenanceRecords.filter((r) => r.vehicleId === vehicle.id)
+                const totalAmount = vehicleRecords.reduce((sum, r) => sum + r.amount, 0)
+
+                return (
+                  <Card
+                    key={vehicle.id}
+                    className="p-4 cursor-pointer hover:bg-accent transition-colors"
+                    onClick={() => {
+                      setSelectedVehicleId(vehicle.id)
+                      setScreen("vehicle-detail")
+                    }}
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <Car className="h-5 w-5 text-emerald-600" />
+                          <h3 className="font-bold text-lg">{vehicle.name}</h3>
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1">{vehicle.licensePlate}</p>
+                        <div className="mt-1 text-sm space-y-0.5">
+                          {vehicle.model && vehicle.year && (
+                            <p>
+                              {vehicle.model} · {vehicle.year}
+                            </p>
+                          )}
+                          {vehicle.purchaseYear && (
+                            <p>
+                              {t("purchase_year")}: {vehicle.purchaseYear}
+                            </p>
+                          )}
+                          {vehicle.insurance && (
+                            <p>
+                              {t("insurance")}: {vehicle.insurance}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex gap-4 mt-3 text-sm">
+                          <div>
+                            <span className="text-muted-foreground">{t("records_count")}: </span>
+                            <span className="font-medium">
+                              {vehicleRecords.length}
+                              {t("records_unit")}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">{t("schedules_count")}: </span>
+                            <span className="font-medium">
+                              {preventiveSchedules.filter((s) => s.vehicleId === vehicle.id).length}
+                              {t("records_unit")}
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-3 flex items-center gap-1">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                          {t("tap_to_add_maintenance_and_schedule")}
+                        </p>
+                      </div>
+
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDeleteVehicle(vehicle.id)
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                      </Button>
+                    </div>
+                  </Card>
+                )
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>

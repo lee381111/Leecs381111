@@ -1309,62 +1309,60 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
           </Card>
         ))}
 
-        {filteredNotes.length === 0 && (
-          <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-            <div className="flex items-start gap-4">
-              <Lightbulb className="h-6 w-6 text-blue-600 flex-shrink-0 mt-1" />
-              <div>
-                <h3 className="font-semibold text-blue-900 mb-3">
-                  {language === "ko"
-                    ? "📝 노트 작성 가이드"
-                    : language === "en"
-                      ? "📝 Note Writing Guide"
-                      : language === "zh"
-                        ? "📝 笔记撰写指南"
-                        : "📝 ノート作成ガイド"}
-                </h3>
-                <ul className="space-y-2 text-sm text-blue-800">
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-600 mt-0.5">•</span>
-                    <span>
-                      {language === "ko"
-                        ? "중요한 아이디어나 메모를 자유롭게 작성하세요"
-                        : language === "en"
-                          ? "Write down important ideas and memos freely"
-                          : language === "zh"
-                            ? "自由记录重要想法和备忘"
-                            : "重要なアイデアやメモを自由に書きましょう"}
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-600 mt-0.5">•</span>
-                    <span>
-                      {language === "ko"
-                        ? "카테고리로 노트를 체계적으로 정리하세요"
-                        : language === "en"
-                          ? "Organize notes systematically with categories"
-                          : language === "zh"
-                            ? "使用类别系统整理笔记"
-                            : "カテゴリーでノートを体系的に整理しましょう"}
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-600 mt-0.5">•</span>
-                    <span>
-                      {language === "ko"
-                        ? "검색 기능으로 원하는 노트를 빠르게 찾으세요"
-                        : language === "en"
-                          ? "Find notes quickly with search"
-                          : language === "zh"
-                            ? "使用搜索功能快速查找笔记"
-                            : "検索機能で素早くノートを見つけましょう"}
-                    </span>
-                  </li>
-                </ul>
-              </div>
+        <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+          <div className="flex items-start gap-4">
+            <Lightbulb className="h-6 w-6 text-blue-600 flex-shrink-0 mt-1" />
+            <div>
+              <h3 className="font-semibold text-blue-900 mb-3">
+                {language === "ko"
+                  ? "📝 노트 작성 가이드"
+                  : language === "en"
+                    ? "📝 Note Writing Guide"
+                    : language === "zh"
+                      ? "📝 笔记撰写指南"
+                      : "📝 ノート作成ガイド"}
+              </h3>
+              <ul className="space-y-2 text-sm text-blue-800">
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-600 mt-0.5">•</span>
+                  <span>
+                    {language === "ko"
+                      ? "중요한 아이디어나 메모를 자유롭게 작성하세요"
+                      : language === "en"
+                        ? "Write down important ideas and memos freely"
+                        : language === "zh"
+                          ? "自由记录重要想法和备忘"
+                          : "重要なアイデアやメモを自由に書きましょう"}
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-600 mt-0.5">•</span>
+                  <span>
+                    {language === "ko"
+                      ? "카테고리로 노트를 체계적으로 정리하세요"
+                      : language === "en"
+                        ? "Organize notes systematically with categories"
+                        : language === "zh"
+                          ? "使用类别系统整理笔记"
+                          : "カテゴリーでノートを体系的に整理しましょう"}
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-600 mt-0.5">•</span>
+                  <span>
+                    {language === "ko"
+                      ? "AI 음성 입력으로 빠르게 작성하세요"
+                      : language === "en"
+                        ? "Use AI voice input for quick note-taking"
+                        : language === "zh"
+                          ? "使用AI语音输入快速记录"
+                          : "AI音声入力で素早く作成しましょう"}
+                  </span>
+                </li>
+              </ul>
             </div>
-          </Card>
-        )}
+          </div>
+        </Card>
       </div>
     </div>
   )

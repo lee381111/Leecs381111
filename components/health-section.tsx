@@ -1165,64 +1165,60 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
       {/* Adding usage guide card to health section empty state */}
       {viewMode === "list" && (
         <div className="space-y-4">
-          {records.length === 0 && medications.length === 0 && (
-            <div className="text-center py-8">
-              <Card className="p-6 bg-gradient-to-br from-red-50 to-pink-50 border-red-200 max-w-2xl mx-auto">
-                <div className="flex items-start gap-4">
-                  <Lightbulb className="h-6 w-6 text-red-600 flex-shrink-0 mt-1" />
-                  <div>
-                    <h3 className="font-semibold text-red-900 mb-3">
+          <Card className="p-6 bg-gradient-to-br from-red-50 to-pink-50 border-red-200">
+            <div className="flex items-start gap-4">
+              <Lightbulb className="h-6 w-6 text-red-600 flex-shrink-0 mt-1" />
+              <div>
+                <h3 className="font-semibold text-red-900 mb-3">
+                  {language === "ko"
+                    ? "🏥 건강 관리 가이드"
+                    : language === "en"
+                      ? "🏥 Health Management Guide"
+                      : language === "zh"
+                        ? "🏥 健康管理指南"
+                        : "🏥 健康管理ガイド"}
+                </h3>
+                <ul className="space-y-2 text-sm text-red-800">
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-600 mt-0.5">•</span>
+                    <span>
                       {language === "ko"
-                        ? "🏥 건강 관리 가이드"
+                        ? "혈압, 혈당 등 건강 지표를 꾸준히 기록하세요"
                         : language === "en"
-                          ? "🏥 Health Management Guide"
+                          ? "Record health indicators like blood pressure and blood sugar regularly"
                           : language === "zh"
-                            ? "🏥 健康管理指南"
-                            : "🏥 健康管理ガイド"}
-                    </h3>
-                    <ul className="space-y-2 text-sm text-red-800">
-                      <li className="flex items-start gap-2">
-                        <span className="text-red-600 mt-0.5">•</span>
-                        <span>
-                          {language === "ko"
-                            ? "혈압, 혈당 등 건강 지표를 꾸준히 기록하세요"
-                            : language === "en"
-                              ? "Record health indicators like blood pressure and blood sugar regularly"
-                              : language === "zh"
-                                ? "定期记录血压、血糖等健康指标"
-                                : "血圧、血糖などの健康指標を定期的に記録しましょう"}
-                        </span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-red-600 mt-0.5">•</span>
-                        <span>
-                          {language === "ko"
-                            ? "복용 중인 약을 관리하고 알람을 설정하세요"
-                            : language === "en"
-                              ? "Manage medications and set reminders"
-                              : language === "zh"
-                                ? "管理药物并设置提醒"
-                                : "服用中の薬を管理してアラームを設定しましょう"}
-                        </span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-red-600 mt-0.5">•</span>
-                        <span>
-                          {language === "ko"
-                            ? "운동과 식단을 기록하여 건강한 생활습관을 만드세요"
-                            : language === "en"
-                              ? "Record exercise and diet to build healthy habits"
-                              : language === "zh"
-                                ? "记录运动和饮食建立健康习惯"
-                                : "運動と食事を記録して健康的な生活習慣を作りましょう"}
-                        </span>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </Card>
+                            ? "定期记录血压、血糖等健康指标"
+                            : "血圧、血糖などの健康指標を定期的に記録しましょう"}
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-600 mt-0.5">•</span>
+                    <span>
+                      {language === "ko"
+                        ? "복용 중인 약을 관리하고 알람을 설정하세요"
+                        : language === "en"
+                          ? "Manage medications and set reminders"
+                          : language === "zh"
+                            ? "管理药物并设置提醒"
+                            : "服用中の薬を管理してアラームを設定しましょう"}
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-600 mt-0.5">•</span>
+                    <span>
+                      {language === "ko"
+                        ? "운동과 식단을 기록하여 건강한 생활습관을 만드세요"
+                        : language === "en"
+                          ? "Record exercise and diet to build healthy habits"
+                          : language === "zh"
+                            ? "记录运动和饮食建立健康习惯"
+                            : "運動と食事を記録して健康的な生活習慣を作りましょう"}
+                    </span>
+                  </li>
+                </ul>
+              </div>
             </div>
-          )}
+          </Card>
 
           <div className="grid grid-cols-2 gap-4">
             <Button onClick={() => setViewMode("add_record")} className="h-20 bg-teal-600 hover:bg-teal-700 text-white">
