@@ -5,19 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
-import {
-  Plus,
-  CheckCircle2,
-  Circle,
-  Trash2,
-  Edit,
-  Mic,
-  MicOff,
-  Calendar,
-  Repeat,
-  CheckSquare,
-  ArrowLeft,
-} from "lucide-react"
+import { Plus, CheckCircle2, Circle, Trash2, Edit, Mic, MicOff, Calendar, Repeat, ArrowLeft } from "lucide-react"
 import { saveTodoItems, loadTodoItems } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import type { TodoItem } from "@/lib/types"
@@ -513,35 +501,6 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
             </div>
           </Card>
         )}
-
-        {/* Productivity Tips Card */}
-        <Card className="p-6 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 border-purple-200">
-          <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
-            <CheckSquare className="h-5 w-5 text-purple-600" />
-            {language === "ko" ? "생산성 향상 팁" : "Productivity Tips"}
-          </h3>
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <p>
-              ⭐{" "}
-              {language === "ko"
-                ? "중요한 작업에 별표를 눌러 우선순위를 표시하세요"
-                : "Star important tasks to mark priority"}
-            </p>
-            <p>
-              📋{" "}
-              {language === "ko" ? "큰 작업은 작은 단위로 나누어 관리하세요" : "Break large tasks into smaller steps"}
-            </p>
-            <p>
-              ✅{" "}
-              {language === "ko"
-                ? "완료된 작업을 체크하며 성취감을 느껴보세요"
-                : "Check off completed tasks for satisfaction"}
-            </p>
-            <p>
-              🔍 {language === "ko" ? "필터 기능으로 진행 상황을 한눈에 파악하세요" : "Track progress with filters"}
-            </p>
-          </div>
-        </Card>
 
         {/* Todo List */}
         {filteredTodos.length === 0 ? (

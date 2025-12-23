@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, Plus, Pencil, Trash2, Plane, MapPin } from "lucide-react"
+import { ArrowLeft, Plus, Pencil, Trash2, Plane } from "lucide-react"
 import { saveTravelRecords, loadTravelRecords } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import type { TravelRecord, Attachment } from "@/lib/types"
@@ -510,27 +510,10 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
 
       <div className="grid gap-4">
         {travels.length === 0 && (
-          <>
-            <Card className="p-6 bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-950 dark:to-blue-950 border-sky-200 mb-4">
-              <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-sky-600" />
-                {language === "ko" ? "여행 기록 가이드" : "Travel Record Guide"}
-              </h3>
-              <div className="space-y-2 text-sm text-muted-foreground">
-                <p>✈️ {language === "ko" ? "여행지와 일정을 기록하세요" : "Record destinations and itineraries"}</p>
-                <p>📸 {language === "ko" ? "사진과 함께 추억을 저장하세요" : "Save memories with photos"}</p>
-                <p>
-                  💡{" "}
-                  {language === "ko" ? "여행 팁과 추천 장소를 메모하세요" : "Note travel tips and recommended places"}
-                </p>
-                <p>🗺️ {language === "ko" ? "카테고리별로 여행을 분류하세요" : "Categorize your travels"}</p>
-              </div>
-            </Card>
-            <Card className="p-8 text-center text-muted-foreground">
-              <p>{t("no_travel_records")}</p>
-              <p className="text-sm mt-2">{t("add_first_travel")}</p>
-            </Card>
-          </>
+          <Card className="p-8 text-center text-muted-foreground">
+            <p>{t("no_travel_records")}</p>
+            <p className="text-sm mt-2">{t("add_first_travel")}</p>
+          </Card>
         )}
         {travels.map((travel) => (
           <Card key={travel.id} className={`p-4 ${selectedTravel?.id === travel.id ? "ring-2 ring-emerald-500" : ""}`}>

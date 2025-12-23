@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, Plus, Trash2, TrendingUp, Pill, Bell, Pencil, Save, Phone, Heart } from "lucide-react"
+import { ArrowLeft, Plus, Trash2, TrendingUp, Pill, Bell, Pencil, Save, Phone } from "lucide-react"
 import { saveHealthRecords, loadHealthRecords, saveMedications, loadMedications } from "@/lib/storage"
 import { saveMedicalContacts, loadMedicalContacts, deleteMedicalContact } from "@/lib/storage"
 import type { MedicalContact } from "@/lib/types"
@@ -1161,31 +1161,6 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
           <ArrowLeft className="mr-2 h-4 w-4" /> {t("title")}
         </Button>
       </div>
-
-      <Card className="p-6 bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-950 dark:to-pink-950 border-rose-200 mb-4">
-        <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
-          <Heart className="h-5 w-5 text-rose-600" />
-          {language === "ko" ? "건강 관리 가이드" : "Health Tracking Guide"}
-        </h3>
-        <div className="space-y-2 text-sm text-muted-foreground">
-          <p>
-            ❤️{" "}
-            {language === "ko"
-              ? "혈압, 혈당, 체중을 정기적으로 기록하세요"
-              : "Record blood pressure, glucose, and weight regularly"}
-          </p>
-          <p>
-            📊{" "}
-            {language === "ko"
-              ? "그래프로 건강 변화를 한눈에 확인하세요"
-              : "View health changes at a glance with graphs"}
-          </p>
-          <p>
-            💊 {language === "ko" ? "복용 약물과 의료 기록을 관리하세요" : "Manage medications and medical records"}
-          </p>
-          <p>🎯 {language === "ko" ? "건강 목표를 설정하고 달성하세요" : "Set and achieve health goals"}</p>
-        </div>
-      </Card>
 
       <div className="grid grid-cols-2 gap-4">
         <Button onClick={() => setViewMode("add_record")} className="h-20 bg-teal-600 hover:bg-teal-700 text-white">

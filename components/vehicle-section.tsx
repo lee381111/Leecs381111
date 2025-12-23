@@ -889,21 +889,6 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
       </div>
 
       {screen === "list" && vehicles.length > 0 && (
-        <Card className="mx-4 mb-4 p-6 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950 dark:to-cyan-950 border-teal-200">
-          <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
-            <Car className="h-5 w-5 text-teal-600" />
-            {language === "ko" ? "차량 관리 가이드" : "Vehicle Management Guide"}
-          </h3>
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <p>🚗 {language === "ko" ? "차량 정보와 주행거리를 기록하세요" : "Record vehicle info and mileage"}</p>
-            <p>🔧 {language === "ko" ? "정기 점검 일정을 설정하세요" : "Set regular maintenance schedules"}</p>
-            <p>⛽ {language === "ko" ? "주유 기록으로 연비를 추적하세요" : "Track fuel efficiency"}</p>
-            <p>📋 {language === "ko" ? "수리 내역을 체계적으로 관리하세요" : "Manage repair history systematically"}</p>
-          </div>
-        </Card>
-      )}
-
-      {screen === "list" && (
         <div className="p-4 grid gap-4">
           {vehicles.map((vehicle) => {
             const vehicleRecords = maintenanceRecords.filter((r) => r.vehicleId === vehicle.id)
@@ -985,16 +970,16 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
               </Card>
             )
           })}
+        </div>
+      )}
 
-          {vehicles.length === 0 && (
-            <div className="text-center py-12">
-              <Car className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground mb-4">{t("no_vehicles")}</p>
-              <Button onClick={() => setScreen("add-vehicle")} className="bg-green-600 hover:bg-green-700 text-white">
-                <Plus className="mr-2 h-4 w-4" /> {t("first_vehicle")}
-              </Button>
-            </div>
-          )}
+      {screen === "list" && vehicles.length === 0 && (
+        <div className="text-center py-12">
+          <Car className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+          <p className="text-muted-foreground mb-4">{t("no_vehicles")}</p>
+          <Button onClick={() => setScreen("add-vehicle")} className="bg-green-600 hover:bg-green-700 text-white">
+            <Plus className="mr-2 h-4 w-4" /> {t("first_vehicle")}
+          </Button>
         </div>
       )}
     </div>

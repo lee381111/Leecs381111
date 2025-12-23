@@ -5,19 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import {
-  ArrowLeft,
-  Plus,
-  TrendingUp,
-  TrendingDown,
-  Wallet,
-  Trash2,
-  Edit2,
-  PieChart,
-  Lock,
-  Unlock,
-  Calendar,
-} from "lucide-react"
+import { ArrowLeft, Plus, Trash2, Edit2, PieChart, Lock, Unlock } from "lucide-react"
 import type { Language, BudgetTransaction } from "@/lib/types"
 import { saveBudgetTransactions, loadBudgetTransactions } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
@@ -915,125 +903,10 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
           </div>
         </div>
 
-        <Card className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border-green-200 mb-4">
-          <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
-            <Wallet className="h-5 w-5 text-green-600" />
-            {language === "ko" ? "예산 관리 가이드" : "Budget Management Guide"}
-          </h3>
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <p>
-              💰 {language === "ko" ? "수입과 지출을 카테고리별로 기록하세요" : "Track income and expenses by category"}
-            </p>
-            <p>
-              📊{" "}
-              {language === "ko"
-                ? "월별 통계로 소비 패턴을 분석하세요"
-                : "Analyze spending patterns with monthly stats"}
-            </p>
-            <p>🎯 {language === "ko" ? "예산 목표를 설정하고 달성하세요" : "Set and achieve budget goals"}</p>
-            <p>📈 {language === "ko" ? "카테고리별 지출 비율을 확인하세요" : "Check spending ratio by category"}</p>
-          </div>
-        </Card>
-
-        <Card className="p-4 mb-4 dark:bg-card">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-600 dark:text-gray-400">{getText("monthlyTotal")}</span>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium dark:text-white">
-                {selectedMonth.split("-")[0]}
-                {getText("year")} {selectedMonth.split("-")[1]}
-                {getText("month")}
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  const input = document.createElement("input")
-                  input.type = "month"
-                  input.value = selectedMonth
-                  input.onchange = (e) => setSelectedMonth((e.target as HTMLInputElement).value)
-                  input.click()
-                  input.showPicker?.()
-                }}
-                className="h-8 px-2"
-              >
-                <Calendar className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-          <div className="grid grid-cols-3 gap-4 mt-4">
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
-                <span className="text-xs text-gray-600 dark:text-gray-400">{getText("income")}</span>
-              </div>
-              <p className="text-lg font-bold text-emerald-600 dark:text-emerald-300">
-                <span className="inline-flex items-center gap-1 whitespace-nowrap">
-                  <span>+{monthlyIncome.toLocaleString()}</span>
-                  <span>{getText("krw_unit")}</span>
-                </span>
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <TrendingDown className="h-4 w-4 text-rose-600 dark:text-rose-300" />
-                <span className="text-xs text-gray-600 dark:text-gray-400">{getText("expense")}</span>
-              </div>
-              <p className="text-lg font-bold text-rose-600 dark:text-rose-300">
-                <span className="inline-flex items-center gap-1 whitespace-nowrap">
-                  <span>-{monthlyExpense.toLocaleString()}</span>
-                  <span>{getText("krw_unit")}</span>
-                </span>
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <Wallet className="h-4 w-4 text-blue-600 dark:text-blue-300" />
-                <span className="text-xs text-gray-600 dark:text-gray-400">{getText("balance")}</span>
-              </div>
-              <p
-                className={`text-lg font-bold ${monthlyBalance >= 0 ? "text-emerald-600 dark:text-emerald-300" : "text-rose-600 dark:text-rose-300"}`}
-              >
-                <span className="inline-flex items-center gap-1 whitespace-nowrap">
-                  <span>{monthlyBalance.toLocaleString()}</span>
-                  <span>{getText("krw_unit")}</span>
-                </span>
-              </p>
-            </div>
-          </div>
-        </Card>
-
         <div className="space-y-2">
           {transactions.length === 0 ? (
             <>
-              <Card className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border-green-200 mb-4">
-                <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
-                  <Wallet className="h-5 w-5 text-green-600" />
-                  {language === "ko" ? "예산 관리 가이드" : "Budget Management Guide"}
-                </h3>
-                <div className="space-y-2 text-sm text-muted-foreground">
-                  <p>
-                    💰{" "}
-                    {language === "ko"
-                      ? "수입과 지출을 기록하여 재정을 파악하세요"
-                      : "Track income and expenses to understand your finances"}
-                  </p>
-                  <p>
-                    📊{" "}
-                    {language === "ko"
-                      ? "카테고리별 지출 분석으로 소비 패턴을 확인하세요"
-                      : "Check spending patterns with category analysis"}
-                  </p>
-                  <p>🎯 {language === "ko" ? "월간 목표를 설정하고 달성하세요" : "Set and achieve monthly goals"}</p>
-                  <p>
-                    📈{" "}
-                    {language === "ko"
-                      ? "차트로 재정 상태를 시각화하세요"
-                      : "Visualize your financial status with charts"}
-                  </p>
-                </div>
-              </Card>
-              <Card className="p-8 text-center dark:bg-card">
+              <Card className="p-8 text-center bg-white/80 backdrop-blur">
                 <p className="text-muted-foreground dark:text-gray-400">{getText("noTransactions")}</p>
               </Card>
             </>

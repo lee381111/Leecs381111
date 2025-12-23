@@ -986,8 +986,6 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
         </div>
       </Card>
 
-      {/* REMOVED DUPLICATE SCHEDULE MANAGEMENT GUIDE CARD */}
-
       {schedules.filter((s) => s.isSpecialEvent).length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center gap-2">

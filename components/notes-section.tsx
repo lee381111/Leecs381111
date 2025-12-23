@@ -1314,48 +1314,12 @@ export function NotesSection({ user, onBack, language }: NotesSectionProps) {
           </Card>
         ))}
 
-        {filteredNotes.length === 0 && (
-          <>
-            <Card className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 border-blue-200 mb-6">
-              <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
-                <BookOpen className="h-5 w-5 text-blue-600" />
-                {language === "ko" ? "노트 사용 가이드" : "How to Use Notes"}
-              </h3>
-              <div className="space-y-2 text-sm text-muted-foreground">
-                <p>
-                  📝{" "}
-                  {language === "ko"
-                    ? "중요한 정보를 기록하고 정리하세요"
-                    : "Record and organize important information"}
-                </p>
-                <p>
-                  🏷️{" "}
-                  {language === "ko"
-                    ? "태그로 노트를 분류하여 쉽게 찾을 수 있습니다"
-                    : "Categorize notes with tags for easy searching"}
-                </p>
-                <p>
-                  📸{" "}
-                  {language === "ko"
-                    ? "이미지와 파일을 첨부하여 풍부한 노트를 만드세요"
-                    : "Attach images and files for rich note-taking"}
-                </p>
-                <p>
-                  🎤{" "}
-                  {language === "ko" ? "음성 녹음 기능으로 빠르게 메모하세요" : "Use voice recording for quick notes"}
-                </p>
-                <p>
-                  🔍{" "}
-                  {language === "ko"
-                    ? "검색 기능으로 저장한 노트를 즉시 찾으세요"
-                    : "Find your notes instantly with search"}
-                </p>
-              </div>
-            </Card>
-            <Card className="p-12 text-center text-muted-foreground bg-white/80 backdrop-blur">
-              <p>{language === "ko" ? "노트가 없습니다. 새로 만들어보세요!" : "No notes. Create one!"}</p>
-            </Card>
-          </>
+        {filteredNotes.length === 0 ? (
+          <div className="flex items-center justify-center h-64 text-muted-foreground">{t("no_notes_yet")}</div>
+        ) : (
+          <Card className="p-12 text-center text-muted-foreground bg-white/80 backdrop-blur">
+            <p>{language === "ko" ? "노트가 없습니다. 새로 만들어보세요!" : "No notes. Create one!"}</p>
+          </Card>
         )}
       </div>
 
