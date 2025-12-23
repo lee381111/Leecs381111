@@ -20,6 +20,7 @@ import {
   MapPin,
   ArrowUpDown,
   RotateCw,
+  Lightbulb,
 } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { saveBusinessCards, loadBusinessCards } from "@/lib/storage"
@@ -598,6 +599,57 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
           </div>
         )}
 
+        {businessCards.length === 0 && (
+          <Card className="p-6 mb-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+            <div className="flex items-start gap-4">
+              <Lightbulb className="h-6 w-6 text-blue-600 mt-1 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-blue-900 mb-3">
+                  {language === "ko"
+                    ? "명함 관리 가이드"
+                    : language === "en"
+                      ? "Business Card Management Guide"
+                      : language === "zh"
+                        ? "名片管理指南"
+                        : "名刺管理ガイド"}
+                </h3>
+                <ul className="space-y-2 text-sm text-blue-800">
+                  <li>
+                    •{" "}
+                    {language === "ko"
+                      ? "명함을 스캔하거나 수동으로 입력하여 관리하세요"
+                      : language === "en"
+                        ? "Scan or manually enter business cards"
+                        : language === "zh"
+                          ? "扫描或手动输入名片"
+                          : "名刺をスキャンまたは手動入力"}
+                  </li>
+                  <li>
+                    •{" "}
+                    {language === "ko"
+                      ? "중요한 연락처는 즐겨찾기에 추가하세요"
+                      : language === "en"
+                        ? "Add important contacts to favorites"
+                        : language === "zh"
+                          ? "将重要联系人添加到收藏"
+                          : "重要な連絡先をお気に入りに追加"}
+                  </li>
+                  <li>
+                    •{" "}
+                    {language === "ko"
+                      ? "회사별로 분류하여 효율적으로 관리하세요"
+                      : language === "en"
+                        ? "Organize by company for efficiency"
+                        : language === "zh"
+                          ? "按公司分类以提高效率"
+                          : "会社別に分類して効率管理"}
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </Card>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {getSortedCards().map((card) => {
             const rotation = imageRotations[card.id] || card.rotation || 0
@@ -711,21 +763,6 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
             )
           })}
         </div>
-
-        {businessCards.length === 0 && (
-          <Card className="p-12 text-center bg-card dark:bg-card">
-            <Camera className="h-16 w-16 text-emerald-300 dark:text-emerald-600 mx-auto mb-4" />
-            <p className="text-muted-foreground">
-              {language === "ko"
-                ? "명함을 추가해보세요"
-                : language === "en"
-                  ? "Add your first business card"
-                  : language === "zh"
-                    ? "添加您的第一张名片"
-                    : "最初の名刺を追加"}
-            </p>
-          </Card>
-        )}
       </div>
     </div>
   )

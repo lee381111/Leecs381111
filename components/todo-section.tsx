@@ -5,7 +5,19 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
-import { Plus, CheckCircle2, Circle, Trash2, Edit, Mic, MicOff, Calendar, Repeat, CheckSquare } from "lucide-react"
+import {
+  Plus,
+  CheckCircle2,
+  Circle,
+  Trash2,
+  Edit,
+  Mic,
+  MicOff,
+  Calendar,
+  Repeat,
+  CheckSquare,
+  ArrowLeft,
+} from "lucide-react"
 import { saveTodoItems, loadTodoItems } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import type { TodoItem } from "@/lib/types"
@@ -301,9 +313,15 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">
-            {t("todo_list")}
-          </h1>
+          {/* Adding back button */}
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={onBack}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">
+              {t("todo_list")}
+            </h1>
+          </div>
         </div>
 
         {/* Stats Cards */}

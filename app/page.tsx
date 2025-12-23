@@ -156,6 +156,7 @@ const LanguageSelector = ({ language, onChange }: { language: Language; onChange
             <button
               key={lang.code}
               onClick={() => {
+                console.log("[v0] Language changed from", language, "to", lang.code)
                 onChange(lang.code)
                 setIsOpen(false)
               }}
