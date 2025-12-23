@@ -639,7 +639,7 @@ export default function ForestNotePage() {
 
           <div className="mb-6 space-y-3 max-w-2xl mx-auto">
             <h2 className="text-xl font-semibold text-center mb-4">{getTranslation(language, "upcoming_events")}</h2>
-            <CalendarWidget userId={effectiveUser?.id || ""} onEventsUpdate={setUpcomingEvents} language={language} />
+            <CalendarWidget events={upcomingEvents} language={language} />
           </div>
         </div>
 
