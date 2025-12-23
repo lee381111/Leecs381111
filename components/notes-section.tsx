@@ -19,7 +19,6 @@ import {
   Eraser,
   Sparkles,
   Save,
-  BookOpen,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -1176,18 +1175,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
         </div>
       )}
 
-      <Card className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 border-blue-200">
-        <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
-          <BookOpen className="h-5 w-5 text-blue-600" />
-          {language === "ko" ? "노트 작성 가이드" : "Note Writing Guide"}
-        </h3>
-        <div className="space-y-2 text-sm text-muted-foreground">
-          <p>✏️ {language === "ko" ? "제목과 내용을 자유롭게 작성하세요" : "Write your title and content freely"}</p>
-          <p>🏷️ {language === "ko" ? "태그를 추가하여 노트를 분류하세요" : "Add tags to categorize your notes"}</p>
-          <p>📎 {language === "ko" ? "이미지와 파일을 첨부할 수 있습니다" : "You can attach images and files"}</p>
-          <p>🔍 {language === "ko" ? "검색 기능으로 빠르게 찾을 수 있습니다" : "Find notes quickly with search"}</p>
-        </div>
-      </Card>
+      {/* <AdsenseAd slot="0987654321" format="horizontal" /> */}
 
       <div className="grid gap-4">
         {filteredNotes.map((note) => (
@@ -1319,6 +1307,18 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
             </div>
           </Card>
         ))}
+
+        {filteredNotes.length === 0 && (
+          <div className="text-center py-12 text-gray-400">
+            {language === "ko"
+              ? "노트가 없습니다"
+              : language === "en"
+                ? "No notes"
+                : language === "zh"
+                  ? "没有笔记"
+                  : "ノートがありません"}
+          </div>
+        )}
 
         {filteredNotes.length === 0 ? (
           <div className="flex items-center justify-center h-64 text-muted-foreground">{t("no_notes_yet")}</div>

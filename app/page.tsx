@@ -578,7 +578,7 @@ export default function ForestNotePage() {
             </h1>
           </div>
 
-          <div className="flex justify-center items-center gap-4 mb-4">
+          <div className="flex justify-center items-center gap-4 mb-4 relative z-10">
             <NotificationCenter language={language} />
             <LanguageSelector language={language} onChange={setLanguage} />
             <GlobalSearch
