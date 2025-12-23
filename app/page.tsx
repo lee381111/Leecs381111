@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input"
 import { ForestCanvas } from "@/components/forest-canvas"
 import { NotificationCenter } from "@/components/notification-center"
 import { StorageQuotaCard } from "@/components/storage-quota-card"
+import { AlertCircle } from "lucide-react"
 import {
   FileText,
   BookOpen,
@@ -156,7 +157,6 @@ const LanguageSelector = ({ language, onChange }: { language: Language; onChange
             <button
               key={lang.code}
               onClick={() => {
-                console.log("[v0] Language changed from", language, "to", lang.code)
                 onChange(lang.code)
                 setIsOpen(false)
               }}
@@ -606,6 +606,43 @@ export default function ForestNotePage() {
               </Button>
             )}
           </div>
+
+          {needsConsent && (
+            <Card className="mb-6 p-4 bg-amber-50 border-amber-200">
+              <div className="flex items-start gap-4">
+                <AlertCircle className="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <h3 className="font-semibold text-amber-900 mb-2">{getTranslation(language, "consent_required")}</h3>
+                  <p className="text-sm text-amber-800 mb-3">{getTranslation(language, "consent_message")}</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => {
+                        setShowPrivacyDialog(true)
+                      }}
+                    >
+                      {getTranslation(language, "view_privacy")}
+                    </Button>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => {
+                        setShowTermsDialog(true)
+                      }}
+                    >
+                      {getTranslation(language, "view_terms")}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          )}
+
+          <div className="mb-6 space-y-3 max-w-2xl mx-auto">
+            <h2 className="text-xl font-semibold text-center mb-4">{getTranslation(language, "upcoming_events")}</h2>
+            <CalendarWidget userId={effectiveUser?.id || ""} onEventsUpdate={setUpcomingEvents} language={language} />
+          </div>
         </div>
 
         <div className="absolute inset-0 opacity-30">
@@ -653,14 +690,6 @@ export default function ForestNotePage() {
                           : "ストレージがほぼ満杯です！"}
                   </p>
                 )}
-              </div>
-
-              <div className="shadow-md rounded-lg overflow-hidden">
-                <CalendarWidget
-                  events={upcomingEvents}
-                  onDateClick={(date) => setCurrentSection("schedule")}
-                  language={language}
-                />
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -746,13 +775,16 @@ export default function ForestNotePage() {
                   )}
                   {currentSection === "weather" && <WeatherSection onBack={handleBackToHome} language={language} />}
                   {currentSection === "radio" && <RadioSection onBack={handleBackToHome} language={language} />}
-                  {currentSection === "settings" && <SettingsSection onBack={handleBackToHome} language={language} />}
+                  {currentSection === "settings" && (
+                    <>
+                      <SettingsSection onBack={handleBackToHome} language={language} />
+                      <StorageQuotaCard language={language} userId={effectiveUser?.id || ""} />
+                    </>
+                  )}
                 </>
               )}
             </div>
           )}
-
-          <StorageQuotaCard language={language} userId={effectiveUser?.id || ""} />
         </div>
       </div>
     </div>

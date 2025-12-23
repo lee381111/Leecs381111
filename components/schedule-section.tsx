@@ -986,210 +986,35 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
         </div>
       </Card>
 
-      {/* ADDED SCHEDULE MANAGEMENT GUIDE CARD */}
-      <div className="space-y-4">
-        <Card className="p-6 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-950 dark:to-blue-950 border-cyan-200">
-          <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-cyan-600" />
-            {language === "ko" ? "일정 관리 가이드" : "Schedule Management Guide"}
-          </h3>
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <p>
-              📅{" "}
-              {language === "ko"
-                ? "중요한 일정을 등록하고 알림을 설정하세요"
-                : "Register important schedules and set reminders"}
-            </p>
-            <p>
-              🔔 {language === "ko" ? "알림 기능으로 일정을 놓치지 마세요" : "Never miss a schedule with notifications"}
-            </p>
-            <p>
-              🔄{" "}
-              {language === "ko"
-                ? "반복 일정으로 정기적인 이벤트를 관리하세요"
-                : "Manage recurring events with repeat schedules"}
-            </p>
-            <p>📤 {language === "ko" ? "일정을 캘린더 파일로 내보내기 가능" : "Export schedules as calendar files"}</p>
-            <p>
-              ✈️{" "}
-              {language === "ko"
-                ? "AI 여행 최적화로 완벽한 여행 계획을 세우세요"
-                : "Plan perfect trips with AI travel optimizer"}
-            </p>
+      {/* REMOVED DUPLICATE SCHEDULE MANAGEMENT GUIDE CARD */}
+
+      {schedules.filter((s) => s.isSpecialEvent).length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Calendar className="h-5 w-5 text-green-600" />
+            <h2 className="text-lg font-semibold text-green-700">{t("special_days")}</h2>
+            <span className="text-sm text-muted-foreground">
+              ({schedules.filter((s) => s.isSpecialEvent).length}개)
+            </span>
           </div>
-        </Card>
-
-        {schedules.filter((s) => s.isSpecialEvent).length > 0 && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-green-600" />
-              <h2 className="text-lg font-semibold text-green-700">{t("special_days")}</h2>
-              <span className="text-sm text-muted-foreground">
-                ({schedules.filter((s) => s.isSpecialEvent).length}개)
-              </span>
-            </div>
-            <div className="grid gap-4">
-              {schedules
-                .filter((schedule) => schedule.isSpecialEvent)
-                .map((schedule) => (
-                  <Card key={schedule.id} className="p-4 border-l-4 border-green-500">
-                    <div className="flex justify-between items-start gap-4">
-                      <div className="flex-1">
-                        <h3 className="font-semibold">{schedule.title}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {schedule.date} {schedule.time} • {t(schedule.category) || schedule.category}
-                        </p>
-                        {schedule.alarmEnabled && (
-                          <p className="text-xs text-amber-600 mt-1">
-                            🔔 {t("alarm")} {schedule.alarmMinutesBefore}
-                            {t("minutes_before")}
-                          </p>
-                        )}
-                        <p className="mt-2">{schedule.description}</p>
-                      </div>
-                      <div className="flex gap-1 flex-shrink-0 relative z-10">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            exportToCalendar(schedule)
-                          }}
-                          className="p-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md transition-colors flex items-center justify-center"
-                          title={t("add_to_phone_calendar")}
-                        >
-                          <Download className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            handleEdit(schedule)
-                          }}
-                          className="p-2 hover:bg-gray-100 rounded-md transition-colors flex items-center justify-center"
-                          title={t("edit")}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            handleDelete(schedule.id)
-                          }}
-                          className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors flex items-center justify-center"
-                          title={t("delete")}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                    {schedule.attachments && schedule.attachments.length > 0 && (
-                      <div className="mt-4 space-y-2">
-                        <p className="text-sm font-medium">
-                          {t("attachments_label")} ({schedule.attachments.length}개)
-                        </p>
-                        <div className="grid grid-cols-3 gap-2">
-                          {schedule.attachments.map((file: any, idx: number) => {
-                            const isImage =
-                              file.type?.startsWith("image/") ||
-                              file.type === "image" ||
-                              file.type === "drawing" ||
-                              file.name?.match(/\.(jpg|jpeg|png|gif|webp)$/i)
-                            const isVideo =
-                              file.type?.startsWith("video/") ||
-                              file.type === "video" ||
-                              file.name?.match(/\.(mp4|webm|mov)$/i)
-                            const isAudio =
-                              file.type?.startsWith("audio/") ||
-                              file.type === "audio" ||
-                              file.name?.match(/\.(mp3|wav|ogg)$/i)
-                            const mediaUrl = file.url || file.data
-
-                            if (isImage) {
-                              return (
-                                <div key={idx} className="relative border rounded overflow-hidden bg-gray-100">
-                                  <img
-                                    src={mediaUrl || "/placeholder.svg"}
-                                    alt={file.name || "첨부파일"}
-                                    className="w-full h-24 object-cover cursor-pointer hover:opacity-90"
-                                    onClick={() => window.open(mediaUrl, "_blank")}
-                                    onError={(e) => {
-                                      e.currentTarget.src = "/placeholder.svg?height=96&width=96"
-                                    }}
-                                  />
-                                </div>
-                              )
-                            }
-                            if (isVideo) {
-                              return (
-                                <div key={idx} className="border rounded overflow-hidden bg-black">
-                                  <video
-                                    src={mediaUrl}
-                                    controls
-                                    className="w-full h-24 object-cover"
-                                    preload="metadata"
-                                  />
-                                </div>
-                              )
-                            }
-                            if (isAudio) {
-                              return (
-                                <div
-                                  key={idx}
-                                  className="flex items-center justify-center h-24 bg-gray-100 border rounded p-2"
-                                >
-                                  <audio src={mediaUrl} controls className="w-full" preload="metadata" />
-                                </div>
-                              )
-                            }
-                            return (
-                              <div
-                                key={idx}
-                                className="flex items-center justify-center h-24 bg-gray-200 border rounded p-2"
-                              >
-                                <p className="text-xs text-center truncate">{file.name || "파일"}</p>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    )}
-                  </Card>
-                ))}
-            </div>
-          </div>
-        )}
-
-        {schedules.filter((s) => !s.isSpecialEvent).length > 0 && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold">{t("general_schedule")}</h2>
-              <span className="text-sm text-muted-foreground">
-                ({schedules.filter((s) => !s.isSpecialEvent).length}개)
-              </span>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              {schedules.map((schedule) => (
-                <Card key={schedule.id} className="p-6 hover:shadow-lg transition-shadow">
-                  <div className="flex justify-between items-start mb-4">
+          <div className="grid gap-4">
+            {schedules
+              .filter((schedule) => schedule.isSpecialEvent)
+              .map((schedule) => (
+                <Card key={schedule.id} className="p-4 border-l-4 border-green-500">
+                  <div className="flex justify-between items-start gap-4">
                     <div className="flex-1">
-                      <h3 className="font-bold text-lg mb-1">{schedule.title}</h3>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Calendar className="h-4 w-4" />
-                        <span>
-                          {schedule.date} {schedule.time && `• ${schedule.time}`}
-                        </span>
-                      </div>
-                      {schedule.repeatType && schedule.repeatType !== "none" && (
-                        <div className="flex items-center gap-2 mt-2 text-sm text-purple-600">
-                          <Repeat className="h-4 w-4" />
-                          <span>{t(`repeat_${schedule.repeatType}`)}</span>
-                          {schedule.repeatEndDate && <span>~ {schedule.repeatEndDate}</span>}
-                        </div>
+                      <h3 className="font-semibold">{schedule.title}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {schedule.date} {schedule.time} • {t(schedule.category) || schedule.category}
+                      </p>
+                      {schedule.alarmEnabled && (
+                        <p className="text-xs text-amber-600 mt-1">
+                          🔔 {t("alarm")} {schedule.alarmMinutesBefore}
+                          {t("minutes_before")}
+                        </p>
                       )}
+                      <p className="mt-2">{schedule.description}</p>
                     </div>
                     <div className="flex gap-1 flex-shrink-0 relative z-10">
                       <button
@@ -1230,15 +1055,6 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                       </button>
                     </div>
                   </div>
-                  {schedule.description && (
-                    <p className="mt-3 text-sm text-gray-700 dark:text-gray-300">{schedule.description}</p>
-                  )}
-                  {schedule.alarmEnabled && (
-                    <p className="text-xs text-amber-600 mt-1">
-                      🔔 {t("alarm")} {schedule.alarmMinutesBefore}
-                      {t("minutes_before")}
-                    </p>
-                  )}
                   {schedule.attachments && schedule.attachments.length > 0 && (
                     <div className="mt-4 space-y-2">
                       <p className="text-sm font-medium">
@@ -1312,10 +1128,157 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
                   )}
                 </Card>
               ))}
-            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {schedules.filter((s) => !s.isSpecialEvent).length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-semibold">{t("general_schedule")}</h2>
+            <span className="text-sm text-muted-foreground">
+              ({schedules.filter((s) => !s.isSpecialEvent).length}개)
+            </span>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            {schedules.map((schedule) => (
+              <Card key={schedule.id} className="p-6 hover:shadow-lg transition-shadow">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex-1">
+                    <h3 className="font-bold text-lg mb-1">{schedule.title}</h3>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Calendar className="h-4 w-4" />
+                      <span>
+                        {schedule.date} {schedule.time && `• ${schedule.time}`}
+                      </span>
+                    </div>
+                    {schedule.repeatType && schedule.repeatType !== "none" && (
+                      <div className="flex items-center gap-2 mt-2 text-sm text-purple-600">
+                        <Repeat className="h-4 w-4" />
+                        <span>{t(`repeat_${schedule.repeatType}`)}</span>
+                        {schedule.repeatEndDate && <span>~ {schedule.repeatEndDate}</span>}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex gap-1 flex-shrink-0 relative z-10">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        exportToCalendar(schedule)
+                      }}
+                      className="p-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md transition-colors flex items-center justify-center"
+                      title={t("add_to_phone_calendar")}
+                    >
+                      <Download className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        handleEdit(schedule)
+                      }}
+                      className="p-2 hover:bg-gray-100 rounded-md transition-colors flex items-center justify-center"
+                      title={t("edit")}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        handleDelete(schedule.id)
+                      }}
+                      className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors flex items-center justify-center"
+                      title={t("delete")}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+                {schedule.description && (
+                  <p className="mt-3 text-sm text-gray-700 dark:text-gray-300">{schedule.description}</p>
+                )}
+                {schedule.alarmEnabled && (
+                  <p className="text-xs text-amber-600 mt-1">
+                    🔔 {t("alarm")} {schedule.alarmMinutesBefore}
+                    {t("minutes_before")}
+                  </p>
+                )}
+                {schedule.attachments && schedule.attachments.length > 0 && (
+                  <div className="mt-4 space-y-2">
+                    <p className="text-sm font-medium">
+                      {t("attachments_label")} ({schedule.attachments.length}개)
+                    </p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {schedule.attachments.map((file: any, idx: number) => {
+                        const isImage =
+                          file.type?.startsWith("image/") ||
+                          file.type === "image" ||
+                          file.type === "drawing" ||
+                          file.name?.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+                        const isVideo =
+                          file.type?.startsWith("video/") ||
+                          file.type === "video" ||
+                          file.name?.match(/\.(mp4|webm|mov)$/i)
+                        const isAudio =
+                          file.type?.startsWith("audio/") ||
+                          file.type === "audio" ||
+                          file.name?.match(/\.(mp3|wav|ogg)$/i)
+                        const mediaUrl = file.url || file.data
+
+                        if (isImage) {
+                          return (
+                            <div key={idx} className="relative border rounded overflow-hidden bg-gray-100">
+                              <img
+                                src={mediaUrl || "/placeholder.svg"}
+                                alt={file.name || "첨부파일"}
+                                className="w-full h-24 object-cover cursor-pointer hover:opacity-90"
+                                onClick={() => window.open(mediaUrl, "_blank")}
+                                onError={(e) => {
+                                  e.currentTarget.src = "/placeholder.svg?height=96&width=96"
+                                }}
+                              />
+                            </div>
+                          )
+                        }
+                        if (isVideo) {
+                          return (
+                            <div key={idx} className="border rounded overflow-hidden bg-black">
+                              <video src={mediaUrl} controls className="w-full h-24 object-cover" preload="metadata" />
+                            </div>
+                          )
+                        }
+                        if (isAudio) {
+                          return (
+                            <div
+                              key={idx}
+                              className="flex items-center justify-center h-24 bg-gray-100 border rounded p-2"
+                            >
+                              <audio src={mediaUrl} controls className="w-full" preload="metadata" />
+                            </div>
+                          )
+                        }
+                        return (
+                          <div
+                            key={idx}
+                            className="flex items-center justify-center h-24 bg-gray-200 border rounded p-2"
+                          >
+                            <p className="text-xs text-center truncate">{file.name || "파일"}</p>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
       {/* <AdsenseAd slot="3456789012" format="horizontal" /> */}
     </div>
   )
