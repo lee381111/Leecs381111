@@ -639,10 +639,12 @@ export default function ForestNotePage() {
             </Card>
           )}
 
-          <div className="mb-6 space-y-3 max-w-2xl mx-auto">
-            {/* Removed upcoming_events heading that was showing as raw text */}
-            <CalendarWidget events={upcomingEvents} language={language} />
-          </div>
+          {currentSection === "home" && (
+            <div className="mb-6 space-y-3 max-w-2xl mx-auto">
+              {/* Removed upcoming_events heading that was showing as raw text */}
+              <CalendarWidget events={upcomingEvents} language={language} />
+            </div>
+          )}
         </div>
 
         <div className="absolute inset-0 opacity-30 pointer-events-none">
