@@ -796,62 +796,60 @@ export function DiarySection({ onBack, language }: DiarySectionProps) {
       </div>
 
       <div className="space-y-4">
-        {diaries.length === 0 && (
-          <Card className="p-6 bg-gradient-to-br from-rose-50 to-pink-50 border-rose-200">
-            <div className="flex items-start gap-4">
-              <Lightbulb className="h-6 w-6 text-rose-600 flex-shrink-0 mt-1" />
-              <div>
-                <h3 className="font-semibold text-rose-900 mb-3">
-                  {language === "ko"
-                    ? "📖 일기 작성 가이드"
-                    : language === "en"
-                      ? "📖 Diary Writing Guide"
-                      : language === "zh"
-                        ? "📖 日记撰写指南"
-                        : "📖 日記作成ガイド"}
-                </h3>
-                <ul className="space-y-2 text-sm text-rose-800">
-                  <li className="flex items-start gap-2">
-                    <span className="text-rose-600 mt-0.5">•</span>
-                    <span>
-                      {language === "ko"
-                        ? "하루의 소중한 순간과 감정을 기록하세요"
-                        : language === "en"
-                          ? "Record precious moments and emotions of the day"
-                          : language === "zh"
-                            ? "记录一天中的珍贵时刻和情感"
-                            : "一日の大切な瞬間と感情を記録しましょう"}
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-rose-600 mt-0.5">•</span>
-                    <span>
-                      {language === "ko"
-                        ? "기분과 날씨를 선택하여 분위기를 표현하세요"
-                        : language === "en"
-                          ? "Choose mood and weather to express atmosphere"
-                          : language === "zh"
-                            ? "选择心情和天气来表达氛围"
-                            : "気分と天気を選んで雰囲気を表現しましょう"}
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-rose-600 mt-0.5">•</span>
-                    <span>
-                      {language === "ko"
-                        ? "사진이나 그림을 첨부하여 추억을 생생하게 남기세요"
-                        : language === "en"
-                          ? "Attach photos or drawings to vividly preserve memories"
-                          : language === "zh"
-                            ? "附上照片或图画生动地保存回忆"
-                            : "写真や絵を添付して思い出を鮮明に残しましょう"}
-                    </span>
-                  </li>
-                </ul>
-              </div>
+        <Card className="p-6 bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-950 dark:to-pink-950 border-rose-200 dark:border-rose-800">
+          <div className="flex items-start gap-4">
+            <Lightbulb className="h-6 w-6 text-rose-600 dark:text-rose-400 flex-shrink-0 mt-1" />
+            <div>
+              <h3 className="font-semibold text-rose-900 dark:text-rose-100 mb-3">
+                {language === "ko"
+                  ? "📖 일기 작성 가이드"
+                  : language === "en"
+                    ? "📖 Diary Writing Guide"
+                    : language === "zh"
+                      ? "📖 日记撰写指南"
+                      : "📖 日記作成ガイド"}
+              </h3>
+              <ul className="space-y-2 text-sm text-rose-800 dark:text-rose-200">
+                <li className="flex items-start gap-2">
+                  <span className="text-rose-600 dark:text-rose-400 mt-0.5">•</span>
+                  <span>
+                    {language === "ko"
+                      ? "하루의 소중한 순간과 감정을 기록하세요"
+                      : language === "en"
+                        ? "Record precious moments and emotions of the day"
+                        : language === "zh"
+                          ? "记录一天中的珍贵时刻和情感"
+                          : "一日の大切な瞬間と感情を記録しましょう"}
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-rose-600 dark:text-rose-400 mt-0.5">•</span>
+                  <span>
+                    {language === "ko"
+                      ? "기분과 날씨를 선택하여 분위기를 표현하세요"
+                      : language === "en"
+                        ? "Choose mood and weather to express atmosphere"
+                        : language === "zh"
+                          ? "选择心情和天气来表达氛围"
+                          : "気分と天気を選んで雰囲気を表現しましょう"}
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-rose-600 dark:text-rose-400 mt-0.5">•</span>
+                  <span>
+                    {language === "ko"
+                      ? "사진이나 그림을 첨부하여 추억을 생생하게 남기세요"
+                      : language === "en"
+                        ? "Attach photos or drawings to vividly preserve memories"
+                        : language === "zh"
+                          ? "附上照片或图画生动地保存回忆"
+                          : "写真や絵を添付して思い出を鮮明に残しましょう"}
+                  </span>
+                </li>
+              </ul>
             </div>
-          </Card>
-        )}
+          </div>
+        </Card>
 
         {diaries.map((diary) => (
           <Card key={diary.id} className="p-4">
