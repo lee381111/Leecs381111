@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ForestCanvas } from "@/components/forest-canvas"
 import { NotificationCenter } from "@/components/notification-center"
-import { StorageQuotaCard } from "@/components/storage-quota-card"
 import { AlertCircle } from "lucide-react"
 import {
   FileText,
@@ -775,12 +774,7 @@ export default function ForestNotePage() {
                   )}
                   {currentSection === "weather" && <WeatherSection onBack={handleBackToHome} language={language} />}
                   {currentSection === "radio" && <RadioSection onBack={handleBackToHome} language={language} />}
-                  {currentSection === "settings" && (
-                    <>
-                      <SettingsSection onBack={handleBackToHome} language={language} />
-                      <StorageQuotaCard language={language} userId={effectiveUser?.id || ""} />
-                    </>
-                  )}
+                  {currentSection === "settings" && <SettingsSection onBack={handleBackToHome} language={language} />}
                 </>
               )}
             </div>

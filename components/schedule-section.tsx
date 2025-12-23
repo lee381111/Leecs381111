@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, Plus, Download, Edit, Trash2, Calendar, Sparkles, Repeat } from "lucide-react"
+import { ArrowLeft, Plus, Download, Edit, Trash2, Calendar, Sparkles, Repeat, Lightbulb } from "lucide-react"
 import { saveSchedules, loadSchedules } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import type { ScheduleEvent, Attachment } from "@/lib/types"
@@ -985,6 +985,67 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
           </p>
         </div>
       </Card>
+
+      {/* CHANGE START */}
+      <div className="space-y-6">
+        {schedules.length === 0 && (
+          <Card className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
+            <div className="flex items-start gap-4">
+              <Lightbulb className="h-6 w-6 text-purple-600 flex-shrink-0 mt-1" />
+              <div>
+                <h3 className="font-semibold text-purple-900 mb-3">
+                  {language === "ko"
+                    ? "📅 일정 관리 가이드"
+                    : language === "en"
+                      ? "📅 Schedule Management Guide"
+                      : language === "zh"
+                        ? "📅 日程管理指南"
+                        : "📅 スケジュール管理ガイド"}
+                </h3>
+                <ul className="space-y-2 text-sm text-purple-800">
+                  <li className="flex items-start gap-2">
+                    <span className="text-purple-600 mt-0.5">•</span>
+                    <span>
+                      {language === "ko"
+                        ? "중요한 일정을 등록하고 알림을 받으세요"
+                        : language === "en"
+                          ? "Register important schedules and receive notifications"
+                          : language === "zh"
+                            ? "注册重要日程并接收通知"
+                            : "重要な予定を登録してお知らせを受け取りましょう"}
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-purple-600 mt-0.5">•</span>
+                    <span>
+                      {language === "ko"
+                        ? "특별한 날은 기념일로 표시하세요"
+                        : language === "en"
+                          ? "Mark special days as anniversaries"
+                          : language === "zh"
+                            ? "将特殊日子标记为纪念日"
+                            : "特別な日は記念日として表示しましょう"}
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-purple-600 mt-0.5">•</span>
+                    <span>
+                      {language === "ko"
+                        ? "캘린더 뷰로 한눈에 일정을 확인하세요"
+                        : language === "en"
+                          ? "Check schedules at a glance with calendar view"
+                          : language === "zh"
+                            ? "通过日历视图一目了然地查看日程"
+                            : "カレンダービューで一目でスケジュールを確認しましょう"}
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </Card>
+        )}
+      </div>
+      {/* CHANGE END */}
 
       {schedules.filter((s) => s.isSpecialEvent).length > 0 && (
         <div className="space-y-4">

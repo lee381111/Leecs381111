@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Lightbulb } from "lucide-react"
 import {
   ArrowLeft,
   Plus,
@@ -564,6 +565,63 @@ export function BusinessCardSection({ onBack, language }: { onBack: () => void; 
             {getText("addCard")}
           </Button>
         </div>
+
+        {businessCards.length === 0 && (
+          <Card className="p-6 bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-200">
+            <div className="flex items-start gap-4">
+              <Lightbulb className="h-6 w-6 text-emerald-600 flex-shrink-0 mt-1" />
+              <div>
+                <h3 className="font-semibold text-emerald-900 mb-3">
+                  {language === "ko"
+                    ? "💼 명함 관리 가이드"
+                    : language === "en"
+                      ? "💼 Business Card Management Guide"
+                      : language === "zh"
+                        ? "💼 名片管理指南"
+                        : "💼 名刺管理ガイド"}
+                </h3>
+                <ul className="space-y-2 text-sm text-emerald-800">
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-600 mt-0.5">•</span>
+                    <span>
+                      {language === "ko"
+                        ? "받은 명함을 디지털로 보관하세요"
+                        : language === "en"
+                          ? "Store received business cards digitally"
+                          : language === "zh"
+                            ? "以数字方式保存收到的名片"
+                            : "受け取った名刺をデジタルで保管しましょう"}
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-600 mt-0.5">•</span>
+                    <span>
+                      {language === "ko"
+                        ? "메모를 추가하여 만난 상황을 기록하세요"
+                        : language === "en"
+                          ? "Add notes to record the meeting context"
+                          : language === "zh"
+                            ? "添加备注记录会面情况"
+                            : "メモを追加して会った状況を記録しましょう"}
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald-600 mt-0.5">•</span>
+                    <span>
+                      {language === "ko"
+                        ? "회사별, 이름별로 정리하여 쉽게 찾으세요"
+                        : language === "en"
+                          ? "Organize by company or name for easy search"
+                          : language === "zh"
+                            ? "按公司或姓名整理以便查找"
+                            : "会社別、名前別に整理して簡単に見つけましょう"}
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </Card>
+        )}
 
         {businessCards.length > 0 && (
           <div className="flex items-center gap-2 bg-card dark:bg-card p-3 rounded-lg">

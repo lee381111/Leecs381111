@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, Plus, Pencil, Trash2, Car, Calendar } from "lucide-react"
+import { ArrowLeft, Plus, Pencil, Trash2, Car, Calendar, Lightbulb } from "lucide-react"
 import { saveVehicles, loadVehicles, saveVehicleMaintenanceRecords, loadVehicleMaintenanceRecords } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import type { Vehicle, VehicleMaintenanceRecord, PreventiveMaintenanceSchedule, Attachment } from "@/lib/types"
@@ -980,6 +980,60 @@ export function VehicleSection({ onBack, language }: VehicleSectionProps) {
           <Button onClick={() => setScreen("add-vehicle")} className="bg-green-600 hover:bg-green-700 text-white">
             <Plus className="mr-2 h-4 w-4" /> {t("first_vehicle")}
           </Button>
+          <Card className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200 mt-6">
+            <div className="flex items-start gap-4">
+              <Lightbulb className="h-6 w-6 text-purple-600 flex-shrink-0 mt-1" />
+              <div>
+                <h3 className="font-semibold text-purple-900 mb-3">
+                  {language === "ko"
+                    ? "🚗 차량 관리 가이드"
+                    : language === "en"
+                      ? "🚗 Vehicle Management Guide"
+                      : language === "zh"
+                        ? "🚗 车辆管理指南"
+                        : "🚗 車両管理ガイド"}
+                </h3>
+                <ul className="space-y-2 text-sm text-purple-800">
+                  <li className="flex items-start gap-2">
+                    <span className="text-purple-600 mt-0.5">•</span>
+                    <span>
+                      {language === "ko"
+                        ? "차량 정보와 주행 거리를 기록하세요"
+                        : language === "en"
+                          ? "Record vehicle info and mileage"
+                          : language === "zh"
+                            ? "记录车辆信息和里程"
+                            : "車両情報と走行距離を記録しましょう"}
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-purple-600 mt-0.5">•</span>
+                    <span>
+                      {language === "ko"
+                        ? "정비 이력을 관리하여 안전을 유지하세요"
+                        : language === "en"
+                          ? "Manage maintenance history for safety"
+                          : language === "zh"
+                            ? "管理维护历史保持安全"
+                            : "整備履歴を管理して安全を維持しましょう"}
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-purple-600 mt-0.5">•</span>
+                    <span>
+                      {language === "ko"
+                        ? "연비를 추적하여 경제적으로 운전하세요"
+                        : language === "en"
+                          ? "Track fuel efficiency for economical driving"
+                          : language === "zh"
+                            ? "追踪油耗经济驾驶"
+                            : "燃費を追跡して経済的に運転しましょう"}
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </Card>
         </div>
       )}
     </div>
