@@ -38,9 +38,8 @@ class NotificationManager {
               console.log("[v0] ✅ Audio ready for alarms")
             })
             .catch((err) => {
-              console.log("[v0] Audio preparation failed:", err)
+              console.log("[v0] ⚠️ Audio preparation failed:", err)
             })
-          // Remove listeners after first interaction
           document.removeEventListener("click", enableAudio)
           document.removeEventListener("touchstart", enableAudio)
           document.removeEventListener("keydown", enableAudio)
@@ -77,9 +76,18 @@ class NotificationManager {
 
     this.checkInterval = setInterval(() => {
       const now = Date.now()
-      // Check if any scheduled alarm should trigger now (within 5 second window)
       this.alarms.forEach((timeout, id) => {
-        // This is handled by setTimeout, but we log for debugging
+        const alarmTime = new Date(timeout as any).getTime()
+        if (now >= alarmTime - 5000 && now <= alarmTime + 5000) {
+          const config = {
+            id: id,
+            title: "Alarm",
+            message: "Time for your alarm!",
+            scheduleTime: new Date(timeout as any),
+            type: "schedule",
+          }
+          this.showAlarm(config)
+        }
       })
     }, 5000)
   }
@@ -118,6 +126,7 @@ class NotificationManager {
     }
 
     this.cancelAlarm(config.id)
+    this.shownAlarms.delete(config.id)
 
     const timeout = setTimeout(() => {
       console.log(`[v0] ⏰ ALARM TRIGGERED: ${config.title}`)
@@ -130,17 +139,17 @@ class NotificationManager {
 
   showAlarm(config: AlarmConfig) {
     if (this.shownAlarms.has(config.id)) {
-      console.log(`[v0] Alarm already shown: ${config.id}`)
+      console.log(`[v0] ⚠️ Alarm already shown: ${config.id}`)
       return
     }
 
     console.log(`[v0] 🔔 SHOWING ALARM: ${config.title}`)
+    this.shownAlarms.add(config.id)
 
-    if (this.notificationSound) {
-      this.notificationSound.volume = 1.0
+    if (this.notificationSound && this.audioReady) {
       let count = 0
       const playSound = () => {
-        if (this.notificationSound) {
+        if (this.notificationSound && count < 3) {
           this.notificationSound.currentTime = 0
           this.notificationSound
             .play()
@@ -148,19 +157,17 @@ class NotificationManager {
               console.log(`[v0] 🔊 Sound played ${count + 1}/3`)
             })
             .catch((err) => {
-              console.error(`[v0] ❌ Sound play error (${count + 1}/3):`, err)
-              // Try to enable audio if it failed
-              if (!this.audioReady) {
-                console.log("[v0] Audio not ready. User interaction needed first.")
-              }
+              console.error(`[v0] ❌ Sound play error:`, err)
             })
-        }
-        count++
-        if (count < 3) {
-          setTimeout(playSound, 1000)
+          count++
+          if (count < 3) {
+            setTimeout(playSound, 1000)
+          }
         }
       }
       playSound()
+    } else {
+      console.log("[v0] ⚠️ Audio not ready. Click anywhere on the page first to enable sound.")
     }
 
     if (typeof window !== "undefined" && "Notification" in window) {
@@ -171,16 +178,15 @@ class NotificationManager {
             icon: "/icon.png",
             requireInteraction: true,
           })
-          console.log("[v0] Browser notification shown")
+          console.log("[v0] ✅ Browser notification shown")
         } catch (err) {
-          console.error("[v0] Notification error:", err)
+          console.error("[v0] ❌ Notification error:", err)
         }
       } else {
-        console.log("[v0] Notification permission not granted:", Notification.permission)
+        console.log("[v0] ⚠️ Notification permission:", Notification.permission)
       }
     }
 
-    // Show popup
     if (this.popupElement) {
       this.popupElement.innerHTML = `
         <div style="text-align: center;">
@@ -200,9 +206,7 @@ class NotificationManager {
       const closeBtn = document.getElementById("alarm-close-btn")
       if (closeBtn) {
         closeBtn.onclick = () => {
-          if (this.popupElement) {
-            this.popupElement.style.display = "none"
-          }
+          this.hidePopup()
           if (this.notificationSound) {
             this.notificationSound.pause()
             this.notificationSound.currentTime = 0
@@ -210,14 +214,12 @@ class NotificationManager {
         }
       }
 
-      console.log("[v0] Popup shown")
+      console.log("[v0] ✅ Popup displayed")
+
+      setTimeout(() => {
+        this.hidePopup()
+      }, 30000)
     }
-
-    this.shownAlarms.add(config.id)
-
-    setTimeout(() => {
-      this.hidePopup()
-    }, 30000)
   }
 
   cancelAlarm(id: string) {
