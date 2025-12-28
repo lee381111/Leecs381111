@@ -75,8 +75,6 @@ export function NotificationCenter({ language }: NotificationCenterProps) {
         }
       } else {
         console.log("[v0] Offline mode: Skipping notification load from database")
-        // In offline mode, don't try to load from database
-        // Notifications will be restored when connection is back
         setNotifications([])
         setUnreadCount(0)
         return
@@ -86,6 +84,7 @@ export function NotificationCenter({ language }: NotificationCenterProps) {
 
       const now = new Date()
       const upcoming: any[] = []
+      let scheduledCount = 0
 
       // Check schedules
       schedules.forEach((schedule: any) => {
@@ -109,18 +108,7 @@ export function NotificationCenter({ language }: NotificationCenterProps) {
             hoursUntil: (alarmTime.getTime() - now.getTime()) / (1000 * 60 * 60),
           })
 
-          // Show notifications for events within next 24 hours
-          if (alarmTime > now && alarmTime.getTime() - now.getTime() < 24 * 60 * 60 * 1000) {
-            console.log("[v0] Adding schedule to upcoming notifications:", schedule.title)
-            upcoming.push({
-              id: `schedule_${schedule.id}`,
-              type: "schedule",
-              title: schedule.title,
-              time: alarmTime.toLocaleString(language === "ko" ? "ko-KR" : "en-US"),
-              relatedId: schedule.id,
-            })
-
-            // Schedule the notification
+          if (alarmTime > now) {
             notificationManager.scheduleAlarm({
               id: `schedule_${schedule.id}`,
               title: language === "ko" ? "일정 알림" : "Schedule Reminder",
@@ -128,6 +116,18 @@ export function NotificationCenter({ language }: NotificationCenterProps) {
               scheduleTime: alarmTime,
               type: "schedule",
             })
+            scheduledCount++
+
+            if (alarmTime.getTime() - now.getTime() < 24 * 60 * 60 * 1000) {
+              console.log("[v0] Adding schedule to upcoming notifications list:", schedule.title)
+              upcoming.push({
+                id: `schedule_${schedule.id}`,
+                type: "schedule",
+                title: schedule.title,
+                time: alarmTime.toLocaleString(language === "ko" ? "ko-KR" : "en-US"),
+                relatedId: schedule.id,
+              })
+            }
           }
         }
       })
@@ -167,7 +167,8 @@ export function NotificationCenter({ language }: NotificationCenterProps) {
 
       upcoming.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
 
-      console.log("[v0] Total upcoming notifications:", upcoming.length)
+      console.log("[v0] 📊 Scheduled", scheduledCount, "alarms total")
+      console.log("[v0] 📋 Showing", upcoming.length, "notifications in list (within 24h)")
       console.log(
         "[v0] Upcoming notifications:",
         upcoming.map((n) => ({ title: n.title, time: n.time })),

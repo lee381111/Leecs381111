@@ -1,5 +1,3 @@
-import type { Medication } from "./types"
-
 interface AlarmConfig {
   id: string
   title: string
@@ -8,72 +6,102 @@ interface AlarmConfig {
   type: "schedule" | "health" | "vehicle" | "maintenance"
 }
 
+interface MedicationCompletion {
+  date: string
+  times: string[]
+}
+
 class NotificationManager {
   private alarms: Map<string, NodeJS.Timeout> = new Map()
   private notificationSound: HTMLAudioElement | null = null
   private popupElement: HTMLDivElement | null = null
-  private shownAlarms: Set<string> = new Set() // Track which alarms have been shown
+  private shownAlarms: Set<string> = new Set()
 
   constructor() {
     if (typeof window !== "undefined") {
-      this.notificationSound = new Audio(
-        "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUKXh8LdjHAU2j9TwyXkrBSd3xO3akz8IFly05+mnVhMJQ5zh8L1wIAUqgM3y2Io2Bxpqve/nmk0MDU6k4PC5ZBsGNo7U88p6KgUnd8Ts3ZI+Bxdct+fqqFcUCkKb4O+9cB8EKn/M8dmKNgcbarrv6JlNDA1NpODxumYbBjSN0fPLeisEKHjB7eGRPgcXXLjn32pXFAlCmN7uvXAfBSl9yvDZijYHGmm678CXTgwNTKPf8bpmGwUzjdHz03wqBCl4we3gkj4HFlm25d5pVhIKQZje7r1wHwQpfcrw2Yo2Bxppue/gmE4MDU2k4PG6ZhsFM43R89N8KgQoeMHt4JI+BxdcuOfeaVYTCkGY3u69cB8FKX3K8NmKNgcaabrw35dODA1Mo9/xumYbBTON0fPTfCoEKXjB7eCRPgcWWLbl3mlWEgpBmN7uvXAfBSl9yvDZijYHGmm678CXTgwMTKPf8bpmGwU0jdHz03wqBCl4we3gkT4HFlm25d5oVhIKQZje7r1wHwUpfcrw2Yo2Bxppuu+/l04MDU2k4fG6ZhsFM43R89N8KgQoeMHt4JE+BxZZtuXfaVYSCkGY3u69cB8FKX3K8A==",
-      )
-      this.notificationSound.volume = 0.7
-      this.notificationSound.loop = false
-
-      const shownAlarmsData = localStorage.getItem("shown_alarms")
-      if (shownAlarmsData) {
-        try {
-          const shownArray = JSON.parse(shownAlarmsData)
-          this.shownAlarms = new Set(shownArray)
-        } catch (e) {
-          console.error("[v0] Failed to load shown alarms:", e)
-        }
-      }
-    }
-  }
-
-  async requestPermission() {
-    if ("Notification" in window && Notification.permission === "default") {
-      await Notification.requestPermission()
+      this.notificationSound = new Audio("/notification.mp3")
+      this.popupElement = document.createElement("div")
+      this.popupElement.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 24px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        z-index: 10000;
+        display: none;
+      `
+      document.body.appendChild(this.popupElement)
     }
   }
 
   scheduleAlarm(config: AlarmConfig) {
     const now = Date.now()
-    const timeUntilAlarm = config.scheduleTime.getTime() - now
+    const delay = config.scheduleTime.getTime() - now
 
-    if (timeUntilAlarm <= 0) {
-      console.log("[v0] Alarm time has already passed, removing:", config.id)
-      localStorage.removeItem(`alarm_${config.id}`)
-      this.shownAlarms.add(config.id)
-      this.saveShownAlarms()
+    console.log(`[v0] Scheduling alarm: ${config.title}`)
+    console.log(`[v0] Alarm time: ${config.scheduleTime.toLocaleString()}`)
+    console.log(`[v0] Delay: ${Math.round(delay / 1000 / 60)} minutes`)
+
+    if (delay <= 0) {
+      console.log(`[v0] Alarm time has passed, showing immediately`)
+      this.showAlarm(config)
       return
     }
 
-    this.cancelAlarm(config.id)
-
     const timeout = setTimeout(() => {
-      console.log("[v0] Alarm triggered at scheduled time:", config.id)
-      this.showNotification(config.title, config.message)
-      this.alarms.delete(config.id)
-      this.shownAlarms.add(config.id)
-      this.saveShownAlarms()
-      localStorage.removeItem(`alarm_${config.id}`)
-    }, timeUntilAlarm)
+      console.log(`[v0] Triggering alarm: ${config.title}`)
+      this.showAlarm(config)
+    }, delay)
 
     this.alarms.set(config.id, timeout)
+  }
 
-    localStorage.setItem(
-      `alarm_${config.id}`,
-      JSON.stringify({
-        ...config,
-        scheduleTime: config.scheduleTime.toISOString(),
-      }),
-    )
+  showAlarm(config: AlarmConfig) {
+    if (this.shownAlarms.has(config.id)) {
+      console.log(`[v0] Alarm already shown: ${config.id}`)
+      return
+    }
 
-    console.log("[v0] Alarm scheduled:", config.id, "in", timeUntilAlarm / 1000, "seconds")
+    console.log(`[v0] Showing alarm: ${config.title}`)
+
+    // Play sound 3 times
+    if (this.notificationSound) {
+      let count = 0
+      const playSound = () => {
+        this.notificationSound?.play().catch(console.error)
+        count++
+        if (count < 3) {
+          setTimeout(playSound, 1000)
+        }
+      }
+      playSound()
+    }
+
+    // Show browser notification
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification(config.title, {
+        body: config.message,
+        icon: "/icon.png",
+      })
+    }
+
+    // Show popup
+    if (this.popupElement) {
+      this.popupElement.innerHTML = `
+        <h2 style="margin: 0 0 12px 0; font-size: 20px; color: #1a1a1a;">${config.title}</h2>
+        <p style="margin: 0 0 16px 0; color: #666;">${config.message}</p>
+        <button onclick="this.parentElement.style.display='none'" 
+                style="width: 100%; padding: 10px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer;">
+          확인
+        </button>
+      `
+      this.popupElement.style.display = "block"
+    }
+
+    this.shownAlarms.add(config.id)
   }
 
   cancelAlarm(id: string) {
@@ -81,178 +109,41 @@ class NotificationManager {
     if (timeout) {
       clearTimeout(timeout)
       this.alarms.delete(id)
-    }
-    localStorage.removeItem(`alarm_${id}`)
-    this.shownAlarms.delete(id)
-    this.saveShownAlarms()
-    console.log("[v0] Alarm cancelled:", id)
-  }
-
-  private saveShownAlarms() {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("shown_alarms", JSON.stringify(Array.from(this.shownAlarms)))
+      console.log(`[v0] Cancelled alarm: ${id}`)
     }
   }
 
-  showNotification(title: string, body: string) {
-    if (this.notificationSound) {
-      this.notificationSound.currentTime = 0
-      let playCount = 0
-      const maxPlays = 3 // Play 3 times
-
-      const playNext = () => {
-        if (playCount < maxPlays) {
-          this.notificationSound!.currentTime = 0
-          this.notificationSound!.play().catch((err) => {
-            console.log("[v0] Could not play notification sound:", err)
-          })
-          playCount++
-        }
-      }
-
-      this.notificationSound.addEventListener("ended", playNext, { once: false })
-      playNext()
-
-      // Clean up after all plays
-      setTimeout(() => {
-        this.notificationSound?.removeEventListener("ended", playNext)
-      }, 10000)
-    }
-
-    if ("Notification" in window && Notification.permission === "granted") {
-      const notification = new Notification(title, {
-        body,
-        icon: "/icon.svg",
-        requireInteraction: false, // Changed to false so it auto-dismisses
-      })
-
-      notification.onclick = () => {
-        window.focus()
-        notification.close()
-      }
-    }
-  }
-
-  // Kept for potential future use but not called
-  private showInAppPopup(title: string, body: string) {
+  hidePopup() {
     if (this.popupElement) {
-      document.body.removeChild(this.popupElement)
+      this.popupElement.style.display = "none"
     }
-
-    this.popupElement = document.createElement("div")
-    this.popupElement.style.cssText = `
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: white;
-      border: 3px solid #10b981;
-      border-radius: 12px;
-      padding: 24px;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-      z-index: 10000;
-      min-width: 300px;
-      max-width: 500px;
-      animation: alarmPulse 1s infinite;
-    `
-
-    const style = document.createElement("style")
-    style.textContent = `
-      @keyframes alarmPulse {
-        0%, 100% { transform: translate(-50%, -50%) scale(1); }
-        50% { transform: translate(-50%, -50%) scale(1.05); }
-      }
-    `
-    document.head.appendChild(style)
-
-    this.popupElement.innerHTML = `
-      <div style="text-align: center;">
-        <div style="font-size: 48px; margin-bottom: 12px;">⏰</div>
-        <h2 style="margin: 0 0 12px 0; color: #10b981; font-size: 24px;">${title}</h2>
-        <p style="margin: 0 0 20px 0; color: #374151; font-size: 16px;">${body}</p>
-        <button id="alarm-dismiss" style="
-          background: #10b981;
-          color: white;
-          border: none;
-          border-radius: 8px;
-          padding: 12px 24px;
-          font-size: 16px;
-          font-weight: 600;
-          cursor: pointer;
-        ">확인</button>
-      </div>
-    `
-
-    document.body.appendChild(this.popupElement)
-
-    const dismissButton = document.getElementById("alarm-dismiss")
-    dismissButton?.addEventListener("click", () => {
-      if (this.popupElement) {
-        document.body.removeChild(this.popupElement)
-        this.popupElement = null
-      }
-    })
-
-    // Auto dismiss after 30 seconds
-    setTimeout(() => {
-      if (this.popupElement) {
-        document.body.removeChild(this.popupElement)
-        this.popupElement = null
-      }
-    }, 30000)
-  }
-
-  restoreAlarms() {
-    console.log("[v0] Restoring alarms from localStorage")
-    const keys = Object.keys(localStorage)
-    const now = Date.now()
-
-    keys.forEach((key) => {
-      if (key.startsWith("alarm_")) {
-        try {
-          const data = localStorage.getItem(key)
-          if (data) {
-            const config = JSON.parse(data)
-            config.scheduleTime = new Date(config.scheduleTime)
-
-            if (config.scheduleTime.getTime() <= now) {
-              console.log("[v0] Removing expired alarm:", config.id)
-              localStorage.removeItem(key)
-              this.shownAlarms.add(config.id)
-              this.saveShownAlarms()
-            } else if (!this.shownAlarms.has(config.id) && !this.alarms.has(config.id)) {
-              console.log("[v0] Restoring alarm:", config.id)
-              this.scheduleAlarm(config)
-            } else {
-              console.log("[v0] Skipping already shown/scheduled alarm:", config.id)
-            }
-          }
-        } catch (error) {
-          console.error("[v0] Failed to restore alarm:", key, error)
-          localStorage.removeItem(key)
-        }
-      }
-    })
   }
 }
 
 export const notificationManager = new NotificationManager()
 
-export function scheduleNotification(id: string, title: string, message: string, time: string) {
-  const [hours, minutes] = time.split(":").map(Number)
-  const now = new Date()
-  const scheduleTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes)
+const MEDICATION_COMPLETIONS_KEY = "medication_completions"
 
-  if (scheduleTime.getTime() < now.getTime()) {
-    scheduleTime.setDate(scheduleTime.getDate() + 1)
-  }
+export function setupMedicationAlarms(medication: any) {
+  if (!medication.alarmEnabled || !medication.times) return
 
-  notificationManager.scheduleAlarm({
-    id,
-    title,
-    message,
-    scheduleTime,
-    type: "health",
+  medication.times.forEach((time: string) => {
+    const [hours, minutes] = time.split(":").map(Number)
+    const now = new Date()
+    const alarmDate = new Date()
+    alarmDate.setHours(hours, minutes, 0, 0)
+
+    if (alarmDate <= now) {
+      alarmDate.setDate(alarmDate.getDate() + 1)
+    }
+
+    notificationManager.scheduleAlarm({
+      id: `med_${medication.id}_${time}`,
+      title: `💊 ${medication.name} 복용 시간`,
+      message: `${medication.name}을(를) 복용하세요`,
+      scheduleTime: alarmDate,
+      type: "health",
+    })
   })
 }
 
@@ -260,40 +151,38 @@ export function cancelNotification(id: string) {
   notificationManager.cancelAlarm(id)
 }
 
-export function setupMedicationAlarms(medications: Medication[]) {
-  medications.forEach((med) => {
-    if (med.alarmEnabled && med.isActive) {
-      med.times.forEach((time) => {
-        scheduleNotification(`med_${med.id}_${time}`, `💊 복약 시간`, `${med.name} ${med.dosage} 복용 시간입니다`, time)
-      })
-    }
-  })
+export function getMedicationCompletions(medicationId: string, date: string): string[] {
+  if (typeof window === "undefined") return []
+
+  const data = localStorage.getItem(MEDICATION_COMPLETIONS_KEY)
+  if (!data) return []
+
+  try {
+    const completions = JSON.parse(data)
+    const key = `${medicationId}_${date}`
+    return completions[key] || []
+  } catch {
+    return []
+  }
 }
 
-export function getMedicationCompletions(medId: string, date: string): string[] {
-  const completions = JSON.parse(localStorage.getItem("medication_completions") || "{}")
-  return completions[medId]?.[date] || []
-}
+export function toggleMedicationCompletion(medicationId: string, time: string, date: string) {
+  if (typeof window === "undefined") return
 
-export function toggleMedicationCompletion(medId: string, time: string, date: string) {
-  const completions = JSON.parse(localStorage.getItem("medication_completions") || "{}")
-  if (!completions[medId]) {
-    completions[medId] = {}
-  }
-  if (!completions[medId][date]) {
-    completions[medId][date] = []
+  const data = localStorage.getItem(MEDICATION_COMPLETIONS_KEY)
+  const completions = data ? JSON.parse(data) : {}
+  const key = `${medicationId}_${date}`
+
+  if (!completions[key]) {
+    completions[key] = []
   }
 
-  const index = completions[medId][date].indexOf(time)
+  const index = completions[key].indexOf(time)
   if (index > -1) {
-    completions[medId][date].splice(index, 1)
+    completions[key].splice(index, 1)
   } else {
-    completions[medId][date].push(time)
-    completions[medId][date].sort()
+    completions[key].push(time)
   }
 
-  localStorage.setItem("medication_completions", JSON.stringify(completions))
-  window.dispatchEvent(new Event("storage"))
-
-  console.log(`[v0] Medication ${medId} completion toggled for ${time} on ${date}`)
+  localStorage.setItem(MEDICATION_COMPLETIONS_KEY, JSON.stringify(completions))
 }
