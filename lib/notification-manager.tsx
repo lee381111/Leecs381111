@@ -11,6 +11,8 @@ interface MedicationCompletion {
   times: string[]
 }
 
+const SHOWN_ALARMS_KEY = "shown_alarms"
+
 class NotificationManager {
   private alarms: Map<string, NodeJS.Timeout> = new Map()
   private notificationSound: HTMLAudioElement | null = null
@@ -21,6 +23,8 @@ class NotificationManager {
 
   constructor() {
     if (typeof window !== "undefined") {
+      this.loadShownAlarms()
+
       this.notificationSound = new Audio(
         "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZSA0PVqzn77BdGAU+ltryxnMpBSuAzvLZiTYIG2S57OihUBALTKXh8bllHAU2jtXyyn0vBSh+zPDckj0JE12y6OmoWBYKQ5zd8sFuJAU1iNPz0oM0BiJsv+/mnEsPDlOq5O+zYBoGPJnY8st6LgUuhM/y24k3CBlntOrpoVMRC0mi4PG7aB8GM43T8tGAMgYfbL/u55xLD",
       )
@@ -68,6 +72,51 @@ class NotificationManager {
       document.body.appendChild(this.popupElement)
 
       this.startAlarmCheck()
+      this.cleanupOldShownAlarms()
+    }
+  }
+
+  private loadShownAlarms() {
+    try {
+      const stored = localStorage.getItem(SHOWN_ALARMS_KEY)
+      if (stored) {
+        const data = JSON.parse(stored)
+        this.shownAlarms = new Set(data)
+        console.log(`[v0] Loaded ${this.shownAlarms.size} previously shown alarms`)
+      }
+    } catch (err) {
+      console.error("[v0] Error loading shown alarms:", err)
+    }
+  }
+
+  private saveShownAlarms() {
+    try {
+      const data = Array.from(this.shownAlarms)
+      localStorage.setItem(SHOWN_ALARMS_KEY, JSON.stringify(data))
+    } catch (err) {
+      console.error("[v0] Error saving shown alarms:", err)
+    }
+  }
+
+  private cleanupOldShownAlarms() {
+    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
+    const toDelete: string[] = []
+
+    this.shownAlarms.forEach((id) => {
+      // Extract timestamp from alarm ID if it contains a timestamp
+      const match = id.match(/(\d{4}-\d{2}-\d{2})/)
+      if (match) {
+        const alarmDate = new Date(match[1])
+        if (alarmDate.getTime() < sevenDaysAgo) {
+          toDelete.push(id)
+        }
+      }
+    })
+
+    toDelete.forEach((id) => this.shownAlarms.delete(id))
+    if (toDelete.length > 0) {
+      this.saveShownAlarms()
+      console.log(`[v0] Cleaned up ${toDelete.length} old shown alarms`)
     }
   }
 
@@ -98,8 +147,6 @@ class NotificationManager {
         Notification.requestPermission().then((permission) => {
           console.log("[v0] Notification permission:", permission)
         })
-      } else {
-        console.log("[v0] Current notification permission:", Notification.permission)
       }
     }
   }
@@ -113,20 +160,29 @@ class NotificationManager {
     const now = Date.now()
     const delay = config.scheduleTime.getTime() - now
 
+    if (this.shownAlarms.has(config.id)) {
+      console.log(`[v0] ⏭️ Skipping already shown alarm: ${config.id}`)
+      return
+    }
+
+    if (delay < -5 * 60 * 1000) {
+      console.log(`[v0] ⏭️ Skipping past alarm: ${config.title} (${Math.round(delay / 1000 / 60)} minutes ago)`)
+      return
+    }
+
     console.log(`[v0] ========== Scheduling alarm ==========`)
     console.log(`[v0] Title: ${config.title}`)
     console.log(`[v0] Alarm time: ${config.scheduleTime.toLocaleString()}`)
     console.log(`[v0] Current time: ${new Date().toLocaleString()}`)
     console.log(`[v0] Delay: ${Math.round(delay / 1000)} seconds (${Math.round(delay / 1000 / 60)} minutes)`)
 
-    if (delay <= 0) {
-      console.log(`[v0] ⚠️ Alarm time has passed, showing immediately`)
+    if (delay <= 0 && delay > -5 * 60 * 1000) {
+      console.log(`[v0] ⚠️ Alarm time just passed, showing immediately`)
       this.showAlarm(config)
       return
     }
 
     this.cancelAlarm(config.id)
-    this.shownAlarms.delete(config.id)
 
     const timeout = setTimeout(() => {
       console.log(`[v0] ⏰ ALARM TRIGGERED: ${config.title}`)
@@ -145,6 +201,7 @@ class NotificationManager {
 
     console.log(`[v0] 🔔 SHOWING ALARM: ${config.title}`)
     this.shownAlarms.add(config.id)
+    this.saveShownAlarms()
 
     if (this.notificationSound && this.audioReady) {
       let count = 0
@@ -182,8 +239,6 @@ class NotificationManager {
         } catch (err) {
           console.error("[v0] ❌ Notification error:", err)
         }
-      } else {
-        console.log("[v0] ⚠️ Notification permission:", Notification.permission)
       }
     }
 
@@ -256,9 +311,9 @@ export function setupMedicationAlarms(medication: any) {
     }
 
     notificationManager.scheduleAlarm({
-      id: `med_${medication.id}_${time}`,
-      title: `💊 ${medication.name} 복용 시간`,
-      message: `${medication.name}을(를) 복용하세요`,
+      id: `medication_${medication.id}_${time}`,
+      title: "복약 시간",
+      message: `${medication.name} 복용 시간입니다`,
       scheduleTime: alarmDate,
       type: "health",
     })
