@@ -17,12 +17,40 @@ class NotificationManager {
   private popupElement: HTMLDivElement | null = null
   private shownAlarms: Set<string> = new Set()
   private checkInterval: NodeJS.Timeout | null = null
+  private audioReady = false
 
   constructor() {
     if (typeof window !== "undefined") {
       this.notificationSound = new Audio(
         "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZSA0PVqzn77BdGAU+ltryxnMpBSuAzvLZiTYIG2S57OihUBALTKXh8bllHAU2jtXyyn0vBSh+zPDckj0JE12y6OmoWBYKQ5zd8sFuJAU1iNPz0oM0BiJsv+/mnEsPDlOq5O+zYBoGPJnY8st6LgUuhM/y24k3CBlntOrpoVMRC0mi4PG7aB8GM43T8tGAMgYfbL/u55xLD",
       )
+      this.notificationSound.volume = 1.0
+      this.notificationSound.load()
+
+      const enableAudio = () => {
+        if (!this.audioReady && this.notificationSound) {
+          this.notificationSound
+            .play()
+            .then(() => {
+              this.notificationSound!.pause()
+              this.notificationSound!.currentTime = 0
+              this.audioReady = true
+              console.log("[v0] ✅ Audio ready for alarms")
+            })
+            .catch((err) => {
+              console.log("[v0] Audio preparation failed:", err)
+            })
+          // Remove listeners after first interaction
+          document.removeEventListener("click", enableAudio)
+          document.removeEventListener("touchstart", enableAudio)
+          document.removeEventListener("keydown", enableAudio)
+        }
+      }
+
+      document.addEventListener("click", enableAudio)
+      document.addEventListener("touchstart", enableAudio)
+      document.addEventListener("keydown", enableAudio)
+
       this.popupElement = document.createElement("div")
       this.popupElement.style.cssText = `
         position: fixed;
@@ -36,6 +64,7 @@ class NotificationManager {
         z-index: 10000;
         display: none;
         min-width: 300px;
+        max-width: 400px;
       `
       document.body.appendChild(this.popupElement)
 
@@ -108,12 +137,24 @@ class NotificationManager {
     console.log(`[v0] 🔔 SHOWING ALARM: ${config.title}`)
 
     if (this.notificationSound) {
+      this.notificationSound.volume = 1.0
       let count = 0
       const playSound = () => {
-        this.notificationSound
-          ?.play()
-          .then(() => console.log(`[v0] Sound played ${count + 1}/3`))
-          .catch((err) => console.error("[v0] Sound play error:", err))
+        if (this.notificationSound) {
+          this.notificationSound.currentTime = 0
+          this.notificationSound
+            .play()
+            .then(() => {
+              console.log(`[v0] 🔊 Sound played ${count + 1}/3`)
+            })
+            .catch((err) => {
+              console.error(`[v0] ❌ Sound play error (${count + 1}/3):`, err)
+              // Try to enable audio if it failed
+              if (!this.audioReady) {
+                console.log("[v0] Audio not ready. User interaction needed first.")
+              }
+            })
+        }
         count++
         if (count < 3) {
           setTimeout(playSound, 1000)
@@ -142,12 +183,17 @@ class NotificationManager {
     // Show popup
     if (this.popupElement) {
       this.popupElement.innerHTML = `
-        <h2 style="margin: 0 0 12px 0; font-size: 20px; color: #1a1a1a; font-weight: 600;">🔔 ${config.title}</h2>
-        <p style="margin: 0 0 16px 0; color: #666; font-size: 16px;">${config.message}</p>
-        <button id="alarm-close-btn"
-                style="width: 100%; padding: 12px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 500;">
-          확인
-        </button>
+        <div style="text-align: center;">
+          <div style="font-size: 48px; margin-bottom: 16px;">🔔</div>
+          <h2 style="margin: 0 0 12px 0; font-size: 20px; color: #1a1a1a; font-weight: 600;">${config.title}</h2>
+          <p style="margin: 0 0 16px 0; color: #666; font-size: 16px;">${config.message}</p>
+          <button id="alarm-close-btn"
+                  style="width: 100%; padding: 12px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 500; transition: background 0.2s;"
+                  onmouseover="this.style.background='#2563eb'"
+                  onmouseout="this.style.background='#3b82f6'">
+            확인
+          </button>
+        </div>
       `
       this.popupElement.style.display = "block"
 
@@ -156,6 +202,10 @@ class NotificationManager {
         closeBtn.onclick = () => {
           if (this.popupElement) {
             this.popupElement.style.display = "none"
+          }
+          if (this.notificationSound) {
+            this.notificationSound.pause()
+            this.notificationSound.currentTime = 0
           }
         }
       }
