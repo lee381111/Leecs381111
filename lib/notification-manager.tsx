@@ -37,6 +37,19 @@ class NotificationManager {
     }
   }
 
+  requestPermission() {
+    if (typeof window !== "undefined" && "Notification" in window) {
+      if (Notification.permission === "default") {
+        Notification.requestPermission()
+      }
+    }
+  }
+
+  restoreAlarms() {
+    console.log("[v0] Restoring alarms from storage...")
+    // Future: Load alarms from localStorage if needed
+  }
+
   scheduleAlarm(config: AlarmConfig) {
     const now = Date.now()
     const delay = config.scheduleTime.getTime() - now
@@ -50,6 +63,8 @@ class NotificationManager {
       this.showAlarm(config)
       return
     }
+
+    this.cancelAlarm(config.id)
 
     const timeout = setTimeout(() => {
       console.log(`[v0] Triggering alarm: ${config.title}`)
