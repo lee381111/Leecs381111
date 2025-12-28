@@ -177,6 +177,14 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
         const scheduleDateTime = new Date(`${formData.date}T${formData.time}`)
         const alarmTime = new Date(scheduleDateTime.getTime() - formData.alarmMinutesBefore * 60 * 1000)
 
+        console.log("[v0] ========== Setting up alarm ==========")
+        console.log("[v0] Schedule date/time:", scheduleDateTime.toLocaleString())
+        console.log("[v0] Minutes before:", formData.alarmMinutesBefore)
+        console.log("[v0] Alarm time:", alarmTime.toLocaleString())
+        console.log("[v0] Current time:", new Date().toLocaleString())
+
+        notificationManager.requestPermission()
+
         if (alarmTime.getTime() > Date.now()) {
           notificationManager.scheduleAlarm({
             id: `schedule_${scheduleId}`,
@@ -185,6 +193,9 @@ export function ScheduleSection({ onBack, language }: ScheduleSectionProps) {
             scheduleTime: alarmTime,
             type: "schedule",
           })
+          console.log("[v0] ✅ Alarm setup complete")
+        } else {
+          console.log("[v0] ⚠️ Alarm time is in the past, not scheduling")
         }
       } else {
         notificationManager.cancelAlarm(`schedule_${scheduleId}`)
