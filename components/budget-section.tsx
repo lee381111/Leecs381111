@@ -5,7 +5,19 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { ArrowLeft, Plus, Trash2, Edit2, PieChart, Lock, Unlock, Lightbulb } from "lucide-react"
+import {
+  ArrowLeft,
+  Plus,
+  TrendingUp,
+  TrendingDown,
+  Wallet,
+  Trash2,
+  Edit2,
+  PieChart,
+  Lock,
+  Unlock,
+  Calendar,
+} from "lucide-react"
 import type { Language, BudgetTransaction } from "@/lib/types"
 import { saveBudgetTransactions, loadBudgetTransactions } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
@@ -881,7 +893,7 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-6">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
@@ -903,64 +915,79 @@ export function BudgetSection({ onBack, language }: BudgetSectionProps) {
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Card className="p-6 bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200">
-            <div className="flex items-start gap-4">
-              <Lightbulb className="h-6 w-6 text-amber-600 flex-shrink-0 mt-1" />
-              <div>
-                <h3 className="font-semibold text-amber-900 mb-3">
-                  {language === "ko"
-                    ? "💰 예산 관리 가이드"
-                    : language === "en"
-                      ? "💰 Budget Management Guide"
-                      : language === "zh"
-                        ? "💰 预算管理指南"
-                        : "💰 予算管理ガイド"}
-                </h3>
-                <ul className="space-y-2 text-sm text-amber-800">
-                  <li className="flex items-start gap-2">
-                    <span className="text-amber-600 mt-0.5">•</span>
-                    <span>
-                      {language === "ko"
-                        ? "수입과 지출을 꾸준히 기록하세요"
-                        : language === "en"
-                          ? "Record income and expenses regularly"
-                          : language === "zh"
-                            ? "定期记录收入和支出"
-                            : "収入と支出を継続的に記録しましょう"}
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-amber-600 mt-0.5">•</span>
-                    <span>
-                      {language === "ko"
-                        ? "AI 분석으로 지출 패턴을 파악하세요"
-                        : language === "en"
-                          ? "Analyze spending patterns with AI"
-                          : language === "zh"
-                            ? "使用AI分析支出模式"
-                            : "AIで支出パターンを把握しましょう"}
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-amber-600 mt-0.5">•</span>
-                    <span>
-                      {language === "ko"
-                        ? "월별 예산을 설정하고 지출을 관리하세요"
-                        : language === "en"
-                          ? "Set monthly budget and manage expenses"
-                          : language === "zh"
-                            ? "设置每月预算并管理支出"
-                            : "月次予算を設定して支出を管理しましょう"}
-                    </span>
-                  </li>
-                </ul>
-              </div>
+        <Card className="p-4 mb-4 dark:bg-card">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-gray-600 dark:text-gray-400">{getText("monthlyTotal")}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium dark:text-white">
+                {selectedMonth.split("-")[0]}
+                {getText("year")} {selectedMonth.split("-")[1]}
+                {getText("month")}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  const input = document.createElement("input")
+                  input.type = "month"
+                  input.value = selectedMonth
+                  input.onchange = (e) => setSelectedMonth((e.target as HTMLInputElement).value)
+                  input.click()
+                  input.showPicker?.()
+                }}
+                className="h-8 px-2"
+              >
+                <Calendar className="h-4 w-4" />
+              </Button>
             </div>
-          </Card>
+          </div>
+          <div className="grid grid-cols-3 gap-4 mt-4">
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
+                <span className="text-xs text-gray-600 dark:text-gray-400">{getText("income")}</span>
+              </div>
+              <p className="text-lg font-bold text-emerald-600 dark:text-emerald-300">
+                <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                  <span>+{monthlyIncome.toLocaleString()}</span>
+                  <span>{getText("krw_unit")}</span>
+                </span>
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <TrendingDown className="h-4 w-4 text-rose-600 dark:text-rose-300" />
+                <span className="text-xs text-gray-600 dark:text-gray-400">{getText("expense")}</span>
+              </div>
+              <p className="text-lg font-bold text-rose-600 dark:text-rose-300">
+                <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                  <span>-{monthlyExpense.toLocaleString()}</span>
+                  <span>{getText("krw_unit")}</span>
+                </span>
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <Wallet className="h-4 w-4 text-blue-600 dark:text-blue-300" />
+                <span className="text-xs text-gray-600 dark:text-gray-400">{getText("balance")}</span>
+              </div>
+              <p
+                className={`text-lg font-bold ${monthlyBalance >= 0 ? "text-emerald-600 dark:text-emerald-300" : "text-rose-600 dark:text-rose-300"}`}
+              >
+                <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                  <span>{monthlyBalance.toLocaleString()}</span>
+                  <span>{getText("krw_unit")}</span>
+                </span>
+              </p>
+            </div>
+          </div>
+        </Card>
 
+        <div className="space-y-2">
           {transactions.length === 0 ? (
-            <></>
+            <Card className="p-8 text-center dark:bg-card">
+              <p className="text-muted-foreground dark:text-gray-400">{getText("noTransactions")}</p>
+            </Card>
           ) : (
             transactions
               .filter((t) => t.date.startsWith(selectedMonth))

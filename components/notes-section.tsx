@@ -3,52 +3,34 @@
 import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card } from "@/components/ui/card"
+import { Textarea } from "@/components/ui/textarea"
 import {
   ArrowLeft,
   Plus,
-  Edit2,
-  Trash2,
   Search,
+  Trash2,
+  Edit2,
+  Save,
   Tag,
   Eye,
   Share2,
+  Sparkles,
   Type,
   AlignLeft,
   AlignCenter,
   AlignRight,
   Eraser,
-  Sparkles,
-  Save,
-  Lightbulb,
 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { loadNotes, saveNotes, type Note } from "@/lib/storage"
+import { saveNotes, loadNotes } from "@/lib/storage"
+import { useAuth } from "@/lib/auth-context"
 import { getTranslation } from "@/lib/i18n"
+import type { Note, Language, Attachment } from "@/lib/types"
 import { MediaTools } from "@/components/media-tools"
 import { Spinner } from "@/components/ui/spinner"
 import { cn } from "@/lib/utils"
-import { useAuth } from "@/lib/auth-context"
-
-// Define interfaces and types if they are not globally available or imported
-// Assuming Language is defined in "@/lib/i18n" or similar
-type Language = "en" | "ko" | "zh" | "ja" // Example, adjust as needed
-
-interface Attachment {
-  url?: string
-  data?: string
-  type?: string
-  name?: string
-}
-
-// Mock or import useAuth hook
-// For demonstration, let's assume a mock implementation
-// const useAuth = () => {
-//   // Replace with your actual authentication hook
-//   return { user: { id: "mock-user-id" } }
-// }
 
 interface NotesSectionProps {
   onBack: () => void
@@ -57,7 +39,6 @@ interface NotesSectionProps {
 
 export function NotesSection({ onBack, language }: NotesSectionProps) {
   const { user } = useAuth()
-
   const [notes, setNotes] = useState<Note[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -119,24 +100,15 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
 
   useEffect(() => {
     loadData()
-  }, [user]) // Dependency on user ensures data loads when user info is available
+  }, [user])
 
   const loadData = async () => {
-    // Guest user ID from your context/implementation
-    const GUEST_USER_ID = "00000000-0000-0000-0000-000000000000"
-    const isGuest = user?.id === GUEST_USER_ID
+    if (!user?.id) return
 
     try {
       setLoading(true)
-
-      if (isGuest) {
-        const localData = localStorage.getItem("forest-note-notes")
-        const data = localData ? JSON.parse(localData) : []
-        setNotes(data)
-      } else if (user?.id) {
-        const data = await loadNotes(user.id)
-        setNotes(data)
-      }
+      const data = await loadNotes(user.id)
+      setNotes(data)
     } catch (err) {
       console.error("[v0] Error loading notes:", err)
     } finally {
@@ -183,13 +155,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
       setNotes(updated)
 
       // Save to database
-      const GUEST_USER_ID = "00000000-0000-0000-0000-000000000000"
-      const isGuest = user.id === GUEST_USER_ID
-      if (!isGuest) {
-        await saveNotes(updated, user.id)
-      } else {
-        localStorage.setItem("forest-note-notes", JSON.stringify(updated))
-      }
+      await saveNotes(updated, user.id)
 
       setFormData({ title: "", content: "", tags: "", attachments: [] })
       setAttachments([])
@@ -232,13 +198,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
     try {
       const updated = notes.filter((n) => n.id !== id)
       setNotes(updated)
-      const GUEST_USER_ID = "00000000-0000-0000-0000-000000000000"
-      const isGuest = user.id === GUEST_USER_ID
-      if (!isGuest) {
-        await saveNotes(updated, user.id)
-      } else {
-        localStorage.setItem("forest-note-notes", JSON.stringify(updated))
-      }
+      await saveNotes(updated, user.id)
       alert(language === "ko" ? "삭제되었습니다" : "Deleted")
     } catch (err) {
       console.error("[v0] Delete failed:", err)
@@ -395,7 +355,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
       text: shareText,
     }
 
-    if (navigator.share && navigator.canShare(shareData)) {
+    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
       try {
         await navigator.share(shareData)
         console.log("[v0] Note shared successfully")
@@ -480,24 +440,6 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
     e.preventDefault()
     const pastedText = e.clipboardData.getData("text")
 
-    if (!isRichTextMode) {
-      const textarea = e.currentTarget as HTMLTextAreaElement
-      const start = textarea.selectionStart
-      const end = textarea.selectionEnd
-      const newContent = formData.content.substring(0, start) + pastedText + formData.content.substring(end)
-      setFormData({ ...formData, content: newContent })
-
-      // 커서 위치 복원
-      setTimeout(() => {
-        textarea.selectionStart = textarea.selectionEnd = start + pastedText.length
-      }, 0)
-      return
-    }
-
-    if (contentEditableRef.current && document.activeElement !== contentEditableRef.current) {
-      contentEditableRef.current.focus()
-    }
-
     // Detect numbered paragraphs (1. 2. 3. or 1) 2) 3) etc.)
     const hasNumberedParagraphs = /^\s*\d+[.)]\s+/m.test(pastedText)
 
@@ -514,7 +456,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
         .join("\n\n")
 
       const selection = window.getSelection()
-      if (selection && selection.rangeCount > 0 && contentEditableRef.current?.contains(selection.anchorNode)) {
+      if (selection && selection.rangeCount > 0) {
         const range = selection.getRangeAt(0)
         range.deleteContents()
         const textNode = document.createTextNode(formatted)
@@ -523,13 +465,6 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
         range.setEndAfter(textNode)
         selection.removeAllRanges()
         selection.addRange(range)
-
-        if (contentEditableRef.current) {
-          setFormData({ ...formData, content: contentEditableRef.current.innerHTML })
-        }
-      } else if (contentEditableRef.current) {
-        contentEditableRef.current.innerHTML += formatted
-        setFormData({ ...formData, content: contentEditableRef.current.innerHTML })
       }
     } else {
       // Normal paste - just clean up extra whitespace
@@ -539,7 +474,7 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
         .join("\n\n")
 
       const selection = window.getSelection()
-      if (selection && selection.rangeCount > 0 && contentEditableRef.current?.contains(selection.anchorNode)) {
+      if (selection && selection.rangeCount > 0) {
         const range = selection.getRangeAt(0)
         range.deleteContents()
         const textNode = document.createTextNode(formatted)
@@ -548,13 +483,6 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
         range.setEndAfter(textNode)
         selection.removeAllRanges()
         selection.addRange(range)
-
-        if (contentEditableRef.current) {
-          setFormData({ ...formData, content: contentEditableRef.current.innerHTML })
-        }
-      } else if (contentEditableRef.current) {
-        contentEditableRef.current.innerHTML += formatted
-        setFormData({ ...formData, content: contentEditableRef.current.innerHTML })
       }
     }
   }
@@ -1092,8 +1020,6 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
         </Button>
       </div>
 
-      {/* 상단 광고 제거됨 */}
-
       <div className="relative">
         <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
         <Input
@@ -1175,8 +1101,6 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
           </Card>
         </div>
       )}
-
-      {/* <AdsenseAd slot="0987654321" format="horizontal" /> */}
 
       <div className="grid gap-4">
         {filteredNotes.map((note) => (
@@ -1308,61 +1232,17 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
             </div>
           </Card>
         ))}
-
-        <Card className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-          <div className="flex items-start gap-4">
-            <Lightbulb className="h-6 w-6 text-blue-600 flex-shrink-0 mt-1" />
-            <div>
-              <h3 className="font-semibold text-blue-900 mb-3">
-                {language === "ko"
-                  ? "📝 노트 작성 가이드"
-                  : language === "en"
-                    ? "📝 Note Writing Guide"
-                    : language === "zh"
-                      ? "📝 笔记撰写指南"
-                      : "📝 ノート作成ガイド"}
-              </h3>
-              <ul className="space-y-2 text-sm text-blue-800">
-                <li className="flex items-start gap-2">
-                  <span className="text-blue-600 mt-0.5">•</span>
-                  <span>
-                    {language === "ko"
-                      ? "중요한 아이디어나 메모를 자유롭게 작성하세요"
-                      : language === "en"
-                        ? "Write down important ideas and memos freely"
-                        : language === "zh"
-                          ? "自由记录重要想法和备忘"
-                          : "重要なアイデアやメモを自由に書きましょう"}
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-blue-600 mt-0.5">•</span>
-                  <span>
-                    {language === "ko"
-                      ? "카테고리로 노트를 체계적으로 정리하세요"
-                      : language === "en"
-                        ? "Organize notes systematically with categories"
-                        : language === "zh"
-                          ? "使用类别系统整理笔记"
-                          : "カテゴリーでノートを体系的に整理しましょう"}
-                  </span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-blue-600 mt-0.5">•</span>
-                  <span>
-                    {language === "ko"
-                      ? "AI 음성 입력으로 빠르게 작성하세요"
-                      : language === "en"
-                        ? "Use AI voice input for quick note-taking"
-                        : language === "zh"
-                          ? "使用AI语音输入快速记录"
-                          : "AI音声入力で素早く作成しましょう"}
-                  </span>
-                </li>
-              </ul>
-            </div>
+        {filteredNotes.length === 0 && (
+          <div className="text-center py-12 text-muted-foreground">
+            {searchQuery || selectedTag
+              ? language === "ko"
+                ? "검색 결과가 없습니다"
+                : "No results found"
+              : language === "ko"
+                ? "노트가 없습니다. 새로 만들어보세요!"
+                : "No notes. Create one!"}
           </div>
-        </Card>
+        )}
       </div>
     </div>
   )

@@ -14,8 +14,6 @@ interface CalendarWidgetProps {
 }
 
 export function CalendarWidget({ events, onDateClick, language }: CalendarWidgetProps) {
-  const safeEvents = events || []
-
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [showEventsModal, setShowEventsModal] = useState(false)
@@ -55,12 +53,12 @@ export function CalendarWidget({ events, onDateClick, language }: CalendarWidget
 
   const hasEvent = (day: number) => {
     const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
-    return safeEvents.some((event) => event.date === dateStr)
+    return events.some((event) => event.date === dateStr)
   }
 
   const getEventsForDate = (day: number) => {
     const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
-    const filtered = safeEvents.filter((event) => event.date === dateStr)
+    const filtered = events.filter((event) => event.date === dateStr)
     return filtered
   }
 

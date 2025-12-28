@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, useMemo } from "react"
+import { useState, useEffect, useRef } from "react"
 import dynamic from "next/dynamic"
 import { createClient } from "@/lib/supabase/client"
 import { loadSchedules, loadNotes, loadDiaries, loadTravelRecords, checkUserConsent } from "@/lib/storage"
@@ -12,8 +12,13 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ForestCanvas } from "@/components/forest-canvas"
+import { AnnouncementBanner } from "@/components/announcement-banner"
 import { NotificationCenter } from "@/components/notification-center"
-import { AlertCircle } from "lucide-react"
+import { TermsConsentModal } from "@/components/terms-consent-modal"
+import { LoginForm } from "@/components/login-form"
+import { AIAssistantSection } from "@/components/ai-assistant-section"
+import { AdsenseAd } from "@/components/adsense-ad"
+import { StorageQuotaCard } from "@/components/storage-quota-card"
 import {
   FileText,
   BookOpen,
@@ -30,7 +35,7 @@ import {
   Settings,
   CheckSquare,
   CreditCard,
-  Cloud,
+  Bot,
 } from "lucide-react"
 
 const NotesSection = dynamic(() => import("@/components/notes-section").then((m) => ({ default: m.NotesSection })), {
@@ -94,12 +99,6 @@ const CalendarWidget = dynamic(
   () => import("@/components/calendar-widget").then((m) => ({ default: m.CalendarWidget })),
   {
     ssr: false,
-  },
-)
-const AiAssistantSection = dynamic(
-  () => import("@/components/ai-assistant-section").then((m) => ({ default: m.AiAssistantSection })),
-  {
-    loading: () => <LoadingSection />,
   },
 )
 
@@ -383,62 +382,24 @@ export default function ForestNotePage() {
   const isCalculatingRef = useRef(false)
   const [needsConsent, setNeedsConsent] = useState(false)
   const [isCheckingConsent, setIsCheckingConsent] = useState(false)
-  const [showPrivacyDialog, setShowPrivacyDialog] = useState(false)
-  const [showTermsDialog, setShowTermsDialog] = useState(false)
 
   const ADMIN_EMAILS = ["chanse1984@hanmail.net", "lee381111@gmail.com"]
   const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email) : false
   const STORAGE_LIMIT = isAdmin ? 1000 * 1024 * 1024 : 500 * 1024 * 1024
-  const STORAGE_LIMIT_MB = STORAGE_LIMIT / 1024 / 1024
 
-  const TEMPORARY_DISABLE_LOGIN = true // 애드센스 승인용 임시 설정
-  const TEMP_USER_ID = "00000000-0000-0000-0000-000000000000" // UUID 형식
-
-  const tempUser = useMemo(() => {
-    return TEMPORARY_DISABLE_LOGIN
-      ? {
-          id: TEMP_USER_ID,
-          email: "guest@forestnote.app",
-        }
-      : user
-  }, [user, TEMPORARY_DISABLE_LOGIN])
-
-  const effectiveUser = useMemo(() => {
-    return TEMPORARY_DISABLE_LOGIN ? tempUser : user
-  }, [tempUser, user, TEMPORARY_DISABLE_LOGIN])
-
-  const hasCheckedConsentRef = useRef(false)
-
-  useEffect(() => {
-    const checkConsent = async () => {
-      if (!effectiveUser || loading) return
-
-      const isGuest = effectiveUser.id === TEMP_USER_ID
-      if (isGuest) {
-        setNeedsConsent(false)
-        return
-      }
-
-      if (hasCheckedConsentRef.current || isCheckingConsent) return
-      hasCheckedConsentRef.current = true
-
-      setIsCheckingConsent(true)
-      try {
-        const hasConsent = await checkUserConsent(effectiveUser.id)
-        setNeedsConsent(!hasConsent)
-      } catch (error) {
-        setNeedsConsent(false)
-      } finally {
-        setIsCheckingConsent(false)
-      }
-    }
-
-    checkConsent()
-  }, [effectiveUser, loading])
+  console.log(
+    "[v0] User email:",
+    user?.email,
+    "Is admin:",
+    isAdmin,
+    "Storage limit:",
+    STORAGE_LIMIT / 1024 / 1024,
+    "MB",
+  )
 
   useEffect(() => {
     const calculateStorage = async () => {
-      if (!effectiveUser || isCalculatingRef.current) return
+      if (!user || isCalculatingRef.current) return
       isCalculatingRef.current = true
 
       try {
@@ -447,17 +408,28 @@ export default function ForestNotePage() {
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("storage_used")
-          .eq("user_id", effectiveUser.id)
+          .eq("user_id", user.id)
           .single()
 
         if (profileError) {
+          console.warn("[v0] Failed to fetch storage from profile, using cached value:", profileError.message)
+          // Keep existing storageUsed value instead of setting to 0
           return
         }
 
         const profileStorageUsed = profile?.storage_used || 0
 
+        console.log(
+          "[v0] Storage used from profile:",
+          profileStorageUsed,
+          "bytes",
+          "(" + (profileStorageUsed / 1024 / 1024).toFixed(2) + " MB)",
+        )
+
         setStorageUsed(profileStorageUsed)
       } catch (error) {
+        console.warn("[v0] Storage calculation error (network issue?):", error)
+        // Don't reset storageUsed to 0 on network errors
       } finally {
         isCalculatingRef.current = false
       }
@@ -465,16 +437,16 @@ export default function ForestNotePage() {
 
     calculateStorage()
 
-    const interval = setInterval(calculateStorage, 60000)
+    const interval = setInterval(calculateStorage, 60000) // Every 60 seconds
 
     return () => clearInterval(interval)
-  }, [effectiveUser])
+  }, [user])
 
   useEffect(() => {
     const loadEvents = async () => {
-      if (!effectiveUser) return
+      if (!user) return
       try {
-        const schedules = await loadSchedules(effectiveUser.id)
+        const schedules = await loadSchedules(user.id)
         setUpcomingEvents(schedules)
       } catch (error) {
         setUpcomingEvents([])
@@ -491,7 +463,32 @@ export default function ForestNotePage() {
     return () => {
       window.removeEventListener("scheduleUpdate", handleScheduleUpdate)
     }
-  }, [effectiveUser])
+  }, [user])
+
+  useEffect(() => {
+    console.log("[v0] Auth state:", { user: user?.email, loading })
+  }, [user, loading])
+
+  useEffect(() => {
+    const checkConsent = async () => {
+      if (!user || isCheckingConsent || loading) return
+
+      console.log("[v0] Starting consent check for user:", user.id)
+      setIsCheckingConsent(true)
+      try {
+        const hasConsent = await checkUserConsent(user.id)
+        console.log("[v0] User consent check result:", hasConsent ? "HAS CONSENT" : "NEEDS CONSENT")
+        setNeedsConsent(!hasConsent)
+      } catch (error) {
+        console.error("[v0] Consent check error:", error)
+        setNeedsConsent(false)
+      } finally {
+        setIsCheckingConsent(false)
+      }
+    }
+
+    checkConsent()
+  }, [user, loading])
 
   const handleConsentAccept = () => {
     setNeedsConsent(false)
@@ -500,19 +497,6 @@ export default function ForestNotePage() {
   const handleConsentDecline = async () => {
     await logout()
     setNeedsConsent(false)
-  }
-
-  const handleSectionClick = (sectionId: Section) => {
-    console.log("[v0] Section button clicked:", sectionId)
-    console.log("[v0] Current user:", effectiveUser)
-    console.log("[v0] TEMP MODE:", TEMPORARY_DISABLE_LOGIN)
-    setCurrentSection(sectionId)
-    console.log("[v0] currentSection state set to:", sectionId)
-  }
-
-  const handleBackToHome = () => {
-    console.log("[v0] Back button clicked, returning to home")
-    setCurrentSection("home")
   }
 
   const sections: { id: Section; label: string; icon: any; color: string }[] = [
@@ -535,13 +519,20 @@ export default function ForestNotePage() {
       icon: CreditCard,
       color: "cyan",
     },
-    {
-      id: "weather",
-      label: language === "ko" ? "날씨" : language === "en" ? "Weather" : language === "zh" ? "天气" : "天気",
-      icon: Cloud,
-      color: "sky",
-    },
     { id: "radio", label: getTranslation(language, "radio"), icon: Radio, color: "teal" },
+    {
+      id: "aiAssistant",
+      label:
+        language === "ko"
+          ? "AI 비서"
+          : language === "en"
+            ? "AI Assistant"
+            : language === "zh"
+              ? "AI 助手"
+              : "AI アシスタント",
+      icon: Bot,
+      color: "blue",
+    },
     { id: "settings", label: getTranslation(language, "settings"), icon: Settings, color: "emerald" },
   ]
 
@@ -553,31 +544,106 @@ export default function ForestNotePage() {
 
   const storagePercentage = (storageUsed / STORAGE_LIMIT) * 100
 
-  if (!TEMPORARY_DISABLE_LOGIN && loading) {
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100">
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">{getTranslation(language, "loading")}</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+          <p className="text-emerald-800">로딩 중...</p>
         </div>
       </div>
     )
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50">
-      <div className="max-w-7xl mx-auto p-4">
-        <div className="bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 backdrop-blur p-4 rounded-lg shadow-md">
-          <div className="max-w-3xl mx-auto text-center mb-6">
-            <h1 className="text-4xl md:text-5xl font-bold text-green-800 dark:text-green-300 mb-4 bg-gradient-to-r from-green-600 to-emerald-500 bg-clip-text text-transparent">
-              {language === "ko" && "기록의 숲"}
-              {language === "en" && "Forest of Records"}
-              {language === "zh" && "记录之森"}
-              {language === "ja" && "記録の森"}
-            </h1>
-          </div>
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 flex items-center justify-center p-6">
+        <LoginForm language={language} onLanguageChange={setLanguage} />
+      </div>
+    )
+  }
 
-          <div className="flex justify-center items-center gap-4 mb-4 relative z-10">
+  if (needsConsent && user && !loading) {
+    return (
+      <TermsConsentModal
+        userId={user.id}
+        userEmail={user.email || ""}
+        onConsent={handleConsentAccept}
+        onDecline={handleConsentDecline}
+      />
+    )
+  }
+
+  if (currentSection === "notes") {
+    return <NotesSection onBack={() => setCurrentSection("home")} language={language} />
+  }
+
+  if (currentSection === "diary") {
+    return <DiarySection onBack={() => setCurrentSection("home")} language={language} />
+  }
+
+  if (currentSection === "schedule") {
+    return <ScheduleSection onBack={() => setCurrentSection("home")} language={language} />
+  }
+
+  if (currentSection === "todo") {
+    return <TodoSection onBack={() => setCurrentSection("home")} language={language} />
+  }
+
+  if (currentSection === "weather") {
+    return <WeatherSection onBack={() => setCurrentSection("home")} language={language} />
+  }
+
+  if (currentSection === "radio") {
+    return <RadioSection onBack={() => setCurrentSection("home")} language={language} />
+  }
+
+  if (currentSection === "travel") {
+    return <TravelSection onBack={() => setCurrentSection("home")} language={language} />
+  }
+
+  if (currentSection === "vehicle") {
+    return <VehicleSection onBack={() => setCurrentSection("home")} language={language} />
+  }
+
+  if (currentSection === "health") {
+    return <HealthSection onBack={() => setCurrentSection("home")} language={language} />
+  }
+
+  if (currentSection === "budget") {
+    return <BudgetSection onBack={() => setCurrentSection("home")} language={language} />
+  }
+
+  if (currentSection === "statistics") {
+    return <StatisticsSection onBack={() => setCurrentSection("home")} language={language} />
+  }
+
+  if (currentSection === "businessCard") {
+    return <BusinessCardSection onBack={() => setCurrentSection("home")} language={language} />
+  }
+
+  if (currentSection === "settings") {
+    return <SettingsSection onBack={() => setCurrentSection("home")} language={language} />
+  }
+
+  if (currentSection === "aiAssistant") {
+    return <AIAssistantSection user={user} language={language} onBack={() => setCurrentSection("home")} />
+  }
+
+  return (
+    <div className="min-h-screen bg-[rgb(220,252,231)] relative overflow-hidden">
+      <AnnouncementBanner language={language} />
+
+      <div className="absolute inset-0 opacity-30">
+        <ForestCanvas />
+      </div>
+
+      <div className="relative z-10 p-6 space-y-6">
+        <div className="space-y-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-emerald-700 text-center">
+            🌲 {getTranslation(language, "title")}
+          </h1>
+          <div className="flex items-center justify-center gap-2 flex-wrap">
             <NotificationCenter language={language} />
             <LanguageSelector language={language} onChange={setLanguage} />
             <GlobalSearch
@@ -586,202 +652,139 @@ export default function ForestNotePage() {
                 setCurrentSection(section)
               }}
             />
-            {!TEMPORARY_DISABLE_LOGIN && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={logout}
-                className="text-black flex items-center gap-1 bg-transparent"
-              >
-                <LogOut className="h-4 w-4" />
-                <span className="text-sm hidden sm:inline">
-                  {language === "ko"
-                    ? "로그아웃"
-                    : language === "en"
-                      ? "Logout"
-                      : language === "zh"
-                        ? "登出"
-                        : "ログアウト"}
-                </span>
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={logout}
+              className="text-black flex items-center gap-1 bg-transparent"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="text-sm hidden sm:inline">
+                {language === "ko"
+                  ? "로그아웃"
+                  : language === "en"
+                    ? "Logout"
+                    : language === "zh"
+                      ? "登出"
+                      : "ログアウト"}
+              </span>
+            </Button>
           </div>
-
-          {needsConsent && (
-            <Card className="mb-6 p-4 bg-amber-50 border-amber-200">
-              <div className="flex items-start gap-4">
-                <AlertCircle className="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <h3 className="font-semibold text-amber-900 mb-2">{getTranslation(language, "consent_required")}</h3>
-                  <p className="text-sm text-amber-800 mb-3">{getTranslation(language, "consent_message")}</p>
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => {
-                        setShowPrivacyDialog(true)
-                      }}
-                    >
-                      {getTranslation(language, "view_privacy")}
-                    </Button>
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => {
-                        setShowTermsDialog(true)
-                      }}
-                    >
-                      {getTranslation(language, "view_terms")}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          )}
-
-          {currentSection === "home" && (
-            <div className="mb-6 space-y-3 max-w-2xl mx-auto">
-              {/* Removed upcoming_events heading that was showing as raw text */}
-              <CalendarWidget events={upcomingEvents} language={language} />
-            </div>
-          )}
         </div>
 
-        <div className="absolute inset-0 opacity-30 pointer-events-none">
-          <ForestCanvas />
-        </div>
+        <AdsenseAd slot="1234567890" format="horizontal" />
 
-        <div className="relative z-10 space-y-6">
-          {currentSection === "home" ? (
-            <>
-              <div className="bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 backdrop-blur p-4 rounded-lg shadow-md">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-900 dark:text-slate-100">
-                    {language === "ko"
-                      ? "저장소 사용량"
-                      : language === "en"
-                        ? "Storage Used"
-                        : language === "zh"
-                          ? "存储使用"
-                          : "ストレージ使用"}
-                  </span>
-                  <span className="text-sm font-bold text-emerald-700">
-                    {formatBytes(storageUsed)} / {formatBytes(STORAGE_LIMIT)}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className={`h-2 rounded-full transition-all ${
-                      storagePercentage > 90
-                        ? "bg-red-500"
-                        : storagePercentage > 70
-                          ? "bg-yellow-500"
-                          : "bg-emerald-600"
-                    }`}
-                    style={{ width: `${Math.min(storagePercentage, 100)}%` }}
-                  />
-                </div>
-                {storagePercentage > 90 && (
-                  <p className="text-xs text-red-600 mt-1">
-                    {language === "ko"
-                      ? "저장소가 거의 찼습니다!"
-                      : language === "en"
-                        ? "Storage is almost full!"
-                        : language === "zh"
-                          ? "存储空间几乎已满！"
-                          : "ストレージがほぼ満杯です！"}
-                  </p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {sections.map((item) => {
-                  const lightBg =
-                    item.color === "teal"
-                      ? "bg-teal-50"
-                      : item.color === "emerald"
-                        ? "bg-emerald-50"
-                        : item.color === "green"
-                          ? "bg-green-50"
-                          : item.color === "blue"
-                            ? "bg-blue-50"
-                            : item.color === "indigo"
-                              ? "bg-indigo-50"
-                              : item.color === "rose"
-                                ? "bg-rose-50"
-                                : item.color === "cyan"
-                                  ? "bg-cyan-50"
-                                  : item.color === "purple"
-                                    ? "bg-purple-50"
-                                    : item.color === "amber"
-                                      ? "bg-amber-50"
-                                      : item.color === "yellow"
-                                        ? "bg-yellow-50"
-                                        : "bg-gray-50"
-
-                  const textColor = "text-gray-900"
-                  const iconColor =
-                    item.color === "teal"
-                      ? "text-teal-700"
-                      : item.color === "emerald"
-                        ? "text-emerald-700"
-                        : item.color === "green"
-                          ? "text-green-700"
-                          : item.color === "blue"
-                            ? "text-blue-700"
-                            : item.color === "indigo"
-                              ? "text-indigo-700"
-                              : item.color === "rose"
-                                ? "text-rose-700"
-                                : item.color === "cyan"
-                                  ? "text-cyan-700"
-                                  : item.color === "purple"
-                                    ? "text-purple-700"
-                                    : item.color === "amber"
-                                      ? "text-amber-700"
-                                      : item.color === "yellow"
-                                        ? "text-yellow-700"
-                                        : "text-gray-700"
-
-                  return (
-                    <Card
-                      key={item.id}
-                      className={`p-6 cursor-pointer hover:scale-105 transition-transform backdrop-blur flex flex-col items-center justify-center shadow-md hover:shadow-lg ${lightBg}`}
-                      onClick={() => handleSectionClick(item.id as Section)}
-                    >
-                      <item.icon className={`h-8 w-8 mb-4 ${iconColor}`} />
-                      <h3 className={`font-semibold text-lg text-center ${textColor}`}>{item.label}</h3>
-                    </Card>
-                  )
-                })}
-              </div>
-            </>
-          ) : (
-            <div>
-              {currentSection !== "home" && (
-                <>
-                  {currentSection === "notes" && <NotesSection onBack={handleBackToHome} language={language} />}
-                  {currentSection === "schedule" && <ScheduleSection onBack={handleBackToHome} language={language} />}
-                  {currentSection === "todo" && <TodoSection onBack={handleBackToHome} language={language} />}
-                  {currentSection === "diary" && <DiarySection onBack={handleBackToHome} language={language} />}
-                  {currentSection === "travel" && <TravelSection onBack={handleBackToHome} language={language} />}
-                  {currentSection === "vehicle" && <VehicleSection onBack={handleBackToHome} language={language} />}
-                  {currentSection === "health" && <HealthSection onBack={handleBackToHome} language={language} />}
-                  {currentSection === "statistics" && (
-                    <StatisticsSection onBack={handleBackToHome} language={language} />
-                  )}
-                  {currentSection === "budget" && <BudgetSection onBack={handleBackToHome} language={language} />}
-                  {currentSection === "businessCard" && (
-                    <BusinessCardSection onBack={handleBackToHome} language={language} />
-                  )}
-                  {currentSection === "weather" && <WeatherSection onBack={handleBackToHome} language={language} />}
-                  {currentSection === "radio" && <RadioSection onBack={handleBackToHome} language={language} />}
-                  {currentSection === "settings" && <SettingsSection onBack={handleBackToHome} language={language} />}
-                </>
-              )}
-            </div>
+        <div className="bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 backdrop-blur p-4 rounded-lg shadow-md">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-900 dark:text-slate-100">
+              {language === "ko"
+                ? "저장소 사용량"
+                : language === "en"
+                  ? "Storage Used"
+                  : language === "zh"
+                    ? "存储使用"
+                    : "ストレージ使用"}
+            </span>
+            <span className="text-sm font-bold text-emerald-700">
+              {formatBytes(storageUsed)} / {formatBytes(STORAGE_LIMIT)}
+            </span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div
+              className={`h-2 rounded-full transition-all ${
+                storagePercentage > 90 ? "bg-red-500" : storagePercentage > 70 ? "bg-yellow-500" : "bg-emerald-600"
+              }`}
+              style={{ width: `${Math.min(storagePercentage, 100)}%` }}
+            />
+          </div>
+          {storagePercentage > 90 && (
+            <p className="text-xs text-red-600 mt-1">
+              {language === "ko"
+                ? "저장소가 거의 찼습니다!"
+                : language === "en"
+                  ? "Storage is almost full!"
+                  : language === "zh"
+                    ? "存储空间几乎已满！"
+                    : "ストレージがほぼ満杯です！"}
+            </p>
           )}
         </div>
+
+        <div className="shadow-md rounded-lg overflow-hidden">
+          <CalendarWidget
+            events={upcomingEvents}
+            onDateClick={(date) => setCurrentSection("schedule")}
+            language={language}
+          />
+        </div>
+
+        <AdsenseAd slot="0987654321" format="rectangle" />
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {sections.map((item) => {
+            const lightBg =
+              item.color === "teal"
+                ? "bg-teal-50"
+                : item.color === "emerald"
+                  ? "bg-emerald-50"
+                  : item.color === "green"
+                    ? "bg-green-50"
+                    : item.color === "blue"
+                      ? "bg-blue-50"
+                      : item.color === "indigo"
+                        ? "bg-indigo-50"
+                        : item.color === "rose"
+                          ? "bg-rose-50"
+                          : item.color === "cyan"
+                            ? "bg-cyan-50"
+                            : item.color === "purple"
+                              ? "bg-purple-50"
+                              : item.color === "amber"
+                                ? "bg-amber-50"
+                                : item.color === "yellow"
+                                  ? "bg-yellow-50"
+                                  : "bg-gray-50"
+
+            const textColor = "text-gray-900"
+            const iconColor =
+              item.color === "teal"
+                ? "text-teal-700"
+                : item.color === "emerald"
+                  ? "text-emerald-700"
+                  : item.color === "green"
+                    ? "text-green-700"
+                    : item.color === "blue"
+                      ? "text-blue-700"
+                      : item.color === "indigo"
+                        ? "text-indigo-700"
+                        : item.color === "rose"
+                          ? "text-rose-700"
+                          : item.color === "cyan"
+                            ? "text-cyan-700"
+                            : item.color === "purple"
+                              ? "text-purple-700"
+                              : item.color === "amber"
+                                ? "text-amber-700"
+                                : item.color === "yellow"
+                                  ? "text-yellow-700"
+                                  : "text-gray-700"
+
+            return (
+              <Card
+                key={item.id}
+                className={`p-6 cursor-pointer hover:scale-105 transition-transform backdrop-blur flex flex-col items-center justify-center shadow-md hover:shadow-lg ${lightBg}`}
+                onClick={() => setCurrentSection(item.id as Section)}
+              >
+                <item.icon className={`h-8 w-8 mb-4 ${iconColor}`} />
+                <h3 className={`font-semibold text-lg text-center ${textColor}`}>{item.label}</h3>
+              </Card>
+            )
+          })}
+        </div>
+
+        <AdsenseAd slot="1122334455" format="horizontal" />
+
+        <StorageQuotaCard language={language} />
       </div>
     </div>
   )

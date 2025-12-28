@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, Plus, Trash2, TrendingUp, Pill, Bell, Pencil, Save, Phone, Lightbulb } from "lucide-react"
+import { ArrowLeft, Plus, Trash2, TrendingUp, Pill, Bell, Pencil, Save, Phone } from "lucide-react"
 import { saveHealthRecords, loadHealthRecords, saveMedications, loadMedications } from "@/lib/storage"
 import { saveMedicalContacts, loadMedicalContacts, deleteMedicalContact } from "@/lib/storage"
 import type { MedicalContact } from "@/lib/types"
@@ -1162,220 +1162,158 @@ export function HealthSection({ onBack, language }: HealthSectionProps) {
         </Button>
       </div>
 
-      {/* Adding usage guide card to health section empty state */}
-      {viewMode === "list" && (
-        <div className="space-y-4">
-          <Card className="p-6 bg-gradient-to-br from-red-50 to-pink-50 border-red-200">
-            <div className="flex items-start gap-4">
-              <Lightbulb className="h-6 w-6 text-red-600 flex-shrink-0 mt-1" />
-              <div>
-                <h3 className="font-semibold text-red-900 mb-3">
-                  {language === "ko"
-                    ? "🏥 건강 관리 가이드"
-                    : language === "en"
-                      ? "🏥 Health Management Guide"
-                      : language === "zh"
-                        ? "🏥 健康管理指南"
-                        : "🏥 健康管理ガイド"}
-                </h3>
-                <ul className="space-y-2 text-sm text-red-800">
-                  <li className="flex items-start gap-2">
-                    <span className="text-red-600 mt-0.5">•</span>
-                    <span>
-                      {language === "ko"
-                        ? "혈압, 혈당 등 건강 지표를 꾸준히 기록하세요"
-                        : language === "en"
-                          ? "Record health indicators like blood pressure and blood sugar regularly"
-                          : language === "zh"
-                            ? "定期记录血压、血糖等健康指标"
-                            : "血圧、血糖などの健康指標を定期的に記録しましょう"}
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-red-600 mt-0.5">•</span>
-                    <span>
-                      {language === "ko"
-                        ? "복용 중인 약을 관리하고 알람을 설정하세요"
-                        : language === "en"
-                          ? "Manage medications and set reminders"
-                          : language === "zh"
-                            ? "管理药物并设置提醒"
-                            : "服用中の薬を管理してアラームを設定しましょう"}
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-red-600 mt-0.5">•</span>
-                    <span>
-                      {language === "ko"
-                        ? "운동과 식단을 기록하여 건강한 생활습관을 만드세요"
-                        : language === "en"
-                          ? "Record exercise and diet to build healthy habits"
-                          : language === "zh"
-                            ? "记录运动和饮食建立健康习惯"
-                            : "運動と食事を記録して健康的な生活習慣を作りましょう"}
-                    </span>
-                  </li>
-                </ul>
+      <div className="grid grid-cols-2 gap-4">
+        <Button onClick={() => setViewMode("add_record")} className="h-20 bg-teal-600 hover:bg-teal-700 text-white">
+          <Plus className="mr-2 h-5 w-5" /> {t("health_record_btn")}
+        </Button>
+        <Button
+          onClick={() => setViewMode("medications")}
+          className="h-20 bg-purple-600 hover:bg-purple-700 text-white flex flex-col items-center justify-center gap-1 px-2"
+        >
+          <Pill className="h-5 w-5 flex-shrink-0" />
+          <span className="text-xs leading-tight text-center">{t("medication_management_btn")}</span>
+        </Button>
+        <Button
+          onClick={() => setViewMode("charts")}
+          className="h-20 col-span-2 bg-indigo-600 hover:bg-indigo-700 text-white"
+        >
+          <TrendingUp className="mr-2 h-5 w-5" /> {t("view_graph")}
+        </Button>
+        {/* Adding button for medical contacts */}
+        <Button
+          onClick={() => {
+            resetContactForm()
+            setEditingContactId(null)
+            setViewMode("add_contact")
+          }}
+          className="h-20 col-span-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+        >
+          <Phone className="mr-2 h-5 w-5" /> {t("manage_medical_contacts")}
+        </Button>
+      </div>
+
+      <h2 className="text-lg font-bold mt-6">{t("recent_records")}</h2>
+
+      <div className="grid gap-4">
+        {records.slice(0, 10).map((record) => (
+          <Card key={record.id} className="p-4">
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                <div className="flex justify-between">
+                  <span className="font-semibold">
+                    {record.type === "vital_signs" && `💓 ${t("vital_signs")}`}
+                    {record.type === "exercise" && `🏃 ${t("exercise")}`}
+                    {record.type === "expense" && `💰 ${t("medical_expenses")}`}
+                  </span>
+                  <span className="text-sm text-muted-foreground">{record.date}</span>
+                </div>
+
+                {record.bloodPressure && (
+                  <p className="text-sm mt-2">
+                    {t("blood_pressure")}: {record.bloodPressure.systolic}/{record.bloodPressure.diastolic} mmHg
+                  </p>
+                )}
+                {record.bloodSugar && (
+                  <p className="text-sm">
+                    {t("blood_sugar")}: {record.bloodSugar} mg/dL
+                  </p>
+                )}
+                {record.temperature && (
+                  <p className="text-sm">
+                    {t("temperature")}: {record.temperature}°C
+                  </p>
+                )}
+                {record.weight && (
+                  <p className="text-sm">
+                    {t("weight")}: {record.weight} kg
+                  </p>
+                )}
+                {record.steps && (
+                  <p className="text-sm">
+                    {t("steps")}: {record.steps.toLocaleString()} {t("steps_unit")}
+                  </p>
+                )}
+                {record.distance && (
+                  <p className="text-sm">
+                    {t("distance")}: {record.distance} km
+                  </p>
+                )}
+                {record.medicalExpense && (
+                  <p className="text-sm">
+                    {t("medical_expense")}: {record.medicalExpense.toLocaleString()} {t("krw_unit")}
+                  </p>
+                )}
+                {record.medicationExpense && (
+                  <p className="text-sm">
+                    {t("medication_expense")}: {record.medicationExpense.toLocaleString()} {t("krw_unit")}
+                  </p>
+                )}
+                {record.notes && <p className="text-sm mt-1 text-muted-foreground">{record.notes}</p>}
+
+                {record.attachments && record.attachments.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    <p className="text-sm font-medium">첨부파일 ({record.attachments.length}개)</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {record.attachments.map((file: any, idx: number) => {
+                        if (file.type?.startsWith("image/") || file.type === "image" || file.type === "drawing") {
+                          return (
+                            <div key={idx} className="relative border rounded overflow-hidden">
+                              <img
+                                src={file.url || file.data}
+                                alt={file.name || "첨부파일"}
+                                className="w-full h-32 object-cover"
+                              />
+                            </div>
+                          )
+                        }
+                        if (file.type?.startsWith("video/") || file.type === "video") {
+                          return (
+                            <div key={idx} className="border rounded overflow-hidden">
+                              <video src={file.url || file.data} controls className="w-full h-32 bg-black" />
+                            </div>
+                          )
+                        }
+                        return null
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-2 ml-4">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setFormData({
+                      date: record.date,
+                      type: record.type,
+                      systolic: record.bloodPressure?.systolic?.toString() || "",
+                      diastolic: record.bloodPressure?.diastolic?.toString() || "",
+                      bloodSugar: record.bloodSugar?.toString() || "",
+                      temperature: record.temperature?.toString() || "",
+                      weight: record.weight?.toString() || "",
+                      steps: record.steps?.toString() || "",
+                      distance: record.distance?.toString() || "",
+                      medicalExpense: record.medicalExpense?.toString() || "",
+                      medicationExpense: record.medicationExpense?.toString() || "",
+                      notes: record.notes || "",
+                      attachments: record.attachments || [],
+                    })
+                    setEditingId(record.id)
+                    setViewMode("add_record")
+                  }}
+                >
+                  <Pencil className="w-4 h-4 text-black" />
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => handleDeleteRecord(record.id)}>
+                  <Trash2 className="w-4 h-4 text-red-500" />
+                </Button>
               </div>
             </div>
           </Card>
-
-          <div className="grid grid-cols-2 gap-4">
-            <Button onClick={() => setViewMode("add_record")} className="h-20 bg-teal-600 hover:bg-teal-700 text-white">
-              <Plus className="mr-2 h-5 w-5" /> {t("health_record_btn")}
-            </Button>
-            <Button
-              onClick={() => setViewMode("medications")}
-              className="h-20 bg-purple-600 hover:bg-purple-700 text-white flex flex-col items-center justify-center gap-1 px-2"
-            >
-              <Pill className="h-5 w-5 flex-shrink-0" />
-              <span className="text-xs leading-tight text-center">{t("medication_management_btn")}</span>
-            </Button>
-            <Button
-              onClick={() => setViewMode("charts")}
-              className="h-20 col-span-2 bg-indigo-600 hover:bg-indigo-700 text-white"
-            >
-              <TrendingUp className="mr-2 h-5 w-5" /> {t("view_graph")}
-            </Button>
-            {/* Adding button for medical contacts */}
-            <Button
-              onClick={() => {
-                resetContactForm()
-                setEditingContactId(null)
-                setViewMode("add_contact")
-              }}
-              className="h-20 col-span-2 bg-emerald-600 hover:bg-emerald-700 text-white"
-            >
-              <Phone className="mr-2 h-5 w-5" /> {t("manage_medical_contacts")}
-            </Button>
-          </div>
-
-          <h2 className="text-lg font-bold mt-6">{t("recent_records")}</h2>
-
-          <div className="grid gap-4">
-            {records.slice(0, 10).map((record) => (
-              <Card key={record.id} className="p-4">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="flex justify-between">
-                      <span className="font-semibold">
-                        {record.type === "vital_signs" && `💓 ${t("vital_signs")}`}
-                        {record.type === "exercise" && `🏃 ${t("exercise")}`}
-                        {record.type === "expense" && `💰 ${t("medical_expenses")}`}
-                      </span>
-                      <span className="text-sm text-muted-foreground">{record.date}</span>
-                    </div>
-
-                    {record.bloodPressure && (
-                      <p className="text-sm mt-2">
-                        {t("blood_pressure")}: {record.bloodPressure.systolic}/{record.bloodPressure.diastolic} mmHg
-                      </p>
-                    )}
-                    {record.bloodSugar && (
-                      <p className="text-sm">
-                        {t("blood_sugar")}: {record.bloodSugar} mg/dL
-                      </p>
-                    )}
-                    {record.temperature && (
-                      <p className="text-sm">
-                        {t("temperature")}: {record.temperature}°C
-                      </p>
-                    )}
-                    {record.weight && (
-                      <p className="text-sm">
-                        {t("weight")}: {record.weight} kg
-                      </p>
-                    )}
-                    {record.steps && (
-                      <p className="text-sm">
-                        {t("steps")}: {record.steps.toLocaleString()} {t("steps_unit")}
-                      </p>
-                    )}
-                    {record.distance && (
-                      <p className="text-sm">
-                        {t("distance")}: {record.distance} km
-                      </p>
-                    )}
-                    {record.medicalExpense && (
-                      <p className="text-sm">
-                        {t("medical_expense")}: {record.medicalExpense.toLocaleString()} {t("krw_unit")}
-                      </p>
-                    )}
-                    {record.medicationExpense && (
-                      <p className="text-sm">
-                        {t("medication_expense")}: {record.medicationExpense.toLocaleString()} {t("krw_unit")}
-                      </p>
-                    )}
-                    {record.notes && <p className="text-sm mt-1 text-muted-foreground">{record.notes}</p>}
-
-                    {record.attachments && record.attachments.length > 0 && (
-                      <div className="mt-3 space-y-2">
-                        <p className="text-sm font-medium">첨부파일 ({record.attachments.length}개)</p>
-                        <div className="grid grid-cols-2 gap-2">
-                          {record.attachments.map((file: any, idx: number) => {
-                            if (file.type?.startsWith("image/") || file.type === "image" || file.type === "drawing") {
-                              return (
-                                <div key={idx} className="relative border rounded overflow-hidden">
-                                  <img
-                                    src={file.url || file.data}
-                                    alt={file.name || "첨부파일"}
-                                    className="w-full h-32 object-cover"
-                                  />
-                                </div>
-                              )
-                            }
-                            if (file.type?.startsWith("video/") || file.type === "video") {
-                              return (
-                                <div key={idx} className="border rounded overflow-hidden">
-                                  <video src={file.url || file.data} controls className="w-full h-32 bg-black" />
-                                </div>
-                              )
-                            }
-                            return null
-                          })}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex gap-2 ml-4">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        setFormData({
-                          date: record.date,
-                          type: record.type,
-                          systolic: record.bloodPressure?.systolic?.toString() || "",
-                          diastolic: record.bloodPressure?.diastolic?.toString() || "",
-                          bloodSugar: record.bloodSugar?.toString() || "",
-                          temperature: record.temperature?.toString() || "",
-                          weight: record.weight?.toString() || "",
-                          steps: record.steps?.toString() || "",
-                          distance: record.distance?.toString() || "",
-                          medicalExpense: record.medicalExpense?.toString() || "",
-                          medicationExpense: record.medicationExpense?.toString() || "",
-                          notes: record.notes || "",
-                          attachments: record.attachments || [],
-                        })
-                        setEditingId(record.id)
-                        setViewMode("add_record")
-                      }}
-                    >
-                      <Pencil className="w-4 h-4 text-black" />
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={() => handleDeleteRecord(record.id)}>
-                      <Trash2 className="w-4 h-4 text-red-500" />
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-
-          {/* Removed AdsenseAd component */}
-        </div>
-      )}
+        ))}
+      </div>
     </div>
   )
 }

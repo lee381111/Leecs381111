@@ -137,22 +137,6 @@ export async function calculateRealTimeStorageUsage(userId: string): Promise<num
 
 // Get user's storage information
 export async function getUserStorageInfo(userId: string): Promise<StorageInfo | null> {
-  if (!userId || userId === "undefined" || userId === "") {
-    console.error("[v0] Invalid userId provided to getUserStorageInfo:", userId)
-    return null
-  }
-
-  if (userId === "00000000-0000-0000-0000-000000000000") {
-    return {
-      quota: STORAGE_QUOTAS.EMAIL_USER,
-      used: 0,
-      remaining: STORAGE_QUOTAS.EMAIL_USER,
-      percentage: 0,
-      isPremium: false,
-      authType: "email",
-    }
-  }
-
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -162,7 +146,7 @@ export async function getUserStorageInfo(userId: string): Promise<StorageInfo | 
     .from("profiles")
     .select("storage_quota, storage_used, is_premium, auth_type, email")
     .eq("id", userId)
-    .maybeSingle()
+    .single()
 
   if (error || !profile) {
     console.error("[v0] Error fetching storage info:", error)

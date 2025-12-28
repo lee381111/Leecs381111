@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import {
+  ArrowLeft,
   Plus,
   CheckCircle2,
   Circle,
@@ -15,8 +16,7 @@ import {
   MicOff,
   Calendar,
   Repeat,
-  ArrowLeft,
-  Lightbulb,
+  Filter,
 } from "lucide-react"
 import { saveTodoItems, loadTodoItems } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
@@ -312,16 +312,13 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          {/* Adding back button */}
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={onBack}>
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">
-              {t("todo_list")}
-            </h1>
-          </div>
+        <div className="flex items-center gap-4 mb-6">
+          <Button variant="ghost" size="icon" onClick={onBack} className="rounded-full">
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">
+            {t("todo_list")}
+          </h1>
         </div>
 
         {/* Stats Cards */}
@@ -358,7 +355,7 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
                 : "hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300"
             }`}
           >
-            <Repeat className="h-4 w-4" />
+            <Filter className="h-4 w-4" />
             {t("filter_all")}
           </Button>
           <Button
@@ -516,59 +513,8 @@ export function TodoSection({ onBack, language }: TodoSectionProps) {
 
         {/* Todo List */}
         {filteredTodos.length === 0 ? (
-          <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
-            <div className="flex items-start gap-4">
-              <Lightbulb className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-              <div>
-                <h3 className="font-semibold text-green-900 mb-3">
-                  {language === "ko"
-                    ? "✅ 할일 관리 팁"
-                    : language === "en"
-                      ? "✅ Todo Management Tips"
-                      : language === "zh"
-                        ? "✅ 待办事项管理技巧"
-                        : "✅ やることリスト管理のコツ"}
-                </h3>
-                <ul className="space-y-2 text-sm text-green-800">
-                  <li className="flex items-start gap-2">
-                    <span className="text-green-600 mt-0.5">•</span>
-                    <span>
-                      {language === "ko"
-                        ? "우선순위를 설정하여 중요한 일부터 처리하세요"
-                        : language === "en"
-                          ? "Set priorities and handle important tasks first"
-                          : language === "zh"
-                            ? "设置优先级，先处理重要任务"
-                            : "優先順位を設定して重要なタスクから処理しましょう"}
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-green-600 mt-0.5">•</span>
-                    <span>
-                      {language === "ko"
-                        ? "큰 작업은 작은 단위로 나누어 진행하세요"
-                        : language === "en"
-                          ? "Break large tasks into smaller steps"
-                          : language === "zh"
-                            ? "将大任务分解为小步骤"
-                            : "大きなタスクは小さな単位に分けて進めましょう"}
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-green-600 mt-0.5">•</span>
-                    <span>
-                      {language === "ko"
-                        ? "완료한 작업은 체크하여 성취감을 느끼세요"
-                        : language === "en"
-                          ? "Check off completed tasks for satisfaction"
-                          : language === "zh"
-                            ? "勾选完成的任务以获得成就感"
-                            : "完了したタスクをチェックして達成感を感じましょう"}
-                    </span>
-                  </li>
-                </ul>
-              </div>
-            </div>
+          <Card className="p-8 text-center bg-white/80 backdrop-blur">
+            <p className="text-gray-500">{t("no_todos_message")}</p>
           </Card>
         ) : (
           <div className="space-y-3">

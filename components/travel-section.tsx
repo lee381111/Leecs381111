@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, Plus, Pencil, Trash2, Plane, Lightbulb } from "lucide-react"
+import { ArrowLeft, Plus, Pencil, Trash2 } from "lucide-react"
 import { saveTravelRecords, loadTravelRecords } from "@/lib/storage"
 import { useAuth } from "@/lib/auth-context"
 import type { TravelRecord, Attachment } from "@/lib/types"
@@ -490,81 +490,12 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
         </Button>
       </div>
 
-      <Card className="p-6 bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-950 dark:to-blue-950 border-sky-200 mb-4">
-        <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
-          <Plane className="h-5 w-5 text-sky-600" />
-          {language === "ko" ? "여행 계획 가이드" : "Travel Planning Guide"}
-        </h3>
-        <div className="space-y-2 text-sm text-muted-foreground">
-          <p>✈️ {language === "ko" ? "여행지와 일정을 기록하세요" : "Record destinations and itineraries"}</p>
-          <p>📸 {language === "ko" ? "여행 사진과 추억을 저장하세요" : "Save travel photos and memories"}</p>
-          <p>💵 {language === "ko" ? "여행 경비를 투명하게 관리하세요" : "Manage travel expenses transparently"}</p>
-          <p>🗺️ {language === "ko" ? "방문한 장소와 경험을 공유하세요" : "Share places visited and experiences"}</p>
-        </div>
-      </Card>
-
       <Card className="p-4 bg-gradient-to-br from-emerald-50 to-teal-50">
         <h3 className="font-semibold mb-4 text-lg">🗺️ {t("travel_map")}</h3>
         <TravelMap travels={travels} onMarkerClick={(travel) => setSelectedTravel(travel)} language={language} />
       </Card>
 
       <div className="grid gap-4">
-        {travels.length === 0 && (
-          <Card className="p-6 bg-gradient-to-br from-teal-50 to-cyan-50 border-teal-200 mb-4">
-            <div className="flex items-start gap-4">
-              <Lightbulb className="h-6 w-6 text-teal-600 flex-shrink-0 mt-1" />
-              <div>
-                <h3 className="font-semibold text-teal-900 mb-3">
-                  {language === "ko"
-                    ? "✈️ 여행 기록 가이드"
-                    : language === "en"
-                      ? "✈️ Travel Record Guide"
-                      : language === "zh"
-                        ? "✈️ 旅行记录指南"
-                        : "✈️ 旅行記録ガイド"}
-                </h3>
-                <ul className="space-y-2 text-sm text-teal-800">
-                  <li className="flex items-start gap-2">
-                    <span className="text-teal-600 mt-0.5">•</span>
-                    <span>
-                      {language === "ko"
-                        ? "여행지와 날짜, 추억을 기록하세요"
-                        : language === "en"
-                          ? "Record destinations, dates, and memories"
-                          : language === "zh"
-                            ? "记录目的地、日期和回忆"
-                            : "旅行先と日付、思い出を記録しましょう"}
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-teal-600 mt-0.5">•</span>
-                    <span>
-                      {language === "ko"
-                        ? "사진을 추가하여 소중한 순간을 보관하세요"
-                        : language === "en"
-                          ? "Add photos to preserve precious moments"
-                          : language === "zh"
-                            ? "添加照片保存珍贵时刻"
-                            : "写真を追加して大切な瞬間を保管しましょう"}
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-teal-600 mt-0.5">•</span>
-                    <span>
-                      {language === "ko"
-                        ? "지도에서 여행 경로를 한눈에 확인하세요"
-                        : language === "en"
-                          ? "View your travel route on the map"
-                          : language === "zh"
-                            ? "在地图上查看旅行路线"
-                            : "地図で旅行ルートを一目で確認しましょう"}
-                    </span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </Card>
-        )}
         {travels.map((travel) => (
           <Card key={travel.id} className={`p-4 ${selectedTravel?.id === travel.id ? "ring-2 ring-emerald-500" : ""}`}>
             <div className="flex justify-between items-start mb-2">
@@ -685,6 +616,13 @@ export function TravelSection({ onBack, language }: TravelSectionProps) {
             )}
           </Card>
         ))}
+
+        {travels.length === 0 && (
+          <Card className="p-8 text-center text-muted-foreground">
+            <p>{t("no_travel_records")}</p>
+            <p className="text-sm mt-2">{t("add_first_travel")}</p>
+          </Card>
+        )}
       </div>
 
       {selectedImage && (
