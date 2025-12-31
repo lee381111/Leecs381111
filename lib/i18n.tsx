@@ -98,6 +98,9 @@ type TranslationKey =
   | "health_record"
   | "health_record_btn"
   | "add_health_record"
+  | "please_enter_title"
+  | "please_select_date"
+  | "login_required"
   | "medication_management_title"
   | "medication_management"
   | "medication_management_btn"
@@ -591,7 +594,7 @@ type TranslationKey =
   | "no_records"
   | "preventive_schedule"
   | "preventive_input"
-  | "preventive_maintenance" // Added preventive_maintenance translation key
+  | "preventive_maintenance"
   | "scheduled_date"
   | "estimated_mileage"
   | "estimated_mileage_placeholder"
@@ -782,25 +785,25 @@ type TranslationKey =
   | "emotion_score"
   | "main_emotions"
   | "ai_advice"
-  | "alarm_notification" // Added missing translation key
-  | "days_before_1" // Added missing translation key
-  | "formatting" // Added
-  | "small" // Added
-  | "normal" // Added
-  | "large" // Added
-  | "bold" // Added
-  | "italic" // Added
-  | "underline" // Added
-  | "align_left" // Added
-  | "align_center" // Added
-  | "align_right" // Added
-  | "text_color" // Added
-  | "bullet_list" // Added
-  | "numbered_list" // Added
-  | "clear_formatting" // Added
-  | "plainTextMode" // Added
-  | "richTextMode" // Added
-  | "select_text_to_format" // Added for rich text mode instruction
+  | "alarm_notification"
+  | "days_before_1"
+  | "formatting"
+  | "small"
+  | "normal"
+  | "large"
+  | "bold"
+  | "italic"
+  | "underline"
+  | "align_left"
+  | "align_center"
+  | "align_right"
+  | "text_color"
+  | "bullet_list"
+  | "numbered_list"
+  | "clear_formatting"
+  | "plainTextMode"
+  | "richTextMode"
+  | "select_text_to_format"
   | "privacy_sensitive_warning"
   | "terms_disclaimer_title"
   | "terms_disclaimer1"
@@ -1098,6 +1101,11 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     category_label: "분류",
     description_label: "설명",
     attachments_label: "첨부파일",
+
+    // Schedule validation translations
+    please_enter_title: "제목을 입력해주세요",
+    please_select_date: "날짜를 선택해주세요",
+    login_required: "로그인이 필요합니다",
 
     // Travel Section
     travel_map: "여행 지도",
@@ -1718,7 +1726,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     terms_disclaimer2: "본 서비스의 AI 기능은 참고용 정보이며 전문적인 조언을 대체하지 않습니다",
     terms_disclaimer3: "사용자가 저장한 콘텐츠에 대한 책임은 사용자에게 있습니다",
     privacy_policy_content: `
-    <h3 class="font-bold text-lg mb-2">개인정보처리방침</h3>
+    <h3 class="font-bold text-lg mb-2">개인정보 처리방침</h3>
     <p class="mb-4">기록의숲은 사용자의 개인정보를 소중히 여기며, 다음과 같이 처리합니다.</p>
     
     <h4 class="font-semibold mt-4 mb-2">1. 수집하는 개인정보 항목</h4>
@@ -2057,6 +2065,11 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     category_label: "Category",
     description_label: "Description",
     attachments_label: "Attachments",
+
+    // Schedule validation translations
+    please_enter_title: "Please enter a title",
+    please_select_date: "Please select a date",
+    login_required: "Login required",
 
     // Travel Section
     travel_map: "Travel Map",
@@ -2750,7 +2763,7 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     date: "日期",
     back: "返回",
     back_to_forest: "返回森林",
-    email: "电子邮件",
+    email: "邮箱",
 
     year: "年",
     month: "月",
@@ -3023,6 +3036,11 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     category_label: "类别",
     description_label: "描述",
     attachments_label: "附件",
+
+    // Schedule validation translations
+    please_enter_title: "请输入标题",
+    please_select_date: "请选择日期",
+    login_required: "需要登录",
 
     // Travel Section
     travel_map: "旅行地图",
@@ -3975,6 +3993,11 @@ const translations: Record<Language, Record<TranslationKey, string>> = {
     category_label: "カテゴリ",
     description_label: "説明",
     attachments_label: "添付ファイル",
+
+    // Schedule validation translations
+    please_enter_title: "タイトルを入力してください",
+    please_select_date: "日付を選択してください",
+    login_required: "ログインが必要です",
 
     // Travel Section
     travel_map: "旅行マップ",
