@@ -22,6 +22,7 @@ async function uploadAttachment(attachment: any, userId: string, bucket = "attac
 
   // If already a URL (not base64), return as-is
   if (attachment.url && !attachment.url.startsWith("data:")) {
+    console.log("[v0] Attachment already has URL:", attachment.url.substring(0, 100))
     return attachment.url
   }
 
@@ -35,6 +36,15 @@ async function uploadAttachment(attachment: any, userId: string, bucket = "attac
 
     const base64Data = dataUrl.split(",")[1]
     const mimeType = dataUrl.match(/data:([^;]+);/)?.[1] || "application/octet-stream"
+
+    console.log(
+      "[v0] Uploading attachment - Type:",
+      mimeType,
+      "Size:",
+      Math.round((base64Data.length * 0.75) / 1024),
+      "KB",
+    )
+
     const byteCharacters = atob(base64Data)
     const byteNumbers = new Array(byteCharacters.length)
     for (let i = 0; i < byteCharacters.length; i++) {
@@ -69,6 +79,8 @@ async function uploadAttachment(attachment: any, userId: string, bucket = "attac
     const ext = mimeType.split("/")[1] || "bin"
     const fileName = `${userId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`
 
+    console.log("[v0] Uploading to Storage:", fileName, "Size:", Math.round(fileSize / 1024), "KB")
+
     // Upload to Supabase Storage
     const { data, error } = await supabase.storage.from(bucket).upload(fileName, blob, {
       contentType: mimeType,
@@ -77,7 +89,7 @@ async function uploadAttachment(attachment: any, userId: string, bucket = "attac
 
     if (error) {
       console.error("[v0] Upload error:", error)
-      // Return empty string instead of throwing - graceful degradation
+      alert(`파일 업로드 실패: ${error.message}`)
       return ""
     }
 
@@ -86,9 +98,10 @@ async function uploadAttachment(attachment: any, userId: string, bucket = "attac
     // Get public URL
     const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(data.path)
 
+    console.log("[v0] Upload successful! Public URL:", urlData.publicUrl.substring(0, 100))
     return urlData.publicUrl
   } catch (error) {
-    console.error("[v0] Error processing attachment:", error)
+    console.error("[v0] Upload exception:", error)
     return ""
   }
 }
@@ -111,17 +124,22 @@ export async function saveNotes(notes: Note[], userId: string) {
         const processedAttachments = await Promise.all(
           note.attachments.map(async (attachment) => {
             const dataUrl = attachment.data || attachment.url || ""
-            const isLarge = dataUrl.length > 100000
+            const isLarge = dataUrl.length > 50000
+
+            console.log("[v0] Processing attachment:", attachment.name, "Is large?", isLarge, "Type:", attachment.type)
 
             if (isLarge) {
               const uploadedUrl = await uploadAttachment(attachment, userId, "notes-attachments")
 
               if (uploadedUrl) {
+                console.log("[v0] Attachment uploaded successfully:", attachment.name)
                 return {
                   type: attachment.type,
                   name: attachment.name,
                   url: uploadedUrl,
                 }
+              } else {
+                console.error("[v0] Failed to upload attachment:", attachment.name)
               }
             }
 
@@ -134,9 +152,12 @@ export async function saveNotes(notes: Note[], userId: string) {
           }),
         )
 
+        const validAttachments = processedAttachments.filter((a) => a.url)
+        console.log("[v0] Note has", validAttachments.length, "valid attachments out of", processedAttachments.length)
+
         return {
           ...note,
-          attachments: processedAttachments.filter((a) => a.url),
+          attachments: validAttachments,
         }
       }),
     )

@@ -1189,8 +1189,27 @@ export function NotesSection({ onBack, language }: NotesSectionProps) {
                                   playsInline
                                   className="w-full h-auto min-h-[128px] max-h-[300px]"
                                   style={{ display: "block" }}
+                                  onLoadedMetadata={(e) => {
+                                    const video = e.currentTarget
+                                    console.log(
+                                      "[v0] Video loaded:",
+                                      file.name,
+                                      "Duration:",
+                                      video.duration,
+                                      "Size:",
+                                      video.videoWidth,
+                                      "x",
+                                      video.videoHeight,
+                                    )
+                                  }}
                                   onError={(e) => {
-                                    console.log("[v0] Video load failed:", file.name || `video ${idx}`)
+                                    console.error(
+                                      "[v0] Video load failed:",
+                                      file.name,
+                                      "URL:",
+                                      mediaUrl?.substring(0, 100),
+                                    )
+                                    console.error("[v0] Video error details:", e.currentTarget.error)
                                   }}
                                 >
                                   {language === "ko" ? "영상을 재생할 수 없습니다" : "Cannot play video"}
