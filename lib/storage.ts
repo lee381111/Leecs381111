@@ -128,11 +128,13 @@ export async function saveNotes(notes: Note[], userId: string) {
 
             console.log("[v0] Processing attachment:", attachment.name, "Is large?", isLarge, "Type:", attachment.type)
 
-            if (isLarge) {
+            const shouldUpload = isLarge || attachment.type === "video"
+
+            if (shouldUpload) {
               const uploadedUrl = await uploadAttachment(attachment, userId, "notes-attachments")
 
               if (uploadedUrl) {
-                console.log("[v0] Attachment uploaded successfully:", attachment.name)
+                console.log("[v0] Attachment uploaded successfully:", attachment.name, "URL:", uploadedUrl)
                 return {
                   type: attachment.type,
                   name: attachment.name,
@@ -140,19 +142,19 @@ export async function saveNotes(notes: Note[], userId: string) {
                 }
               } else {
                 console.error("[v0] Failed to upload attachment:", attachment.name)
+                return null
               }
             }
 
             return {
               type: attachment.type,
               name: attachment.name,
-              url: attachment.url || attachment.data,
-              data: attachment.data || attachment.url,
+              url: dataUrl,
             }
           }),
         )
 
-        const validAttachments = processedAttachments.filter((a) => a.url)
+        const validAttachments = processedAttachments.filter((a) => a !== null && a.url)
         console.log("[v0] Note has", validAttachments.length, "valid attachments out of", processedAttachments.length)
 
         return {
@@ -332,53 +334,88 @@ export async function saveSchedules(schedules: ScheduleEvent[], userId: string) 
     await supabase.from("schedules").delete().eq("user_id", userId)
   }
 
-  const dbSchedules = schedules.map((schedule) => {
-    let dateOnly = schedule.date
-    if (dateOnly.includes("T")) {
-      dateOnly = dateOnly.split("T")[0]
-    }
+  const processedSchedules = await Promise.all(
+    schedules.map(async (schedule) => {
+      // Process attachments
+      let processedAttachments = schedule.attachments || []
 
-    // Create a date object in the local timezone, then convert to ISO string
-    const timeString = schedule.time || "00:00"
-    const [hours, minutes] = timeString.split(":")
-    const startDateTime = new Date(dateOnly)
-    startDateTime.setHours(Number.parseInt(hours), Number.parseInt(minutes), 0, 0)
-    const startTime = startDateTime.toISOString()
+      if (processedAttachments.length > 0) {
+        console.log(`[v0] Processing ${processedAttachments.length} attachments for schedule: ${schedule.title}`)
 
-    let endTime = startTime
-    if (schedule.endTime) {
-      const [endHours, endMinutes] = schedule.endTime.split(":")
-      const endDateTime = new Date(dateOnly)
-      endDateTime.setHours(Number.parseInt(endHours), Number.parseInt(endMinutes), 0, 0)
-      endTime = endDateTime.toISOString()
-    }
+        processedAttachments = await Promise.all(
+          processedAttachments.map(async (attachment) => {
+            // Skip if already a URL
+            if (attachment.url && !attachment.url.startsWith("data:")) {
+              return attachment
+            }
 
-    const alarmTime =
-      schedule.alarmMinutesBefore && schedule.time
-        ? (() => {
-            const alarmDateTime = new Date(startDateTime.getTime() - schedule.alarmMinutesBefore * 60 * 1000)
-            return alarmDateTime.toISOString()
-          })()
-        : null
+            // Upload to storage and get URL
+            const uploadedUrl = await uploadAttachment(attachment, userId, "notes-attachments") // Use notes-attachments bucket
 
-    return {
-      id: schedule.id,
-      user_id: userId,
-      title: schedule.title,
-      description: schedule.description || "",
-      category: schedule.category || "일정",
-      start_time: startTime,
-      end_time: endTime,
-      alarm_enabled: schedule.alarmEnabled || false,
-      alarm_time: alarmTime,
-      completed: schedule.completed || false,
-      is_special_event: schedule.isSpecialEvent || false,
-      attachments: schedule.attachments || [],
-      created_at: schedule.createdAt,
-    }
-  })
+            if (!uploadedUrl) {
+              console.warn("[v0] Failed to upload attachment:", attachment.name)
+              return null
+            }
 
-  const { error } = await supabase.from("schedules").upsert(dbSchedules, { onConflict: "id" })
+            return {
+              type: attachment.type,
+              name: attachment.name,
+              url: uploadedUrl,
+            }
+          }),
+        )
+
+        // Filter out failed uploads
+        processedAttachments = processedAttachments.filter(Boolean)
+      }
+
+      let dateOnly = schedule.date
+      if (dateOnly.includes("T")) {
+        dateOnly = dateOnly.split("T")[0]
+      }
+
+      // Create a date object in the local timezone, then convert to ISO string
+      const timeString = schedule.time || "00:00"
+      const [hours, minutes] = timeString.split(":")
+      const startDateTime = new Date(dateOnly)
+      startDateTime.setHours(Number.parseInt(hours), Number.parseInt(minutes), 0, 0)
+      const startTime = startDateTime.toISOString()
+
+      let endTime = startTime
+      if (schedule.endTime) {
+        const [endHours, endMinutes] = schedule.endTime.split(":")
+        const endDateTime = new Date(dateOnly)
+        endDateTime.setHours(Number.parseInt(endHours), Number.parseInt(endMinutes), 0, 0)
+        endTime = endDateTime.toISOString()
+      }
+
+      const alarmTime =
+        schedule.alarmMinutesBefore && schedule.time
+          ? (() => {
+              const alarmDateTime = new Date(startDateTime.getTime() - schedule.alarmMinutesBefore * 60 * 1000)
+              return alarmDateTime.toISOString()
+            })()
+          : null
+
+      return {
+        id: schedule.id,
+        user_id: userId,
+        title: schedule.title,
+        description: schedule.description || "",
+        category: schedule.category || "일정",
+        start_time: startTime,
+        end_time: endTime,
+        alarm_enabled: schedule.alarmEnabled || false,
+        alarm_time: alarmTime,
+        completed: schedule.completed || false,
+        is_special_event: schedule.isSpecialEvent || false,
+        attachments: processedAttachments,
+        created_at: schedule.createdAt,
+      }
+    }),
+  )
+
+  const { error } = await supabase.from("schedules").upsert(processedSchedules, { onConflict: "id" })
 
   if (error) {
     console.error("[v0] Error saving schedules:", error)

@@ -21,10 +21,20 @@ export function StorageQuotaCard({ userId, language }: StorageQuotaCardProps) {
   const isPi = isPiEnvironment()
 
   useEffect(() => {
-    loadStorageInfo()
+    if (userId && userId !== "undefined") {
+      loadStorageInfo()
+    } else {
+      setLoading(false)
+    }
   }, [userId])
 
   const loadStorageInfo = async () => {
+    if (!userId || userId === "undefined") {
+      console.warn("[v0] Invalid userId provided to StorageQuotaCard:", userId)
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
     const info = await getUserStorageInfo(userId)
     setStorageInfo(info)
